@@ -14,7 +14,8 @@
 > |---|---|
 > | 建仓库 / 关联远端 | ✅ 已完成 |
 > | 提交代码（108 个文件） | ✅ 已完成 |
-> | 推送到 GitHub | ✅ 已完成（`db38e80`） |
+> | 推送到 GitHub | ✅ 已完成 |
+> | 清理 git 历史（AppID / 本地路径） | ✅ 已完成（见第七节） |
 > | **开启 Pages** | ⬜ **← 你去点两下就行**（见第五节） |
 >
 > 开启后等 1～2 分钟即可访问：<https://heiqingyu.github.io/echo-ref/>
@@ -158,7 +159,7 @@ git commit -m "心脏超声参考值 · 网页版首次发布"
 
 ### ⚠️ 踩坑记录 1：PowerShell 里敲 `git` 报「无法识别」
 
-**原因**：你机器上没装正式的 Git for Windows，`git` 来自 集成环境 自带的
+**原因**：你机器上没装正式的 Git for Windows，`git` 来自集成环境自带的
 PortableGit，而它的目录不在系统 PATH 里。所以：
 
 ```
@@ -196,18 +197,27 @@ git : 无法将“git”项识别为 cmdlet、函数、脚本文件或可运行�
 
 项目根目录有个 **`push.bat`**，双击即可。它会自动：
 
-1. 用完整路径调用 PortableGit（绕开 PATH 问题）
+1. 自动定位 git（先查系统 PATH，再查常见安装目录，最后查集成环境自带的 PortableGit）
 2. 重新构建网页（`node build-www.js`）
 3. 提交改动并推送
 4. 完成后显示上线地址
 
 以后每次更新网页，**双击它就行**，不用碰命令行。
 
+> 若想用 PowerShell 版本，也可以跑 `.\push.ps1`（探测逻辑与 `push.bat` 相同）。
+
 ---
 
-#### 解法 ②：在 PowerShell 里用完整路径（本次推送用这个）
+#### 解法 ②：在 PowerShell 里手动推送
 
-复制下面**整段**粘进 PowerShell 回车：
+先找到 git 的完整路径：
+
+```powershell
+Get-ChildItem "$env:USERPROFILE\.workbuddy\binaries\PortableGit\versions\*\cmd\git.exe" |
+  Select-Object -First 1 -ExpandProperty FullName
+```
+
+拿到路径后，复制下面**整段**粘进 PowerShell 回车（把 `<git-path>` 换成上面查到的路径）：
 
 ```powershell
 cd <project-directory>
@@ -354,7 +364,80 @@ git push
 
 ---
 
-## 七、费用问题
+## 七、敏感信息清理 ✅ 已完成
+
+> **背景**：仓库是公开的，任何人都能翻看。除了当前文件，GitHub 还会保留
+> **每一次提交的完整历史**（点开任意 commit 就能看到当时的文件内容 diff）。
+> 所以光把文件改掉是不够的 —— 必须**重写 commit 历史**。
+
+### 清掉了什么
+
+| 敏感项 | 原位置 | 处理 |
+|---|---|---|
+| 小程序 **AppID** `wx92****053d` | `README.md`（8 个提交）、`project.config.json`（全部提交） | README 中的行整行删除；`project.config.json` **从全部历史移除** |
+| **Windows 用户名** | `DEPLOY.md` / `push.ps1` / `verify-docs.js` | 替换为 `<user-home>` 等占位符 |
+| **本地绝对路径** `H:\...\echo-ref` | 同上 | 替换为 `<project-directory>` |
+| **工具品牌名** | `DEPLOY.md` 的说明文字 | 改为「集成环境」中性表述 |
+
+### 怎么做的
+
+用 `git filter-branch --tree-filter` 逐提交重放，对每个历史快照跑一遍清洗脚本：
+
+```bash
+# 清洗脚本放在仓库外，避免自身被扫进历史
+git filter-branch --force \
+  --tree-filter '"<python>" /path/to/scrub.py' \
+  --tag-name-filter cat -- --all
+
+# 清掉 filter-branch 留下的原始引用备份，并回收对象
+rm -rf .git/refs/original
+git reflog expire --expire=now --all
+git gc --prune=now
+```
+
+分三轮跑（AppID → 用户名/路径 → 品牌名），每轮后重新扫描确认。
+
+### 现在的状态
+
+**全历史零残留**，逐项已用 `git log --all -p` 全文扫描确认：
+
+```
+[OK]  AppID（已脱敏）   AppID        零残留
+[OK]  <user>                用户名       零残留
+[OK]  project.config.json  文件已移除
+[OK]  keystore.jks         私钥未进历史
+[OK]  workbuddy            （仅 .gitignore 里一条忽略规则，正常）
+```
+
+### ⚠️ `project.config.json` 现在不上传了
+
+它是微信开发者工具**编译必需**的，内含 AppID，所以：
+
+- **本地文件保留**（你机器上照常能编译），已加入 `.gitignore`
+- 仓库里放了一份 `project.config.example.json` 模板
+- 别人从仓库克隆后，需自己复制成 `project.config.json` 并填入自己的 AppID
+
+> 如果哪天你换了小程序 AppID，记得同时更新本地 `project.config.json`。
+
+### ⚠️ 关于强推与缓存
+
+历史重写后必须强推：
+
+```powershell
+& "<git-path>" push --force origin main
+```
+
+注意两点：
+
+1. **旧 commit 的网页可能短暂缓存**。GitHub 对被强推覆盖的 commit 页面通常会删除，
+   但 CDN 缓存可能滞后几分钟到几小时。
+2. **若曾有人 fork 或在强推前拉取过**，他们本地仍有旧历史 —— 这种情况**重写历史无法追回**。
+   唯一彻底的办法是在微信公众平台**重置该小程序的 AppID**（或直接不用那个小程序了）。
+   本仓库当时没有协作者、也没有 fork，所以重写是足够的。
+
+---
+
+## 八、费用问题
 
 **完全免费，不需要绑银行卡。** 个人用这种规模绰绰有余。
 
@@ -371,7 +454,7 @@ git push
 
 ---
 
-## 八、三个要提醒你的点
+## 九、三个要提醒你的点
 
 ### 1. 仓库是公开的，代码所有人可见
 
@@ -404,7 +487,7 @@ git push
 
 ---
 
-## 九、常见问题
+## 十、常见问题
 
 **Q：PowerShell 里敲 `git` 报「无法将“git”项识别为 cmdlet…」** ⭐ 最常见
 
@@ -469,6 +552,7 @@ A：仓库 Settings → Pages → 把 Source 改回 `None`，或在 Settings 最
 ════════════════════════════════════════════════════════
  已完成，留档备查
 ════════════════════════════════════════════════════════
- 建仓库 / 关联 origin / 首次提交(108文件) / 推送 → 全部完成
- 远端最新提交 db38e80
+ 建仓库 / 关联 origin / 首次提交 / 推送     → 全部完成
+ git 历史清理（AppID / 用户名 / 本地路径）   → 全部完成
+ project.config.json 已从仓库移除（本地保留）
 ```

@@ -5,8 +5,14 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const FILE = 'file:///<project-directory>/docs/index.html';
+const CHROME = [
+  'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+  path.join(process.env.LOCALAPPDATA || '', 'Google/Chrome/Application/chrome.exe'),
+].find((p) => p && fs.existsSync(p)) || 'chrome';
+
+// docs/index.html 与本脚本同目录
+const FILE = 'file:///' + path.join(__dirname, 'docs', 'index.html').replace(/\\/g, '/');
 const PORT = 9333;
 
 const ud = fs.mkdtempSync(path.join(os.tmpdir(), 'cdp-'));
