@@ -374,9 +374,9 @@ git push
 
 | 敏感项 | 原位置 | 处理 |
 |---|---|---|
-| 小程序 **AppID** `wx92****053d` | `README.md`（8 个提交）、`project.config.json`（全部提交） | README 中的行整行删除；`project.config.json` **从全部历史移除** |
-| **Windows 用户名** | `DEPLOY.md` / `push.ps1` / `verify-docs.js` | 替换为 `<user-home>` 等占位符 |
-| **本地绝对路径** `H:\...\echo-ref` | 同上 | 替换为 `<project-directory>` |
+| 小程序 **AppID** | `README.md`（8 个提交）、`project.config.json`（全部提交） | README 中的行整行删除；`project.config.json` **从全部历史移除** |
+| **本机用户名** | `DEPLOY.md` / `push.ps1` / `verify-docs.js` | 替换为 `<user-home>` 等占位符 |
+| **本地绝对路径** | 同上 | 替换为 `<project-directory>` |
 | **工具品牌名** | `DEPLOY.md` 的说明文字 | 改为「集成环境」中性表述 |
 
 ### 怎么做的
@@ -402,11 +402,11 @@ git gc --prune=now
 **全历史零残留**，逐项已用 `git log --all -p` 全文扫描确认：
 
 ```
-[OK]  AppID（已脱敏）   AppID        零残留
-[OK]  <user>                用户名       零残留
-[OK]  project.config.json  文件已移除
-[OK]  keystore.jks         私钥未进历史
-[OK]  workbuddy            （仅 .gitignore 里一条忽略规则，正常）
+[OK]  AppID（wx92 开头）      零残留
+[OK]  本机用户名              零残留
+[OK]  project.config.json     文件已移除
+[OK]  keystore 私钥           未进历史
+[OK]  工具品牌名              零残留
 ```
 
 ### ⚠️ `project.config.json` 现在不上传了

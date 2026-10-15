@@ -22,6 +22,8 @@ android-app/*.log
 # 泄露后他人可用你的名义签发 APK
 *.jks
 *.keystore
+# 私钥口令（本地保留；仓库里只放 .example 模板）
+keystore.properties
 
 # ══════════ 微信开发者工具本地配置 ══════════
 # project.config.json 内含小程序 AppID（个人标识），不上传。
