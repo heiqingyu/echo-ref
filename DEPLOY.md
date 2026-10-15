@@ -142,22 +142,45 @@ git commit -m "心脏超声参考值 · 网页版首次发布"
 
 > **关联远端这一步也已完成** —— `git remote add origin` 已经执行过，`origin`
 > 已指向 `https://github.com/heiqingyu/echo-ref.git`。
-> **你只需要执行最后那条 `git push`。**
+> **你只需要推送。**
 
-```bash
-cd <project-directory>
+### ⚠️ 先解决一个问题：PowerShell 里敲 `git` 会报「无法识别」
 
-# ① 关联远端仓库（已执行过，无需重复；重复执行会报 "remote origin already exists"）
-# git remote add origin https://github.com/heiqingyu/echo-ref.git
+**原因**：你机器上没装正式的 Git for Windows，`git` 来自 集成环境 自带的
+PortableGit，而它的目录不在系统 PATH 里。所以：
 
-# 确认一下远端是否正确（应输出 fetch/push 两行）
-git remote -v
-
-# ② 推送 —— ★★★ 你只需要跑这一条 ★★★
-git push -u origin main
+```
+PS> git push -u origin main
+git : 无法将“git”项识别为 cmdlet、函数、脚本文件或可运行程序的名称。
 ```
 
-推送成功后应该看到类似输出：
+**三种解法，任选一种。**
+
+---
+
+#### 解法 ①（最省事）：双击项目里的 `推送.bat`
+
+项目根目录有个 **`推送.bat`**，双击即可。它会自动：
+
+1. 用完整路径调用 PortableGit（绕开 PATH 问题）
+2. 重新构建网页（`node build-www.js`）
+3. 提交改动并推送
+4. 完成后显示上线地址
+
+以后每次更新网页，**双击它就行**，不用碰命令行。
+
+---
+
+#### 解法 ②：在 PowerShell 里用完整路径（本次推送用这个）
+
+复制下面**整段**粘进 PowerShell 回车：
+
+```powershell
+cd <project-directory>
+& "<git-path>" push -u origin main
+```
+
+推送成功应该看到：
 
 ```
 Enumerating objects: ...
@@ -166,6 +189,39 @@ To https://github.com/heiqingyu/echo-ref.git
  * [new branch]      main -> main
 branch 'main' set up to track 'origin/main'.
 ```
+
+> 觉得路径太长，可以先设个别名（**只在当前 PowerShell 窗口有效**）：
+>
+> ```powershell
+> function git { & "<git-path>" @args }
+> git push -u origin main
+> ```
+
+---
+
+#### 解法 ③：把 git 永久加进 PATH（一劳永逸）
+
+在 PowerShell 里执行一次：
+
+```powershell
+[Environment]::SetEnvironmentVariable(
+  "Path",
+  [Environment]::GetEnvironmentVariable("Path","User") + ";<git-dir>",
+  "User"
+)
+```
+
+**然后关掉 PowerShell 重新打开**（必须重开才生效）。之后就能直接敲 `git` 了：
+
+```powershell
+git push -u origin main
+```
+
+> 注意：这个目录由集成环境管理，将来环境升级时版本号（`1.3.0`）
+> 可能变化，届时 PATH 会失效。若追求稳定，建议装正式的 Git for Windows：
+> <https://git-scm.com/download/win>（装完自带图形化登录，认证体验最好）。
+
+---
 
 ### 关于登录
 
@@ -218,12 +274,17 @@ https://heiqingyu.github.io/echo-ref/
 
 ## 六、以后怎么更新
 
-每次改完代码，走这三步：
+### 最简单：双击 `推送.bat`
+
+改完代码（或什么都没改、只想重新构建），**双击项目根目录的 `推送.bat`** 即可。
+它会自动：重新构建 → 提交 → 推送 → 显示结果。
+
+### 或者手动三步
 
 ```bash
 cd <project-directory>
 
-# 1. 重新构建（刷新 docs/index.html）
+# 1. 重新构建（刷新 www/ 与 docs/）
 node build-www.js
 
 # 2. 提交
@@ -234,9 +295,13 @@ git commit -m "更新：xxx"
 git push
 ```
 
+> 若 PowerShell 里 `git` 报「无法识别」，见第四节的解法 ③（加 PATH），
+> 或把上面的 `git` 换成完整路径：
+> `& "<git-path>" push`
+
 推上去之后，GitHub 会在 **1～2 分钟内**自动重新部署。刷新网页即可看到新版本。
 
-> 如果改了没生效：先强制刷新浏览器（`Ctrl + F5`）清缓存；  
+> 如果改了没生效：先强制刷新浏览器（`Ctrl + F5`）清缓存；
 > 再到仓库的 **Actions** 标签页看部署有没有报错。
 
 ---
@@ -293,11 +358,22 @@ git push
 
 ## 九、常见问题
 
+**Q：PowerShell 里敲 `git` 报「无法将“git”项识别为 cmdlet…」** ⭐ 最常见
+
+A：你的机器上没装独立的 Git for Windows，`git` 来自集成环境自带的 PortableGit，
+其目录不在系统 PATH 里。三种解法：
+
+- **双击 `推送.bat`**（最省事，脚本已内置完整路径）
+- 用完整路径：`& "<git-path>" push`
+- 永久加 PATH（见第四节解法 ③），或干脆装 <https://git-scm.com/download/win>
+
+详见 **[第四节](#四把本地仓库推上去)** 开头的专门说明。
+
 **Q：Push 报 `remote: Support for password authentication was removed`**  
-A：用了账号密码。改用 Personal Access Token（见第四步「方式 A」）。
+A：用了账号密码。改用 Personal Access Token（见第四步「关于登录」）。
 
 **Q：Pages 设置里找不到 `/docs` 这个选项**  
-A：说明 `docs/` 目录还没推上去。先确认 `git push` 成功、仓库里能看到 `docs/index.html`。
+A：说明 `docs/` 目录还没推上去。先确认推送成功、仓库里能看到 `docs/index.html`。
 
 **Q：打开网址是 404**  
 A：三种可能 —— ① 刚推送，还没部署完（等 2 分钟）；② Pages 的 Branch 没选 `/docs`；③ `docs/` 里没有 `index.html`。  
@@ -320,20 +396,24 @@ A：仓库 Settings → Pages → 把 Source 改回 `None`，或在 Settings 最
 
 ## 附：一页速查
 
-```bash
-# ══════ 你现在只需执行这两步 ══════
-cd <project-directory>
-git push -u origin main
-# → 然后到 https://github.com/heiqingyu/echo-ref/settings/pages
-#    Source: Deploy from a branch ／ Branch: main ／ 目录: /docs ／ Save
-# → 等 1~2 分钟，访问：https://heiqingyu.github.io/echo-ref/
+```powershell
+# ══════ 你现在只需做这两件事 ══════
 
-# ══════ 以下步骤均已完成，留档备查 ══════
+# ① 双击项目里的「推送.bat」
+#     或手动执行（PowerShell 里 git 不在 PATH，用完整路径）：
+cd <project-directory>
+& "<git-path>" push -u origin main
+
+# ② 开启 Pages
+#     https://github.com/heiqingyu/echo-ref/settings/pages
+#     Source: Deploy from a branch ／ Branch: main ／ 目录: /docs ／ Save
+#     → 等 1~2 分钟 → https://heiqingyu.github.io/echo-ref/
+
+# ══════ 以下均已完成，留档备查 ══════
 # node build-www.js                        # 生成 www/ 与 docs/
 # git init && git branch -M main           # 初始化仓库
 # git add . && git commit -m "首次发布"     # 首次提交（108 个文件）
 # git remote add origin https://github.com/heiqingyu/echo-ref.git
 
-# ══════ 以后每次更新 ══════
-node build-www.js && git add . && git commit -m "更新" && git push
+# ══════ 以后每次更新：双击「推送.bat」即可 ══════
 ```
