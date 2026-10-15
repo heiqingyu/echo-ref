@@ -6,6 +6,10 @@
 
 $ErrorActionPreference = "Stop"
 
+# 让 node 输出的中文不乱码
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 $Git = "<git-path>"
 
 Set-Location -Path $PSScriptRoot
@@ -41,7 +45,14 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 
 Write-Host "[3/3] 推送到 GitHub..." -ForegroundColor Yellow
-& $Git push
+# 首次推送需要建立上游跟踪关系（之后 push 会自动识别）
+& $Git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  （首次推送，正在建立上游跟踪）"
+    & $Git push -u origin main
+} else {
+    & $Git push
+}
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "[ERROR] 推送失败，常见原因：" -ForegroundColor Red
