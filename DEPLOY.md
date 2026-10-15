@@ -58,6 +58,9 @@ git config --global --get user.email
 
 ## 二、本地建仓库并提交
 
+> **好消息**：这一步已经帮你做完了 —— 本地仓库已初始化并完成首次提交。
+> 你可以跳到第三步。下面留着是让你知道每一步在干什么，以及以后重建仓库时怎么操作。
+
 在项目目录里执行：
 
 ```bash
@@ -72,21 +75,30 @@ git branch -M main
 # 3. 把文件加入暂存区
 git add .
 
-# 4. 看一眼要提交什么（确认没有参考素材、原型草图混进去）
+# 4. 看一眼要提交什么（确认没有参考素材、原型草图、签名私钥混进去）
 git status
 
 # 5. 提交
 git commit -m "心脏超声参考值 · 网页版首次发布"
 ```
 
-`.gitignore` 已经写好，会自动排除这些东西：
+### `.gitignore` 已经排除了什么
 
-- `ref-tte/`、`_attic/` —— 第三方参考素材
-- `prototype.html`、`prototype-peds.html` —— 原型草图
-- `.debug-*` —— 调试临时文件
-- `project.private.config.json` —— 微信开发者工具的本地配置
+| 排除项 | 原因 |
+|---|---|
+| `ref-tte/`、`_attic/` | 第三方参考素材，版权风险 |
+| `prototype.html`、`prototype-peds.html` | 原型草图 |
+| `android-app/keystore.jks` | ⚠️ **APK 签名私钥**，泄露后他人可用你的名义签发应用 |
+| `android-app/build/`、`android-app/dist/` | Android 编译中间产物，体积大且无必要 |
+| `android-app/*.log` | 编译日志 |
+| `.debug-*` | 调试临时文件 |
+| `project.private.config.json` | 微信开发者工具的本地配置 |
 
-> 提交前请用 `git status` 确认一下列表里没有你不希望公开的文件。
+实际入库 **108 个文件**。提交前请用 `git status` 再确认一遍，确保列表里没有你不希望公开的东西。
+
+> ⚠️ **特别注意 `keystore.jks`**：它是 APK 的签名密钥，一旦推到公开仓库，
+> 任何人都能拿它签发冒牌 APK。`.gitignore` 已排除，但如果你手动 `git add -f` 强推过，
+> 需要从历史记录里彻底清除（用 `git filter-repo` 或直接重建仓库）。
 
 ---
 
@@ -103,6 +115,11 @@ git commit -m "心脏超声参考值 · 网页版首次发布"
 4. 点 **Create repository**
 
 创建后会看到一个空仓库页面，上面有一段 `git remote add origin ...` 的命令。
+
+> **提示**：APK 文件（`EchoRef-v1.0.0.apk`，约 230 KB）也在仓库里。
+> 这个不影响 Pages 发布（Pages 只读 `docs/` 目录），放着也没关系 ——
+> 好处是以后想分享 APK，可以直接把仓库里这个文件的链接发出去。
+> 若不想公开 APK，把它加进 `.gitignore` 再提交即可。
 
 ---
 
