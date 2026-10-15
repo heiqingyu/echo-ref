@@ -9,15 +9,49 @@ try {
     $OutputEncoding = New-Object System.Text.UTF8Encoding $false
 } catch { }
 
-$Git = "<git-path>"
-
 Set-Location -Path $PSScriptRoot
 
-if (-not (Test-Path $Git)) {
-    Write-Host "[ERROR] git.exe not found:"
-    Write-Host "  $Git"
+# ---- Locate git.exe -------------------------------------------------------
+# 1) git on PATH (normal Git for Windows install)
+# 2) common install locations
+# 3) the portable git bundled with the editor / IDE
+$Git = $null
+
+$cmd = Get-Command git -ErrorAction SilentlyContinue
+if ($cmd) { $Git = $cmd.Source }
+
+if (-not $Git) {
+    $candidates = @(
+        "$env:ProgramFiles\Git\cmd\git.exe",
+        "${env:ProgramFiles(x86)}\Git\cmd\git.exe",
+        "$env:LOCALAPPDATA\Programs\Git\cmd\git.exe"
+    )
+    foreach ($c in $candidates) {
+        if ($c -and (Test-Path $c)) { $Git = $c; break }
+    }
+}
+
+if (-not $Git) {
+    # Portable git bundled with the editor / IDE (version-agnostic glob).
+    $patterns = @(
+        "$env:USERPROFILE\.workbuddy\binaries\PortableGit\versions\*\cmd\git.exe",
+        "$env:APPDATA\*\PortableGit\versions\*\cmd\git.exe",
+        "$env:LOCALAPPDATA\*\PortableGit\versions\*\cmd\git.exe"
+    )
+    foreach ($p in $patterns) {
+        $hit = Get-ChildItem -Path $p -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($hit) { $Git = $hit.FullName; break }
+    }
+}
+
+if (-not $Git) {
+    Write-Host "[ERROR] git.exe not found."
+    Write-Host "  Install Git for Windows: https://git-scm.com/download/win"
     exit 1
 }
+
+Write-Host "Using git: $Git"
+Write-Host ""
 
 Write-Host "=========================================="
 Write-Host "  Push EchoRef to GitHub"

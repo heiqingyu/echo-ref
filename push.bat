@@ -1,9 +1,15 @@
 @echo off
 setlocal
-set "GIT=<git-path>"
 cd /d "%~dp0"
 
-if not exist "%GIT%" goto :nogit
+rem ---- Locate git.exe ----
+set "GIT="
+for %%I in (git.exe) do set "GIT=%%~$PATH:I"
+if not defined GIT if exist "%ProgramFiles%\Git\cmd\git.exe" set "GIT=%ProgramFiles%\Git\cmd\git.exe"
+if not defined GIT if exist "%ProgramFiles(x86)%\Git\cmd\git.exe" set "GIT=%ProgramFiles(x86)%\Git\cmd\git.exe"
+if not defined GIT if exist "%LOCALAPPDATA%\Programs\Git\cmd\git.exe" set "GIT=%LOCALAPPDATA%\Programs\Git\cmd\git.exe"
+
+if not defined GIT goto :nogit
 
 echo ==========================================
 echo   Push "EchoRef" to GitHub
@@ -36,8 +42,8 @@ echo ==========================================
 goto :end
 
 :nogit
-echo [ERROR] git.exe not found at:
-echo   %GIT%
+echo [ERROR] git.exe not found.
+echo   Install Git for Windows: https://git-scm.com/download/win
 goto :end
 
 :buildfail

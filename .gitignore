@@ -24,6 +24,9 @@ android-app/*.log
 *.keystore
 
 # ══════════ 微信开发者工具本地配置 ══════════
+# project.config.json 内含小程序 AppID（个人标识），不上传。
+# 本地文件保留，从本仓库克隆后需自行填入自己的 AppID 才能用开发者工具打开。
+project.config.json
 project.private.config.json
 
 # ══════════ 系统杂项 ══════════
