@@ -1,68 +1,67 @@
-﻿# push.ps1 -- 构建 + 提交 + 推送「心脏超声参考值」到 GitHub
-# 用法：在 PowerShell 里执行
+# push.ps1 -- build + commit + push EchoRef to GitHub
+# Usage:
 #   cd <project-directory>
 #   powershell -ExecutionPolicy Bypass -File .\push.ps1
-# 若提示脚本被禁止运行，用上面那条带 -ExecutionPolicy Bypass 的命令即可。
 
-$ErrorActionPreference = "Stop"
-
-# 让 node 输出的中文不乱码
-try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
-$OutputEncoding = [System.Text.Encoding]::UTF8
+# Show UTF-8 correctly in the console
+try {
+    [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false
+    $OutputEncoding = New-Object System.Text.UTF8Encoding $false
+} catch { }
 
 $Git = "<git-path>"
 
 Set-Location -Path $PSScriptRoot
 
 if (-not (Test-Path $Git)) {
-    Write-Host "[ERROR] git.exe 未找到：" -ForegroundColor Red
+    Write-Host "[ERROR] git.exe not found:"
     Write-Host "  $Git"
     exit 1
 }
 
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "  推送「心脏超声参考值」到 GitHub" -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "=========================================="
+Write-Host "  Push EchoRef to GitHub"
+Write-Host "=========================================="
 Write-Host ""
 
-Write-Host "[1/3] 重新构建网页..." -ForegroundColor Yellow
-node build-www.js
+Write-Host "[1/3] Building web pages..."
+& node build-www.js
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "[ERROR] 构建失败，已中止。" -ForegroundColor Red
+    Write-Host "[ERROR] Build failed. Aborted."
     exit 1
 }
 Write-Host ""
 
-Write-Host "[2/3] 提交改动..." -ForegroundColor Yellow
+Write-Host "[2/3] Committing changes..."
 & $Git add -A
-& $Git diff --cached --quiet
-if ($LASTEXITCODE -ne 0) {
-    & $Git -c user.name="heiqingyu" -c user.email="heiqingyu@users.noreply.github.com" commit -m "更新网页内容"
-    Write-Host "  已提交" -ForegroundColor Green
+$staged = ((& $Git diff --cached --name-only) -join "").Trim()
+if ($staged.Length -gt 0) {
+    & $Git -c user.name="heiqingyu" -c user.email="heiqingyu@users.noreply.github.com" commit -m "update web pages" | Out-Null
+    Write-Host "  committed"
 } else {
-    Write-Host "  没有需要提交的改动"
+    Write-Host "  nothing to commit"
 }
 Write-Host ""
 
-Write-Host "[3/3] 推送到 GitHub..." -ForegroundColor Yellow
-# 首次推送需要建立上游跟踪关系（之后 push 会自动识别）
-& $Git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "  （首次推送，正在建立上游跟踪）"
+Write-Host "[3/3] Pushing to GitHub..."
+# If no upstream tracking is set up yet, use -u for the first push
+$upstream = ((& $Git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>$null) -join "").Trim()
+if ($upstream.Length -eq 0) {
+    Write-Host "  (first push, setting upstream)"
     & $Git push -u origin main
 } else {
     & $Git push
 }
+
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
-    Write-Host "[ERROR] 推送失败，常见原因：" -ForegroundColor Red
-    Write-Host "  - 需要登录：用户名填 heiqingyu，密码填 Personal Access Token"
-    Write-Host "  - 网络不通：github.com 访问不稳定，重试一次"
+    Write-Host "[ERROR] Push failed. Common causes:"
+    Write-Host "  - Login required: user = heiqingyu, password = Personal Access Token"
+    Write-Host "  - Network: github.com is unstable, just retry"
     exit 1
 }
 
 Write-Host ""
-Write-Host "==========================================" -ForegroundColor Green
-Write-Host "  ✓ 推送完成" -ForegroundColor Green
-Write-Host "  1~2 分钟后访问：https://heiqingyu.github.io/echo-ref/" -ForegroundColor Green
-Write-Host "==========================================" -ForegroundColor Green
+Write-Host "=========================================="
+Write-Host "  DONE.  https://heiqingyu.github.io/echo-ref/"
+Write-Host "=========================================="
