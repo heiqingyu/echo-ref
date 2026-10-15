@@ -1,0 +1,2614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<meta name="format-detection" content="telephone=no">
+<title>心脏超声参考值 · 成人参考值 / EF / 儿童 Z 值</title>
+<style>/* ══════════════════════════════════════════════════════════
+   心脏超声参考值 · 移动端样式
+   设计对标微信小程序的视觉，适配 Android WebView + 安全区
+   ══════════════════════════════════════════════════════════ */
+
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --line: #e3e6ea;
+  --text: #1f2329;
+  --sub: #6b7280;
+  --brand: #2563eb;
+  --brand-soft: #eff4ff;
+  --ok: #0f9d58;
+  --hi: #d93838;
+  --lo: #2563eb;
+  --warn: #e8a33d;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --appbar-h: 52px;
+  --tabbar-h: 56px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.55;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+               "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei",
+               Roboto, "Helvetica Neue", sans-serif;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+/* ────────── 顶栏 ────────── */
+.appbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: calc(var(--appbar-h) + var(--safe-t));
+  padding-top: var(--safe-t);
+  display: flex;
+  align-items: center;
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,.12);
+}
+
+.appbar__t {
+  flex: 1;
+  margin: 0;
+  padding-left: 16px;
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appbar__r {
+  margin-right: 12px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(255,255,255,.18);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.appbar__r:active { background: rgba(255,255,255,.3); }
+
+/* ────────── 内容区 ────────── */
+.main {
+  padding: calc(var(--appbar-h) + var(--safe-t) + 14px) 14px
+           calc(var(--tabbar-h) + var(--safe-b) + 26px);
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.page[hidden] { display: none; }
+
+/* ────────── 卡片 ────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.card__t {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 13px;
+  padding-left: 9px;
+  border-left: 3px solid var(--brand);
+  line-height: 1.2;
+}
+
+.card__d {
+  font-size: 13px;
+  color: var(--sub);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+/* ────────── 表单 ────────── */
+.row { display: flex; gap: 11px; }
+.row > .field { flex: 1; min-width: 0; }
+
+.field { margin-bottom: 13px; }
+.field:last-child { margin-bottom: 0; }
+
+.field__l {
+  display: block;
+  font-size: 13px;
+  color: var(--sub);
+  margin-bottom: 6px;
+}
+
+.field__i {
+  width: 100%;
+  height: 46px;
+  padding: 0 12px;
+  font-size: 16px;
+  /* 16px 可防止 iOS/Android WebView 聚焦时自动放大 */
+  color: var(--text);
+  background: #fbfcfd;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field__i:focus {
+  outline: none;
+  border-color: var(--brand);
+  background: #fff;
+}
+.field__i::placeholder { color: #a8aeb6; }
+
+/* 去掉数字输入框的上下箭头 */
+.field__i::-webkit-outer-spin-button,
+.field__i::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.field__i[type=number] { -moz-appearance: textfield; }
+
+/* ────────── 分段选择器 ────────── */
+.seg {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.seg__i {
+  flex: 1;
+  text-align: center;
+  padding: 11px 4px;
+  font-size: 14px;
+  color: var(--sub);
+  background: #fbfcfd;
+  cursor: pointer;
+  user-select: none;
+}
+
+.seg__i + .seg__i { border-left: 1px solid var(--line); }
+
+.seg__i--on {
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ────────── BSA 结果条 ────────── */
+.bsaout {
+  display: flex;
+  align-items: baseline;
+  padding: 14px;
+  margin-top: 12px;
+  background: var(--brand-soft);
+  border-radius: 10px;
+}
+
+.bsaout__v {
+  font-size: 29px;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.bsaout__u { font-size: 14px; color: var(--sub); margin-left: 6px; }
+
+.bsaout__l {
+  font-size: 12px;
+  color: var(--sub);
+  margin-left: auto;
+  text-align: right;
+  line-height: 1.3;
+}
+
+/* ────────── 双指标结果行（BSA + BMI） ────────── */
+.stat-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.stat {
+  flex: 1;
+  padding: 12px 14px;
+  background: var(--brand-soft);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat__main { display: flex; align-items: baseline; }
+
+.stat__v {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.stat__u { font-size: 12px; color: var(--sub); margin-left: 5px; }
+
+.stat__l { font-size: 11.5px; color: var(--sub); }
+
+/* BMI 判级小标签 */
+.bmi-tag {
+  margin-left: 5px;
+  padding: 1px 7px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bmi--low    { background: #e8f1fd; color: #2563eb; }
+.bmi--normal { background: #e5f4ea; color: #0f9d58; }
+.bmi--over   { background: #fdf3e3; color: #b97a12; }
+.bmi--obese  { background: #fdeaea; color: #d93838; }
+
+/* 儿童页收缩功能 EF 大数字 */
+.funcef {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 13px 14px;
+  background: var(--brand-soft);
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.funcef__v {
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.funcef__side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* ────────── 指标网格 ────────── */
+.kv { display: flex; flex-wrap: wrap; gap: 9px; }
+
+.kv__i {
+  flex: 1 1 30%;
+  min-width: 96px;
+  padding: 11px 12px;
+  background: #fafbfc;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.kv__k { font-size: 12px; color: var(--sub); margin-bottom: 4px; }
+
+.kv__v { font-size: 21px; font-weight: 700; line-height: 1.1; }
+
+.kv__u { font-size: 12px; font-weight: 500; color: var(--sub); margin-left: 3px; }
+
+/* ────────── 按钮 ────────── */
+.btn {
+  display: block;
+  width: 100%;
+  height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--brand);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+.btn:active { opacity: .85; }
+
+.btn--ghost {
+  color: var(--brand);
+  background: #fff;
+  border: 1px solid var(--brand);
+}
+
+/* ────────── 列表 ────────── */
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f2f4;
+}
+.list-row:last-child { border-bottom: none; }
+
+.list-row__n { flex: 1.5; font-size: 14px; line-height: 1.35; min-width: 0; }
+.list-row__v { flex: .85; text-align: right; font-size: 14px; font-weight: 600; }
+.list-row__r { flex: 1.25; text-align: right; font-size: 12px; color: var(--sub); }
+.list-row__g { flex: 0 0 92px; text-align: right; }
+
+.list-row__sub {
+  display: block;
+  font-size: 11px;
+  color: var(--sub);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+/* BSA 折算提示（蓝色小胶囊） */
+.derived {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border-radius: 8px;
+}
+
+/* ────────── 标签 ────────── */
+.tag {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.tag--normal { background: #e7f6ee; color: var(--ok); }
+.tag--high { background: #fdeaea; color: var(--hi); }
+.tag--low { background: #e8effd; color: var(--lo); }
+.tag--mild { background: #fdf4e3; color: var(--warn); }
+.tag--moderate { background: #fdeaea; color: var(--hi); }
+.tag--severe { background: #f8dede; color: #a11f1f; }
+.tag--none { color: var(--sub); }
+
+/* 儿童 Z 值：带方向的异常标签 */
+.tag--mild-high { background: #fdf4e3; color: #b3701a; }
+.tag--mild-low { background: #eaf1fd; color: #1d4ed8; }
+.tag--severe-high { background: #f8dede; color: #a11f1f; }
+.tag--severe-low { background: #dfe8fa; color: #12358f; }
+
+/* ────────── EF 进度条 ────────── */
+.efbar-wrap { margin-top: 16px; }
+
+.efbar {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #d93838 0%, #e8a33d 30%, #7bc47f 52%, #0f9d58 70%);
+  position: relative;
+}
+
+.efbar__m {
+  position: absolute;
+  top: -6px;
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+  background: #1f2329;
+  box-shadow: 0 0 0 3px #fff;
+  transform: translateX(-50%);
+  transition: left .3s ease;
+  left: 0;
+}
+
+.efbar-lg {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  font-size: 11px;
+  color: var(--sub);
+}
+
+/* ────────── 儿童 Z 值 ────────── */
+.pgroup {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand);
+  background: var(--brand-soft);
+  padding: 7px 12px;
+  border-radius: 8px;
+  margin: 16px 0 3px;
+}
+.pgroup:first-child { margin-top: 0; }
+
+.zrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f0f2f4;
+}
+.zrow:last-child { border-bottom: none; }
+
+.zrow--none .zrow__n,
+.zrow--none .zrow__v,
+.zrow--none .zrow__r { color: #a8aeb6; }
+
+.zrow__n { flex: 1.5; font-size: 14px; line-height: 1.35; min-width: 0; }
+.zrow__v { flex: .85; text-align: right; font-size: 14px; font-weight: 600; }
+.zrow__r { flex: 1.25; text-align: right; font-size: 12px; color: var(--sub); }
+.zrow__g { flex: 0 0 92px; text-align: right; }
+
+.zrow__sub {
+  display: block;
+  font-size: 11px;
+  color: var(--sub);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+.zbig {
+  display: flex;
+  align-items: baseline;
+  padding: 15px;
+  margin-bottom: 11px;
+  background: #fafbfc;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.zbig__v { font-size: 33px; font-weight: 700; line-height: 1; }
+.zbig__l { font-size: 12px; color: var(--sub); margin-left: 10px; line-height: 1.4; }
+
+.zbig--normal .zbig__v { color: var(--ok); }
+.zbig--mild .zbig__v { color: var(--warn); }
+.zbig--severe .zbig__v { color: var(--hi); }
+
+.key { display: flex; gap: 8px; margin-top: 12px; }
+
+.key__i {
+  flex: 1;
+  padding: 9px 4px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.4;
+  border-radius: 8px;
+}
+
+.key__i--n { background: #e7f6ee; color: #0b7a44; }
+.key__i--m { background: #fdf4e3; color: #a8681a; }
+.key__i--s { background: #f8dede; color: #8f1b1b; }
+
+/* ────────── 提示与说明 ────────── */
+.hint {
+  margin-top: 9px;
+  font-size: 13px;
+  color: var(--warn);
+  line-height: 1.5;
+}
+
+.note {
+  margin-top: 12px;
+  padding: 11px 13px;
+  font-size: 13px;
+  color: var(--sub);
+  line-height: 1.7;
+  background: #fafbfc;
+  border-left: 3px solid var(--line);
+  border-radius: 0 8px 8px 0;
+}
+
+.note--warn {
+  color: #a15c00;
+  background: #fff9ee;
+  border-left-color: var(--warn);
+}
+
+.note sup { font-size: 10px; }
+
+/* ────────── 底部页签 ────────── */
+.tabbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  height: calc(var(--tabbar-h) + var(--safe-b));
+  padding-bottom: var(--safe-b);
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8a9099;
+  font-size: 11px;
+  cursor: pointer;
+  user-select: none;
+  transition: color .15s;
+}
+
+.tab__i { font-size: 19px; line-height: 1; margin-bottom: 3px; }
+
+.tab--on { color: var(--brand); font-weight: 600; }
+
+.tab:active { background: #f7f8fa; }
+
+/* ────────── 窄屏微调 ────────── */
+@media (max-width: 360px) {
+  body { font-size: 14px; }
+  .list-row__g, .zrow__g { flex: 0 0 74px; }
+  .list-row__r, .zrow__r { font-size: 11px; }
+  .kv__v { font-size: 19px; }
+}
+
+/* ────────── 计算结果行样式 ────────── */
+.calc-out {
+  display: flex;
+  align-items: flex-start;
+  background: #eff4ff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-top: 10px;
+}
+
+.calc-out__lbl {
+  font-size: 11px;
+  color: #6b7280;
+  margin-right: 8px;
+  line-height: 1.7;
+  flex-shrink: 0;
+}
+
+.calc-out__v {
+  font-size: 13px;
+  color: #1d4ed8;
+  font-weight: 600;
+  line-height: 1.7;
+  word-break: break-all;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════ 顶栏 ══════════ -->
+<header class="appbar">
+  <h1 class="appbar__t" id="appbarTitle">参数·参考值</h1>
+  <button class="appbar__r" id="resetBtn" title="重置">重置</button>
+</header>
+
+<!-- ══════════ 内容区 ══════════ -->
+<main class="main" id="main">
+
+  <div class="pubnote">
+    <b>关于本页</b><br>
+    本页为个人整理的成人经胸超声（TTE）参考值速查工具，含三部分：成人正常参考值（中国 2016 指南 37 项 /
+    ASE-EACVI 2015）、M 型 EF 计算、儿童 Z 值（PHN 数据库）。
+    <b>本页内容为自行整理，非任何学会或机构的官方产品</b>，仅供医学教育与速查使用；
+    参考值需结合患者体型、血流状态及测量方法，<b>不能单凭一个指标作出诊断</b>。
+  </div>
+
+  <!-- ───── Tab1 基本参数 ───── -->
+  <section class="page" id="page-index">
+    <div class="card">
+      <div class="card__t">受检者基本信息</div>
+      <div class="card__d">身高体重用于计算体表面积（BSA），性别决定参考值区间</div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">身高 / cm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="inHeight" value="170" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field__l">体重 / kg</label>
+          <input class="field__i" type="number" inputmode="decimal" id="inWeight" value="65" step="0.1">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__l">性别</label>
+        <div class="seg" data-seg="sex">
+          <div class="seg__i seg__i--on" data-v="male">男</div>
+          <div class="seg__i" data-v="female">女</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="outBsa">—</span>
+            <span class="stat__u">m²</span>
+          </div>
+          <span class="stat__l" id="outBsaLbl">体表面积</span>
+        </div>
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="outBmi">—</span>
+            <span class="stat__u">kg/m²</span>
+          </div>
+          <span class="stat__l">BMI <span class="bmi-tag" id="outBmiTag"></span></span>
+        </div>
+      </div>
+      <div class="hint" id="bsaHint"></div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">体表面积公式</div>
+      <div class="field">
+        <label class="field__l">成人 / 通用公式</label>
+        <div class="seg" data-seg="formula">
+          <div class="seg__i seg__i--on" data-v="dubois">Du Bois</div>
+          <div class="seg__i" data-v="mosteller">Mosteller</div>
+        </div>
+      </div>
+      <div class="note">
+        Du Bois：BSA = 0.007184 × 身高<sup>0.725</sup> × 体重<sup>0.425</sup>（临床试验通用）<br>
+        Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）<br>
+        儿童页另有 <b>Haycock</b> 公式（儿科首选，PHN 研究采用）
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">参考值标准</div>
+      <div class="seg" data-seg="standard">
+        <div class="seg__i seg__i--on" data-v="CN">中国成人标准</div>
+        <div class="seg__i" data-v="ASE">ASE 国际标准</div>
+      </div>
+      <div class="note" id="stdNote">《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围</div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">下一步</div>
+      <div class="card__d">参数已保存。可到「EF 计算」由内径推算收缩功能，或到「儿童 Z 值」按体表面积标准化对照。</div>
+      <button class="btn" id="jumpRef">↓ 查看下方参考值</button>
+      <button class="btn btn--ghost" data-go="ef" style="margin-top:10px">去计算 EF</button>
+    </div>
+
+    <!-- ══════ 参考值列表（合并自原「参考值」页） ══════ -->
+    <div id="refBlock">
+      <div class="note note--warn" id="aseUnitNote" hidden>
+        ASE 指南原文以 <b>cm</b> 表示内径。本表已统一换算为 <b>mm</b> 显示，可直接与你的测量值对照。
+      </div>
+      <div class="card">
+        <div class="card__t" id="refTitle">正常参考范围</div>
+        <div class="card__d" id="refDesc"></div>
+        <div id="refList"></div>
+      </div>
+      <div class="note" id="refSource"></div>
+    </div>
+  </section>
+
+  <!-- ───── Tab3 EF 计算 ───── -->
+  <section class="page" id="page-ef" hidden>
+    <div class="card">
+      <div class="card__t">左室内径测量（M 型）</div>
+      <div class="card__d">输入内径与室壁厚度，自动推算容积、收缩功能与左室质量</div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">LVIDd 舒张末内径 / mm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="efLvedd" placeholder="如 50" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field__l">LVIDs 收缩末内径 / mm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="efLvesd" placeholder="如 32" step="0.1">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">IVSd 室间隔厚度 / mm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="efIvsd" placeholder="如 9" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field__l">LVPWd 后壁厚度 / mm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="efLvpwd" placeholder="如 9" step="0.1">
+        </div>
+      </div>
+      <div class="hint" id="efHint"></div>
+    </div>
+
+    <div class="card" id="efResult" hidden>
+      <div class="card__t">计算结果</div>
+      <div class="kv" id="efKv"></div>
+      <div class="efbar-wrap">
+        <div class="efbar"><div class="efbar__m" id="efMark"></div></div>
+        <div class="efbar-lg">
+          <span>0%</span><span>30%</span><span>45%</span><span>55%</span><span>100%</span>
+        </div>
+      </div>
+      <div class="note" id="efGrade"></div>
+      <div class="note" id="efFormula"></div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">公式说明</div>
+      <div class="note">
+        <b>Teichholz 法</b>（M 型单平面）<br>
+        V = 7 × D³ ÷ (2.4 + D)　　D 单位 cm，V 单位 mL<br>
+        EF = (EDV − ESV) ÷ EDV × 100%<br>
+        FS = (LVIDd − LVIDs) ÷ LVIDd × 100%
+      </div>
+      <div class="note">
+        <b>左室质量 Devereux 公式</b><br>
+        LVM(g) = 0.8 × 1.04 × [(LVIDd + IVSd + LVPWd)³ − LVIDd³] + 0.6<br>
+        RWT = 2 × LVPWd ÷ LVEDD
+      </div>
+      <div class="note note--warn">
+        Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
+      </div>
+    </div>
+  </section>
+
+
+
+
+  <!-- ───── Tab5 儿童 Z 值 ───── -->
+  <section class="page" id="page-peds" hidden>
+    <div class="card">
+      <div class="card__t">受检者信息</div>
+      <div class="card__d">儿童心脏尺寸随生长变化，Z 值按体表面积（BSA）标准化，与年龄、性别无临床显著关系</div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">身高 / cm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="pdHeight" placeholder="如 110" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field__l">体重 / kg</label>
+          <input class="field__i" type="number" inputmode="decimal" id="pdWeight" placeholder="如 19" step="0.1">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">年龄 / 岁（选填）</label>
+          <input class="field__i" type="number" inputmode="decimal" id="pdAge" placeholder="如 5" step="1">
+        </div>
+        <div class="field">
+          <label class="field__l">性别（选填）</label>
+          <div class="seg" data-seg="pdsex">
+            <div class="seg__i seg__i--on" data-v="male">男</div>
+            <div class="seg__i" data-v="female">女</div>
+          </div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="pdBsa">—</span>
+            <span class="stat__u">m²</span>
+          </div>
+          <span class="stat__l">体表面积（Haycock）</span>
+        </div>
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="pdBmi">—</span>
+            <span class="stat__u">kg/m²</span>
+          </div>
+          <span class="stat__l">BMI（儿童请对照百分位）</span>
+        </div>
+      </div>
+      <div class="hint" id="pdWarn"></div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">测量值输入</div>
+      <div class="card__d">内径 mm · 容积 mL · 质量 g · 面积 cm² · 留空跳过</div>
+      <div id="pdInputs"></div>
+      <button class="btn btn--ghost" id="pdMore">展开其他参数（共 33 项）</button>
+      <button class="btn" id="pdClear">清空全部测量值</button>
+    </div>
+
+    <div class="card" id="pdFuncCard" hidden>
+      <div class="card__t">收缩功能（自动推算）</div>
+      <div class="card__d" id="pdFuncDesc"></div>
+      <div class="funcef">
+        <span class="funcef__v" id="pdFuncEf">—</span>
+        <span class="funcef__side">
+          <span>左室射血分数 EF</span>
+          <span class="tag" id="pdFuncEfTag"></span>
+        </span>
+      </div>
+      <div class="kv" id="pdFuncKv"></div>
+      <div class="note" id="pdFuncNote"></div>
+    </div>
+
+    <div class="card" id="pdSumCard" hidden>
+      <div class="card__t">结果摘要</div>
+      <div class="zbig" id="pdSumBig">
+        <span class="zbig__v" id="pdSumV">0</span>
+        <span class="zbig__l" id="pdSumLbl"></span>
+      </div>
+      <div class="note" id="pdWorst"></div>
+      <div class="key">
+        <div class="key__i key__i--n">|Z| ≤ 2<br>正常</div>
+        <div class="key__i key__i--m">2 &lt; |Z| ≤ 3<br>轻度异常</div>
+        <div class="key__i key__i--s">|Z| &gt; 3<br>显著异常</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">Z 值对照</div>
+      <div class="card__d" id="pdDesc"></div>
+      <div id="pdList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">完整数值区间（±2SD / ±3SD）</div>
+      <div class="card__d">±2SD 为异常判定线，±3SD 为显著异常判定线</div>
+      <div id="pdRanges"></div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">计算原理</div>
+      <div class="note">
+        <b>① 体表面积（Haycock）</b><br>
+        BSA(m²) = 0.024265 × 身高(cm)<sup>0.3964</sup> × 体重(kg)<sup>0.5378</sup>
+      </div>
+      <div class="note">
+        <b>② Z 值</b><br>
+        Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
+        α / Mean / SD 为每项参数各自的回归系数
+      </div>
+      <div class="note">
+        <b>③ 为什么儿童不看固定区间</b><br>
+        新生儿 LVEDD 2 cm 属正常，成人 2 cm 属严重缩小。Z 值把测值按体型标准化，
+        Z = 0 即人群均值，|Z| ≤ 2 覆盖约 95% 健康儿童。
+      </div>
+      <div class="note note--warn">
+        <b>数据来源</b>　Pediatric Heart Network Normal Echocardiogram Database，
+        n = 3566，0–18 岁健康非肥胖儿童，19 个中心。<br>
+        Lopez L, Colan S, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.<br>
+        LVESD / LVESV 系数来自 PHN 后续补充发表（PMC7870534）。
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════ 底部页签 ══════════ -->
+<nav class="tabbar" id="tabbar">
+  <div class="tab tab--on" data-tab="index">
+    <span class="tab__i">◧</span><span class="tab__t">参数·参考值</span>
+  </div>
+  <div class="tab" data-tab="ef">
+    <span class="tab__i">◉</span><span class="tab__t">EF 计算</span>
+  </div>
+  <div class="tab" data-tab="peds">
+    <span class="tab__i">◎</span><span class="tab__t">儿童 Z 值</span>
+  </div>
+</nav>
+
+<script>
+/* ── 引擎：echo-core.js（由小程序源码自动抽取，勿手改）── */
+(function () {
+/**
+ * 心脏超声计算引擎 —— 小程序版
+ *
+ * 数据来源：
+ *  [CN]  中国成人超声心动图正常参考值（95% 参考范围），中华医学会超声医学分会，n=678
+ *  [ASE] ASE/EACVI 2015 Recommendations for Cardiac Chamber Quantification in Adults
+ *
+ * 免责声明：本模块仅用于数值参考，不构成任何医疗诊断依据。
+ */
+
+/* ------------------------------------------------------------------ *
+ * 1. 体表面积 BSA
+ * ------------------------------------------------------------------ */
+
+/** Du Bois 公式（推荐，临床试验通用） */
+function bsaDuBois(heightCm, weightKg) {
+  return 0.007184 * Math.pow(heightCm, 0.725) * Math.pow(weightKg, 0.425);
+}
+
+/** Mosteller 公式（简化，便于口算） */
+function bsaMosteller(heightCm, weightKg) {
+  return Math.sqrt((heightCm * weightKg) / 3600);
+}
+
+/**
+ * 体重指数 BMI = 体重(kg) / 身高(m)²
+ * @returns {number} kg/m²
+ */
+function bmi(heightCm, weightKg) {
+  const m = heightCm / 100;
+  return weightKg / (m * m);
+}
+
+/**
+ * BMI 判级 —— 中国成人标准（WS/T 428-2013）
+ *   偏瘦 < 18.5 ≤ 正常 < 24 ≤ 超重 < 28 ≤ 肥胖
+ * 注意：该标准仅适用于成人，儿童请用百分位曲线。
+ */
+function bmiClass(v) {
+  if (v < 18.5) return { level: 'low',   text: '偏瘦' };
+  if (v < 24)   return { level: 'normal', text: '正常' };
+  if (v < 28)   return { level: 'over',  text: '超重' };
+  return { level: 'obese', text: '肥胖' };
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. 参考值数据表
+ *   区间为 [下限, 上限]
+ *   长度 mm / 容积 mL / 分数 % / 质量 g
+ * ------------------------------------------------------------------ */
+
+const REFERENCE = {
+  CN: {
+    key: 'CN',
+    label: '中国成人（中华医学会，n=678）',
+    note: '《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围',
+    male: {
+      'LA-ap':    [23.3,  38.9],
+      'LA-l':     [35.0,  58.6],
+      'LVOT':     [13.5,  25.1],
+      'IVSd':     [ 6.3,  11.5],
+      'LVPWd':    [ 6.3,  11.1],
+      'LVEDD':    [38.2,  54.2],
+      'LVESD':    [22.4,  38.8],
+      'LVEDV':    [45.1, 128.3],
+      'LVESV':    [16.1,  54.9],
+      'LVEF':     [52.4,  76.4],
+      'LVM':      [76.4, 195.2],
+      'LVM/BSA':  [44.3, 108.5],
+      'LVM/H2.7': [17.1,  46.6],
+      'LVEDD/H':  [2.22,  3.18],
+      'LVRWT':    [0.25,  0.51],
+      'RA-l':     [35.0,  53.8],
+      'RA-t':     [26.2,  44.6],
+      'RV-ap':    [15.5,  31.3],
+      'RV-l':     [36.7,  75.5],
+      'RVOT':     [14.8,  32.0],
+      // ★ 以下 17 项来自《2016 年中国成年人超声心动图检查测量指南》表 2-1
+      //   （人民卫生出版社《医学超声影像学》表 2-1 转载，单位 mm）
+      'LA-t':     [26.7,  44.7],
+      'IVSs':     [ 9.0,  16.0],
+      'IVSLd':    [ 6.3,  11.1],
+      'IVSLs':    [ 8.8,  16.2],
+      'RVAW':     [ 2.1,   6.1],
+      'RVFW':     [ 2.2,   6.6],
+      'RV-tb':    [22.2,  42.2],
+      'RV-tm':    [16.5,  36.9],
+      'ANN':      [16.4,  26.2],
+      'ROOT':     [23.8,  36.4],
+      'AAO':      [20.4,  35.0],
+      'ARCH':     [17.1,  31.7],
+      'DAO':      [12.8,  27.0],
+      'PVANN':    [13.8,  26.4],
+      'MPA':      [15.2,  26.2],
+      'RPA':      [ 7.6,  17.4],
+      'LPA':      [ 8.0,  17.4],
+    },
+    female: {
+      'LA-ap':    [22.7,  37.2],
+      'LA-l':     [33.7,  56.9],
+      'LVOT':     [13.3,  25.5],
+      'IVSd':     [ 6.2,  11.0],
+      'LVPWd':    [ 6.0,  10.7],
+      'LVEDD':    [39.0,  54.1],
+      'LVESD':    [23.9,  38.9],
+      'LVEDV':    [49.3, 134.1],
+      'LVESV':    [20.0,  61.9],
+      'LVEF':     [51.5,  74.6],
+      'LVM':      [78.9, 182.2],
+      'LVM/BSA':  [44.5,  99.8],
+      'LVM/H2.7': [17.5,  41.8],
+      'LVEDD/H':  [2.25,  3.13],
+      'LVRWT':    [0.24,  0.48],
+      'RA-l':     [34.2,  51.8],
+      'RA-t':     [26.5,  45.1],
+      'RV-ap':    [13.3,  28.9],
+      'RV-l':     [37.6,  78.8],
+      'RVOT':     [14.9,  31.1],
+      // ★ 与男性同源：《2016 年中国成年人超声心动图检查测量指南》表 2-1
+      'LA-t':     [26.2,  43.0],
+      'IVSs':     [ 8.0,  15.0],
+      'IVSLd':    [ 5.5,  10.3],
+      'IVSLs':    [ 8.2,  15.2],
+      'RVAW':     [ 2.2,   5.8],
+      'RVFW':     [ 2.2,   6.2],
+      'RV-tb':    [19.6,  39.2],
+      'RV-tm':    [14.8,  33.6],
+      'ANN':      [15.1,  24.1],
+      'ROOT':     [21.3,  33.5],
+      'AAO':      [19.0,  32.8],
+      'ARCH':     [16.4,  29.8],
+      'DAO':      [12.4,  25.0],
+      'PVANN':    [13.1,  25.3],
+      'MPA':      [14.3,  26.1],
+      'RPA':      [ 7.0,  16.8],
+      'LPA':      [ 7.5,  16.9],
+    },
+  },
+
+  ASE: {
+    key: 'ASE',
+    label: 'ASE/EACVI 2015 国际标准',
+    note: 'Reference limits for cardiac chamber quantification in adults',
+    /**
+     * ASE 采用分区值（正常 / 轻度 / 中度 / 重度异常）
+     *
+     * ⚠️ 单位注意：ASE 原始指南中内径类参数以 **cm** 表示，容积以 **mL**，
+     *    质量以 **g**。本表通过 PARAM_UNIT_ASE 显式声明每个参数的单位，
+     *    再由 buildReferenceList 统一换算到界面使用的 mm/mL/g，避免单位错配。
+     *
+     * 方向说明：EF 为"越大越好"，LVESV/LVEDD 为"越小越好"，
+     *          分区顺序在数据中天然表达，判定时逐档匹配即可。
+     */
+    male: {
+      // ---- LV 内径与容积（Table 5）----
+      LVEDD:       { normal: [4.2, 5.9],  mild: [6.0, 6.3],  moderate: [6.4, 6.8],  severe: [6.9, 99] },
+      'LVEDD/BSA': { normal: [2.2, 3.1],  mild: [3.2, 3.4],  moderate: [3.5, 3.6],  severe: [3.7, 99] },
+      'LVEDD/H':   { normal: [2.4, 3.3],  mild: [3.4, 3.5],  moderate: [3.6, 3.7],  severe: [3.8, 99] },
+      LVEDV:       { normal: [67, 155],   mild: [156, 178],  moderate: [179, 201],  severe: [202, 9999] },
+      'LVEDV/BSA': { normal: [35, 75],    mild: [76, 86],    moderate: [87, 96],    severe: [97, 9999] },
+      LVESV:       { normal: [22, 58],    mild: [59, 70],    moderate: [71, 82],    severe: [83, 9999] },
+      'LVESV/BSA': { normal: [12, 30],    mild: [31, 36],    moderate: [37, 42],    severe: [43, 9999] },
+      // ---- LV 室壁厚度与质量（Table 4）----
+      IVSd:        { normal: [0.6, 1.0],  mild: [1.1, 1.3],  moderate: [1.4, 1.6],  severe: [1.7, 99] },
+      LVPWd:       { normal: [0.6, 1.0],  mild: [1.1, 1.3],  moderate: [1.4, 1.6],  severe: [1.7, 99] },
+      LVM:         { normal: [88, 224],   mild: [225, 258],  moderate: [259, 292],  severe: [293, 9999] },
+      'LVM/BSA':   { normal: [49, 115],   mild: [116, 131],  moderate: [132, 148],  severe: [149, 9999] },
+      // ---- LV 收缩功能（Table 6）----
+      EF:          { normal: [55, 100],   mild: [45, 54],    moderate: [30, 44],    severe: [0, 29] },
+      FS:          { normal: [25, 43],    mild: [20, 24],    moderate: [15, 19],    severe: [0, 14] },
+      // ---- 左房（Table 2）----
+      'LA-ap':     { normal: [3.0, 4.0],  mild: [4.1, 4.6],  moderate: [4.7, 5.2],  severe: [5.3, 99] },
+      LAV:         { normal: [34, 76],    mild: [77, 92],    moderate: [93, 108],   severe: [109, 9999] },
+      'LAV/BSA':   { normal: [16, 34],    mild: [35, 41],    moderate: [42, 48],    severe: [49, 9999] },
+      // ---- 右心（Table 3）----
+      'RV-ap':     { normal: [2.0, 3.5],  mild: [3.6, 4.0],  moderate: [4.1, 4.5],  severe: [4.6, 99] },
+      'RVOT-plax': { normal: [2.0, 3.0],  mild: [3.1, 3.5],  moderate: [3.6, 4.0],  severe: [4.1, 99] },
+      'RA-l':      { normal: [3.4, 5.3],  mild: [5.4, 6.0],  moderate: [6.1, 6.6],  severe: [6.7, 99] },
+      'RA-t':      { normal: [2.6, 4.4],  mild: [4.5, 4.9],  moderate: [5.0, 5.4],  severe: [5.5, 99] },
+      TAPSE:       { normal: [1.7, 3.0],  mild: [1.4, 1.6],  moderate: [1.0, 1.3],  severe: [0, 0.9] },
+      // ---- 下腔静脉 ----
+      'IVC-d':     { normal: [1.5, 2.1],  mild: [2.2, 2.4],  moderate: [2.5, 2.7],  severe: [2.8, 99] },
+    },
+    female: {
+      LVEDD:       { normal: [3.9, 5.3],  mild: [5.4, 5.7],  moderate: [5.8, 6.1],  severe: [6.2, 99] },
+      'LVEDD/BSA': { normal: [2.4, 3.2],  mild: [3.3, 3.4],  moderate: [3.5, 3.7],  severe: [3.8, 99] },
+      'LVEDD/H':   { normal: [2.5, 3.2],  mild: [3.3, 3.4],  moderate: [3.5, 3.6],  severe: [3.7, 99] },
+      LVEDV:       { normal: [56, 104],   mild: [105, 117],  moderate: [118, 130],  severe: [131, 9999] },
+      'LVEDV/BSA': { normal: [35, 75],    mild: [76, 86],    moderate: [87, 96],    severe: [97, 9999] },
+      LVESV:       { normal: [19, 49],    mild: [50, 59],    moderate: [60, 69],    severe: [70, 9999] },
+      'LVESV/BSA': { normal: [12, 30],    mild: [31, 36],    moderate: [37, 42],    severe: [43, 9999] },
+      IVSd:        { normal: [0.6, 0.9],  mild: [1.0, 1.2],  moderate: [1.3, 1.5],  severe: [1.6, 99] },
+      LVPWd:       { normal: [0.6, 0.9],  mild: [1.0, 1.2],  moderate: [1.3, 1.5],  severe: [1.6, 99] },
+      LVM:         { normal: [67, 162],   mild: [163, 186],  moderate: [187, 210],  severe: [211, 9999] },
+      'LVM/BSA':   { normal: [43, 95],    mild: [96, 108],   moderate: [109, 121],  severe: [122, 9999] },
+      EF:          { normal: [55, 100],   mild: [45, 54],    moderate: [30, 44],    severe: [0, 29] },
+      FS:          { normal: [27, 45],    mild: [22, 26],    moderate: [17, 21],    severe: [0, 16] },
+      'LA-ap':     { normal: [2.7, 3.8],  mild: [3.9, 4.2],  moderate: [4.3, 4.6],  severe: [4.7, 99] },
+      LAV:         { normal: [22, 52],    mild: [53, 62],    moderate: [63, 72],    severe: [73, 9999] },
+      'LAV/BSA':   { normal: [16, 34],    mild: [35, 41],    moderate: [42, 48],    severe: [49, 9999] },
+      'RV-ap':     { normal: [2.0, 3.5],  mild: [3.6, 4.0],  moderate: [4.1, 4.5],  severe: [4.6, 99] },
+      'RVOT-plax': { normal: [2.0, 3.0],  mild: [3.1, 3.5],  moderate: [3.6, 4.0],  severe: [4.1, 99] },
+      'RA-l':      { normal: [3.4, 5.3],  mild: [5.4, 6.0],  moderate: [6.1, 6.6],  severe: [6.7, 99] },
+      'RA-t':      { normal: [2.6, 4.4],  mild: [4.5, 4.9],  moderate: [5.0, 5.4],  severe: [5.5, 99] },
+      TAPSE:       { normal: [1.7, 3.0],  mild: [1.4, 1.6],  moderate: [1.0, 1.3],  severe: [0, 0.9] },
+      'IVC-d':     { normal: [1.5, 2.1],  mild: [2.2, 2.4],  moderate: [2.5, 2.7],  severe: [2.8, 99] },
+    },
+  },
+};
+
+/**
+ * ASE 表内各参数的原生单位（来自指南原文）
+ * 计算时会用 convertToDisplayUnit 换算到界面单位
+ */
+const PARAM_UNIT_ASE = {
+  LVEDD: 'cm', 'LVEDD/BSA': 'cm/m²', 'LVEDD/H': 'cm/m',
+  LVEDV: 'mL', 'LVEDV/BSA': 'mL/m²',
+  LVESV: 'mL', 'LVESV/BSA': 'mL/m²',
+  IVSd: 'cm', LVPWd: 'cm',
+  LVM: 'g', 'LVM/BSA': 'g/m²',
+  EF: '%', FS: '%',
+  'LA-ap': 'cm', LAV: 'mL', 'LAV/BSA': 'mL/m²',
+  'RV-ap': 'cm', 'RVOT-plax': 'cm',
+  'RA-l': 'cm', 'RA-t': 'cm',
+  TAPSE: 'cm', 'IVC-d': 'cm',
+};
+
+/** 参数元信息：中文名、界面显示单位、小数位 */
+const PARAM_META = {
+  'LA-ap':    { name: '左房前后径',             unit: 'mm',    dec: 1 },
+  'LA-l':     { name: '左房长径',               unit: 'mm',    dec: 1 },
+  'LVOT':     { name: '左室流出道内径',         unit: 'mm',    dec: 1 },
+  'IVSd':     { name: '室间隔舒张末期厚度',      unit: 'mm',    dec: 1 },
+  'LVPWd':    { name: '左室后壁舒张末期厚度',    unit: 'mm',    dec: 1 },
+  'LVEDD':    { name: '左室舒张末期内径',        unit: 'mm',    dec: 1 },
+  'LVESD':    { name: '左室收缩末期内径',        unit: 'mm',    dec: 1 },
+  'LVEDV':    { name: '左室舒张末期容积',        unit: 'mL',    dec: 1 },
+  'LVESV':    { name: '左室收缩末期容积',        unit: 'mL',    dec: 1 },
+  'LVEF':     { name: '左室射血分数',           unit: '%',     dec: 1 },
+  'EF':       { name: '左室射血分数',           unit: '%',     dec: 1 },
+  'FS':       { name: '左室缩短分数',           unit: '%',     dec: 1 },
+  'LVM':      { name: '左室质量',               unit: 'g',     dec: 1 },
+  'LVM/BSA':  { name: '左室质量指数(BSA)',       unit: 'g/m²',  dec: 1 },
+  'LVM/H2.7': { name: '左室质量指数(身高^2.7)',  unit: 'g/m²·⁷', dec: 1 },
+  'LVEDD/H':  { name: '左室舒张末内径/身高',     unit: 'cm/m',  dec: 2 },
+  'LVEDD/BSA':{ name: '左室舒张末内径/BSA',      unit: 'cm/m²', dec: 2 },
+  'LVEDV/BSA':{ name: '左室舒张末容积指数',      unit: 'mL/m²', dec: 1 },
+  'LVESV/BSA':{ name: '左室收缩末容积指数',      unit: 'mL/m²', dec: 1 },
+  'LVRWT':    { name: '左室相对室壁厚度',        unit: '',      dec: 2 },
+  'LAV':      { name: '左房容积',               unit: 'mL',    dec: 1 },
+  'LAV/BSA':  { name: '左房容积指数',           unit: 'mL/m²', dec: 1 },
+  'RA-l':     { name: '右房长径',               unit: 'mm',    dec: 1 },
+  'RA-t':     { name: '右房横径',               unit: 'mm',    dec: 1 },
+  'RV-ap':    { name: '右室前后径',             unit: 'mm',    dec: 1 },
+  'RV-l':     { name: '右室长径',               unit: 'mm',    dec: 1 },
+  'RVOT':     { name: '右室流出道内径',          unit: 'mm',    dec: 1 },
+  'RVOT-plax':{ name: '右室流出道(胸骨旁长轴)',   unit: 'mm',    dec: 1 },
+  'TAPSE':    { name: '三尖瓣环收缩期位移',      unit: 'mm',    dec: 1 },
+  'IVC-d':    { name: '下腔静脉内径',           unit: 'mm',    dec: 1 },
+  // ── 2016 中国指南新增参数 ──
+  'LA-t':     { name: '左房横径',               unit: 'mm',    dec: 1 },
+  'IVSs':     { name: '室间隔收缩末期厚度',      unit: 'mm',    dec: 1 },
+  'IVSLd':    { name: '左室下侧壁舒张末期厚度',   unit: 'mm',    dec: 1 },
+  'IVSLs':    { name: '左室下侧壁收缩末期厚度',   unit: 'mm',    dec: 1 },
+  'RVAW':     { name: '右室前壁厚度',           unit: 'mm',    dec: 1 },
+  'RVFW':     { name: '右室游离壁厚度',         unit: 'mm',    dec: 1 },
+  'RV-tb':    { name: '右室基底横径',           unit: 'mm',    dec: 1 },
+  'RV-tm':    { name: '右室中部横径',           unit: 'mm',    dec: 1 },
+  'ANN':      { name: '主动脉瓣环内径',         unit: 'mm',    dec: 1 },
+  'ROOT':     { name: '主动脉窦部内径',         unit: 'mm',    dec: 1 },
+  'AAO':      { name: '近端升主动脉内径',        unit: 'mm',    dec: 1 },
+  'ARCH':     { name: '主动脉弓内径',           unit: 'mm',    dec: 1 },
+  'DAO':      { name: '降主动脉内径',           unit: 'mm',    dec: 1 },
+  'PVANN':    { name: '肺动脉瓣环内径',         unit: 'mm',    dec: 1 },
+  'MPA':      { name: '主肺动脉内径',           unit: 'mm',    dec: 1 },
+  'RPA':      { name: '右肺动脉内径',           unit: 'mm',    dec: 1 },
+  'LPA':      { name: '左肺动脉内径',           unit: 'mm',    dec: 1 },
+};
+
+/** CN 标准下要展示的参数字段（按临床分组顺序，37 项） */
+const CN_FIELDS = [
+  // 左心房
+  'LA-ap', 'LA-t', 'LA-l',
+  // 左心室结构与功能
+  'LVOT', 'IVSd', 'IVSs', 'LVPWd',
+  'LVEDD', 'LVESD', 'LVEDV', 'LVESV', 'LVEF',
+  'IVSLd', 'IVSLs',
+  // 左室质量与指数
+  'LVM', 'LVM/BSA', 'LVM/H2.7', 'LVEDD/H', 'LVRWT',
+  // 右心
+  'RA-l', 'RA-t', 'RV-ap', 'RV-tb', 'RV-tm', 'RV-l', 'RVOT',
+  'RVAW', 'RVFW',
+  // 主动脉
+  'ANN', 'ROOT', 'AAO', 'ARCH', 'DAO',
+  // 肺动脉
+  'PVANN', 'MPA', 'RPA', 'LPA',
+];
+
+/** ASE 标准下要展示的参数字段（按临床分组顺序） */
+const ASE_FIELDS = [
+  // 左室结构
+  'LVEDD', 'LVEDD/BSA', 'LVEDD/H', 'IVSd', 'LVPWd',
+  // 左室容积与质量
+  'LVEDV', 'LVEDV/BSA', 'LVESV', 'LVESV/BSA', 'LVM', 'LVM/BSA',
+  // 左室收缩功能
+  'EF', 'FS',
+  // 左房
+  'LA-ap', 'LAV', 'LAV/BSA',
+  // 右心
+  'RV-ap', 'RVOT-plax', 'RA-l', 'RA-t', 'TAPSE',
+  // 下腔静脉
+  'IVC-d',
+];
+
+/* ------------------------------------------------------------------ *
+ * 3. Teichholz 法：由 M 型内径计算容积与 EF
+ * ------------------------------------------------------------------ */
+
+/**
+ * Teichholz 单平面公式：V = 7 * D³ / (2.4 + D)
+ * @param {number} dCm 内径，单位 cm
+ * @returns {number} 容积，单位 mL
+ */
+function teichholzVolume(dCm) {
+  return (7 * Math.pow(dCm, 3)) / (2.4 + dCm);
+}
+
+/**
+ * 由 LV 舒张末内径 / 收缩末内径计算全套收缩功能指标
+ * @param {number} lviddMm 左室舒张末期内径（mm）
+ * @param {number} lvidsMm 左室收缩末期内径（mm）
+ */
+function computeLVFunction(lviddMm, lvidsMm) {
+  const lvidd = lviddMm / 10; // mm -> cm
+  const lvids = lvidsMm / 10;
+
+  const edv = teichholzVolume(lvidd);
+  const esv = teichholzVolume(lvids);
+
+  const ef = edv > 0 ? ((edv - esv) / edv) * 100 : 0;
+  const fs = lvidd > 0 ? ((lvidd - lvids) / lvidd) * 100 : 0;
+  const sv = edv - esv;
+
+  return {
+    EDV: round(edv, 1),
+    ESV: round(esv, 1),
+    SV:  round(sv, 1),
+    EF:  round(ef, 1),
+    FS:  round(fs, 1),
+  };
+}
+
+/**
+ * 由内径 + 室壁厚度估算左室质量（Devereux 公式，ASE 推荐）
+ * LVM(g) = 0.8 × 1.04 × [(LVEDD+IVSd+LVPWd)³ − LVEDD³] + 0.6
+ */
+function computeLVM(lveddMm, ivsdMm, lvpwdMm, bsa) {
+  const d  = lveddMm / 10;
+  const iv = ivsdMm  / 10;
+  const pw = lvpwdMm / 10;
+
+  const lvmRaw = 0.8 * 1.04 * (Math.pow(d + iv + pw, 3) - Math.pow(d, 3)) + 0.6;
+  // 先舍入到显示精度，再计算指数，保证「用户拿界面数字手算 = 程序输出」
+  const lvm = round(lvmRaw, 1);
+
+  return {
+    LVM: lvm,
+    'LVM/BSA': bsa ? round(lvm / bsa, 1) : null,
+  };
+}
+
+/**
+ * 左室相对室壁厚度 RWT = (2 × LVPWd) / LVEDD
+ */
+function computeRWT(lveddMm, lvpwdMm) {
+  if (!lveddMm) return null;
+  return round((2 * lvpwdMm) / lveddMm, 2);
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. 结果判定
+ * ------------------------------------------------------------------ */
+
+/** 依据 [下限, 上限] 判定单值 → 'low' | 'normal' | 'high' */
+function judgeRange(value, range) {
+  if (value < range[0]) return 'low';
+  if (value > range[1]) return 'high';
+  return 'normal';
+}
+
+function inRange(v, range) {
+  return v >= range[0] && v <= range[1];
+}
+
+/** 依据 ASE 分区值判定等级 → 'normal' | 'mild' | 'moderate' | 'severe' */
+function judgePartition(value, p) {
+  if (inRange(value, p.normal))   return 'normal';
+  if (inRange(value, p.mild))     return 'mild';
+  if (inRange(value, p.moderate)) return 'moderate';
+  return 'severe';
+}
+
+/** EF 分级（ASE 2015 通用阈值，不区分性别） */
+function gradeEF(ef) {
+  if (ef >= 55) return { level: 'normal',   text: '正常' };
+  if (ef >= 45) return { level: 'mild',     text: '轻度减低' };
+  if (ef >= 30) return { level: 'moderate', text: '中度减低' };
+  return { level: 'severe', text: '重度减低' };
+}
+
+/** 状态 → 中文标签与样式类 */
+const STATUS_TEXT = {
+  normal:   { text: '正常',   cls: 'tag--normal' },
+  high:     { text: '↑ 偏高', cls: 'tag--high' },
+  low:      { text: '↓ 偏低', cls: 'tag--low' },
+  mild:     { text: '轻度异常', cls: 'tag--mild' },
+  moderate: { text: '中度异常', cls: 'tag--moderate' },
+  severe:   { text: '重度异常', cls: 'tag--severe' },
+  none:     { text: '—',      cls: 'tag--none' },
+};
+
+/* ------------------------------------------------------------------ *
+ * 5. 单位换算
+ * ------------------------------------------------------------------ */
+
+/**
+ * BSA 索引参数定义
+ *
+ * 这些参数是把绝对测量值除以 BSA 得到的「指数」，其参考值本身与 BSA 无关。
+ * 但临床上用户更关心：「以我的体型，内径多大算正常？」
+ * 因此按 指数 × BSA 反算出绝对范围一并显示。
+ *
+ * 字段说明：
+ *   base    指数对应的绝对参数键
+ *   unitIn  指数单位中「分子」的单位（cm / mL / g）
+ *   toMm    反算结果是否要换算成 mm 显示（长度类为 true）
+ */
+const BSA_INDEX_MAP = {
+  'LVEDD/BSA': { base: 'LVEDD', unitIn: 'cm', toMm: true },
+  'LVEDV/BSA': { base: 'LVEDV', unitIn: 'mL', toMm: false },
+  'LVESV/BSA': { base: 'LVESV', unitIn: 'mL', toMm: false },
+  'LVM/BSA':   { base: 'LVM',   unitIn: 'g',  toMm: false },
+  'LAV/BSA':   { base: 'LAV',   unitIn: 'mL', toMm: false },
+};
+
+/** 判断某参数是否为 BSA 索引参数 */
+function isBsaIndex(key) {
+  return Object.prototype.hasOwnProperty.call(BSA_INDEX_MAP, key);
+}
+
+/**
+ * 由指数范围反算绝对范围
+ * @param {Array} range  指数区间 [lo, hi]
+ * @param {string} key   参数键（如 'LVEDD/BSA'）
+ * @param {number} bsa   体表面积 m²
+ * @returns {object|null} { text, unit } 或 null（不适用）
+ */
+function deriveAbsoluteRange(range, key, bsa) {
+  const def = BSA_INDEX_MAP[key];
+  if (!def || !bsa || bsa <= 0) return null;
+
+  // 指数 × BSA = 绝对值（cm / mL / g）
+  let lo = range[0] * bsa;
+  let hi = range[1] * bsa;
+
+  // 长度类换算成 mm 显示，与界面输入单位一致
+  if (def.toMm) {
+    lo *= 10;
+    hi *= 10;
+  }
+
+  const dec = def.toMm ? 0 : 1;
+  const meta = PARAM_META[def.base] || { unit: '' };
+
+  return {
+    text: fmt(lo, dec) + '–' + fmt(hi, dec),
+    unit: meta.unit,
+    base: def.base,
+  };
+}
+
+
+/**
+ * 单位换算因子：把「ASE 指南原生单位」换算到「界面单位」
+ * 界面上长度统一用 mm、容积用 mL、质量用 g。
+ *
+ * 例：ASE 的 LVEDD 是 cm（正常 4.2–5.9），需 ×10 变成 42–59 mm
+ *     这样才和界面上用户输入的 50 mm 可比。
+ */
+const UNIT_SCALE = {
+  'cm->mm': 10,
+  'mm->cm': 0.1,
+  'mL->mL': 1,
+  'g->g': 1,
+  '%->%': 1,
+  'cm/m->cm/m': 1,       // 比值类不换算
+  'cm/m²->cm/m²': 1,
+  'mL/m²->mL/m²': 1,
+  'g/m²->g/m²': 1,
+  'g/m²·⁷->g/m²·⁷': 1,
+};
+
+/** 换算单个数值 */
+function convertUnit(value, fromUnit, toUnit) {
+  if (value === null || value === undefined || value === '') return value;
+  const key = fromUnit + '->' + toUnit;
+  const scale = UNIT_SCALE[key];
+  if (scale === undefined) {
+    // 未登记的换算组合，原样返回（比值类单位走的都是这里）
+    if (fromUnit === toUnit) return value;
+    return value;
+  }
+  return value * scale;
+}
+
+/** 换算一个区间 [lo, hi] */
+function convertRange(range, fromUnit, toUnit) {
+  return [convertUnit(range[0], fromUnit, toUnit), convertUnit(range[1], fromUnit, toUnit)];
+}
+
+/** 换算分区值对象 */
+function convertPartition(p, fromUnit, toUnit) {
+  return {
+    normal:   convertRange(p.normal, fromUnit, toUnit),
+    mild:     convertRange(p.mild, fromUnit, toUnit),
+    moderate: convertRange(p.moderate, fromUnit, toUnit),
+    severe:   convertRange(p.severe, fromUnit, toUnit),
+  };
+}
+
+/** 取某参数在指定标准下的原生单位 */
+function nativeUnit(key, standard) {
+  if (standard === 'ASE') return PARAM_UNIT_ASE[key] || null;
+  return null; // CN 表本身就是界面单位（mm / mL / g / %）
+}
+
+/* ------------------------------------------------------------------ *
+ * 6. 对外主接口
+ * ------------------------------------------------------------------ */
+
+/**
+ * 构建参考值对照列表
+ * @param {string} sex      'male' | 'female'
+ * @param {object} measured 实测值字典，如 { LVEDD: 52, LVEF: 62 }
+ * @param {string} standard 'CN' | 'ASE'
+ * @returns {Array} 可直接渲染的列表项
+ */
+function buildReferenceList(sex, measured, standard, bsa) {
+  const std = REFERENCE[standard] || REFERENCE.CN;
+  const table = std[sex] || std.male;
+  const fields = standard === 'ASE' ? ASE_FIELDS : CN_FIELDS;
+  const rows = [];
+
+  for (let i = 0; i < fields.length; i++) {
+    const key = fields[i];
+    const ref = table[key];
+    if (!ref) continue;
+
+    const meta = PARAM_META[key] || { name: key, unit: '', dec: 1 };
+    const v = measured ? measured[key] : undefined;
+    const hasValue = v !== undefined && v !== null && v !== '' && !isNaN(v);
+
+    // ★ 关键修复：ASE 表的原生单位与界面单位可能不同，需换算后再比较
+    const fromUnit = nativeUnit(key, standard);
+    const toUnit = meta.unit;
+
+    let status = 'none';
+    let valText = '—';
+    let rangeText = '';
+    let normalRange = null; // 用于反算绝对值的「指数正常区间」
+
+    if (standard === 'ASE') {
+      // 分区值：换算到界面单位
+      const p = fromUnit ? convertPartition(ref, fromUnit, toUnit) : ref;
+      // 正常区间若是闭区间端点，换算后保持连续（如 5.9→59，下一档 6.0→60）
+      rangeText = fmt(p.normal[0], meta.dec) + '–' + fmt(p.normal[1], meta.dec);
+      normalRange = p.normal;
+      if (hasValue) {
+        status = judgePartition(v, p);
+        valText = fmt(v, meta.dec);
+      }
+    } else {
+      // CN 表：数值已是界面单位，直接用
+      rangeText = fmt(ref[0], meta.dec) + '–' + fmt(ref[1], meta.dec);
+      normalRange = ref;
+      if (hasValue) {
+        status = judgeRange(v, ref);
+        valText = fmt(v, meta.dec);
+      }
+    }
+
+    // ★ 新增：BSA 索引参数反算绝对范围
+    // 如 LVEDD/BSA 指数 2.2–3.1 cm/m²，BSA=1.75 → 折算内径 39–54 mm
+    let derived = null;
+    if (isBsaIndex(key) && normalRange && bsa > 0) {
+      derived = deriveAbsoluteRange(normalRange, key, bsa);
+    }
+
+    const st = STATUS_TEXT[status] || STATUS_TEXT.none;
+    rows.push({
+      key: key,
+      name: meta.name,
+      unit: meta.unit,
+      value: valText,
+      range: rangeText,
+      status: status,
+      statusText: st.text,
+      statusCls: st.cls,
+      hasValue: hasValue,
+      // 反算出的绝对范围（仅 BSA 索引参数有）
+      derivedText: derived ? derived.text : '',
+      derivedUnit: derived ? derived.unit : '',
+      hasDerived: !!derived,
+    });
+  }
+  return rows;
+}
+
+/** 由 EF 计算页的测量值组装用于参考值对照的字典 */
+function measurementsToRefDict(m) {
+  if (!m) return {};
+  const fn = computeLVFunction(m.lvedd, m.lvesd);
+  const lvm = computeLVM(m.lvedd, m.ivsd, m.lvpwd, m.bsa);
+  return {
+    LVEDD: m.lvedd,
+    LVESD: m.lvesd,
+    LVEDV: fn.EDV,
+    LVESV: fn.ESV,
+    LVEF: fn.EF,
+    EF: fn.EF,
+    FS: fn.FS,
+    LVM: lvm.LVM,
+    'LVM/BSA': lvm['LVM/BSA'],
+    IVSd: m.ivsd,
+    LVPWd: m.lvpwd,
+    LVRWT: computeRWT(m.lvedd, m.lvpwd),
+    'LVEDD/BSA': m.bsa ? round(m.lvedd / 10 / m.bsa, 2) : null,
+    'LVEDD/H': m.height ? round(m.lvedd / 10 / (m.height / 100), 2) : null,
+    'LVEDV/BSA': m.bsa ? round(fn.EDV / m.bsa, 1) : null,
+    'LVESV/BSA': m.bsa ? round(fn.ESV / m.bsa, 1) : null,
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * 工具
+ * ------------------------------------------------------------------ */
+
+function round(n, digits) {
+  const d = digits === undefined ? 2 : digits;
+  const f = Math.pow(10, d);
+  return Math.round(n * f) / f;
+}
+
+function fmt(n, dec) {
+  if (n === null || n === undefined || n === '') return '—';
+  return Number(n).toFixed(dec);
+}
+
+  window.Core = {
+    bsaDuBois: bsaDuBois,
+    bsaMosteller: bsaMosteller,
+    bmi: bmi,
+    bmiClass: bmiClass,
+    REFERENCE: REFERENCE,
+    PARAM_UNIT_ASE: PARAM_UNIT_ASE,
+    PARAM_META: PARAM_META,
+    CN_FIELDS: CN_FIELDS,
+    ASE_FIELDS: ASE_FIELDS,
+    teichholzVolume: teichholzVolume,
+    computeLVFunction: computeLVFunction,
+    computeLVM: computeLVM,
+    computeRWT: computeRWT,
+    judgeRange: judgeRange,
+    inRange: inRange,
+    judgePartition: judgePartition,
+    gradeEF: gradeEF,
+    STATUS_TEXT: STATUS_TEXT,
+    BSA_INDEX_MAP: BSA_INDEX_MAP,
+    isBsaIndex: isBsaIndex,
+    deriveAbsoluteRange: deriveAbsoluteRange,
+    UNIT_SCALE: UNIT_SCALE,
+    convertUnit: convertUnit,
+    convertRange: convertRange,
+    convertPartition: convertPartition,
+    nativeUnit: nativeUnit,
+    buildReferenceList: buildReferenceList,
+    measurementsToRefDict: measurementsToRefDict,
+    round: round,
+    fmt: fmt,
+  };
+})();
+
+/* ── 引擎：peds-zscore.js（由小程序源码自动抽取，勿手改）── */
+(function () {
+/**
+ * 儿童（0–18 岁）超声心动图 Z 值计算引擎
+ *
+ * ── 为什么儿童要单独一套？ ──────────────────────────────────────────
+ * 儿童心脏尺寸随生长剧烈变化，用「固定正常值区间」判断必然失真
+ * （新生儿 LVEDD 2 cm 是正常，成人 2 cm 是严重缩小）。
+ * 国际通行做法是把测值按体表面积 BSA 标准化后算 **Z 值**：
+ *
+ *      Z = ( 实测值 − Mean × BSA^α ) / ( SD × BSA^α )
+ *        = ( 实测值 / BSA^α − Mean ) / SD      ← 本模块采用此式
+ *
+ * 即：先把测值除以 BSA^α 得到「指数化测值」，再与「指数化均值」比较。
+ * Z = 0 对应人群均值，Z = ±1 / ±2 / ±3 对应 ±1 / ±2 / ±3 个标准差。
+ *
+ * 判定阈值（国际共识）：
+ *   |Z| ≤ 2        正常
+ *   2 < |Z| ≤ 3    轻度异常（轻度增大 / 轻度缩小）
+ *   |Z| > 3        显著异常
+ *
+ * ── 数据来源 ───────────────────────────────────────────────────────
+ *  Pediatric Heart Network（PHN）Normal Echocardiogram Database
+ *  Lopez L, Colan S, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979.
+ *  n = 3566，0–18 岁健康非肥胖儿童，19 个中心，Core Lab 统一测量。
+ *  系数表公开于 https://www.pediatricheartnetwork.org/forresearchers/echo-z-scores/
+ *
+ *  LVESD / LVESV 两项系数来自该数据库的后续补充发表：
+ *  Cantinotti M, et al. / PHN 方法论扩展（PMC7870534）
+ *  "Pediatric Heart Network Echocardiographic Z-Scores: Comparison to Other
+ *   Published Models"  Table 3：
+ *      LVESD (cm) α=0.5  Mean=2.675 SD=0.352
+ *      LVESV (mL) α=1.3  Mean=25.76 SD=5.551
+ *
+ *  该研究最重要的结论：**Z 值不受年龄、性别、种族影响**
+ *  （统计上显著，但差异 < 5%，低于测量者间变异，临床上可忽略）。
+ *  因此本模块 **不区分性别**，一套系数通吃全部儿童。
+ *
+ *  同源前身：Pettersen MD, et al. JASE 2008;21(8):922-934（波士顿儿童医院
+ *  Z 值评分系统即基于此），n=782，覆盖 21 个心脏结构。
+ *
+ * ── BSA 公式 ───────────────────────────────────────────────────────
+ *  儿科推荐 **Haycock** 公式（PHN 原始研究所用）：
+ *      BSA(m²) = 0.024265 × 身高(cm)^0.3964 × 体重(kg)^0.5378
+ *
+ * 免责声明：本模块仅用于数值参考，不构成任何医疗诊断依据。
+ */
+
+/* ------------------------------------------------------------------ *
+ * 1. 体表面积 BSA —— 儿科专用
+ * ------------------------------------------------------------------ */
+
+/**
+ * Haycock 公式（儿科首选，PHN 研究采用）
+ * @param {number} heightCm 身高 cm
+ * @param {number} weightKg 体重 kg
+ * @returns {number} BSA m²
+ */
+function bsaHaycock(heightCm, weightKg) {
+  return 0.024265 * Math.pow(heightCm, 0.3964) * Math.pow(weightKg, 0.5378);
+}
+
+/**
+ * 按年龄估算儿童 BSA（仅用于缺身高体重时的粗估，不推荐）
+ * 经验式：BSA ≈ 0.05 × 体重(kg) + 0.05（1–20 kg 区间近似）
+ * @param {number} weightKg
+ */
+function bsaApproxByWeight(weightKg) {
+  return 0.05 * weightKg + 0.05;
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. PHN 2023/Lopez 2017 回归系数表
+ *
+ * 每项为 [α, Mean, SD]：
+ *   α    BSA 的指数（把非线性生长关系线性化）
+ *   Mean 指数化均值，即 Mean(X / BSA^α)
+ *   SD   指数化标准差
+ *
+ * ⚠️ 单位：本表沿用 PHN 原文单位 —— 内径 **cm**、容积 **cm³(mL)**、
+ *    质量 **g**、面积 **cm²**、比例 **无量纲**。
+ *    界面用 mm 输入的参数需由调用方先 ÷10，或由 zScore 的 unitIn 处理。
+ * ------------------------------------------------------------------ */
+
+const PEDS_Z = {
+  // ── 左心室结构（M 型 / 二维短轴）────────────────────────────
+  LVEDD:  { a: 0.45, mean: 3.89,  sd: 0.33,  unit: 'cm', name: '左室舒张末期内径' },
+  LVESD:  { a: 0.50, mean: 2.675, sd: 0.352, unit: 'cm', name: '左室收缩末期内径' },
+  LVST:   { a: 0.40, mean: 0.58,  sd: 0.09,  unit: 'cm', name: '室间隔舒张末期厚度' },
+  LVPWT:  { a: 0.40, mean: 0.57,  sd: 0.09,  unit: 'cm', name: '左室后壁舒张末期厚度' },
+
+  // ── 左心室容积与质量 ────────────────────────────────────────
+  LVEDV:  { a: 1.30, mean: 62.02, sd: 11.94, unit: 'mL', name: '左室舒张末期容积' },
+  LVESV:  { a: 1.30, mean: 25.76, sd: 5.551, unit: 'mL', name: '左室收缩末期容积' },
+  LVM:    { a: 1.25, mean: 53.02, sd: 9.06,  unit: 'g',  name: '左室质量' },
+
+  // ── 左心室长轴长度 / 面积 ───────────────────────────────────
+  LVEDL:  { a: 0.45, mean: 6.31,  sd: 0.46,  unit: 'cm', name: '左室舒张末期长径' },
+  LVEDA:  { a: 0.90, mean: 11.91, sd: 1.89,  unit: 'cm²', name: '左室舒张末期面积(心内膜)' },
+
+  // ── 主动脉 ─────────────────────────────────────────────────
+  ANN:    { a: 0.50, mean: 1.48,  sd: 0.14,  unit: 'cm', name: '主动脉瓣环内径' },
+  ROOT:   { a: 0.50, mean: 2.06,  sd: 0.18,  unit: 'cm', name: '主动脉窦部内径' },
+  STJ:    { a: 0.50, mean: 1.69,  sd: 0.16,  unit: 'cm', name: '主动脉窦管交界内径' },
+  AAO:    { a: 0.50, mean: 1.79,  sd: 0.18,  unit: 'cm', name: '升主动脉内径' },
+  ARCHP:  { a: 0.50, mean: 1.53,  sd: 0.23,  unit: 'cm', name: '主动脉弓近端内径' },
+  ARCHD:  { a: 0.50, mean: 1.36,  sd: 0.19,  unit: 'cm', name: '主动脉弓远端内径' },
+  ISTH:   { a: 0.50, mean: 1.25,  sd: 0.18,  unit: 'cm', name: '主动脉峡部内径' },
+
+  // ── 冠状动脉 ───────────────────────────────────────────────
+  LMCA:   { a: 0.45, mean: 2.95,  sd: 0.57,  unit: 'mm', name: '左主干内径' },
+  LAD:    { a: 0.45, mean: 1.90,  sd: 0.34,  unit: 'mm', name: '左前降支近段内径' },
+  RCA:    { a: 0.45, mean: 2.32,  sd: 0.55,  unit: 'mm', name: '右冠状动脉近段内径' },
+
+  // ── 肺动脉 ─────────────────────────────────────────────────
+  PVSAX:  { a: 0.50, mean: 1.91,  sd: 0.24,  unit: 'cm', name: '肺动脉瓣环短轴内径' },
+  PVLAX:  { a: 0.50, mean: 2.01,  sd: 0.28,  unit: 'cm', name: '肺动脉瓣环长轴内径' },
+  MPA:    { a: 0.50, mean: 1.82,  sd: 0.24,  unit: 'cm', name: '主肺动脉内径' },
+  RPA:    { a: 0.50, mean: 1.07,  sd: 0.18,  unit: 'cm', name: '右肺动脉内径' },
+  LPA:    { a: 0.50, mean: 1.10,  sd: 0.18,  unit: 'cm', name: '左肺动脉内径' },
+
+  // ── 二尖瓣 ─────────────────────────────────────────────────
+  MVAP:   { a: 0.50, mean: 2.31,  sd: 0.24,  unit: 'cm',  name: '二尖瓣环前后径' },
+  MVLAT:  { a: 0.50, mean: 2.23,  sd: 0.22,  unit: 'cm',  name: '二尖瓣环侧径' },
+  MVA:    { a: 1.00, mean: 4.06,  sd: 0.68,  unit: 'cm²', name: '二尖瓣环面积' },
+
+  // ── 三尖瓣 ─────────────────────────────────────────────────
+  TVAP:   { a: 0.50, mean: 2.36,  sd: 0.28,  unit: 'cm',  name: '三尖瓣环前后径' },
+  TVLAT:  { a: 0.50, mean: 2.36,  sd: 0.29,  unit: 'cm',  name: '三尖瓣环侧径' },
+  TVA:    { a: 1.00, mean: 4.39,  sd: 0.83,  unit: 'cm²', name: '三尖瓣环面积' },
+
+  // ── 形态比例指标（α = 0，不随 BSA 变化）────────────────────
+  LVMTV:  { a: 0,    mean: 0.88,  sd: 0.16,  unit: '',    name: '左室质量/容积比' },
+  LVTTD:  { a: 0,    mean: 0.15,  sd: 0.03,  unit: '',    name: '左室壁厚/内径比' },
+  LVSI:   { a: 0,    mean: 1.63,  sd: 0.17,  unit: '',    name: '左室球形指数' },
+};
+
+/** 展示分组（保持临床阅读顺序） */
+const PEDS_GROUPS = [
+  { title: '左心室结构', keys: ['LVEDD', 'LVESD', 'LVST', 'LVPWT'] },
+  { title: '左心室容积与质量', keys: ['LVEDV', 'LVESV', 'LVM'] },
+  { title: '左心室长径与面积', keys: ['LVEDL', 'LVEDA'] },
+  { title: '主动脉', keys: ['ANN', 'ROOT', 'STJ', 'AAO', 'ARCHP', 'ARCHD', 'ISTH'] },
+  { title: '冠状动脉', keys: ['LMCA', 'LAD', 'RCA'] },
+  { title: '肺动脉', keys: ['PVSAX', 'PVLAX', 'MPA', 'RPA', 'LPA'] },
+  { title: '二尖瓣', keys: ['MVAP', 'MVLAT', 'MVA'] },
+  { title: '三尖瓣', keys: ['TVAP', 'TVLAT', 'TVA'] },
+  { title: '形态比例', keys: ['LVMTV', 'LVTTD', 'LVSI'] },
+];
+
+/** 所有参数键（按分组顺序打平） */
+const PEDS_FIELDS = PEDS_GROUPS.reduce(function (acc, g) {
+  return acc.concat(g.keys);
+}, []);
+
+/* ------------------------------------------------------------------ *
+ * 3. Z 值计算
+ * ------------------------------------------------------------------ */
+
+/**
+ * 计算指数化均值：Mean(BSA) = Mean × BSA^α
+ * @param {string} key   参数键
+ * @param {number} bsa   体表面积 m²
+ * @returns {number}
+ */
+function indexedMean(key, bsa) {
+  const def = PEDS_Z[key];
+  if (!def) return NaN;
+  return def.mean * Math.pow(bsa, def.a);
+}
+
+/**
+ * 计算指数化标准差：SD(BSA) = SD × BSA^α
+ */
+function indexedSD(key, bsa) {
+  const def = PEDS_Z[key];
+  if (!def) return NaN;
+  return def.sd * Math.pow(bsa, def.a);
+}
+
+/**
+ * 核心：Z = (X / BSA^α − Mean) / SD
+ *
+ * @param {number} value 实测值（单位须与 PEDS_Z[key].unit 一致）
+ * @param {string} key   参数键，如 'LVEDD'
+ * @param {number} bsa   体表面积 m²（Haycock）
+ * @returns {number|null} Z 值；参数缺失或输入非法时返回 null
+ */
+function zScore(value, key, bsa) {
+  const def = PEDS_Z[key];
+  if (!def) return null;
+  if (value === null || value === undefined || value === '' || isNaN(value)) return null;
+  if (!bsa || bsa <= 0) return null;
+
+  const idx = value / Math.pow(bsa, def.a);
+  const z = (idx - def.mean) / def.sd;
+  return z;
+}
+
+/**
+ * Z 值 → 判定等级
+ *   |Z| ≤ 2        正常
+ *   2 < |Z| ≤ 3    轻度异常
+ *   |Z| > 3        显著异常
+ */
+function gradeZ(z) {
+  if (z === null || z === undefined || isNaN(z)) {
+    return { level: 'none', text: '—', cls: 'tag--none' };
+  }
+  const abs = Math.abs(z);
+  if (abs <= 2) return { level: 'normal',   text: '正常',     cls: 'tag--normal' };
+  if (abs <= 3) {
+    return {
+      level: 'mild',
+      text: z > 0 ? '轻度增大' : '轻度缩小',
+      cls: z > 0 ? 'tag--mild-high' : 'tag--mild-low',
+    };
+  }
+  return {
+    level: 'severe',
+    text: z > 0 ? '显著增大' : '显著缩小',
+    cls: z > 0 ? 'tag--severe-high' : 'tag--severe-low',
+  };
+}
+
+/**
+ * 由 Z 阈值反算「实测值」区间（用于展示 Z = ±2 / ±3 对应的原始数值）
+ *
+ *   Z 边界 → X = (Mean + Z × SD) × BSA^α
+ *
+ * @param {string} key
+ * @param {number} bsa
+ * @param {number} zLevel 例如 2 或 3
+ * @returns {{lower:number, upper:number, mean:number}}
+ */
+function rangeFromZ(key, bsa, zLevel) {
+  const def = PEDS_Z[key];
+  if (!def || !bsa || bsa <= 0) return null;
+  const scale = Math.pow(bsa, def.a);
+  return {
+    mean:  def.mean * scale,
+    lower: (def.mean - zLevel * def.sd) * scale,
+    upper: (def.mean + zLevel * def.sd) * scale,
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * 4. 对外主接口
+ * ------------------------------------------------------------------ */
+
+/**
+ * 构建儿童 Z 值对照列表
+ *
+ * @param {number}  bsa      体表面积 m²（Haycock）
+ * @param {object}  measured 实测值字典，**单位与界面一致**：
+ *                           内径 mm、容积 mL、质量 g、面积 cm²
+ *                           例：{ LVEDD: 38, LVESD: 25, LVEDV: 60 }
+ * @returns {Array} 可直接渲染的列表项
+ */
+function buildPedsList(bsa, measured) {
+  const rows = [];
+  const hasBsa = !!bsa && bsa > 0;
+
+  for (let i = 0; i < PEDS_FIELDS.length; i++) {
+    const key = PEDS_FIELDS[i];
+    const def = PEDS_Z[key];
+    if (!def) continue;
+
+    // 界面单位 → PHN 原生单位
+    // 内径：界面 mm，PHN cm → ÷10
+    // 容积：界面 mL = cm³，一致
+    // 质量：g，一致
+    // 面积：cm²，一致
+    // 比例：无量纲，一致
+    const isLength = def.unit === 'cm';
+    const uiUnit = isLength ? 'mm' : def.unit;
+
+    const raw = measured ? measured[key] : undefined;
+    const hasValue = raw !== undefined && raw !== null && raw !== '' && !isNaN(raw);
+
+    // 换算到 PHN 原生单位后算 Z
+    const nativeValue = hasValue ? (isLength ? raw / 10 : raw) : null;
+    const z = hasBsa && hasValue ? zScore(nativeValue, key, bsa) : null;
+    const g = gradeZ(z);
+
+    // Z = ±2 / ±3 对应的实测值区间（界面单位）
+    let r2 = null;
+    let r3 = null;
+    if (hasBsa) {
+      r2 = rangeFromZ(key, bsa, 2);
+      r3 = rangeFromZ(key, bsa, 3);
+      if (isLength) {
+        r2 = scaleObj(r2, 10);
+        r3 = scaleObj(r3, 10);
+      }
+    }
+
+    const dec = isLength ? 1 : (def.unit === 'g' || def.unit === 'mL' ? 1 : 2);
+    const decOut = def.unit === '' ? 2 : dec;
+
+    rows.push({
+      key: key,
+      name: def.name,
+      unit: uiUnit,
+      // 指数化后的均值（原生单位），用于解释
+      alphaText: 'α=' + def.a.toFixed(2),
+      meanText: hasBsa
+        ? fmt(def.mean * Math.pow(bsa, def.a), decOut) + ' ' + uiUnit
+        : '—',
+      // ±2 区间 —— 临床主要判读依据
+      rangeText: (hasBsa && r2)
+        ? fmt(r2.lower, decOut) + ' – ' + fmt(r2.upper, decOut)
+        : '—',
+      // ±3 区间 —— 显著异常阈值
+      range3Text: (hasBsa && r3)
+        ? fmt(r3.lower, decOut) + ' – ' + fmt(r3.upper, decOut)
+        : '—',
+      value: hasValue ? fmt(raw, decOut) : '—',
+      z: z === null ? null : round(z, 2),
+      zText: z === null ? '—' : (z > 0 ? '+' : '') + fmt(z, 2),
+      status: g.level,
+      statusText: g.text,
+      statusCls: g.cls,
+      hasValue: hasValue,
+    });
+  }
+  return rows;
+}
+
+/**
+ * 按分组返回儿童 Z 值列表（带 group 标题），便于界面分段渲染
+ * @returns {Array<{title:string, rows:Array}>}
+ */
+function buildPedsGrouped(bsa, measured) {
+  const all = buildPedsList(bsa, measured);
+  const map = {};
+  all.forEach(function (r) { map[r.key] = r; });
+
+  return PEDS_GROUPS.map(function (g) {
+    return {
+      title: g.title,
+      rows: g.keys.map(function (k) { return map[k]; }).filter(Boolean),
+    };
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * 工具
+ * ------------------------------------------------------------------ */
+
+function scaleObj(o, k) {
+  if (!o) return o;
+  return { mean: o.mean * k, lower: o.lower * k, upper: o.upper * k };
+}
+
+function round(n, digits) {
+  const d = digits === undefined ? 2 : digits;
+  const f = Math.pow(10, d);
+  return Math.round(n * f) / f;
+}
+
+function fmt(n, dec) {
+  if (n === null || n === undefined || n === '' || isNaN(n)) return '—';
+  return Number(n).toFixed(dec);
+}
+
+/** Z 值 → 中文描述（用于结果摘要） */
+function describeZ(z) {
+  if (z === null || z === undefined || isNaN(z)) return '未测';
+  const g = gradeZ(z);
+  const sign = z > 0 ? '+' : '';
+  return sign + round(z, 2) + '（' + g.text + '）';
+}
+
+  window.Peds = {
+    bsaHaycock: bsaHaycock,
+    bsaApproxByWeight: bsaApproxByWeight,
+    PEDS_Z: PEDS_Z,
+    PEDS_GROUPS: PEDS_GROUPS,
+    PEDS_FIELDS: PEDS_FIELDS,
+    indexedMean: indexedMean,
+    indexedSD: indexedSD,
+    zScore: zScore,
+    gradeZ: gradeZ,
+    rangeFromZ: rangeFromZ,
+    buildPedsList: buildPedsList,
+    buildPedsGrouped: buildPedsGrouped,
+    scaleObj: scaleObj,
+    round: round,
+    fmt: fmt,
+    describeZ: describeZ,
+  };
+})();
+
+
+
+
+/* ══════════════════════════════════════════════════════════
+   心脏超声参考值 · 单页应用逻辑
+   引擎来自 window.Core（成人）与 window.Peds（儿童），由小程序源码自动抽取
+   ══════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  const Core = window.Core;
+  const Peds = window.Peds;
+
+  /* ══════════ 全局状态（对应小程序的 app.globalData） ══════════ */
+  const state = {
+    sex: 'male',
+    height: 170,
+    weight: 65,
+    bsa: 0,
+    formula: 'dubois',      // dubois | mosteller
+    standard: 'CN',         // CN | ASE
+    measurements: null,      // EF 页的测量值
+    peds: null,
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  /** 可空取值：发布版会移除部分页面，相关元素可能不存在 */
+  function q(id) { return document.getElementById(id); }
+
+  /** 给可能不存在的元素设置文本，不存在则静默跳过 */
+  function setText(id, text) {
+    const el = q(id);
+    if (el) el.textContent = text;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     一、页签切换
+     ══════════════════════════════════════════════════════════ */
+
+  const TAB_TITLE = {
+    index: '参数·参考值',
+    ef: 'EF 计算',
+    peds: '儿童 Z 值',
+  };
+
+  let currentTab = 'index';
+
+  function switchTab(name) {
+    if (!TAB_TITLE[name]) return;
+    currentTab = name;
+
+    document.querySelectorAll('.page').forEach(function (el) {
+      el.hidden = el.id !== 'page-' + name;
+    });
+    document.querySelectorAll('.tab').forEach(function (el) {
+      el.classList.toggle('tab--on', el.dataset.tab === name);
+    });
+    $('appbarTitle').textContent = TAB_TITLE[name];
+
+    // 切页时刷新数据
+    if (name === 'peds') renderPeds();
+    if (name === 'index') renderIndex();
+
+    window.scrollTo(0, 0);
+  }
+
+  document.querySelectorAll('.tab').forEach(function (el) {
+    el.addEventListener('click', function () { switchTab(el.dataset.tab); });
+  });
+
+  document.querySelectorAll('[data-go]').forEach(function (el) {
+    el.addEventListener('click', function () { switchTab(el.dataset.go); });
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     二、分段选择器（通用）
+     ══════════════════════════════════════════════════════════ */
+
+  /**
+   * 同一个 data-seg 分组内的选择器保持同步（如「性别」在多页都有）
+   * 切换后回调 onPick(group, value)
+   */
+  const segHandlers = {
+    sex: function (v) { state.sex = v; renderIndex(); },
+    formula: function (v) { state.formula = v; renderIndex(); },
+    standard: function (v) { state.standard = v; renderIndex(); },
+    pdsex: function () { /* 儿童 Z 值不区分性别，仅作记录 */ },
+  };
+
+  document.querySelectorAll('.seg').forEach(function (seg) {
+    seg.querySelectorAll('.seg__i').forEach(function (item) {
+      item.addEventListener('click', function () {
+        const group = seg.dataset.seg;
+        const val = item.dataset.v;
+
+        // 同步所有同组选择器
+        document.querySelectorAll('.seg[data-seg="' + group + '"]').forEach(function (s) {
+          s.querySelectorAll('.seg__i').forEach(function (i) {
+            i.classList.toggle('seg__i--on', i.dataset.v === val);
+          });
+        });
+
+        const fn = segHandlers[group];
+        if (fn) fn(val);
+      });
+    });
+  });
+
+  /** 以程序方式设置某个分段选择器的值（并同步同组） */
+  function setSeg(group, val) {
+    document.querySelectorAll('.seg[data-seg="' + group + '"]').forEach(function (s) {
+      s.querySelectorAll('.seg__i').forEach(function (i) {
+        i.classList.toggle('seg__i--on', i.dataset.v === val);
+      });
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     三、Tab1 基本参数
+     ══════════════════════════════════════════════════════════ */
+
+  function computeBsa() {
+    const h = parseFloat($('inHeight').value);
+    const w = parseFloat($('inWeight').value);
+    const valid = h > 50 && h < 250 && w > 2 && w < 300;
+
+    if (!valid) return { valid: false, bsa: 0 };
+
+    const bsa = state.formula === 'dubois'
+      ? Core.bsaDuBois(h, w)
+      : Core.bsaMosteller(h, w);
+
+    return { valid: true, bsa: bsa, h: h, w: w };
+  }
+
+  function renderIndex() {
+    const r = computeBsa();
+
+    if (!r.valid) {
+      $('outBsa').textContent = '—';
+      $('outBsaLbl').textContent = '体表面积';
+      $('outBmi').textContent = '—';
+      $('outBmiTag').textContent = '';
+      $('bsaHint').textContent =
+        ($('inHeight').value && $('inWeight').value)
+          ? '请输入有效的身高（50–250 cm）与体重（2–300 kg）'
+          : '';
+      state.bsa = 0;
+      setText('calcBsaNote', 'BSA —（请先在上方填写有效身高体重）');
+      renderReference();
+      return;
+    }
+
+    state.height = r.h;
+    state.weight = r.w;
+    state.bsa = Core.round(r.bsa, 3);
+
+    $('outBsa').textContent = r.bsa.toFixed(2);
+    $('outBsaLbl').textContent = '体表面积（' +
+      (state.formula === 'dubois' ? 'Du Bois' : 'Mosteller') + '）';
+
+    // BMI（中国成人标准 WS/T 428-2013）
+    const b = Core.bmi(r.h, r.w);
+    const bc = Core.bmiClass(b);
+    $('outBmi').textContent = b.toFixed(1);
+    $('outBmiTag').textContent = bc.text;
+    $('outBmiTag').className = 'bmi-tag bmi--' + bc.level;
+
+    $('bsaHint').textContent = '';
+    setText('calcBsaNote',
+      'BSA ' + state.bsa.toFixed(2) + ' m²（来自本页上方）· 各组结果独立计算，留空跳过');
+
+    // 参考值列表与计算页都依赖 BSA，一并刷新
+    renderReference();
+  }
+
+  ['inHeight', 'inWeight'].forEach(function (id) {
+    $(id).addEventListener('input', renderIndex);
+  });
+
+  // 「查看下方参考值」平滑滚动
+  if ($('jumpRef')) $('jumpRef').addEventListener('click', function () {
+    $('refBlock').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     四、Tab2 参考值
+     ══════════════════════════════════════════════════════════ */
+
+  const STD_NOTE = {
+    CN: '《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围',
+    ASE: 'ASE/EACVI 2015 Reference limits for cardiac chamber quantification in adults',
+  };
+
+  const STD_SOURCE = {
+    CN: '中华医学会超声医学分会《中国成年人超声心动图检查测量指南》（2016，95% 参考范围，37 项）',
+    ASE: 'ASE/EACVI 2015《Recommendations for Cardiac Chamber Quantification in Adults》',
+  };
+
+  function renderReference() {
+    // 同步到顶栏下的说明
+    $('stdNote').textContent = STD_NOTE[state.standard];
+
+    $('aseUnitNote').hidden = state.standard !== 'ASE';
+
+    // 若 EF 页算过，组装实测值字典
+    let measured = null;
+    let hasM = false;
+    if (state.measurements) {
+      const m = state.measurements;
+      measured = Core.measurementsToRefDict({
+        lvedd: m.lvedd,
+        lvesd: m.lvesd,
+        ivsd: m.ivsd,
+        lvpwd: m.lvpwd,
+        bsa: state.bsa,
+        height: state.height,
+      });
+      hasM = true;
+    }
+
+    const rows = Core.buildReferenceList(state.sex, measured, state.standard, state.bsa);
+
+    $('refTitle').textContent = hasM ? '实测值对照' : '正常参考范围';
+    $('refDesc').textContent = hasM
+      ? '已关联「EF 计算」页的测量值，下表显示实测值与参考范围的对照结果。'
+      : (state.sex === 'male' ? '男性' : '女性') + ' · ' + STD_NOTE[state.standard];
+
+    $('refSource').textContent = '参考值来源：' + STD_SOURCE[state.standard];
+
+    // 渲染列表
+    let html = '';
+    if (hasM) {
+      html += headerRow(['参数', '实测', '参考范围', '判定']);
+    } else {
+      html += headerRow(['参数', '参考范围', '']);
+    }
+
+    rows.forEach(function (r) {
+      const nameCell = '<div class="list-row__n">' + esc(r.name) +
+        (r.hasDerived
+          ? '<span class="derived">按当前 BSA 折算 ' + esc(r.derivedText) + ' ' + esc(r.derivedUnit) + '</span>'
+          : '') +
+        '</div>';
+
+      if (hasM) {
+        html += '<div class="list-row">' + nameCell +
+          '<div class="list-row__v">' + esc(r.value) + esc(r.unit) + '</div>' +
+          '<div class="list-row__r">' + esc(r.range) + '</div>' +
+          '<div class="list-row__g"><span class="tag ' + r.statusCls + '">' + esc(r.statusText) + '</span></div>' +
+          '</div>';
+      } else {
+        html += '<div class="list-row">' + nameCell +
+          '<div class="list-row__r" style="flex:1.6">' + esc(r.range) + ' ' + esc(r.unit) + '</div>' +
+          '<div class="list-row__g"></div>' +
+          '</div>';
+      }
+    });
+
+    $('refList').innerHTML = html;
+  }
+
+  function headerRow(cols) {
+    let h = '<div class="list-row" style="border-bottom:1px solid #e3e6ea">';
+    h += '<div class="list-row__n" style="font-weight:600">' + cols[0] + '</div>';
+    h += '<div class="list-row__v" style="font-weight:600">' + cols[1] + '</div>';
+    h += '<div class="list-row__r" style="font-weight:600">' + cols[2] + '</div>';
+    h += '<div class="list-row__g" style="font-weight:600;color:#6b7280">' + (cols[3] || '') + '</div>';
+    h += '</div>';
+    return h;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     五、Tab3 EF 计算
+     ══════════════════════════════════════════════════════════ */
+
+  const EF_IDS = ['efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd'];
+
+  function renderEF() {
+    const lvedd = parseFloat($('efLvedd').value);
+    const lvesd = parseFloat($('efLvesd').value);
+    const ivsd = parseFloat($('efIvsd').value);
+    const lvpwd = parseFloat($('efLvpwd').value);
+
+    // 需要 LVIDd + LVIDs 才能算收缩功能
+    const canCalc = lvedd > 0 && lvesd > 0 && lvedd > lvesd;
+
+    if (!canCalc) {
+      $('efResult').hidden = true;
+      state.measurements = null;
+      if ((lvedd || lvesd) && lvedd <= lvesd) {
+        $('efHint').textContent = '舒张末内径应大于收缩末内径，请核对。';
+      } else if ($('efLvedd').value && $('efLvesd').value) {
+        $('efHint').textContent = '请输入有效内径（mm）。';
+      } else {
+        $('efHint').textContent = '';
+      }
+      return;
+    }
+
+    $('efHint').textContent = '';
+
+    const fn = Core.computeLVFunction(lvedd, lvesd);
+    const lvm = Core.computeLVM(lvedd, ivsd || 0, lvpwd || 0, state.bsa);
+    const rwt = Core.computeRWT(lvedd, lvpwd || 0);
+    const grade = Core.gradeEF(fn.EF);
+
+    // 记录供参考值页使用
+    state.measurements = {
+      lvedd: lvedd, lvesd: lvesd, ivsd: ivsd, lvpwd: lvpwd,
+    };
+
+    // 指标网格
+    const items = [
+      { k: 'EDV', v: fn.EDV, u: 'mL', t: '舒张末容积' },
+      { k: 'ESV', v: fn.ESV, u: 'mL', t: '收缩末容积' },
+      { k: 'SV', v: fn.SV, u: 'mL', t: '每搏量' },
+      { k: 'EF', v: fn.EF, u: '%', t: '射血分数' },
+      { k: 'FS', v: fn.FS, u: '%', t: '缩短分数' },
+    ];
+    if (rwt !== null) items.push({ k: 'RWT', v: rwt, u: '', t: '相对室壁厚度' });
+    if (lvm.LVM !== null) items.push({ k: 'LVM', v: lvm.LVM, u: 'g', t: '左室质量' });
+    if (lvm['LVM/BSA'] !== null) items.push({ k: 'LVM/BSA', v: lvm['LVM/BSA'], u: 'g/m²', t: '质量指数' });
+
+    let kv = '';
+    items.forEach(function (it) {
+      kv += '<div class="kv__i"><div class="kv__k">' + it.t + '</div>' +
+        '<div class="kv__v">' + it.v + '<span class="kv__u">' + it.u + '</span></div></div>';
+    });
+    $('efKv').innerHTML = kv;
+
+    // 进度条
+    const pct = Math.max(0, Math.min(100, fn.EF));
+    $('efMark').style.left = pct + '%';
+
+    // 分级说明
+    $('efGrade').innerHTML = '射血分数 <b>' + fn.EF + '%</b> —— ' +
+      '<span class="tag ' + gradeCls(grade.level) + '">' + esc(grade.text) + '</span>' +
+      '　（ASE 2015 阈值：≥55% 正常，45–54% 轻度减低，30–44% 中度减低，&lt;30% 重度减低）';
+
+    $('efFormula').innerHTML =
+      'Teichholz：EDV = 7 × (' + (lvedd / 10).toFixed(2) + ')<sup>3</sup> ÷ (2.4 + ' +
+      (lvedd / 10).toFixed(2) + ') = ' + fn.EDV + ' mL；' +
+      'ESV = ' + fn.ESV + ' mL' +
+      (state.bsa ? '　·　指数基于 BSA ' + state.bsa.toFixed(3) + ' m²' : '');
+
+    $('efResult').hidden = false;
+  }
+
+  function gradeCls(level) {
+    return { normal: 'tag--normal', mild: 'tag--mild', moderate: 'tag--moderate', severe: 'tag--severe' }[level] || 'tag--none';
+  }
+
+  EF_IDS.forEach(function (id) {
+    $(id).addEventListener('input', renderEF);
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     六、Tab4 儿童 Z 值
+     ══════════════════════════════════════════════════════════ */
+
+  const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT', 'LVEDV', 'LVESV', 'LVM', 'ROOT'];
+  const MORE_KEYS = Peds.PEDS_FIELDS.filter(function (k) {
+    return QUICK_KEYS.indexOf(k) === -1;
+  });
+
+  const pdVal = {};     // 儿童页测量值（界面单位）
+  let pdMoreOpen = false;
+
+  /** 参数在界面上的显示单位 */
+  function uiUnit(key) {
+    return Peds.PEDS_Z[key].unit === 'cm' ? 'mm' : Peds.PEDS_Z[key].unit;
+  }
+
+  function buildPedsInputs() {
+    const keys = pdMoreOpen ? QUICK_KEYS.concat(MORE_KEYS) : QUICK_KEYS;
+    let html = '';
+    for (let i = 0; i < keys.length; i += 2) {
+      html += '<div class="row">';
+      for (let j = i; j < i + 2 && j < keys.length; j++) {
+        const k = keys[j];
+        const def = Peds.PEDS_Z[k];
+        html += '<div class="field">' +
+          '<label class="field__l">' + esc(def.name) + ' / ' + uiUnit(k) + '</label>' +
+          '<input class="field__i" type="number" inputmode="decimal" step="0.1" ' +
+          'data-pk="' + k + '" placeholder="留空跳过" ' +
+          'value="' + (pdVal[k] !== undefined ? pdVal[k] : '') + '">' +
+          '</div>';
+      }
+      html += '</div>';
+    }
+    $('pdInputs').innerHTML = html;
+
+    $('pdInputs').querySelectorAll('input').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        const k = inp.dataset.pk;
+        if (inp.value === '') delete pdVal[k];
+        else pdVal[k] = inp.value;
+        renderPeds();
+      });
+    });
+
+    $('pdMore').textContent = pdMoreOpen ? '收起其他参数' : '展开其他参数（共 33 项）';
+  }
+
+  function renderPeds() {
+    const h = parseFloat($('pdHeight').value);
+    const w = parseFloat($('pdWeight').value);
+    const age = parseFloat($('pdAge').value);
+    const valid = h > 30 && h < 220 && w > 1 && w < 150;
+    const bsa = valid ? Peds.bsaHaycock(h, w) : 0;
+
+    $('pdBsa').textContent = valid ? bsa.toFixed(2) : '—';
+    $('pdBmi').textContent = valid ? Core.bmi(h, w).toFixed(1) : '—';
+    $('pdDesc').textContent = valid
+      ? '体表面积 BSA = ' + bsa.toFixed(2) + ' m²　·　|Z| ≤ 2 视为正常'
+      : '请先填写身高体重';
+
+    // 警告
+    const warns = [];
+    if (!valid && $('pdHeight').value && $('pdWeight').value) {
+      warns.push('身高体重超出常用范围（30–220 cm / 1–150 kg），请核对。');
+    }
+    if (!isNaN(age) && age > 18) {
+      warns.push('本页适用于 0–18 岁儿童。成人请改用「参考值」页的中国成人或 ASE 标准。');
+    }
+    $('pdWarn').innerHTML = warns.map(function (t) { return '⚠ ' + esc(t); }).join('<br>');
+
+    if (!valid) {
+      $('pdList').innerHTML = '<div class="note">请先填写有效的身高体重（30–220 cm / 1–150 kg）。</div>';
+      $('pdRanges').innerHTML = '';
+      $('pdFuncCard').hidden = true;
+      $('pdSumCard').hidden = true;
+      state.peds = null;
+      return;
+    }
+
+    // 组装实测值（引擎内部处理单位换算）
+    const measured = {};
+    Object.keys(pdVal).forEach(function (k) {
+      const v = parseFloat(pdVal[k]);
+      if (pdVal[k] !== '' && !isNaN(v)) measured[k] = v;
+    });
+
+    // ★ 收缩功能推算：输入了 LVEDD 与 LVESD 即计算 EF/FS/SV（Teichholz），
+    //   推算出的 EDV/ESV 在未手动填容积时代入 Z 值对照
+    let func = null;
+    let zMeasured = measured;
+    if (measured.LVEDD > 0 && measured.LVESD > 0 && measured.LVEDD > measured.LVESD) {
+      func = Core.computeLVFunction(measured.LVEDD, measured.LVESD);
+      zMeasured = Object.assign({}, measured);
+      if (zMeasured.LVEDV === undefined) zMeasured.LVEDV = func.EDV;
+      if (zMeasured.LVESV === undefined) zMeasured.LVESV = func.ESV;
+    }
+
+    const grouped = Peds.buildPedsGrouped(bsa, zMeasured);
+
+    // ── 收缩功能卡 ──
+    if (func) {
+      const grade = Core.gradeEF(func.EF);
+      const fsKey = func.FS < 28 ? 'low' : (func.FS > 44 ? 'high' : 'normal');
+      const fsTxt = { normal: '正常', low: '↓ 偏低', high: '↑ 偏高' }[fsKey];
+      const fsCls = { normal: 'tag--normal', low: 'tag--low', high: 'tag--high' }[fsKey];
+
+      $('pdFuncCard').hidden = false;
+      $('pdFuncDesc').textContent =
+        '由左室舒张末期内径 ' + measured.LVEDD + ' 与收缩末期内径 ' + measured.LVESD +
+        ' mm 经 Teichholz 公式推算。';
+      $('pdFuncEf').textContent = func.EF + '%';
+      $('pdFuncEfTag').textContent = grade.text;
+      $('pdFuncEfTag').className = 'tag ' + gradeCls(grade.level);
+      $('pdFuncKv').innerHTML =
+        '<div class="kv__i"><div class="kv__k">缩短分数 FS（参考 28–44%）</div>' +
+        '<div class="kv__v">' + func.FS + '% <span class="tag ' + fsCls + '">' + fsTxt + '</span></div></div>' +
+        '<div class="kv__i"><div class="kv__k">每搏输出量 SV</div>' +
+        '<div class="kv__v">' + func.SV + '<span class="kv__u">mL</span></div></div>';
+      $('pdFuncNote').textContent =
+        '推算的 EDV ' + func.EDV + ' mL / ESV ' + func.ESV +
+        ' mL 已代入下方「左心室容积与质量」组的 Z 值对照（未手动填容积时）。';
+    } else {
+      $('pdFuncCard').hidden = true;
+    }
+
+    // ── 摘要 ──
+    let normal = 0, mild = 0, severe = 0, cnt = 0, worst = null;
+    grouped.forEach(function (g) {
+      g.rows.forEach(function (r) {
+        if (!r.hasValue) return;
+        cnt++;
+        if (r.status === 'normal') normal++;
+        else if (r.status === 'mild') mild++;
+        else if (r.status === 'severe') severe++;
+        if (worst === null || Math.abs(r.z) > Math.abs(worst.z)) worst = r;
+      });
+    });
+
+    if (cnt > 0) {
+      $('pdSumCard').hidden = false;
+      const lvl = severe > 0 ? 'severe' : (mild > 0 ? 'mild' : 'normal');
+      $('pdSumBig').className = 'zbig zbig--' + lvl;
+      $('pdSumV').textContent = cnt;
+      $('pdSumLbl').textContent = '项已测量 · 正常 ' + normal + ' · 轻度 ' + mild + ' · 显著 ' + severe;
+      $('pdWorst').innerHTML = worst
+        ? '偏离最大：<b>' + esc(worst.name) + '</b>，Z = <b>' + esc(worst.zText) +
+          '</b>（' + esc(worst.statusText) + '）'
+        : '';
+    } else {
+      $('pdSumCard').hidden = true;
+    }
+
+    // ── Z 值表 ──
+    let html = '';
+    grouped.forEach(function (g) {
+      html += '<div class="pgroup">' + esc(g.title) + '</div>';
+      g.rows.forEach(function (r) {
+        html += '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '">' +
+          '<div class="zrow__n">' + esc(r.name) +
+            '<span class="zrow__sub">均值 ' + esc(r.meanText) + '</span></div>' +
+          '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
+          '<div class="zrow__r">' + esc(r.rangeText) + '</div>' +
+          '<div class="zrow__g">' + (r.hasValue
+            ? '<span class="tag ' + r.statusCls + '">' + esc(r.zText) + '</span>'
+            : '<span class="tag tag--none">—</span>') +
+          '</div></div>';
+      });
+    });
+    $('pdList').innerHTML = html;
+
+    // ── 区间表 ──
+    let rhtml = '';
+    grouped.forEach(function (g) {
+      rhtml += '<div class="pgroup">' + esc(g.title) + '</div>';
+      g.rows.forEach(function (r) {
+        rhtml += '<div class="zrow">' +
+          '<div class="zrow__n">' + esc(r.name) +
+            '<span class="zrow__sub">' + esc(r.alphaText) + ' · 均值 ' + esc(r.meanText) + '</span></div>' +
+          '<div style="flex:2;text-align:right;font-size:12px;color:var(--sub);line-height:1.6">' +
+            '±2SD　' + esc(r.rangeText) + '<br>' +
+            '±3SD　' + esc(r.range3Text) +
+          '</div></div>';
+      });
+    });
+    $('pdRanges').innerHTML = rhtml;
+
+    state.peds = { bsa: Peds.round(bsa, 3), measured: measured, age: $('pdAge').value };
+  }
+
+  ['pdHeight', 'pdWeight', 'pdAge'].forEach(function (id) {
+    $(id).addEventListener('input', renderPeds);
+  });
+
+  $('pdMore').addEventListener('click', function () {
+    pdMoreOpen = !pdMoreOpen;
+    buildPedsInputs();
+  });
+
+  $('pdClear').addEventListener('click', function () {
+    Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
+    pdMoreOpen = false;
+    buildPedsInputs();
+    renderPeds();
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     七、重置
+     ══════════════════════════════════════════════════════════ */
+
+  $('resetBtn').addEventListener('click', function () {
+    if (!confirm('确定要清空全部输入与结果吗？')) return;
+
+    $('inHeight').value = 170;
+    $('inWeight').value = 65;
+    state.sex = 'male';
+    state.formula = 'dubois';
+    state.standard = 'CN';
+    setSeg('sex', 'male');
+    setSeg('formula', 'dubois');
+    setSeg('standard', 'CN');
+
+    EF_IDS.forEach(function (id) { $(id).value = ''; });
+    state.measurements = null;
+
+    ['pdHeight', 'pdWeight', 'pdAge'].forEach(function (id) { $(id).value = ''; });
+    Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
+    pdMoreOpen = false;
+    buildPedsInputs();
+
+
+
+    renderIndex();
+    renderEF();
+    renderPeds();
+    if (currentTab !== 'index') switchTab(currentTab);
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     工具
+     ══════════════════════════════════════════════════════════ */
+
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     启动
+     ══════════════════════════════════════════════════════════ */
+
+  function boot() {
+    // 基本参数默认值
+    $('inHeight').value = state.height;
+    $('inWeight').value = state.weight;
+    $('appbarTitle').textContent = TAB_TITLE[currentTab];
+
+    renderIndex();
+    renderEF();
+    buildPedsInputs();
+    renderPeds();
+
+    
+    // 页面可见性变化时重绘（WebView 恢复前台）
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) {
+        if (currentTab === 'peds') renderPeds();
+              }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+  // 暴露给自检脚本
+  window.__app = { state: state, switchTab: switchTab, renderIndex: renderIndex };
+})();
+
+</script>
+</body>
+</html>

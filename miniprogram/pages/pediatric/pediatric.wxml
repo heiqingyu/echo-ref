@@ -1,0 +1,268 @@
+<view class="page-wrap">
+
+  <!-- ① 受检者信息 -->
+  <view class="card">
+    <view class="card__title">受检者信息</view>
+    <view class="card__desc">
+      儿童心脏尺寸随生长变化，Z 值按体表面积（BSA）标准化，与年龄、性别无临床显著关系
+    </view>
+
+    <view class="row">
+      <view class="field">
+        <text class="field__label">身高 / cm</text>
+        <input class="field__input" type="digit" value="{{height}}"
+               placeholder="如 110" bindinput="onHeight" />
+      </view>
+      <view class="field">
+        <text class="field__label">体重 / kg</text>
+        <input class="field__input" type="digit" value="{{weight}}"
+               placeholder="如 19" bindinput="onWeight" />
+      </view>
+    </view>
+
+    <view class="row">
+      <view class="field">
+        <text class="field__label">年龄 / 岁（选填，仅用于校验）</text>
+        <input class="field__input" type="digit" value="{{age}}"
+               placeholder="如 5" bindinput="onAge" />
+      </view>
+      <view class="field">
+        <text class="field__label">性别（选填）</text>
+        <view class="seg">
+          <view class="seg__item {{sex === 'male' ? 'seg__item--on' : ''}}"
+                data-v="male" bindtap="onSex">男</view>
+          <view class="seg__item {{sex === 'female' ? 'seg__item--on' : ''}}"
+                data-v="female" bindtap="onSex">女</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="stat-row">
+      <view class="stat">
+        <view class="stat__main">
+          <text class="stat__v">{{bsaText}}</text>
+          <text class="stat__u">m²</text>
+        </view>
+        <text class="stat__lbl">体表面积（Haycock）</text>
+      </view>
+      <view class="stat">
+        <view class="stat__main">
+          <text class="stat__v">{{bmiText}}</text>
+          <text class="stat__u">kg/m²</text>
+        </view>
+        <text class="stat__lbl">BMI（儿童请对照百分位）</text>
+      </view>
+    </view>
+
+    <view wx:if="{{!bsaValid && height && weight}}" class="hint">
+      请输入有效的身高（30–220 cm）与体重（1–150 kg）
+    </view>
+
+    <view wx:for="{{warnings}}" wx:key="*this" class="hint">{{item}}</view>
+
+    <view class="footer-btns">
+      <view class="btn btn--ghost" bindtap="saveProfile">保存身高体重到其他页</view>
+    </view>
+  </view>
+
+  <!-- ② 测量值输入 -->
+  <view class="card">
+    <view class="card__title">测量值输入</view>
+    <view class="card__desc">
+      按实际单位填写（内径 mm，容积 mL，质量 g，面积 cm²）。留空的项不参与计算。
+    </view>
+
+    <view class="row" wx:for="{{inputs}}" wx:key="key" wx:if="{{index % 2 === 0}}">
+      <view class="field">
+        <text class="field__label">{{inputs[index].name}} / {{inputs[index].unit}}</text>
+        <input class="field__input" type="digit" value="{{inputs[index].value}}"
+               data-k="{{inputs[index].key}}" bindinput="onInput" placeholder="留空跳过" />
+      </view>
+      <view class="field" wx:if="{{inputs[index + 1]}}">
+        <text class="field__label">{{inputs[index + 1].name}} / {{inputs[index + 1].unit}}</text>
+        <input class="field__input" type="digit" value="{{inputs[index + 1].value}}"
+               data-k="{{inputs[index + 1].key}}" bindinput="onInput" placeholder="留空跳过" />
+      </view>
+    </view>
+
+    <view class="btn btn--ghost" bindtap="onToggleMore" style="margin-top:22rpx">
+      {{moreOpen ? '收起其他参数' : '展开其他参数（共 33 项）'}}
+    </view>
+
+    <block wx:if="{{moreOpen}}">
+      <view class="peds-group">其他全部参数</view>
+      <view class="row" wx:for="{{moreInputs}}" wx:key="key" wx:if="{{index % 2 === 0}}">
+        <view class="field">
+          <text class="field__label">{{moreInputs[index].name}} / {{moreInputs[index].unit}}</text>
+          <input class="field__input" type="digit" value="{{moreInputs[index].value}}"
+                 data-k="{{moreInputs[index].key}}" bindinput="onInput" placeholder="留空跳过" />
+        </view>
+        <view class="field" wx:if="{{moreInputs[index + 1]}}">
+          <text class="field__label">{{moreInputs[index + 1].name}} / {{moreInputs[index + 1].unit}}</text>
+          <input class="field__input" type="digit" value="{{moreInputs[index + 1].value}}"
+                 data-k="{{moreInputs[index + 1].key}}" bindinput="onInput" placeholder="留空跳过" />
+        </view>
+      </view>
+    </block>
+
+    <view class="btn" bindtap="onClear" style="margin-top:22rpx">清空全部测量值</view>
+  </view>
+
+  <!-- ③ 结果 -->
+  <block wx:if="{{hasBsa}}">
+
+    <!-- ★ 收缩功能推算（位于 Z 值对照上方） -->
+    <view class="card" wx:if="{{func}}">
+      <view class="card__title">收缩功能（自动推算）</view>
+      <view class="card__desc">
+        由左室舒张末期内径 {{inputs[0].value}} 与收缩末期内径 {{inputs[1].value}} mm 经 Teichholz 公式推算。
+      </view>
+
+      <view class="func-ef">
+        <view class="func-ef__v">{{func.EF}}<text class="func-ef__u">%</text></view>
+        <view class="func-ef__side">
+          <view>左室射血分数 EF</view>
+          <text class="tag {{func.efGrade.cls}}">{{func.efGrade.text}}</text>
+        </view>
+      </view>
+
+      <view class="kv">
+        <view class="kv__item">
+          <view class="kv__k">缩短分数 FS</view>
+          <text class="kv__v">{{func.FS}}%</text>
+          <text class="tag {{func.fsStatusCls}}" style="margin-left:10rpx">{{func.fsStatusText}}</text>
+        </view>
+        <view class="kv__item">
+          <view class="kv__k">每搏输出量 SV</view>
+          <text class="kv__v">{{func.SV}}</text><text class="kv__u">mL</text>
+        </view>
+      </view>
+
+      <view class="note">
+        FS 儿童常用参考 28–44%；推算的 EDV {{func.EDV}} mL / ESV {{func.ESV}} mL
+        已代入下方「左心室容积与质量」组的 Z 值对照（未手动填容积时）。
+      </view>
+    </view>
+
+    <!-- 摘要 -->
+    <view class="card" wx:if="{{summary && summary.measuredCount > 0}}">
+      <view class="card__title">结果摘要</view>
+
+      <view class="z-big z-big--{{summary.level}}">
+        <text class="z-big__v">{{summary.measuredCount}}</text>
+        <text class="z-big__lbl">项已测量 · 正常 {{summary.normal}} · 轻度 {{summary.mild}} · 显著 {{summary.severe}}</text>
+      </view>
+
+      <view wx:if="{{summary.worstName}}" class="note">
+        偏离最大：<text style="font-weight:600">{{summary.worstName}}</text>
+        ，Z = <text style="font-weight:600">{{summary.worstZText}}</text>
+        （{{summary.worstStatusText}}）
+      </view>
+
+      <view class="peds-key">
+        <view class="peds-key__item peds-key__item--n">|Z| ≤ 2{{'\n'}}正常</view>
+        <view class="peds-key__item peds-key__item--m">2 &lt; |Z| ≤ 3{{'\n'}}轻度异常</view>
+        <view class="peds-key__item peds-key__item--s">|Z| &gt; 3{{'\n'}}显著异常</view>
+      </view>
+    </view>
+
+    <!-- 逐项 Z 值 -->
+    <view class="card">
+      <view class="card__title">Z 值对照（BSA = {{bsaText}} m²）</view>
+      <view class="card__desc">
+        Z 值为「该测值偏离同龄体型正常人群均值的标准差倍数」，|Z| ≤ 2 视为正常。
+      </view>
+
+      <block wx:for="{{grouped}}" wx:key="title">
+        <view class="peds-group">{{item.title}}</view>
+
+        <view class="z-row" style="border-bottom:1rpx solid #e3e6ea;padding-bottom:14rpx">
+          <text class="z-row__name" style="font-weight:600">参数</text>
+          <text class="z-row__val" style="font-weight:600">实测</text>
+          <text class="z-row__range" style="font-weight:600">±2SD 范围</text>
+          <text class="z-row__tag" style="font-weight:600;color:#6b7280">Z 值</text>
+        </view>
+
+        <view wx:for="{{item.rows}}" wx:for-item="row" wx:key="key"
+              class="z-row {{row.hasValue ? '' : 'z-row--none'}}">
+          <view class="z-row__name">
+            {{row.name}}
+            <text class="z-row__name-sub">均值 {{row.meanText}}</text>
+          </view>
+          <text class="z-row__val">{{row.value}}{{row.hasValue ? row.unit : ''}}</text>
+          <text class="z-row__range">{{row.rangeText}}</text>
+          <view class="z-row__tag">
+            <block wx:if="{{row.hasValue}}">
+              <text class="tag {{row.statusCls}}">{{row.zText}}</text>
+            </block>
+            <text wx:else class="tag tag--none">—</text>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 全部区间表（含 ±3SD） -->
+    <view class="card">
+      <view class="card__title">完整数值区间（±2SD / ±3SD）</view>
+      <view class="card__desc">±2SD 为异常判定线，±3SD 为显著异常判定线。</view>
+      <block wx:for="{{grouped}}" wx:key="title">
+        <view class="peds-group">{{item.title}}</view>
+        <view wx:for="{{item.rows}}" wx:for-item="row" wx:key="key" class="z-row">
+          <view class="z-row__name">
+            {{row.name}}
+            <text class="z-row__name-sub">{{row.alphaText}} · 均值 {{row.meanText}}</text>
+          </view>
+          <view style="flex:2;text-align:right">
+            <text class="z-row__range" style="display:block">±2SD　{{row.rangeText}}</text>
+            <text class="z-row__range" style="display:block">±3SD　{{row.range3Text}}</text>
+          </view>
+        </view>
+      </block>
+    </view>
+
+  </block>
+
+  <view wx:else class="card">
+    <view class="card__title">等待输入</view>
+    <view class="card__desc">请先填写身高与体重以计算 BSA，随后即可看到全部参数的 Z 值区间。</view>
+  </view>
+
+  <!-- 公式说明 -->
+  <view class="card">
+    <view class="card__title">计算原理</view>
+    <view class="btn btn--ghost" bindtap="onToggleFormula">
+      {{showFormula ? '收起说明' : '展开说明'}}
+    </view>
+
+    <block wx:if="{{showFormula}}">
+      <view class="note">
+        <text style="font-weight:600">① 体表面积（Haycock 公式）</text>{{'\n'}}
+        BSA(m²) = 0.024265 × 身高(cm)<text style="font-size:20rpx">0.3964</text> × 体重(kg)<text style="font-size:20rpx">0.5378</text>{{'\n'}}
+        儿科首选，为 PHN 原始研究所用公式。
+      </view>
+      <view class="note">
+        <text style="font-weight:600">② Z 值</text>{{'\n'}}
+        Z = ( 实测值 ÷ BSA<text style="font-size:20rpx">α</text> − Mean ) ÷ SD{{'\n'}}
+        α、Mean、SD 为每个参数各自的回归系数（见上表「完整数值区间」中每项的 α 与均值）。
+      </view>
+      <view class="note">
+        <text style="font-weight:600">③ 为什么儿童不看固定区间</text>{{'\n'}}
+        新生儿 LVEDD 2 cm 属正常，成人 2 cm 属严重缩小。Z 值把测值按体型标准化，
+        Z = 0 即人群均值，|Z| ≤ 2 覆盖约 95% 健康儿童。
+      </view>
+      <view class="note note--strong">
+        <text style="font-weight:600">数据来源</text>{{'\n'}}
+        Pediatric Heart Network（PHN）Normal Echocardiogram Database，n = 3566，
+        0–18 岁健康非肥胖儿童，19 个中心。{{'\n'}}
+        Lopez L, Colan S, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979.{{'\n'}}
+        该研究表明 Z 值不受年龄、性别、种族临床显著影响，故本页不分性别。
+      </view>
+    </block>
+  </view>
+
+  <view class="note note--strong">
+    本工具为数值计算与参考值查询工具，所有结果仅供专业参考，不作为诊断依据。
+    儿童测量受切面、心率、镇静状态影响较大，请结合临床与随访综合判断。
+  </view>
+
+</view>

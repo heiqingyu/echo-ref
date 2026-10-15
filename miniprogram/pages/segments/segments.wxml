@@ -1,0 +1,88 @@
+<view class="page-wrap">
+
+  <!-- ① 17 节段与冠脉供血 -->
+  <view class="card">
+    <view class="card__title">17 节段模型与冠脉供血</view>
+    <view class="card__desc">ASE 17 节段模型 · 供血分区为典型分布，存在个体差异。点击下方分区可高亮对应节段；点击节段数字可在所有切面中同步定位。</view>
+
+    <image class="bull-img" src="{{bsaSvgSrc}}" mode="aspectFit" />
+
+    <view class="terr-key">
+      <view class="terr-chip {{hi === 'LAD' ? 'terr-chip--on' : ''}}" style="--c:#2563eb" bindtap="onTerritory" data-k="LAD">LAD · 前降支</view>
+      <view class="terr-chip {{hi === 'RCA' ? 'terr-chip--on' : ''}}" style="--c:#d97706" bindtap="onTerritory" data-k="RCA">RCA · 右冠</view>
+      <view class="terr-chip {{hi === 'LCx' ? 'terr-chip--on' : ''}}" style="--c:#0f9d58" bindtap="onTerritory" data-k="LCx">LCx · 回旋支</view>
+    </view>
+    <view wx:if="{{hi}}" class="hi-line">当前高亮：{{hiName}}供血区</view>
+    <view wx:if="{{sel}}" class="hi-line hi-line--sel">{{selInfo}}</view>
+
+    <view class="tbl">
+      <view class="tbl__head tbl--2"><text>层面</text><text>节段名称</text></view>
+      <view class="tbl__row tbl--2" wx:for="{{layerRows}}" wx:key="index">
+        <text class="tbl__c1">{{item[0]}}</text>
+        <text class="tbl__c2">{{item[1]}}</text>
+      </view>
+    </view>
+
+    <view class="tbl">
+      <view class="tbl__head tbl--2"><text>冠脉</text><text>典型供血节段</text></view>
+      <view class="tbl__row tbl--2" wx:for="{{territoryKey}}" wx:key="key">
+        <text class="tbl__c1" style="color:{{item.color}};font-weight:600">{{item.name}}</text>
+        <text class="tbl__c2">{{item.segs}}</text>
+      </view>
+    </view>
+
+    <view class="note">冠脉优势型、分支长度与个体解剖会改变供血范围。二维室壁运动评分通常采用 16 节段，不把难以可靠评价增厚的心尖帽纳入。</view>
+    <view class="note">评分：1 正常或运动增强；2 运动减弱；3 无运动；4 反常运动（收缩期向外膨出）。WMSI = 已评分节段分数之和 ÷ 已评分节段数，正常为 1。</view>
+    <view class="note">不符合单一冠脉分布的异常还应考虑 Takotsubo、心肌炎、结节病，以及左束支阻滞或起搏相关的室间隔运动异常。薄而高回声的室壁提示瘢痕可能，但不能单凭厚度确诊。</view>
+  </view>
+
+  <!-- ② 切面与室壁对应（交互示意图） -->
+  <view class="card">
+    <view class="card__title">切面与室壁对应</view>
+    <view class="card__desc">按标准屏幕方位示意 · 实际以解剖标志确认。点击任一彩色节段（示意图中的色块数字或下方数字按钮），它会在所有对应切面及牛眼图中同步高亮；再次点击取消。</view>
+    <view wx:if="{{sel}}" class="hi-line hi-line--sel">{{selInfo}}</view>
+
+    <view class="wall-card" wx:for="{{wallViews}}" wx:key="id" wx:for-item="w">
+      <view class="wall-card__t">{{w.title}}</view>
+      <view class="wall-card__s">{{w.sub}}</view>
+      <image class="wall-img" src="{{w.src}}" mode="aspectFit" />
+      <view class="wall-group" wx:for="{{w.groups}}" wx:for-item="g" wx:key="index">
+        <text class="wall-group__l">{{g.label}}</text>
+        <view class="wall-chips">
+          <text class="segchip {{sel === c.i ? 'segchip--on' : ''}}" wx:for="{{g.chips}}" wx:for-item="c" wx:key="i" style="--c:{{c.color}}" bindtap="onSeg" data-s="{{c.i}}">{{c.i}}</text>
+        </view>
+      </view>
+      <view class="wall-card__note" wx:if="{{w.note}}">{{w.note}}</view>
+    </view>
+
+    <view wx:if="{{sel}}" class="btn btn--ghost" bindtap="onClearSeg" style="margin-top:20rpx">取消选中（{{sel}}）</view>
+
+    <view class="note">记忆：四腔心看下间隔和前外侧壁；长轴看前间隔和下外侧壁；两腔心看下壁和前壁。传统“后壁”名称在标准节段模型中对应下外侧壁。</view>
+    <view class="note">PSAX 钟面：12 点前壁，2 点前外侧壁，4 点下外侧壁，6 点下壁，8 点下间隔，10 点前间隔。探头方向与显示习惯不同，需用右室和瓣膜等标志核实。</view>
+    <view class="note">常见旋转顺序：A4C → 约 60° 逆时针 → A2C → 再约 60° → A3C；角度只作操作参考。</view>
+    <view class="note">前外侧乳头肌常有 LAD 对角支及 LCx 双重供血；后内侧乳头肌通常主要由后降支供血，来源随冠脉优势型改变。</view>
+    <view class="note">LV 左室 · RV 右室 · LA 左房 · RA 右房 · Ao 主动脉 · MV 二尖瓣 · TV 三尖瓣 · LAA 左心耳 · LVOT 左室流出道</view>
+  </view>
+
+  <!-- ③ 标准切面与测量项目 -->
+  <view class="card">
+    <view class="card__title">标准切面与测量项目</view>
+    <view class="card__desc">ASE 成人完整 TTE 检查建议</view>
+
+    <view class="tbl">
+      <view class="tbl__head tbl--3"><text>切面</text><text>观察结构</text><text>主要测量</text></view>
+      <view class="tbl__row tbl--3" wx:for="{{viewRows}}" wx:key="index">
+        <text class="tbl__c1">{{item[0]}}</text>
+        <text class="tbl__c2">{{item[1]}}</text>
+        <text class="tbl__c2">{{item[2]}}</text>
+      </view>
+    </view>
+
+    <view class="note">主动脉瓣狭窄测速需要多声窗比较。必要时用非成像连续波探头（Pedoff）从心尖、右胸骨旁、胸骨上窝寻找最高的可靠流速。</view>
+  </view>
+
+  <view class="note note--strong">
+    本页为速查资料整理，内容依据 ASE 系列指南；具体应用请回看指南原文并结合临床判断。
+  </view>
+
+</view>

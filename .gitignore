@@ -1,0 +1,31 @@
+# ══════════ 构建产物 / 临时文件 ══════════
+.debug-*.html
+.debug-*.js
+.workbuddy/
+sourcemap.zip
+javac.log
+
+# ══════════ 不发布 / 不上传的本地素材 ══════════
+# 参考对照用的第三方素材（避免版权问题）
+ref-tte/
+_attic/
+# 原型草图
+prototype.html
+prototype-peds.html
+
+# ══════════ Android 构建中间产物（体积大且无必要） ══════════
+android-app/build/
+android-app/dist/
+android-app/*.log
+
+# ══════════ 签名私钥！绝对不要上传 ══════════
+# 泄露后他人可用你的名义签发 APK
+*.jks
+*.keystore
+
+# ══════════ 微信开发者工具本地配置 ══════════
+project.private.config.json
+
+# ══════════ 系统杂项 ══════════
+Thumbs.db
+.DS_Store

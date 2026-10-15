@@ -1,0 +1,17 @@
+{
+  "name": "echo-ref",
+  "version": "1.1.0",
+  "private": true,
+  "description": "心脏超声参考值查询 · 微信小程序（成人参考值 + EF 计算 + 儿童 Z 值）",
+  "scripts": {
+    "build": "node build-www.js",
+    "build:full": "node build-www.js --full",
+    "verify": "node verify-project.js && node verify-mp.js && node verify-peds.js && node verify-calc.js && node verify-apk.js",
+    "verify:project": "node verify-project.js",
+    "verify:mp": "node verify-mp.js",
+    "verify:peds": "node verify-peds.js",
+    "verify:calc": "node verify-calc.js",
+    "verify:apk": "node verify-apk.js",
+    "verify:docs": "node verify-docs.js"
+  }
+}

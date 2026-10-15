@@ -1,0 +1,532 @@
+/* 全局样式 —— 心脏超声参考值查询 */
+page {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --line: #e3e6ea;
+  --text: #1f2329;
+  --sub: #6b7280;
+  --brand: #2563eb;
+  --brand-soft: #eff4ff;
+  --ok: #0f9d58;
+  --hi: #d93838;
+  --lo: #2563eb;
+  --warn: #e8a33d;
+
+  background: var(--bg);
+  color: var(--text);
+  font-size: 28rpx;
+  line-height: 1.55;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+}
+
+.page-wrap {
+  padding: 24rpx 28rpx 60rpx;
+}
+
+/* 卡片 */
+.card {
+  background: var(--card);
+  border: 1rpx solid var(--line);
+  border-radius: 20rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.card__title {
+  font-size: 30rpx;
+  font-weight: 600;
+  margin-bottom: 26rpx;
+  padding-left: 18rpx;
+  border-left: 6rpx solid var(--brand);
+  line-height: 1.2;
+}
+
+.card__desc {
+  font-size: 24rpx;
+  color: var(--sub);
+  margin-bottom: 22rpx;
+}
+
+/* 表单行 */
+.field {
+  margin-bottom: 26rpx;
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
+.field__label {
+  display: block;
+  font-size: 25rpx;
+  color: var(--sub);
+  margin-bottom: 12rpx;
+}
+
+.field__input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 88rpx;
+  padding: 0 24rpx;
+  font-size: 32rpx;
+  border: 1rpx solid var(--line);
+  border-radius: 14rpx;
+  background: #fbfcfd;
+  color: var(--text);
+}
+
+.row {
+  display: flex;
+  gap: 22rpx;
+}
+
+.row > .field {
+  flex: 1;
+}
+
+/* 分段选择器 */
+.seg {
+  display: flex;
+  border: 1rpx solid var(--line);
+  border-radius: 14rpx;
+  overflow: hidden;
+}
+
+.seg__item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  color: var(--sub);
+  background: #fbfcfd;
+}
+
+.seg__item + .seg__item {
+  border-left: 1rpx solid var(--line);
+}
+
+.seg__item--on {
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* BSA 结果条 */
+.bsa-out {
+  display: flex;
+  align-items: baseline;
+  padding: 28rpx;
+  background: var(--brand-soft);
+  border-radius: 16rpx;
+  margin-top: 26rpx;
+}
+
+.bsa-out__v {
+  font-size: 54rpx;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.bsa-out__u {
+  font-size: 26rpx;
+  color: var(--sub);
+  margin-left: 10rpx;
+}
+
+.bsa-out__lbl {
+  font-size: 24rpx;
+  color: var(--sub);
+  margin-left: auto;
+}
+
+/* 双指标结果行（BSA + BMI） */
+.stat-row {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 26rpx;
+}
+
+.stat {
+  flex: 1;
+  padding: 24rpx 28rpx;
+  background: var(--brand-soft);
+  border-radius: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.stat__main {
+  display: flex;
+  align-items: baseline;
+}
+
+.stat__v {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.stat__u {
+  font-size: 24rpx;
+  color: var(--sub);
+  margin-left: 8rpx;
+}
+
+.stat__lbl {
+  font-size: 23rpx;
+  color: var(--sub);
+}
+
+/* BMI 判级小标签 */
+.bmi-tag {
+  margin-left: 8rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 21rpx;
+  font-weight: 600;
+}
+
+.bmi--low    { background: #e8f1fd; color: #2563eb; }
+.bmi--normal { background: #e5f4ea; color: #0f9d58; }
+.bmi--over   { background: #fdf3e3; color: #b97a12; }
+.bmi--obese  { background: #fdeaea; color: #d93838; }
+
+/* 儿童页收缩功能 EF 大数字 */
+.func-ef {
+  display: flex;
+  align-items: center;
+  gap: 28rpx;
+  padding: 24rpx 28rpx;
+  background: var(--brand-soft);
+  border-radius: 16rpx;
+  margin: 20rpx 0;
+}
+
+.func-ef__v {
+  font-size: 72rpx;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.func-ef__u {
+  font-size: 30rpx;
+  font-weight: 600;
+  margin-left: 6rpx;
+}
+
+.func-ef__side {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  font-size: 26rpx;
+  color: var(--text);
+}
+
+/* 指标网格 */
+.kv {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18rpx;
+}
+
+.kv__item {
+  flex: 1 1 30%;
+  min-width: 190rpx;
+  background: #fafbfc;
+  border: 1rpx solid var(--line);
+  border-radius: 16rpx;
+  padding: 20rpx 22rpx;
+}
+
+.kv__k {
+  font-size: 22rpx;
+  color: var(--sub);
+  margin-bottom: 8rpx;
+}
+
+.kv__v {
+  font-size: 38rpx;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.kv__u {
+  font-size: 22rpx;
+  font-weight: 500;
+  color: var(--sub);
+  margin-left: 4rpx;
+}
+
+/* 按钮 */
+.btn {
+  width: 100%;
+  height: 92rpx;
+  line-height: 92rpx;
+  text-align: center;
+  border-radius: 16rpx;
+  background: var(--brand);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  margin-top: 10rpx;
+}
+
+.btn--ghost {
+  background: #fff;
+  color: var(--brand);
+  border: 1rpx solid var(--brand);
+}
+
+/* 列表 */
+.list-row {
+  display: flex;
+  align-items: center;
+  padding: 26rpx 0;
+  border-bottom: 1rpx solid #f0f2f4;
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+.list-row__name {
+  flex: 1.4;
+  font-size: 27rpx;
+}
+
+.list-row__val {
+  flex: 0.9;
+  text-align: right;
+  font-size: 29rpx;
+  font-weight: 600;
+}
+
+.list-row__range {
+  flex: 1.2;
+  text-align: right;
+  font-size: 25rpx;
+  color: var(--sub);
+}
+
+.list-row__tag {
+  flex: 0 0 130rpx;
+  text-align: right;
+}
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 6rpx 18rpx;
+  border-radius: 24rpx;
+  font-size: 23rpx;
+  font-weight: 600;
+}
+
+.tag--normal { background: #e7f6ee; color: var(--ok); }
+.tag--high   { background: #fdeaea; color: var(--hi); }
+.tag--low    { background: #e8effd; color: var(--lo); }
+.tag--mild     { background: #fdf4e3; color: var(--warn); }
+.tag--moderate { background: #fdeaea; color: var(--hi); }
+.tag--severe   { background: #f8dede; color: #a11f1f; }
+.tag--none   { color: var(--sub); }
+
+/* 儿童 Z 值：带方向的异常标签（增大红 / 缩小蓝） */
+.tag--mild-high   { background: #fdf4e3; color: #b3701a; }
+.tag--mild-low    { background: #eaf1fd; color: #1d4ed8; }
+.tag--severe-high { background: #f8dede; color: #a11f1f; }
+.tag--severe-low  { background: #dfe8fa; color: #12358f; }
+
+/* ── 儿童 Z 值页 ─────────────────────────────────────────── */
+
+/* 分组小标题 */
+.peds-group {
+  font-size: 25rpx;
+  font-weight: 600;
+  color: var(--brand);
+  background: var(--brand-soft);
+  padding: 14rpx 22rpx;
+  border-radius: 12rpx;
+  margin: 30rpx 0 6rpx;
+}
+
+.peds-group:first-child {
+  margin-top: 0;
+}
+
+/* Z 值列表：等比列宽 */
+.z-row {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f2f4;
+}
+
+.z-row:last-child {
+  border-bottom: none;
+}
+
+.z-row__name {
+  flex: 1.5;
+  font-size: 26rpx;
+  line-height: 1.35;
+}
+
+.z-row__name-sub {
+  display: block;
+  font-size: 21rpx;
+  color: var(--sub);
+  margin-top: 4rpx;
+}
+
+.z-row__val {
+  flex: 0.85;
+  text-align: right;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.z-row__range {
+  flex: 1.25;
+  text-align: right;
+  font-size: 23rpx;
+  color: var(--sub);
+}
+
+.z-row__tag {
+  flex: 0 0 148rpx;
+  text-align: right;
+}
+
+/* Z 值大字强调 */
+.z-big {
+  display: flex;
+  align-items: baseline;
+  padding: 30rpx;
+  border-radius: 16rpx;
+  background: #fafbfc;
+  border: 1rpx solid var(--line);
+  margin-bottom: 22rpx;
+}
+
+.z-big__v {
+  font-size: 58rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.z-big__lbl {
+  font-size: 24rpx;
+  color: var(--sub);
+  margin-left: 16rpx;
+}
+
+.z-big--normal   .z-big__v { color: var(--ok); }
+.z-big--high     .z-big__v { color: var(--hi); }
+.z-big--low      .z-big__v { color: var(--lo); }
+.z-big--none     .z-big__v { color: var(--sub); }
+
+/* 未测状态整行变淡 */
+.z-row--none .z-row__name,
+.z-row--none .z-row__val,
+.z-row--none .z-row__range { color: #a8aeb6; }
+
+/* 折叠/说明块 */
+.peds-key {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 22rpx;
+}
+
+.peds-key__item {
+  flex: 1;
+  text-align: center;
+  padding: 18rpx 12rpx;
+  border-radius: 14rpx;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.peds-key__item--n { background: #e7f6ee; color: #0b7a44; }
+.peds-key__item--m { background: #fdf4e3; color: #a8681a; }
+.peds-key__item--s { background: #f8dede; color: #8f1b1b; }
+
+/* BSA 提示条（儿童页专用） */
+.bsa-tip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  background: var(--brand-soft);
+  border-radius: 14rpx;
+  font-size: 24rpx;
+  color: var(--brand);
+  margin-bottom: 24rpx;
+}
+
+.bsa-tip__v {
+  font-weight: 700;
+  font-size: 30rpx;
+}
+
+/* EF 进度条 */
+.efbar {
+  height: 16rpx;
+  border-radius: 8rpx;
+  margin-top: 30rpx;
+  background: linear-gradient(90deg, #d93838 0%, #e8a33d 30%, #7bc47f 52%, #0f9d58 70%);
+  position: relative;
+}
+
+.efbar__mark {
+  position: absolute;
+  top: -10rpx;
+  width: 6rpx;
+  height: 36rpx;
+  border-radius: 4rpx;
+  background: #1f2329;
+  box-shadow: 0 0 0 4rpx #fff;
+  transform: translateX(-50%);
+  transition: left .3s ease;
+}
+
+.efbar-legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 21rpx;
+  color: var(--sub);
+  margin-top: 12rpx;
+}
+
+/* 提示与免责 */
+.hint {
+  font-size: 24rpx;
+  color: var(--warn);
+  margin-top: 14rpx;
+}
+
+.note {
+  font-size: 23rpx;
+  color: var(--sub);
+  line-height: 1.7;
+  background: #fafbfc;
+  border-left: 6rpx solid var(--line);
+  padding: 20rpx 24rpx;
+  border-radius: 0 12rpx 12rpx 0;
+  margin-top: 26rpx;
+}
+
+.note--strong {
+  color: #a15c00;
+  background: #fff9ee;
+  border-left-color: var(--warn);
+}
+
+.result-title {
+  font-size: 26rpx;
+  color: var(--sub);
+  margin: 30rpx 0 18rpx;
+}

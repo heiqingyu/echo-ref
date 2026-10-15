@@ -1,0 +1,214 @@
+/* 瓣膜页 —— AS / AR / MS / MR / TR */
+
+/* ── 瓣膜切换条 ── */
+.vswitch {
+  display: flex;
+  gap: 10rpx;
+  margin-bottom: 22rpx;
+}
+
+.vswitch__i {
+  flex: 1;
+  background: #fff;
+  border: 1rpx solid var(--line);
+  border-radius: 14rpx;
+  padding: 14rpx 6rpx;
+  text-align: center;
+}
+
+.vswitch__i--on {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.vswitch__s {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.vswitch__n {
+  display: block;
+  font-size: 17rpx;
+  color: var(--sub);
+  margin-top: 4rpx;
+  line-height: 1.2;
+}
+
+.vswitch__i--on .vswitch__s,
+.vswitch__i--on .vswitch__n {
+  color: #fff;
+}
+
+/* ── 内容表 ── */
+.vtbl {
+  margin: 18rpx 0;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.vtbl__r {
+  display: flex;
+  border-top: 1rpx solid #f0f1f3;
+  background: #fff;
+}
+
+.vtbl__r:first-child {
+  border-top: 0;
+}
+
+.vtbl__r--h {
+  background: #eef2ff;
+  font-weight: 600;
+  color: #374151;
+}
+
+.vtbl__c {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 12rpx 14rpx;
+  font-size: 23rpx;
+  line-height: 1.45;
+  box-sizing: border-box;
+}
+
+.vtbl--2 .vtbl__c:first-child {
+  flex: 0 0 30%;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* ── 文本块 ── */
+.vblock__t {
+  font-size: 25rpx;
+  color: #374151;
+  line-height: 1.6;
+  margin-top: 14rpx;
+}
+
+.vblock__h {
+  font-size: 27rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin-top: 24rpx;
+}
+
+.vblock__f {
+  margin-top: 14rpx;
+  background: #f8fafc;
+  border-left: 6rpx solid var(--brand);
+  border-radius: 8rpx;
+  padding: 16rpx 18rpx;
+  font-size: 23rpx;
+  color: #1d4ed8;
+  line-height: 1.7;
+  word-break: break-all;
+}
+
+/* ── 结果 ── */
+.vsum {
+  margin-top: 22rpx;
+  border-radius: 12rpx;
+  padding: 14rpx 20rpx;
+  font-size: 25rpx;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.vsum--mild {
+  background: #ecfdf5;
+  color: #0f9d58;
+}
+
+.vsum--moderate {
+  background: #fff7ed;
+  color: #c2740a;
+}
+
+.vsum--severe {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.vres {
+  margin-top: 10rpx;
+}
+
+.vres__r {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12rpx 4rpx;
+  border-top: 1rpx solid #f0f1f3;
+}
+
+.vres__r:first-child {
+  border-top: 0;
+}
+
+.vres__k {
+  font-size: 24rpx;
+  color: #4b5563;
+  flex: 1;
+  padding-right: 16rpx;
+}
+
+.vres__v {
+  font-size: 25rpx;
+  font-weight: 600;
+  color: #1d4ed8;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.vres__idle {
+  font-size: 24rpx;
+  color: #9ca3af;
+  padding: 14rpx 4rpx;
+}
+
+.lvl {
+  display: inline-block;
+  margin-left: 12rpx;
+  font-size: 21rpx;
+  font-weight: 600;
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  vertical-align: middle;
+}
+
+.lvl--none {
+  background: #eef2ff;
+  color: #2563eb;
+}
+
+.lvl--mild {
+  background: #ecfdf5;
+  color: #0f9d58;
+}
+
+.lvl--moderate {
+  background: #fff7ed;
+  color: #c2740a;
+}
+
+.lvl--severe {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.clear-btn {
+  margin: 24rpx 0 0;
+  background: #ffffff;
+  color: #6b7280;
+  font-size: 28rpx;
+  border-radius: 14rpx;
+}
+
+.clear-btn::after {
+  border: 1rpx solid #e3e6ea;
+}
