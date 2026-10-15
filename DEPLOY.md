@@ -2,10 +2,16 @@
 
 把「心脏超声参考值」这个网页版发布成一个公开链接，让别人也能打开。
 
-> **重要前提**：本指南发布的 `docs/` 目录里，**只包含你自己原创的三页** ——
-> 参数·参考值 / EF 计算 / 儿童 Z 值。
-> 转载自 `tte-quickref` 的三个页签（其他计算 / 瓣膜评估 / 节段划分）已经在构建阶段
-> 被整块剥离（页签、页面、CSS 样式、JS 引擎全部删除），不会出现在公开网页里，
+> **你的账户信息**（本指南已按此填好命令）
+>
+> - GitHub 用户名：`heiqingyu`
+> - 建议仓库名：`echo-ref`
+> - 上线后的地址：**https://heiqingyu.github.io/echo-ref/**
+
+> **重要前提**：本指南发布的 `docs/` 目录里，**只包含你自己原创的三页** ——  
+> 参数·参考值 / EF 计算 / 儿童 Z 值。  
+> 转载自 `tte-quickref` 的三个页签（其他计算 / 瓣膜评估 / 节段划分）已经在构建阶段  
+> 被整块剥离（页签、页面、CSS 样式、JS 引擎全部删除），不会出现在公开网页里，  
 > 也不会进入 git 仓库。
 
 ---
@@ -14,10 +20,10 @@
 
 构建脚本 `build-www.js` 会同时产出两份：
 
-| 文件 | 页签 | 用途 |
-|---|---|---|
-| `www/index.html` | 6 个（含转载的 3 个） | **本地自用**，不进 git |
-| `docs/index.html` | 3 个（仅原创） | **发布用**，只传这个 |
+| 文件                | 页签            | 用途              |
+| ----------------- | ------------- | --------------- |
+| `www/index.html`  | 6 个（含转载的 3 个） | **本地自用**，不进 git |
+| `docs/index.html` | 3 个（仅原创）      | **发布用**，只传这个    |
 
 `docs/` 目录就是 GitHub Pages 的「发布源」。里面只有两个文件：
 
@@ -36,29 +42,33 @@ node build-www.js
 
 ---
 
-## 一、安装并配置 Git
+## 一、安装并配置 Git ✅ 已完成
 
-你已经装了 Git（版本 2.55）。只需确认身份信息已填：
+> **这一步已经处理好了** —— 本地仓库的提交用的是内置身份，不影响推送。
+>
+> 如果你希望 GitHub 上显示的提交者是你自己的账号，建议顺手设一下全局身份：
+>
+> ```bash
+> git config --global user.name "heiqingyu"
+> git config --global user.email "你的GitHub注册邮箱"
+> ```
+>
+> 设完后，以后的新提交就会挂在你的账号名下（已有两个提交的作者仍是内置身份，无妨）。
 
-```bash
-git config --global user.name "你的名字"
-git config --global user.email "你的邮箱"
-```
-
-查一下是否已设置：
+你已经装了 Git（版本 2.55）。确认身份信息是否已设置：
 
 ```bash
 git config --global --get user.name
 git config --global --get user.email
 ```
 
-如果两条都打印出内容，就可以跳过这步。
+两条都打印出内容就说明配好了。
 
 ---
 
 ## 二、本地建仓库并提交
 
-> **好消息**：这一步已经帮你做完了 —— 本地仓库已初始化并完成首次提交。
+> **好消息**：这一步已经帮你做完了 —— 本地仓库已初始化并完成首次提交。  
 > 你可以跳到第三步。下面留着是让你知道每一步在干什么，以及以后重建仓库时怎么操作。
 
 在项目目录里执行：
@@ -84,29 +94,34 @@ git commit -m "心脏超声参考值 · 网页版首次发布"
 
 ### `.gitignore` 已经排除了什么
 
-| 排除项 | 原因 |
-|---|---|
-| `ref-tte/`、`_attic/` | 第三方参考素材，版权风险 |
-| `prototype.html`、`prototype-peds.html` | 原型草图 |
-| `android-app/keystore.jks` | ⚠️ **APK 签名私钥**，泄露后他人可用你的名义签发应用 |
-| `android-app/build/`、`android-app/dist/` | Android 编译中间产物，体积大且无必要 |
-| `android-app/*.log` | 编译日志 |
-| `.debug-*` | 调试临时文件 |
-| `project.private.config.json` | 微信开发者工具的本地配置 |
+| 排除项                                      | 原因                              |
+| ---------------------------------------- | ------------------------------- |
+| `ref-tte/`、`_attic/`                     | 第三方参考素材，版权风险                    |
+| `prototype.html`、`prototype-peds.html`   | 原型草图                            |
+| `android-app/keystore.jks`               | ⚠️ **APK 签名私钥**，泄露后他人可用你的名义签发应用 |
+| `android-app/build/`、`android-app/dist/` | Android 编译中间产物，体积大且无必要          |
+| `android-app/*.log`                      | 编译日志                            |
+| `.debug-*`                               | 调试临时文件                          |
+| `project.private.config.json`            | 微信开发者工具的本地配置                    |
 
 实际入库 **108 个文件**。提交前请用 `git status` 再确认一遍，确保列表里没有你不希望公开的东西。
 
-> ⚠️ **特别注意 `keystore.jks`**：它是 APK 的签名密钥，一旦推到公开仓库，
-> 任何人都能拿它签发冒牌 APK。`.gitignore` 已排除，但如果你手动 `git add -f` 强推过，
+> ⚠️ **特别注意 `keystore.jks`**：它是 APK 的签名密钥，一旦推到公开仓库，  
+> 任何人都能拿它签发冒牌 APK。`.gitignore` 已排除，但如果你手动 `git add -f` 强推过，  
 > 需要从历史记录里彻底清除（用 `git filter-repo` 或直接重建仓库）。
 
 ---
 
-## 三、在 GitHub 上新建仓库
+## 三、在 GitHub 上新建仓库 ✅ 已完成
+
+> **这一步你已经做完了** —— 仓库 `heiqingyu/echo-ref` 已存在，公开（Public），
+> 默认分支 `main`，目前是空的。
+>
+> 下面留着是让你知道当时该注意什么，以及以后建别的仓库时怎么操作。
 
 1. 浏览器打开 <https://github.com/new>
 2. 填写：
-   - **Repository name**：比如 `echo-ref`（只能用英文/数字/连字符）
+   - **Repository name**：`echo-ref`（只能用英文/数字/连字符）
    - **Description**：可留空，或写「心脏超声参考值速查（学习用）」
    - **Public / Private**：⚠️ **必须选 Public**
      （免费账号的 Pages 只能从公开仓库发布）
@@ -125,16 +140,31 @@ git commit -m "心脏超声参考值 · 网页版首次发布"
 
 ## 四、把本地仓库推上去
 
-把下面命令里的 `你的用户名` 和 `echo-ref`（仓库名）换成你自己的：
+> **关联远端这一步也已完成** —— `git remote add origin` 已经执行过，`origin`
+> 已指向 `https://github.com/heiqingyu/echo-ref.git`。
+> **你只需要执行最后那条 `git push`。**
 
 ```bash
 cd <project-directory>
 
-# 关联远端仓库
-git remote add origin https://github.com/你的用户名/echo-ref.git
+# ① 关联远端仓库（已执行过，无需重复；重复执行会报 "remote origin already exists"）
+# git remote add origin https://github.com/heiqingyu/echo-ref.git
 
-# 推送
+# 确认一下远端是否正确（应输出 fetch/push 两行）
+git remote -v
+
+# ② 推送 —— ★★★ 你只需要跑这一条 ★★★
 git push -u origin main
+```
+
+推送成功后应该看到类似输出：
+
+```
+Enumerating objects: ...
+Writing objects: 100% (...)
+To https://github.com/heiqingyu/echo-ref.git
+ * [new branch]      main -> main
+branch 'main' set up to track 'origin/main'.
 ```
 
 ### 关于登录
@@ -164,7 +194,7 @@ Windows 上第一次输入后，系统会调用「凭据管理器」把它存起
 
 推送成功后：
 
-1. 打开仓库页面 `https://github.com/你的用户名/echo-ref`
+1. 打开仓库页面 `https://github.com/heiqingyu/echo-ref`
 2. 点顶部 **Settings**（设置）
 3. 左侧栏找到 **Pages**（在 "Code and automation" 分组下）
 4. **Build and deployment** 区域：
@@ -172,24 +202,17 @@ Windows 上第一次输入后，系统会调用「凭据管理器」把它存起
    - **Branch**：第一个下拉选 **`main`**，第二个下拉选 **`/docs`**
    - 点 **Save**
 5. 等 1～2 分钟，刷新页面，顶部会出现绿色提示：
-
-   > ✅ Your site is live at `https://你的用户名.github.io/echo-ref/`
+   > ✅ Your site is live at `https://heiqingyu.github.io/echo-ref/`
 
 ### 你的访问地址
 
 ```
-https://你的用户名.github.io/echo-ref/
+https://heiqingyu.github.io/echo-ref/
 ```
 
-比如用户名是 `bdrwss`、仓库名是 `echo-ref`，地址就是：
-
-```
-https://bdrwss.github.io/echo-ref/
-```
-
-> 注意末尾的 `/`，不加也能访问，但加上更稳。
-> 仓库名若取作 `你的用户名.github.io`，地址就是 `https://你的用户名.github.io/`（根路径）。
-> 本项目建议用普通仓库名，地址带子路径，更清晰。
+> 注意末尾的 `/`，不加也能访问，但加上更稳。可以直接收藏，分享给别人也用它。
+> 仓库名若取作 `heiqingyu.github.io`，地址就会变成 `https://heiqingyu.github.io/`（根路径）——
+> 但本项目用的是普通仓库名，所以地址带 `echo-ref` 子路径。
 
 ---
 
@@ -213,7 +236,7 @@ git push
 
 推上去之后，GitHub 会在 **1～2 分钟内**自动重新部署。刷新网页即可看到新版本。
 
-> 如果改了没生效：先强制刷新浏览器（`Ctrl + F5`）清缓存；
+> 如果改了没生效：先强制刷新浏览器（`Ctrl + F5`）清缓存；  
 > 再到仓库的 **Actions** 标签页看部署有没有报错。
 
 ---
@@ -222,12 +245,12 @@ git push
 
 **完全免费，不需要绑银行卡。** 个人用这种规模绰绰有余。
 
-| 项目 | 免费额度 | 本项目的实际占用 |
-|---|---|---|
-| 托管费用 | 永久免费 | — |
-| 仓库容量 | 建议 ≤ 1 GB | 约 100 KB |
+| 项目    | 免费额度         | 本项目的实际占用    |
+| ----- | ------------ | ----------- |
+| 托管费用  | 永久免费         | —           |
+| 仓库容量  | 建议 ≤ 1 GB    | 约 100 KB    |
 | 月访问流量 | 软上限 100 GB/月 | 单次打开约 94 KB |
-| 构建次数 | 软上限 10 次/小时 | 只有你推送时才触发 |
+| 构建次数  | 软上限 10 次/小时  | 只有你推送时才触发   |
 
 「软上限」的意思是：超了不会立刻收费，而是会给你发提醒邮件；真有异常流量时 GitHub 会先联系你，不会直接扣钱。
 
@@ -248,8 +271,8 @@ git push
 
 发布版顶部会自动插入一段说明：
 
-> **关于本页** —— 本页为个人整理的成人经胸超声（TTE）参考值速查工具……
-> **本页内容为自行整理，非任何学会或机构的官方产品**，仅供医学教育与速查使用；
+> **关于本页** —— 本页为个人整理的成人经胸超声（TTE）参考值速查工具……  
+> **本页内容为自行整理，非任何学会或机构的官方产品**，仅供医学教育与速查使用；  
 > 参考值需结合患者体型、血流状态及测量方法，**不能单凭一个指标作出诊断**。
 
 如果想改措辞，编辑 `build-www.js` 里 `buildPublicHtml()` 末尾那段 `<div class="pubnote">` 即可，重新构建就会生效。
@@ -270,26 +293,27 @@ git push
 
 ## 九、常见问题
 
-**Q：Push 报 `remote: Support for password authentication was removed`**
+**Q：Push 报 `remote: Support for password authentication was removed`**  
 A：用了账号密码。改用 Personal Access Token（见第四步「方式 A」）。
 
-**Q：Pages 设置里找不到 `/docs` 这个选项**
+**Q：Pages 设置里找不到 `/docs` 这个选项**  
 A：说明 `docs/` 目录还没推上去。先确认 `git push` 成功、仓库里能看到 `docs/index.html`。
 
-**Q：打开网址是 404**
-A：三种可能 —— ① 刚推送，还没部署完（等 2 分钟）；② Pages 的 Branch 没选 `/docs`；③ `docs/` 里没有 `index.html`。
+**Q：打开网址是 404**  
+A：三种可能 —— ① 刚推送，还没部署完（等 2 分钟）；② Pages 的 Branch 没选 `/docs`；③ `docs/` 里没有 `index.html`。  
 先到仓库 **Actions** 标签页看部署记录有没有红色❌。
 
-**Q：网页样式全乱了 / 布局错位**
+**Q：网页样式全乱了 / 布局错位**  
 A：可能是 `.nojekyll` 没推上去。GitHub 默认会用 Jekyll 处理站点，它会忽略下划线开头的文件、并可能改动输出。确认 `docs/.nojekyll` 在仓库里存在（空文件也算）。
 
-**Q：想换仓库名 / 换用户名**
+**Q：想换仓库名 / 换用户名**  
 A：换仓库名后旧网址会失效，Pages 会给出新地址；换用户名同理。改完记得重新设置远端：
+
 ```bash
 git remote set-url origin https://github.com/新用户名/新仓库名.git
 ```
 
-**Q：想停止公开访问**
+**Q：想停止公开访问**  
 A：仓库 Settings → Pages → 把 Source 改回 `None`，或在 Settings 最下方 **Delete this repository**。
 
 ---
@@ -297,16 +321,19 @@ A：仓库 Settings → Pages → 把 Source 改回 `None`，或在 Settings 最
 ## 附：一页速查
 
 ```bash
-# 首次发布
+# ══════ 你现在只需执行这两步 ══════
 cd <project-directory>
-node build-www.js
-git init && git branch -M main
-git add . && git commit -m "首次发布"
-git remote add origin https://github.com/你的用户名/echo-ref.git
 git push -u origin main
-# → 然后到 GitHub 仓库 Settings → Pages → main /docs → Save
-# → 地址：https://你的用户名.github.io/echo-ref/
+# → 然后到 https://github.com/heiqingyu/echo-ref/settings/pages
+#    Source: Deploy from a branch ／ Branch: main ／ 目录: /docs ／ Save
+# → 等 1~2 分钟，访问：https://heiqingyu.github.io/echo-ref/
 
-# 后续更新
+# ══════ 以下步骤均已完成，留档备查 ══════
+# node build-www.js                        # 生成 www/ 与 docs/
+# git init && git branch -M main           # 初始化仓库
+# git add . && git commit -m "首次发布"     # 首次提交（108 个文件）
+# git remote add origin https://github.com/heiqingyu/echo-ref.git
+
+# ══════ 以后每次更新 ══════
 node build-www.js && git add . && git commit -m "更新" && git push
 ```
