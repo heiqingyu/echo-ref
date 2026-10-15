@@ -5,8 +5,19 @@
 > **你的账户信息**（本指南已按此填好命令）
 >
 > - GitHub 用户名：`heiqingyu`
-> - 建议仓库名：`echo-ref`
+> - 仓库名：`echo-ref`（已创建，公开）
 > - 上线后的地址：**https://heiqingyu.github.io/echo-ref/**
+
+> **进度：只剩最后一步**
+>
+> | 步骤 | 状态 |
+> |---|---|
+> | 建仓库 / 关联远端 | ✅ 已完成 |
+> | 提交代码（108 个文件） | ✅ 已完成 |
+> | 推送到 GitHub | ✅ 已完成（`db38e80`） |
+> | **开启 Pages** | ⬜ **← 你去点两下就行**（见第五节） |
+>
+> 开启后等 1～2 分钟即可访问：<https://heiqingyu.github.io/echo-ref/>
 
 > **重要前提**：本指南发布的 `docs/` 目录里，**只包含你自己原创的三页** ——  
 > 参数·参考值 / EF 计算 / 儿童 Z 值。  
@@ -138,13 +149,14 @@ git commit -m "心脏超声参考值 · 网页版首次发布"
 
 ---
 
-## 四、把本地仓库推上去
+## 四、把本地仓库推上去 ✅ 已完成
 
-> **关联远端这一步也已完成** —— `git remote add origin` 已经执行过，`origin`
-> 已指向 `https://github.com/heiqingyu/echo-ref.git`。
-> **你只需要推送。**
+> **全部完成** —— `origin` 已关联，`main` 已推到远端并建立跟踪关系。
+> 远端最新提交 `db38e80`，仓库里能看到全部文件。
+>
+> 下面内容留档：记录**踩过的坑**和对应的解法，以后重新配置时会用到。
 
-### ⚠️ 先解决一个问题：PowerShell 里敲 `git` 会报「无法识别」
+### ⚠️ 踩坑记录 1：PowerShell 里敲 `git` 报「无法识别」
 
 **原因**：你机器上没装正式的 Git for Windows，`git` 来自 集成环境 自带的
 PortableGit，而它的目录不在系统 PATH 里。所以：
@@ -158,9 +170,31 @@ git : 无法将“git”项识别为 cmdlet、函数、脚本文件或可运行�
 
 ---
 
-#### 解法 ①（最省事）：双击项目里的 `推送.bat`
+### ⚠️ 踩坑记录 2：`.bat` 文件中文乱码
 
-项目根目录有个 **`推送.bat`**，双击即可。它会自动：
+**现象**：双击 `推送.bat` 后，命令被拆得七零八落：
+
+```
+'"<project-directory>\"' 不是内部或外部命令...
+'晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲' 不是内部或外部命令...
+```
+
+**原因**：`.bat` 内容是 UTF-8 编码，但 cmd.exe 默认按 GBK（中文 ANSI 代码页）解析，
+中文全变成乱码；乱码里又混进了类似引号的字符，把命令都拆坏了。
+
+**解决**：脚本**内容全部改成英文/ASCII**，文件名也改成 ASCII 的 `push.bat`。
+纯 ASCII 的文件在任何代码页下都不会乱码。
+
+> 顺带：`.bat` 必须用 **CRLF** 换行；`.ps1` 若要写中文，必须存成
+> **UTF-8 with BOM**（PowerShell 5.1 读无 BOM 的 UTF-8 会按 ANSI 解析）。
+
+两者的最终版本均为**纯 ASCII**，无此问题。
+
+---
+
+#### 解法 ①（最省事）：双击项目里的 `push.bat`
+
+项目根目录有个 **`push.bat`**，双击即可。它会自动：
 
 1. 用完整路径调用 PortableGit（绕开 PATH 问题）
 2. 重新构建网页（`node build-www.js`）
@@ -223,11 +257,23 @@ git push -u origin main
 
 ---
 
-### 关于登录
+### 关于登录 ✅ 已验证可用
 
-推送时会要求认证。GitHub 从 2021 年起**不再支持账号密码**，要用下面两种方式之一：
+**实测结果**：推送时终端显示了一行
 
-**方式 A：Personal Access Token（推荐，最省事）**
+```
+info: please complete authentication in your browser...
+```
+
+然后自动打开浏览器完成授权 —— **不需要手动创建 token**。
+你机器上的 Git 自带凭据管理器（Git Credential Manager），会弹浏览器走 GitHub 的
+OAuth 流程。授权一次后凭据被存进 Windows 凭据管理器，以后不用再登录。
+
+> 如果哪天浏览器授权失败、或者它改回让你输用户名密码，再用下面的 token 方式兜底。
+
+**兜底方式：Personal Access Token**
+
+GitHub 从 2021 年起**不支持账号密码**，必须用 token：
 
 1. 打开 <https://github.com/settings/tokens>
 2. 点 **Generate new token** → 选 **Tokens (classic)**
@@ -240,25 +286,27 @@ git push -u origin main
 
 Windows 上第一次输入后，系统会调用「凭据管理器」把它存起来，之后就不用再输了。
 
-**方式 B：用 GitHub Desktop / VS Code 登录**
-
-如果你装了 GitHub Desktop，可以直接用它的图形界面推送，不需要手敲 token。
-
 ---
 
-## 五、开启 GitHub Pages
+## 五、开启 GitHub Pages ← ★ 你现在只需要做这一步
 
-推送成功后：
+> **推送已经完成了** ✅ 本地 `main` 已跟踪 `origin/main`，远端最新提交 `db38e80`，
+> 仓库里能看到 `docs/index.html` 和 `docs/.nojekyll`。
+> **只差最后一步：在网页上开启 Pages。**
 
-1. 打开仓库页面 `https://github.com/heiqingyu/echo-ref`
-2. 点顶部 **Settings**（设置）
-3. 左侧栏找到 **Pages**（在 "Code and automation" 分组下）
-4. **Build and deployment** 区域：
+操作步骤：
+
+1. 打开 <https://github.com/heiqingyu/echo-ref/settings/pages>
+   （或：仓库页面 → 顶部 **Settings** → 左侧栏 **Pages**）
+2. **Build and deployment** 区域：
    - **Source**：选 `Deploy from a branch`
    - **Branch**：第一个下拉选 **`main`**，第二个下拉选 **`/docs`**
    - 点 **Save**
-5. 等 1～2 分钟，刷新页面，顶部会出现绿色提示：
+3. 等 1～2 分钟，刷新页面，顶部会出现绿色提示：
    > ✅ Your site is live at `https://heiqingyu.github.io/echo-ref/`
+
+> ⚠️ **两个下拉框都要动**：第一个选分支 `main`，第二个选目录 `/docs`。
+> 只选分支不选目录的话，Pages 会去找仓库根目录的 `index.html`（那里没有），结果 404。
 
 ### 你的访问地址
 
@@ -274,9 +322,9 @@ https://heiqingyu.github.io/echo-ref/
 
 ## 六、以后怎么更新
 
-### 最简单：双击 `推送.bat`
+### 最简单：双击 `push.bat`
 
-改完代码（或什么都没改、只想重新构建），**双击项目根目录的 `推送.bat`** 即可。
+改完代码（或什么都没改、只想重新构建），**双击项目根目录的 `push.bat`** 即可。
 它会自动：重新构建 → 提交 → 推送 → 显示结果。
 
 ### 或者手动三步
@@ -363,7 +411,7 @@ git push
 A：你的机器上没装独立的 Git for Windows，`git` 来自集成环境自带的 PortableGit，
 其目录不在系统 PATH 里。三种解法：
 
-- **双击 `推送.bat`**（最省事，脚本已内置完整路径）
+- **双击 `push.bat`**（最省事，脚本已内置完整路径）
 - 用完整路径：`& "<git-path>" push`
 - 永久加 PATH（见第四节解法 ③），或干脆装 <https://git-scm.com/download/win>
 
@@ -396,24 +444,31 @@ A：仓库 Settings → Pages → 把 Source 改回 `None`，或在 Settings 最
 
 ## 附：一页速查
 
-```powershell
-# ══════ 你现在只需做这两件事 ══════
+```text
+════════════════════════════════════════════════════════
+ 你现在只需做一件事：开启 Pages
+════════════════════════════════════════════════════════
 
-# ① 双击项目里的「推送.bat」
-#     或手动执行（PowerShell 里 git 不在 PATH，用完整路径）：
-cd <project-directory>
-& "<git-path>" push -u origin main
+  打开  https://github.com/heiqingyu/echo-ref/settings/pages
+  Source : Deploy from a branch
+  Branch : main   ／   目录: /docs
+  点 Save
 
-# ② 开启 Pages
-#     https://github.com/heiqingyu/echo-ref/settings/pages
-#     Source: Deploy from a branch ／ Branch: main ／ 目录: /docs ／ Save
-#     → 等 1~2 分钟 → https://heiqingyu.github.io/echo-ref/
+  → 等 1~2 分钟
+  → 访问 https://heiqingyu.github.io/echo-ref/
 
-# ══════ 以下均已完成，留档备查 ══════
-# node build-www.js                        # 生成 www/ 与 docs/
-# git init && git branch -M main           # 初始化仓库
-# git add . && git commit -m "首次发布"     # 首次提交（108 个文件）
-# git remote add origin https://github.com/heiqingyu/echo-ref.git
+════════════════════════════════════════════════════════
+ 以后每次更新网页：双击 push.bat 即可
+════════════════════════════════════════════════════════
+ （它会自动：构建 → 提交 → 推送）
 
-# ══════ 以后每次更新：双击「推送.bat」即可 ══════
+ 不想双击，就在 PowerShell 里跑：
+   cd <project-directory>
+   powershell -ExecutionPolicy Bypass -File .\push.ps1
+
+════════════════════════════════════════════════════════
+ 已完成，留档备查
+════════════════════════════════════════════════════════
+ 建仓库 / 关联 origin / 首次提交(108文件) / 推送 → 全部完成
+ 远端最新提交 db38e80
 ```
