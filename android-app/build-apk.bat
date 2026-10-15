@@ -60,12 +60,29 @@ python "%HERE%pack-assets.py" "%BUILD%\unsigned.apk" "%HERE%assets\index.html" c
 if errorlevel 1 goto :fail
 
 echo [7/7] sign...
+REM Keystore password comes from the KS_PASS environment variable.
+REM Set it before running, e.g.:  set KS_PASS=yourpassword
+REM (Per-machine default lives in keystore.properties, which is gitignored.)
+if not defined KS_PASS (
+    if exist "%HERE%keystore.properties" (
+        for /f "usebackq tokens=1,* delims==" %%A in ("%HERE%keystore.properties") do (
+            if /i "%%A"=="KS_PASS" set "KS_PASS=%%B"
+        )
+    )
+)
+if not defined KS_PASS (
+    echo [ERROR] KS_PASS not set.
+    echo         Create android-app\keystore.properties with a line:
+    echo             KS_PASS=yourpassword
+    echo         or set the environment variable KS_PASS before building.
+    goto :fail
+)
 if not exist "%HERE%keystore.jks" (
     echo   generate keystore...
-    call %KEYTOOL% -genkeypair -keystore "%HERE%keystore.jks" -alias echoref -validity 10000 -keyalg RSA -keysize 2048 -storepass <password> -keypass <password> -dname "CN=EchoRef, OU=Personal, O=Personal, C=CN"
+    call %KEYTOOL% -genkeypair -keystore "%HERE%keystore.jks" -alias echoref -validity 10000 -keyalg RSA -keysize 2048 -storepass "%KS_PASS%" -keypass "%KS_PASS%" -dname "CN=EchoRef, OU=Personal, O=Personal, C=CN"
     if errorlevel 1 goto :fail
 )
-call "%BT%\apksigner.bat" sign --ks "%HERE%keystore.jks" --ks-key-alias echoref --ks-pass pass:<password> --key-pass pass:<password> --out "%DIST%\EchoRef.apk" "%BUILD%\unsigned.apk"
+call "%BT%\apksigner.bat" sign --ks "%HERE%keystore.jks" --ks-key-alias echoref --ks-pass pass:%KS_PASS% --key-pass pass:%KS_PASS% --out "%DIST%\EchoRef.apk" "%BUILD%\unsigned.apk"
 if errorlevel 1 goto :fail
 
 echo.
