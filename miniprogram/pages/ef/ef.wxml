@@ -1,0 +1,126 @@
+<view class="page-wrap">
+
+  <view class="card">
+    <view class="card__title">M 型 / 二维内径测量</view>
+    <view class="card__desc">单位为 mm。舒张末内径应大于收缩末内径。</view>
+
+    <view class="row">
+      <view class="field">
+        <text class="field__label">LVIDd 舒张末内径 / mm</text>
+        <input class="field__input" type="digit" value="{{lvedd}}" placeholder="如 50"
+               bindinput="onInput" data-k="lvedd" />
+      </view>
+      <view class="field">
+        <text class="field__label">LVIDs 收缩末内径 / mm</text>
+        <input class="field__input" type="digit" value="{{lvesd}}" placeholder="如 32"
+               bindinput="onInput" data-k="lvesd" />
+      </view>
+    </view>
+
+    <view class="row">
+      <view class="field">
+        <text class="field__label">IVSd 室间隔厚度 / mm</text>
+        <input class="field__input" type="digit" value="{{ivsd}}" placeholder="如 9"
+               bindinput="onInput" data-k="ivsd" />
+      </view>
+      <view class="field">
+        <text class="field__label">LVPWd 后壁厚度 / mm</text>
+        <input class="field__input" type="digit" value="{{lvpwd}}" placeholder="如 9"
+               bindinput="onInput" data-k="lvpwd" />
+      </view>
+    </view>
+
+    <view wx:if="{{!valid}}" class="hint">{{hintText}}</view>
+
+    <view class="btn" bindtap="doCalc" style="margin-top:22rpx">计算 EF / FS / 左室质量</view>
+  </view>
+
+  <view wx:if="{{hasResult}}" class="card">
+    <view class="card__title">计算结果</view>
+
+    <view class="result-title">容积指标（Teichholz 法）</view>
+    <view class="kv">
+      <view class="kv__item">
+        <view class="kv__k">EDV 舒张末容积</view>
+        <text class="kv__v">{{r.EDV}}</text><text class="kv__u">mL</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">ESV 收缩末容积</view>
+        <text class="kv__v">{{r.ESV}}</text><text class="kv__u">mL</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">SV 每搏量</view>
+        <text class="kv__v">{{r.SV}}</text><text class="kv__u">mL</text>
+      </view>
+    </view>
+
+    <view class="result-title">收缩功能</view>
+    <view class="kv">
+      <view class="kv__item">
+        <view class="kv__k">EF 射血分数</view>
+        <text class="kv__v" style="color:{{efColor}}">{{r.EF}}</text><text class="kv__u">%</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">FS 缩短分数</view>
+        <text class="kv__v">{{r.FS}}</text><text class="kv__u">%</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">RWT 相对室壁厚度</view>
+        <text class="kv__v">{{r.RWT}}</text>
+      </view>
+    </view>
+
+    <view class="efbar">
+      <view class="efbar__mark" style="left:{{efMarkLeft}}%"></view>
+    </view>
+    <view class="efbar-legend">
+      <text>&lt;30 重度</text>
+      <text>30–44 中度</text>
+      <text>45–54 轻度</text>
+      <text>≥55 正常</text>
+    </view>
+    <view style="margin-top:26rpx;font-size:27rpx">
+      EF 分级：
+      <text class="tag {{efCls}}">{{efGrade}}</text>
+      <text style="color:#6b7280;margin-left:14rpx;font-size:24rpx">依据 ASE 2015 阈值</text>
+    </view>
+
+    <view class="result-title">左室质量（Devereux 公式）</view>
+    <view class="kv">
+      <view class="kv__item">
+        <view class="kv__k">LVM 左室质量</view>
+        <text class="kv__v">{{r.LVM}}</text><text class="kv__u">g</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">LVM/BSA 质量指数</view>
+        <text class="kv__v">{{lvmBsaText}}</text><text class="kv__u">g/m²</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">当前 BSA</view>
+        <text class="kv__v">{{bsaText}}</text><text class="kv__u">m²</text>
+      </view>
+    </view>
+
+    <view class="btn btn--ghost" bindtap="goReference" style="margin-top:28rpx">
+      与正常参考值对照
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card__title">计算公式说明</view>
+    <view class="note">
+      Teichholz 法（M 型单平面）：{{'\n'}}
+      V = 7 × D³ ÷ (2.4 + D)，D 为内径（cm），V 为容积（mL）{{'\n\n'}}
+      EF = (EDV − ESV) ÷ EDV × 100%{{'\n'}}
+      FS = (LVIDd − LVIDs) ÷ LVIDd × 100%{{'\n'}}
+      RWT = 2 × LVPWd ÷ LVEDD{{'\n\n'}}
+      Devereux 公式：{{'\n'}}
+      LVM = 0.8 × 1.04 × [(LVIDd + IVSd + LVPWd)³ − LVIDd³] + 0.6
+    </view>
+    <view class="note note--strong">
+      Teichholz 法假设左室为对称椭球体，在左室形态明显异常（室壁瘤、显著扩大）时
+      准确性下降，此时建议采用双平面 Simpson 法。本计算结果仅供专业参考，不作为诊断依据。
+    </view>
+  </view>
+
+</view>

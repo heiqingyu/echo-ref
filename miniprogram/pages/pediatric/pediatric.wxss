@@ -1,0 +1,9 @@
+/* 儿童 Z 值页 —— 样式继承 app.wxss */
+
+.page-wrap {
+  padding-bottom: 60rpx;
+}
+
+.footer-btns {
+  margin-top: 26rpx;
+}

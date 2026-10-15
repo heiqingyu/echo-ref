@@ -1,0 +1,813 @@
+/**
+ * 构建脚本：把微信小程序的两套引擎 + 页面，合成为单文件 Web 应用
+ *
+ * 设计原则：
+ *   ★ 引擎源码**直接从 miniprogram/utils/*.js 读取**，不手抄。
+ *     做法是剥掉 `module.exports` 语句，加一层 window 挂载。
+ *     这样小程序与 APK 永远共用同一份算法，从根上杜绝漂移。
+ *
+ * 两个产出：
+ *   ① www/index.html            完整版（6 页签），供 APK 内嵌与本地预览
+ *   ② docs/index.html           发布版（仅 3 页签：参数·参考值 / EF 计算 / 儿童 Z 值），
+ *                              可直接作为 GitHub Pages 的发布源，不含转载内容
+ *
+ * 用法：node build-www.js  [--full]
+ *   --full   只生成完整版（跳过 docs 发布版）
+ */
+const fs = require('fs');
+const path = require('path');
+
+const ROOT = __dirname;
+const MP = path.join(ROOT, 'miniprogram');
+const OUT = path.join(ROOT, 'www', 'index.html');
+
+/** 发布版（GitHub Pages）保留的页签：只留自有内容，转载内容不上线 */
+const PUBLIC_TABS = ['index', 'ef', 'peds'];
+
+/* ---------- 1. 抽取引擎源码 ---------- */
+
+/** 把 CommonJS 模块转成浏览器可用的 IIFE，挂到 window[globalName] */
+function wrapEngine(file, globalName) {
+  let src = fs.readFileSync(file, 'utf8');
+
+  // 去掉导出语句整块（含多行）。用 lastIndexOf：引擎头部注释里可能出现同一串文字，
+  // 只截最后一次真正的导出语句，避免注释把它带偏。
+  const idx = src.lastIndexOf('module.exports');
+  if (idx === -1) throw new Error(file + ' 未找到 module.exports');
+  src = src.slice(0, idx).trimEnd();
+
+  // 去掉结尾可能残留的注释尾部
+  src = src.replace(/\/\*[\s\S]*?\*\/\s*$/, '').trimEnd();
+
+  return [
+    '/* ── 引擎：' + path.basename(file) + '（由小程序源码自动抽取，勿手改）── */',
+    '(function () {',
+    src,
+    '',
+    '  window.' + globalName + ' = {',
+    // 自动列出所有顶层函数名，避免手写漏函数
+    listTopLevelNames(src).map((n) => '    ' + n + ': ' + n + ',').join('\n'),
+    '  };',
+    '})();',
+  ].join('\n');
+}
+
+/** 粗略提取顶层 function 名与顶层 const/let/var 名 */
+function listTopLevelNames(src) {
+  const names = [];
+  const lines = src.split('\n');
+  for (const line of lines) {
+    if (/^\s/.test(line)) continue; // 只取顶格声明
+    let m = line.match(/^function\s+([A-Za-z_$][\w$]*)/);
+    if (m) { names.push(m[1]); continue; }
+    m = line.match(/^(?:const|let|var)\s+([A-Za-z_$][\w$]*)/);
+    if (m) { names.push(m[1]); continue; }
+  }
+  // 去重并排除明显不是导出的
+  return [...new Set(names)].filter((n) => n !== 'window' && n !== 'module');
+}
+
+const coreSrc = wrapEngine(path.join(MP, 'utils', 'echo-core.js'), 'Core');
+const pedsSrc = wrapEngine(path.join(MP, 'utils', 'peds-zscore.js'), 'Peds');
+const calcSrc = wrapEngine(path.join(MP, 'utils', 'echo-calc.js'), 'Calc');
+const segSrc = wrapEngine(path.join(MP, 'utils', 'segment-svg.js'), 'SegSvg');
+const valveSrc = wrapEngine(path.join(MP, 'utils', 'valve-calc.js'), 'ValveCalc');
+
+/* ---------- 1b. 节段划分页（构建时生成骨架，示意图由 SegSvg 运行时渲染） ---------- */
+
+const SEG_DATA = require(path.join(MP, 'utils', 'segment-data.js'));
+const SEG_SVG = require(path.join(MP, 'utils', 'segment-svg.js'));
+const VALVE_DATA = require(path.join(MP, 'utils', 'valve-data.js'));
+
+function escHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function buildSegPage() {
+  const svg = SEG_SVG.bullseyeSvg({ hi: '' });
+  const chips = SEG_DATA.TERRITORY_KEY.map((t) =>
+    '<button class="terr-chip" data-terr="' + t.key + '" style="--c:' + t.color + '">' +
+    escHtml(t.name) + '</button>').join('');
+  const terrRows = SEG_DATA.TERRITORY_KEY.map((t) =>
+    '<div class="tbl__row tbl--2"><span class="tbl__c1" style="color:' + t.color + ';font-weight:600">' +
+    escHtml(t.full === '左前降支' ? 'LAD · 左前降支' : t.full === '右冠状动脉' ? 'RCA · 右冠状动脉' : 'LCx · 左回旋支') +
+    '</span><span class="tbl__c2">' + escHtml(t.segs) + '</span></div>').join('');
+  const layerRows = SEG_DATA.LAYER_ROWS.map((r) =>
+    '<div class="tbl__row tbl--2"><span class="tbl__c1">' + escHtml(r[0]) +
+    '</span><span class="tbl__c2">' + escHtml(r[1]) + '</span></div>').join('');
+  const viewRows = SEG_DATA.VIEW_ROWS.map((r) =>
+    '<div class="tbl__row tbl--3"><span class="tbl__c1">' + escHtml(r[0]) +
+    '</span><span class="tbl__c2">' + escHtml(r[1]) +
+    '</span><span class="tbl__c2">' + escHtml(r[2]) + '</span></div>').join('');
+
+  // 7 张切面示意图卡片（SVG 由 SegSvg 运行时渲染进 wd-* 容器）
+  const wallCards = SEG_SVG.WALL_VIEWS.map((w) => {
+    const groups = w.groups.map((g) => {
+      const chipBtns = g[1].map((i) => {
+        const c = SEG_SVG.TERRITORY[SEG_SVG.territoryOf(i)].color;
+        return '<button class="segchip" data-selseg="' + i + '" style="--c:' + c + '" aria-label="' + i + '号节段">' + i + '</button>';
+      }).join('');
+      return '<div class="wall-group"><span class="wall-group__l">' + escHtml(g[0]) +
+        '</span><span class="wall-chips">' + chipBtns + '</span></div>';
+    }).join('');
+    return '<div class="wall-card"><div class="wall-card__t">' + escHtml(w.title) +
+      '</div><div class="wall-card__s">' + escHtml(w.sub) +
+      '</div><div class="wallsvg-box" id="wd-' + w.id + '"></div>' + groups +
+      (w.note ? '<div class="wall-card__note">' + escHtml(w.note) + '</div>' : '') + '</div>';
+  }).join('');
+
+  return `  <!-- ───── Tab4 节段划分 ───── -->
+  <section class="page" id="page-segments" hidden>
+    <div class="card">
+      <div class="card__t">17 节段模型与冠脉供血</div>
+      <div class="card__d">ASE 17 节段模型 · 供血分区为典型分布，存在个体差异。点击下方分区可高亮对应节段；点击节段色块或数字可在所有切面中同步定位。</div>
+      <div class="bull-wrap" id="bullseyeBox">${svg}</div>
+      <div class="terr-key">${chips}</div>
+      <div class="hi-line" id="segHiLine" hidden></div>
+      <div class="hi-line hi-line--sel" id="segSelInfo" hidden></div>
+      <div class="tbl">
+        <div class="tbl__head tbl--2"><span>层面</span><span>节段名称</span></div>
+        ${layerRows}
+      </div>
+      <div class="tbl">
+        <div class="tbl__head tbl--2"><span>冠脉</span><span>典型供血节段</span></div>
+        ${terrRows}
+      </div>
+      <div class="note">冠脉优势型、分支长度与个体解剖会改变供血范围。二维室壁运动评分通常采用 16 节段，不把难以可靠评价增厚的心尖帽纳入。</div>
+      <div class="note">评分：1 正常或运动增强；2 运动减弱；3 无运动；4 反常运动（收缩期向外膨出）。WMSI = 已评分节段分数之和 ÷ 已评分节段数，正常为 1。</div>
+      <div class="note">不符合单一冠脉分布的异常还应考虑 Takotsubo、心肌炎、结节病，以及左束支阻滞或起搏相关的室间隔运动异常。</div>
+    </div>
+    <div class="card">
+      <div class="card__t">切面与室壁对应</div>
+      <div class="card__d">按标准屏幕方位示意 · 实际以解剖标志确认。点击任一彩色节段（示意图中的色块或数字按钮），它会在所有对应切面及牛眼图中同步高亮；再次点击取消。</div>
+      ${wallCards}
+      <div class="note">记忆：四腔心看下间隔和前外侧壁；长轴看前间隔和下外侧壁；两腔心看下壁和前壁。传统“后壁”名称在标准节段模型中对应下外侧壁。</div>
+      <div class="note">PSAX 钟面：12 点前壁，2 点前外侧壁，4 点下外侧壁，6 点下壁，8 点下间隔，10 点前间隔。探头方向与显示习惯不同，需用右室和瓣膜等标志核实。</div>
+      <div class="note">常见旋转顺序：A4C → 约 60° 逆时针 → A2C → 再约 60° → A3C；角度只作操作参考。</div>
+      <div class="note">前外侧乳头肌常有 LAD 对角支及 LCx 双重供血；后内侧乳头肌通常主要由后降支供血，来源随冠脉优势型改变。</div>
+      <div class="note">LV 左室 · RV 右室 · LA 左房 · RA 右房 · Ao 主动脉 · MV 二尖瓣 · TV 三尖瓣 · LAA 左心耳 · LVOT 左室流出道</div>
+    </div>
+    <div class="card">
+      <div class="card__t">标准切面与测量项目</div>
+      <div class="card__d">ASE 成人完整 TTE 检查建议</div>
+      <div class="tbl">
+        <div class="tbl__head tbl--3"><span>切面</span><span>观察结构</span><span>主要测量</span></div>
+        ${viewRows}
+      </div>
+      <div class="note">主动脉瓣狭窄测速需要多声窗比较。必要时用非成像连续波探头（Pedoff）从心尖、右胸骨旁、胸骨上窝寻找最高的可靠流速。</div>
+    </div>
+    <div class="note note--warn">本页为速查资料整理，内容依据 ASE 系列指南；具体应用请回看指南原文并结合临床判断。</div>
+  </section>`;
+}
+
+const SEG_HTML = buildSegPage();
+
+/* ---------- 1c. 瓣膜页（AS / AR / MS / MR / TR，内容来自 valve-data.js） ---------- */
+
+/** 内容块：表格 / 小标题 / 公式 / 备注 / 正文 */
+function valveBlocksHtml(sec) {
+  return sec.blocks.map(function (b) {
+    if (b.type === 'table') {
+      const cols = b.heads.length;
+      const head = '<div class="vtbl__r vtbl__r--h vtbl--' + cols + '">' +
+        b.heads.map((c) => '<span class="vtbl__c">' + escHtml(c) + '</span>').join('') + '</div>';
+      const body = b.rows.map((r) => '<div class="vtbl__r vtbl--' + cols + '">' +
+        r.map((c) => '<span class="vtbl__c">' + escHtml(c) + '</span>').join('') + '</div>').join('');
+      return '<div class="vtbl">' + head + body + '</div>';
+    }
+    if (b.type === 'h') return '<div class="vblock__h">' + escHtml(b.text) + '</div>';
+    if (b.type === 'formula') return '<div class="vblock__f">' + escHtml(b.text) + '</div>';
+    if (b.type === 'note') return '<div class="note">' + escHtml(b.text) + '</div>';
+    return '<div class="vblock__t">' + escHtml(b.text) + '</div>';
+  }).join('\n        ');
+}
+
+/** 计算器输入（两列一行，含可选的 IVC 选择器） */
+function valveFieldsHtml(sec) {
+  let html = '';
+  for (let i = 0; i < sec.fields.length; i += 2) {
+    html += '<div class="row">';
+    for (let j = i; j < i + 2 && j < sec.fields.length; j++) {
+      const f = sec.fields[j];
+      html += '<div class="field"><label class="field__l">' + escHtml(f.n) + ' / ' + escHtml(f.u) + '</label>' +
+        '<input class="field__i" type="number" inputmode="decimal" step="any" ' +
+        'data-vk="' + sec.id + ':' + f.k + '" placeholder="未填写"></div>';
+    }
+    html += '</div>';
+  }
+  if (sec.collapse) {
+    html += '<div class="field"><label class="field__l">IVC 吸气塌陷</label><div class="seg" data-seg="valveivc">' +
+      VALVE_DATA.IVC_COLLAPSE.map((o) =>
+        '<div class="seg__i' + (o.v === '' ? ' seg__i--on' : '') + '" data-v="' + o.v + '">' + escHtml(o.n) + '</div>').join('') +
+      '</div></div>';
+  }
+  return html;
+}
+
+function buildValvePage() {
+  const chips = VALVE_DATA.VALVE_SECTIONS.map((s, i) =>
+    '<div class="vchip' + (i === 0 ? ' vchip--on' : '') + '" data-valve="' + s.id + '">' +
+    '<b class="vchip__s">' + escHtml(s.tab) + '</b><span class="vchip__n">' + escHtml(s.short) + '</span></div>').join('');
+
+  const secs = VALVE_DATA.VALVE_SECTIONS.map((s, i) => {
+    return '<div class="valve-sec" data-sec="' + s.id + '"' + (i === 0 ? '' : ' hidden') + '>' +
+      '<div class="card"><div class="card__t">' + escHtml(s.name) + '</div>' +
+      '<div class="card__d">' + escHtml(s.sub) + '　·　' + escHtml(s.source) + '</div>' +
+      valveBlocksHtml(s) + '</div>' +
+      '<div class="card"><div class="card__t">' + escHtml(s.calcTitle) + '</div>' +
+      '<div class="card__d">BSA 用于面积指数（来自「参数·参考值」页）· 留空跳过；只填一项也会给出该参数的分级</div>' +
+      valveFieldsHtml(s) +
+      '<div class="vsum" id="vsum-' + s.id + '">结果 · 等待输入</div>' +
+      '<div class="vres" id="vres-' + s.id + '"></div>' +
+      '<div class="vnotes" id="vnotes-' + s.id + '"></div>' +
+      '</div></div>';
+  }).join('\n    ');
+
+  return `  <!-- ───── Tab 瓣膜评估 ───── -->
+  <section class="page" id="page-valves" hidden>
+    <div class="vswitch" id="valveSwitch">${chips}</div>
+    <div id="valveSecs">
+    ${secs}
+    </div>
+    <button class="btn btn--ghost" id="valveClear">清空全部瓣膜输入</button>
+    <div class="note note--warn">
+      阈值来源：ASE 2017 原生瓣膜反流定量、ASE/EACVI 2017 主动脉瓣狭窄定量、ACC/AHA 2020 瓣膜病分期、
+      ESC/EACTS 2025 瓣膜病管理。分级需多参数一致并注明心率与测量方法；本页仅供速查与学习，不构成诊断依据。
+    </div>
+  </section>`;
+}
+
+const VALVE_HTML = buildValvePage();
+
+/* ---------- 2. 组装页面 ---------- */
+
+const css = fs.readFileSync(path.join(ROOT, 'android-app', 'app.css'), 'utf8');
+const js = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
+
+const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<meta name="format-detection" content="telephone=no">
+<title>心脏超声参考值</title>
+<style>${css}</style>
+</head>
+<body>
+
+<!-- ══════════ 顶栏 ══════════ -->
+<header class="appbar">
+  <h1 class="appbar__t" id="appbarTitle">参数·参考值</h1>
+  <button class="appbar__r" id="resetBtn" title="重置">重置</button>
+</header>
+
+<!-- ══════════ 内容区 ══════════ -->
+<main class="main" id="main">
+
+  <!-- ───── Tab1 基本参数 ───── -->
+  <section class="page" id="page-index">
+    <div class="card">
+      <div class="card__t">受检者基本信息</div>
+      <div class="card__d">身高体重用于计算体表面积（BSA），性别决定参考值区间</div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">身高 / cm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="inHeight" value="170" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field__l">体重 / kg</label>
+          <input class="field__i" type="number" inputmode="decimal" id="inWeight" value="65" step="0.1">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__l">性别</label>
+        <div class="seg" data-seg="sex">
+          <div class="seg__i seg__i--on" data-v="male">男</div>
+          <div class="seg__i" data-v="female">女</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="outBsa">—</span>
+            <span class="stat__u">m²</span>
+          </div>
+          <span class="stat__l" id="outBsaLbl">体表面积</span>
+        </div>
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="outBmi">—</span>
+            <span class="stat__u">kg/m²</span>
+          </div>
+          <span class="stat__l">BMI <span class="bmi-tag" id="outBmiTag"></span></span>
+        </div>
+      </div>
+      <div class="hint" id="bsaHint"></div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">体表面积公式</div>
+      <div class="field">
+        <label class="field__l">成人 / 通用公式</label>
+        <div class="seg" data-seg="formula">
+          <div class="seg__i seg__i--on" data-v="dubois">Du Bois</div>
+          <div class="seg__i" data-v="mosteller">Mosteller</div>
+        </div>
+      </div>
+      <div class="note">
+        Du Bois：BSA = 0.007184 × 身高<sup>0.725</sup> × 体重<sup>0.425</sup>（临床试验通用）<br>
+        Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）<br>
+        儿童页另有 <b>Haycock</b> 公式（儿科首选，PHN 研究采用）
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">参考值标准</div>
+      <div class="seg" data-seg="standard">
+        <div class="seg__i seg__i--on" data-v="CN">中国成人标准</div>
+        <div class="seg__i" data-v="ASE">ASE 国际标准</div>
+      </div>
+      <div class="note" id="stdNote">《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围</div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">下一步</div>
+      <div class="card__d">参数已保存。可到「EF 计算」由内径推算收缩功能，或到「其他计算」做血流动力学计算。</div>
+      <button class="btn" id="jumpRef">↓ 查看下方参考值</button>
+      <button class="btn btn--ghost" data-go="ef" style="margin-top:10px">去计算 EF</button>
+      <button class="btn btn--ghost" data-go="calc" style="margin-top:10px">其他计算</button>
+    </div>
+
+    <!-- ══════ 参考值列表（合并自原「参考值」页） ══════ -->
+    <div id="refBlock">
+      <div class="note note--warn" id="aseUnitNote" hidden>
+        ASE 指南原文以 <b>cm</b> 表示内径。本表已统一换算为 <b>mm</b> 显示，可直接与你的测量值对照。
+      </div>
+      <div class="card">
+        <div class="card__t" id="refTitle">正常参考范围</div>
+        <div class="card__d" id="refDesc"></div>
+        <div id="refList"></div>
+      </div>
+      <div class="note" id="refSource"></div>
+    </div>
+  </section>
+
+  <!-- ───── Tab3 EF 计算 ───── -->
+  <section class="page" id="page-ef" hidden>
+    <div class="card">
+      <div class="card__t">左室内径测量（M 型）</div>
+      <div class="card__d">输入内径与室壁厚度，自动推算容积、收缩功能与左室质量</div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">LVIDd 舒张末内径 / mm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="efLvedd" placeholder="如 50" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field__l">LVIDs 收缩末内径 / mm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="efLvesd" placeholder="如 32" step="0.1">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">IVSd 室间隔厚度 / mm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="efIvsd" placeholder="如 9" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field__l">LVPWd 后壁厚度 / mm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="efLvpwd" placeholder="如 9" step="0.1">
+        </div>
+      </div>
+      <div class="hint" id="efHint"></div>
+    </div>
+
+    <div class="card" id="efResult" hidden>
+      <div class="card__t">计算结果</div>
+      <div class="kv" id="efKv"></div>
+      <div class="efbar-wrap">
+        <div class="efbar"><div class="efbar__m" id="efMark"></div></div>
+        <div class="efbar-lg">
+          <span>0%</span><span>30%</span><span>45%</span><span>55%</span><span>100%</span>
+        </div>
+      </div>
+      <div class="note" id="efGrade"></div>
+      <div class="note" id="efFormula"></div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">公式说明</div>
+      <div class="note">
+        <b>Teichholz 法</b>（M 型单平面）<br>
+        V = 7 × D³ ÷ (2.4 + D)　　D 单位 cm，V 单位 mL<br>
+        EF = (EDV − ESV) ÷ EDV × 100%<br>
+        FS = (LVIDd − LVIDs) ÷ LVIDd × 100%
+      </div>
+      <div class="note">
+        <b>左室质量 Devereux 公式</b><br>
+        LVM(g) = 0.8 × 1.04 × [(LVIDd + IVSd + LVPWd)³ − LVIDd³] + 0.6<br>
+        RWT = 2 × LVPWd ÷ LVEDD
+      </div>
+      <div class="note note--warn">
+        Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── Tab3 其他计算 ───── -->
+  <section class="page" id="page-calc" hidden>
+    <div class="card">
+      <div class="card__t">血流动力学计算</div>
+      <div class="card__d" id="calcBsaNote">BSA — m²（来自「参数·参考值」页）· 各组结果独立计算，留空跳过</div>
+      <div class="note">AVA、MVA、PISA（EROA / RVol）、dP/dt 等瓣膜专项计算已整合到「瓣膜评估」页，两页共用同一套引擎。</div>
+    </div>
+    <div id="calcGroups"></div>
+    <button class="btn btn--ghost" id="calcClear">清空全部输入</button>
+    <div class="note note--warn">
+      公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
+      Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
+    </div>
+  </section>
+
+${VALVE_HTML}
+
+${SEG_HTML}
+
+  <!-- ───── Tab5 儿童 Z 值 ───── -->
+  <section class="page" id="page-peds" hidden>
+    <div class="card">
+      <div class="card__t">受检者信息</div>
+      <div class="card__d">儿童心脏尺寸随生长变化，Z 值按体表面积（BSA）标准化，与年龄、性别无临床显著关系</div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">身高 / cm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="pdHeight" placeholder="如 110" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field__l">体重 / kg</label>
+          <input class="field__i" type="number" inputmode="decimal" id="pdWeight" placeholder="如 19" step="0.1">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">年龄 / 岁（选填）</label>
+          <input class="field__i" type="number" inputmode="decimal" id="pdAge" placeholder="如 5" step="1">
+        </div>
+        <div class="field">
+          <label class="field__l">性别（选填）</label>
+          <div class="seg" data-seg="pdsex">
+            <div class="seg__i seg__i--on" data-v="male">男</div>
+            <div class="seg__i" data-v="female">女</div>
+          </div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="pdBsa">—</span>
+            <span class="stat__u">m²</span>
+          </div>
+          <span class="stat__l">体表面积（Haycock）</span>
+        </div>
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="pdBmi">—</span>
+            <span class="stat__u">kg/m²</span>
+          </div>
+          <span class="stat__l">BMI（儿童请对照百分位）</span>
+        </div>
+      </div>
+      <div class="hint" id="pdWarn"></div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">测量值输入</div>
+      <div class="card__d">内径 mm · 容积 mL · 质量 g · 面积 cm² · 留空跳过</div>
+      <div id="pdInputs"></div>
+      <button class="btn btn--ghost" id="pdMore">展开其他参数（共 33 项）</button>
+      <button class="btn" id="pdClear">清空全部测量值</button>
+    </div>
+
+    <div class="card" id="pdFuncCard" hidden>
+      <div class="card__t">收缩功能（自动推算）</div>
+      <div class="card__d" id="pdFuncDesc"></div>
+      <div class="funcef">
+        <span class="funcef__v" id="pdFuncEf">—</span>
+        <span class="funcef__side">
+          <span>左室射血分数 EF</span>
+          <span class="tag" id="pdFuncEfTag"></span>
+        </span>
+      </div>
+      <div class="kv" id="pdFuncKv"></div>
+      <div class="note" id="pdFuncNote"></div>
+    </div>
+
+    <div class="card" id="pdSumCard" hidden>
+      <div class="card__t">结果摘要</div>
+      <div class="zbig" id="pdSumBig">
+        <span class="zbig__v" id="pdSumV">0</span>
+        <span class="zbig__l" id="pdSumLbl"></span>
+      </div>
+      <div class="note" id="pdWorst"></div>
+      <div class="key">
+        <div class="key__i key__i--n">|Z| ≤ 2<br>正常</div>
+        <div class="key__i key__i--m">2 &lt; |Z| ≤ 3<br>轻度异常</div>
+        <div class="key__i key__i--s">|Z| &gt; 3<br>显著异常</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">Z 值对照</div>
+      <div class="card__d" id="pdDesc"></div>
+      <div id="pdList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">完整数值区间（±2SD / ±3SD）</div>
+      <div class="card__d">±2SD 为异常判定线，±3SD 为显著异常判定线</div>
+      <div id="pdRanges"></div>
+    </div>
+
+    <div class="card">
+      <div class="card__t">计算原理</div>
+      <div class="note">
+        <b>① 体表面积（Haycock）</b><br>
+        BSA(m²) = 0.024265 × 身高(cm)<sup>0.3964</sup> × 体重(kg)<sup>0.5378</sup>
+      </div>
+      <div class="note">
+        <b>② Z 值</b><br>
+        Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
+        α / Mean / SD 为每项参数各自的回归系数
+      </div>
+      <div class="note">
+        <b>③ 为什么儿童不看固定区间</b><br>
+        新生儿 LVEDD 2 cm 属正常，成人 2 cm 属严重缩小。Z 值把测值按体型标准化，
+        Z = 0 即人群均值，|Z| ≤ 2 覆盖约 95% 健康儿童。
+      </div>
+      <div class="note note--warn">
+        <b>数据来源</b>　Pediatric Heart Network Normal Echocardiogram Database，
+        n = 3566，0–18 岁健康非肥胖儿童，19 个中心。<br>
+        Lopez L, Colan S, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.<br>
+        LVESD / LVESV 系数来自 PHN 后续补充发表（PMC7870534）。
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════ 底部页签 ══════════ -->
+<nav class="tabbar" id="tabbar">
+  <div class="tab tab--on" data-tab="index">
+    <span class="tab__i">◧</span><span class="tab__t">参数·参考值</span>
+  </div>
+  <div class="tab" data-tab="ef">
+    <span class="tab__i">◉</span><span class="tab__t">EF 计算</span>
+  </div>
+  <div class="tab" data-tab="calc">
+    <span class="tab__i">∑</span><span class="tab__t">其他计算</span>
+  </div>
+  <div class="tab" data-tab="valves">
+    <span class="tab__i">◇</span><span class="tab__t">瓣膜评估</span>
+  </div>
+  <div class="tab" data-tab="segments">
+    <span class="tab__i">◭</span><span class="tab__t">节段划分</span>
+  </div>
+  <div class="tab" data-tab="peds">
+    <span class="tab__i">◎</span><span class="tab__t">儿童 Z 值</span>
+  </div>
+</nav>
+
+<script>
+${coreSrc}
+
+${pedsSrc}
+
+${calcSrc}
+
+${segSrc}
+
+${valveSrc}
+
+${js}
+</script>
+</body>
+</html>
+`;
+
+fs.writeFileSync(OUT, html, 'utf8');
+const kb = (Buffer.byteLength(html, 'utf8') / 1024).toFixed(1);
+console.log('✅ 已生成 ' + path.relative(ROOT, OUT) + '  (' + kb + ' KB)');
+
+/* ══════════════════════════════════════════════════════════
+   发布版：仅保留 PUBLIC_TABS 三个页签 + 对应引擎，去掉转载内容
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * 按"整段"删除 CSS 块。
+ * 从含 startMark 的那一行（含其上方的 /* 开头行）开始，删到 endMark 所在行之前；
+ * endMark 为 null 时删到 </style> 之前。
+ * 用行索引定位，避免正则 [\s\S]*? 反向吞掉后面的结构。
+ */
+function stripCssBlock(src, startMark, endMark) {
+  const lines = src.split('\n');
+  const i = lines.findIndex(function (l) { return l.indexOf(startMark) !== -1; });
+  if (i === -1) throw new Error('发布版：未找到 CSS 块 ' + startMark);
+
+  // 若上一行是块注释开头 "/*"，一并从那里开始删
+  let from = i;
+  if (from > 0 && lines[from - 1].trim().indexOf('/*') === 0) from -= 1;
+
+  // 结束行
+  let to = -1;
+  for (let j = i + 1; j < lines.length; j += 1) {
+    if (endMark === null) {
+      if (lines[j].indexOf('</style>') !== -1) { to = j; break; }
+    } else if (lines[j].indexOf(endMark) !== -1) {
+      to = j; break;
+    }
+  }
+  if (to === -1) throw new Error('发布版：未找到 CSS 块结束标记 ' + (endMark || '</style>'));
+
+  lines.splice(from, to - from);
+  return lines.join('\n');
+}
+
+/**
+ * 把完整版精简成发布版。三件事：
+ *   1) 去掉不发布的 <section class="page" id="page-X"> 整段
+ *   2) 去掉对应的 <div class="tab" data-tab="X"> 页签
+ *   3) 去掉用不到的引擎块（Calc / SegSvg / ValveCalc）
+ * 另外给页面加上发布版提示与免责声明。
+ */
+function buildPublicHtml() {
+  // 统一换行符：app.js / 部分数据文件是 CRLF，行级正则与 split('\n') 都会带尾巴 '\r'，
+  // 导致 trim 之外的精确比较全部失配。先归一成 LF 再做切块清理。
+  let out = html.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  // 1) 删掉不发布的页面容器（含其后的空行）
+  ['page-calc', 'page-valves', 'page-segments'].forEach((id) => {
+    const re = new RegExp('^[ \\t]*<section class="page" id="' + id + '"[\\s\\S]*?\\n[ \\t]*</section>\\n?', 'm');
+    if (!re.test(out)) throw new Error('发布版：未找到页面容器 ' + id);
+    out = out.replace(re, '');
+  });
+  // 2) 删掉不发布的页签
+  ['calc', 'valves', 'segments'].forEach((t) => {
+    const re = new RegExp('^[ \\t]*<div class="tab" data-tab="' + t + '"[\\s\\S]*?\\n[ \\t]*</div>\\n?', 'm');
+    if (!re.test(out)) throw new Error('发布版：未找到页签 ' + t);
+    out = out.replace(re, '');
+  });
+
+  // 3) 删掉用不到的引擎（Calc / SegSvg / ValveCalc）
+  [calcSrc, segSrc, valveSrc].forEach((src) => {
+    if (out.indexOf(src) === -1) throw new Error('发布版：未找到待移除的引擎块');
+    out = out.replace(src + '\n', '');
+  });
+
+  // 3b) 删掉 app.js 里被标记为 PUBlic-CUT 的整块逻辑（其他计算 / 瓣膜 / 节段）
+  ['calc', 'valve', 'seg', 'segclick', 'visimport'].forEach((tag) => {
+    const re = new RegExp('/\\*<<<PUBLIC-CUT:' + tag + '>>>\\*/[\\s\\S]*?/\\*<<<END-CUT:' + tag + '>>>\\*/\\n?');
+    if (!re.test(out)) throw new Error('发布版：未找到切块标记 ' + tag);
+    out = out.replace(re, '');
+  });
+
+  // 4) 清理残留（按「先整行删除、后统一替换」顺序，避免行粘连）
+  // 4a) 整行删除：引用已切块内容的语句、指向被删页面的条目
+  const DROP_LINES = [
+    /^[ \t]*Object\.keys\(calcVal\)[^\n]*\n/m,
+    /^[ \t]*calcCollapse = '';[^\n]*\n/m,
+    /^[ \t]*calcSigns = '';[^\n]*\n/m,
+    /^[ \t]*calccollapse: function[^\n]*\n/m,
+    /^[ \t]*calcsigns: function[^\n]*\n/m,
+    /^[ \t]*valveivc: function[^\n]*\n/m,
+    /^[ \t]*calc: '其他计算',[^\n]*\n/m,
+    /^[ \t]*valves: '瓣膜评估',[^\n]*\n/m,
+    /^[ \t]*segments: '节段划分',[^\n]*\n/m,
+    // 已切块的引擎/页面，其顶部声明与页签分派也要摘掉
+    /^[ \t]*const Calc = window\.Calc;[^\n]*\n/m,
+    /^[ \t]*const ValveCalc = window\.ValveCalc;[^\n]*\n/m,
+    /^[ \t]*if \(name === 'calc'\) renderCalc\(\);[^\n]*\n/m,
+    /^[ \t]*if \(name === 'valves'\) renderValves\(\);[^\n]*\n/m,
+    /^[ \t]*<!--[^\n]*其他计算[^\n]*-->[^\n]*\n/m,
+    /^[ \t]*<!--[^\n]*瓣膜评估[^\n]*-->[^\n]*\n/m,
+    /^[ \t]*<!--[^\n]*节段划分[^\n]*-->[^\n]*\n/m,
+    /^[ \t]*\/\/[^\n]*其他计算[^\n]*\n/m,
+    /^[ \t]*\/\/[^\n]*瓣膜评估[^\n]*\n/m,
+    /^[ \t]*\/\/[^\n]*节段划分[^\n]*\n/m,
+    /^[ \t]*<button class="btn btn--ghost" data-go="calc"[^\n]*\n/m,
+  ];
+  DROP_LINES.forEach((re) => { out = out.replace(re, ''); });
+
+  // 4b) 发布版没有 calc / valves / seg 三页，凡是对这三页的调用都是死代码，整行删掉。
+  //     注意：必须先删「裸调用」，再删「带守卫的调用」—— 顺序反了的话，
+  //     第一步刚生成的 if (window.__HAS_*) 行在同一趟里匹配不到，会漏进产物。
+  const DEAD_CALLS = [
+    // 裸调用（app.js 原始形态）
+    'buildCalcInputs();',
+    'renderCalc();',
+    'renderValves();',
+    'renderSegAll();',
+    'clearValves();',
+    "if (name === 'calc') renderCalc();",
+    "if (name === 'valves') renderValves();",
+    "if (currentTab === 'calc') renderCalc();",
+    // 带守卫的调用（上一步包裹后可能出现）
+    'if (window.__HAS_CALC) buildCalcInputs();',
+    'if (window.__HAS_CALC) renderCalc();',
+    'if (window.__HAS_VALVE) renderValves();',
+    'if (window.__HAS_VALVE) clearValves();',
+    'if (window.__HAS_SEG) renderSegAll();',
+  ];
+  out = out.split('\n')
+    .filter(function (line) { return DEAD_CALLS.indexOf(line.trim()) === -1; })
+    .join('\n');
+
+  // 4c) 注释与文案清理
+  out = out
+    .replace(/\/\* ────────── 其他计算页：结果行 ────────── \*\//, '/* ────────── 计算结果行样式 ────────── */')
+    .replace(
+      '参数已保存。可到「EF 计算」由内径推算收缩功能，或到「其他计算」做血流动力学计算。',
+      '参数已保存。可到「EF 计算」由内径推算收缩功能，或到「儿童 Z 值」按体表面积标准化对照。'
+    );
+
+  // 4d) 剥掉被删页面的专属样式块（按「起止注释行」整段去掉，不用贪婪正则）
+  //     —— .calc-out 保留（EF / 儿童 Z 值页也在用），只删节段与瓣膜两段。
+  out = stripCssBlock(out,
+    '/* ────────── 节段划分页 ────────── */',
+    '/* ══════════════════════════════════════════════════════════'
+  );
+  out = stripCssBlock(out,
+    '   瓣膜评估页（AS / AR / MS / MR / TR）',
+    null   // 一直删到 <style> 结束
+  );
+
+  // 5) 兜底自检：被移除的页面 id / 入口 / 样式不得残留
+  ['id="page-calc"', 'id="page-valves"', 'id="page-segments"', 'id="calcGroups"', 'data-go="calc"',
+   'PUBLIC-CUT', 'END-CUT',
+   '节段划分页', '瓣膜评估页', '.vswitch', '.vchip', '.bull-wrap', '.lvl--severe', '.vsum',
+   '肝静脉', 'Wilkins', 'PISA', 'EROA',
+   'window.Calc', 'window.ValveCalc', 'renderCalc', 'renderValves', 'clearValves', '__HAS_']
+    .forEach((s) => {
+      if (out.indexOf(s) !== -1) throw new Error('发布版：仍残留 ' + s);
+    });
+
+  // 5b) 结构完整性自检：切块/删行容易把 HTML 骨架带掉，必须逐项确认
+  ['</style>', '</head>', '<body', '</body>', '</html>', '<nav class="tabbar" id="tabbar"',
+   'id="page-index"', 'id="page-ef"', 'id="page-peds"']
+    .forEach((s) => {
+      if (out.indexOf(s) === -1) throw new Error('发布版：结构缺失 ' + s);
+    });
+  // 页签数量必须等于 PUBLIC_TABS
+  const nTab = (out.match(/class="tab[ "][^>]*data-tab="/g) || []).length;
+  if (nTab !== PUBLIC_TABS.length) {
+    throw new Error('发布版：页签数 ' + nTab + ' ≠ ' + PUBLIC_TABS.length);
+  }
+
+  // 6) 顶部说明改为发布版口径 + 免责声明
+  out = out.replace(
+    '<title>心脏超声参考值</title>',
+    '<title>心脏超声参考值 · 成人参考值 / EF / 儿童 Z 值</title>'
+  );
+  out = out.replace(
+    '<main class="main" id="main">',
+    `<main class="main" id="main">
+
+  <div class="pubnote">
+    <b>关于本页</b><br>
+    本页为个人整理的成人经胸超声（TTE）参考值速查工具，含三部分：成人正常参考值（中国 2016 指南 37 项 /
+    ASE-EACVI 2015）、M 型 EF 计算、儿童 Z 值（PHN 数据库）。
+    <b>本页内容为自行整理，非任何学会或机构的官方产品</b>，仅供医学教育与速查使用；
+    参考值需结合患者体型、血流状态及测量方法，<b>不能单凭一个指标作出诊断</b>。
+  </div>`
+  );
+
+  return out;
+}
+
+if (process.argv.indexOf('--full') === -1) {
+  const publicHtml = buildPublicHtml();
+  fs.mkdirSync(path.join(ROOT, 'docs'), { recursive: true });
+  fs.writeFileSync(path.join(ROOT, 'docs', 'index.html'), publicHtml, 'utf8');
+  fs.writeFileSync(path.join(ROOT, 'docs', '.nojekyll'), '', 'utf8');
+  console.log('✅ 已生成 ' + path.join('docs', 'index.html') +
+    '  (' + (Buffer.byteLength(publicHtml, 'utf8') / 1024).toFixed(1) + ' KB，仅 ' +
+    PUBLIC_TABS.length + ' 个页签)');
+}
+
+// 自检：确认引擎函数都挂上了
+const missing = [];
+['bsaDuBois', 'bsaMosteller', 'computeLVFunction', 'computeLVM', 'buildReferenceList'].forEach((n) => {
+  if (!new RegExp('\\b' + n + ':').test(coreSrc)) missing.push('Core.' + n);
+});
+['bsaHaycock', 'zScore', 'buildPedsList'].forEach((n) => {
+  if (!new RegExp('\\b' + n + ':').test(pedsSrc)) missing.push('Peds.' + n);
+});
+['csaFromDiameter', 'pisa', 'rapFromIvc', 'phProbability', 'diastolicRatios'].forEach((n) => {
+  if (!new RegExp('\\b' + n + ':').test(calcSrc)) missing.push('Calc.' + n);
+});
+['valveCalc', 'pisaEroa', 'rapOf', 'gTrRvol', 'gAva'].forEach((n) => {
+  if (!new RegExp('\\b' + n + ':').test(valveSrc)) missing.push('ValveCalc.' + n);
+});
+if (missing.length) {
+  console.log('⚠️  以下引擎函数未被导出：' + missing.join(', '));
+  process.exit(1);
+}
+console.log('✅ 引擎函数导出自检通过（Core 5 项 + Peds 3 项 + ValveCalc 5 项）');

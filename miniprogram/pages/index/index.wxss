@@ -1,0 +1,20 @@
+/* 页面样式继承 app.wxss，此处仅补充合并进来的参考值列表所需样式 */
+.page-wrap {
+  padding-bottom: 60rpx;
+}
+
+.list-row__val {
+  font-size: 27rpx;
+}
+
+/* 指数类参数下方的一行小字：按当前 BSA 折算的绝对范围 */
+.derived {
+  font-size: 21rpx;
+  color: #2563eb;
+  background: #eff4ff;
+  border-radius: 8rpx;
+  padding: 4rpx 12rpx;
+  margin-top: 8rpx;
+  display: inline-block;
+  line-height: 1.5;
+}

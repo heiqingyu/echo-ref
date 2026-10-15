@@ -1,0 +1,145 @@
+<view class="page-wrap">
+
+  <view class="card">
+    <view class="card__title">受检者基本信息</view>
+    <view class="card__desc">身高体重用于计算体表面积（BSA），性别决定参考值区间</view>
+
+    <view class="row">
+      <view class="field">
+        <text class="field__label">身高 / cm</text>
+        <input class="field__input" type="digit" value="{{height}}" placeholder="如 170"
+               bindinput="onHeight" />
+      </view>
+      <view class="field">
+        <text class="field__label">体重 / kg</text>
+        <input class="field__input" type="digit" value="{{weight}}" placeholder="如 65"
+               bindinput="onWeight" />
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="field__label">性别</text>
+      <view class="seg">
+        <view class="seg__item {{sex === 'male' ? 'seg__item--on' : ''}}"
+              data-v="male" bindtap="onSex">男</view>
+        <view class="seg__item {{sex === 'female' ? 'seg__item--on' : ''}}"
+              data-v="female" bindtap="onSex">女</view>
+      </view>
+    </view>
+
+    <view class="stat-row">
+      <view class="stat">
+        <view class="stat__main">
+          <text class="stat__v">{{bsaText}}</text>
+          <text class="stat__u">m²</text>
+        </view>
+        <text class="stat__lbl">体表面积（{{formula === 'dubois' ? 'Du Bois' : 'Mosteller'}}）</text>
+      </view>
+      <view class="stat">
+        <view class="stat__main">
+          <text class="stat__v">{{bmiText}}</text>
+          <text class="stat__u">kg/m²</text>
+        </view>
+        <text class="stat__lbl">BMI <text class="bmi-tag {{bmiCls}}">{{bmiLabel}}</text></text>
+      </view>
+    </view>
+
+    <view wx:if="{{!valid}}" class="hint">请输入有效的身高（50–250 cm）与体重（2–300 kg）</view>
+  </view>
+
+  <view class="card">
+    <view class="card__title">体表面积公式</view>
+    <view class="field">
+      <text class="field__label">当前公式</text>
+      <view class="seg">
+        <view class="seg__item {{formula === 'dubois' ? 'seg__item--on' : ''}}"
+              data-v="dubois" bindtap="onFormula">Du Bois</view>
+        <view class="seg__item {{formula === 'mosteller' ? 'seg__item--on' : ''}}"
+              data-v="mosteller" bindtap="onFormula">Mosteller</view>
+      </view>
+    </view>
+    <view class="note">
+      Du Bois：BSA = 0.007184 × 身高<text style="font-size:20rpx">0.725</text> × 体重<text style="font-size:20rpx">0.425</text>（临床试验通用）{{'\n'}}
+      Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card__title">参考值标准</view>
+    <view class="seg">
+      <view class="seg__item {{standard === 'CN' ? 'seg__item--on' : ''}}"
+            data-v="CN" bindtap="onStandard">中国成人标准</view>
+      <view class="seg__item {{standard === 'ASE' ? 'seg__item--on' : ''}}"
+            data-v="ASE" bindtap="onStandard">ASE 国际标准</view>
+    </view>
+    <view class="note">{{standardNote}}</view>
+  </view>
+
+  <view class="card">
+    <view class="card__title">下一步</view>
+    <view class="card__desc">参数已保存。可到「EF 计算」由内径推算收缩功能，或到「其他计算」做血流动力学计算。</view>
+    <view class="btn" bindtap="goReference">↓ 查看下方参考值</view>
+    <view class="btn btn--ghost" bindtap="goEF" style="margin-top:20rpx">去计算 EF</view>
+  </view>
+
+  <!-- ══════ 参考值列表（合并自原「参考值」页） ══════ -->
+  <view class="ref-block">
+
+    <view wx:if="{{standard === 'ASE'}}" class="note note--strong">
+      ASE 指南原文以 cm 表示内径，本表已统一换算为 mm 显示，可直接与测量值对照。
+    </view>
+
+    <!-- 实测值对照 -->
+    <view wx:if="{{hasMeasurements}}" class="card">
+      <view class="card__title">实测值对照</view>
+      <view class="card__desc">{{refDesc}}</view>
+      <view class="list-row" style="border-bottom:1rpx solid #e3e6ea;padding-bottom:16rpx">
+        <text class="list-row__name" style="font-weight:600">参数</text>
+        <text class="list-row__val" style="font-weight:600">实测</text>
+        <text class="list-row__range" style="font-weight:600">参考范围</text>
+        <text class="list-row__tag" style="font-weight:600;color:#6b7280">判定</text>
+      </view>
+      <view wx:for="{{rows}}" wx:key="key" class="list-row">
+        <view class="list-row__name">
+          {{item.name}}
+          <view wx:if="{{item.hasDerived}}" class="derived">
+            按当前 BSA 折算 {{item.derivedText}} {{item.derivedUnit}}
+          </view>
+        </view>
+        <text class="list-row__val">{{item.value}}{{item.unit}}</text>
+        <text class="list-row__range">{{item.range}}</text>
+        <view class="list-row__tag">
+          <text class="tag {{item.statusCls}}">{{item.statusText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 纯参考值表 -->
+    <view wx:else class="card">
+      <view class="card__title">正常参考范围</view>
+      <view class="card__desc">{{refDesc}}</view>
+      <view class="list-row" style="border-bottom:1rpx solid #e3e6ea;padding-bottom:16rpx">
+        <text class="list-row__name" style="font-weight:600">参数</text>
+        <text class="list-row__range" style="flex:1.6;font-weight:600;color:#6b7280">参考范围</text>
+      </view>
+      <view wx:for="{{rows}}" wx:key="key" class="list-row">
+        <view class="list-row__name">
+          {{item.name}}
+          <view wx:if="{{item.hasDerived}}" class="derived">
+            按当前 BSA 折算 {{item.derivedText}} {{item.derivedUnit}}
+          </view>
+        </view>
+        <text class="list-row__range" style="flex:1.6">{{item.range}} {{item.unit}}</text>
+      </view>
+    </view>
+
+    <view class="note">参考值来源：{{sourceText}}</view>
+
+  </view>
+
+  <view class="note note--strong">
+    本工具为数值计算与参考值查询工具，所有结果仅供专业参考，不作为诊断依据。
+    测量值受操作者、仪器、切面及心率影响，请结合临床综合判断。
+  </view>
+
+</view>

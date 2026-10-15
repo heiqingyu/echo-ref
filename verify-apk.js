@@ -1,0 +1,417 @@
+/**
+ * APK 端到端一致性验证
+ *
+ * 核心目标：证明 **APK 里的引擎** 与 **小程序的引擎** 算出的数值完全一致。
+ *
+ * 做法：
+ *   1. 从 www/index.html 中抽出内联的引擎代码，在沙箱里执行，得到 window.Core / window.Peds
+ *   2. 直接 require 小程序的 utils/*.js
+ *   3. 对同一批输入逐一比对输出（到浮点精度）
+ *
+ * 运行：node verify-apk.js
+ */
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const ROOT = __dirname;
+const WWW = path.join(ROOT, 'www', 'index.html');
+
+let pass = 0, fail = 0;
+const problems = [];
+
+function check(label, actual, expected, tol) {
+  const t = tol === undefined ? 1e-9 : tol;
+  let ok;
+  if (expected === null || expected === undefined) {
+    ok = actual === expected || (typeof expected === 'number' && isNaN(actual) && isNaN(expected));
+  } else if (typeof expected === 'number') {
+    ok = typeof actual === 'number' && !isNaN(actual) && Math.abs(actual - expected) <= t;
+  } else {
+    ok = actual === expected;
+  }
+  if (ok) pass++;
+  else {
+    fail++;
+    problems.push('  ✗ ' + label + '\n      期望 ' + JSON.stringify(expected) + '  实得 ' + JSON.stringify(actual));
+  }
+}
+
+function section(t) {
+  console.log('\n── ' + t + ' ' + '─'.repeat(Math.max(0, 56 - t.length)));
+}
+
+/* ══════════════════════════════════════════════════════════
+   1. 从 index.html 抽出引擎代码并在沙箱执行
+   ══════════════════════════════════════════════════════════ */
+
+section('1. 构建产物完整性');
+
+check('www/index.html 存在', fs.existsSync(WWW), true);
+
+const html = fs.readFileSync(WWW, 'utf8');
+check('单文件体积 < 300 KB', Buffer.byteLength(html, 'utf8') < 300 * 1024, true);
+
+// 抽取 <script> 里两个 IIFE 引擎块
+const coreMatch = html.match(/\/\* ── 引擎：echo-core\.js[\s\S]*?\n\}\)\(\);/);
+const pedsMatch = html.match(/\/\* ── 引擎：peds-zscore\.js[\s\S]*?\n\}\)\(\);/);
+const calcMatch = html.match(/\/\* ── 引擎：echo-calc\.js[\s\S]*?\n\}\)\(\);/);
+const valveMatch = html.match(/\/\* ── 引擎：valve-calc\.js[\s\S]*?\n\}\)\(\);/);
+
+check('已内联 echo-core 引擎', !!coreMatch, true);
+check('已内联 peds-zscore 引擎', !!pedsMatch, true);
+check('已内联 echo-calc 引擎', !!calcMatch, true);
+check('已内联 valve-calc 引擎', !!valveMatch, true);
+
+if (!coreMatch || !pedsMatch) {
+  console.log('\n无法抽取引擎代码，终止。');
+  process.exit(1);
+}
+
+// 在沙箱里跑，模拟 window
+const sandbox = { window: {}, Math: Math, Number: Number, console: console };
+vm.createContext(sandbox);
+vm.runInContext(coreMatch[0], sandbox);
+vm.runInContext(pedsMatch[0], sandbox);
+vm.runInContext(calcMatch[0], sandbox);
+vm.runInContext(valveMatch[0], sandbox);
+
+const ApkCore = sandbox.window.Core;
+const ApkPeds = sandbox.window.Peds;
+const ApkCalc = sandbox.window.Calc;
+const ApkValve = sandbox.window.ValveCalc;
+
+check('APK Core 已挂载', !!ApkCore, true);
+check('APK Peds 已挂载', !!ApkPeds, true);
+check('APK Calc 已挂载', !!ApkCalc, true);
+check('APK ValveCalc 已挂载', !!ApkValve, true);
+
+// 页面结构自检
+check('包含 6 个页面容器', (html.match(/class="page"/g) || []).length, 6);
+// 注意：第一个页签的 class 是 "tab tab--on"，所以要用 \btab\b 而非 class="tab"
+check('包含 6 个底部页签', (html.match(/class="tab(?:\s|")/g) || []).length, 6);
+check('含 viewport meta（移动端适配）', /name="viewport"/.test(html), true);
+check('含 safe-area 适配', /safe-area-inset/.test(html), true);
+
+/* ══════════════════════════════════════════════════════════
+   2. 与小程序引擎逐项比对
+   ══════════════════════════════════════════════════════════ */
+
+section('2. 与小程序的引擎比对（数值一致性）');
+
+const MpCore = require(path.join(ROOT, 'miniprogram', 'utils', 'echo-core.js'));
+const MpPeds = require(path.join(ROOT, 'miniprogram', 'utils', 'peds-zscore.js'));
+
+// 2.1 BSA
+const cases = [
+  [170, 65], [175, 70], [160, 55], [180, 80], [100, 15], [50, 3.4], [110, 19],
+];
+cases.forEach(function (c, i) {
+  check('bsaDuBois(' + c[0] + ',' + c[1] + ')',
+    ApkCore.bsaDuBois(c[0], c[1]), MpCore.bsaDuBois(c[0], c[1]));
+  check('bsaMosteller(' + c[0] + ',' + c[1] + ')',
+    ApkCore.bsaMosteller(c[0], c[1]), MpCore.bsaMosteller(c[0], c[1]));
+  check('bsaHaycock(' + c[0] + ',' + c[1] + ')',
+    ApkPeds.bsaHaycock(c[0], c[1]), MpPeds.bsaHaycock(c[0], c[1]));
+});
+
+// 2.2 Teichholz / EF / LVM / RWT
+const lvCases = [[50, 32], [46, 28], [60, 50], [72, 64], [38, 22]];
+lvCases.forEach(function (c) {
+  const a = ApkCore.computeLVFunction(c[0], c[1]);
+  const m = MpCore.computeLVFunction(c[0], c[1]);
+  ['EDV', 'ESV', 'SV', 'EF', 'FS'].forEach(function (k) {
+    check('computeLVFunction(' + c + ').' + k, a[k], m[k]);
+  });
+});
+
+const lvmCases = [[50, 9, 9, 1.7536], [60, 12, 11, 2.0], [45, 8, 8, 1.5]];
+lvmCases.forEach(function (c) {
+  const a = ApkCore.computeLVM(c[0], c[1], c[2], c[3]);
+  const m = MpCore.computeLVM(c[0], c[1], c[2], c[3]);
+  check('computeLVM(' + c + ').LVM', a.LVM, m.LVM);
+  check('computeLVM(' + c + ').LVM/BSA', a['LVM/BSA'], m['LVM/BSA']);
+});
+
+check('computeRWT(50,9)', ApkCore.computeRWT(50, 9), MpCore.computeRWT(50, 9));
+check('teichholzVolume(5.0)', ApkCore.teichholzVolume(5.0), MpCore.teichholzVolume(5.0));
+
+// 2.3 参考值列表（CN + ASE，各性别，带 BSA）
+['male', 'female'].forEach(function (sex) {
+  ['CN', 'ASE'].forEach(function (std) {
+    [1.5, 1.7536, 2.0].forEach(function (bsa) {
+      const measured = {
+        LVEDD: 50, LVESD: 32, IVSd: 9, LVPWd: 9, LVEDV: 118.2, LVESV: 41,
+        EF: 65.4, LVEF: 65.4, FS: 34, LVM: 158.2, 'LVM/BSA': 90.2,
+      };
+      const a = ApkCore.buildReferenceList(sex, measured, std, bsa);
+      const m = MpCore.buildReferenceList(sex, measured, std, bsa);
+
+      check('buildReferenceList(' + sex + ',' + std + ',' + bsa + ') 长度', a.length, m.length);
+
+      let diffRow = null;
+      for (let i = 0; i < a.length; i++) {
+        const keys = ['key', 'name', 'unit', 'value', 'range', 'status', 'statusText',
+          'statusCls', 'hasValue', 'derivedText', 'derivedUnit', 'hasDerived'];
+        for (const k of keys) {
+          if (a[i][k] !== m[i][k]) { diffRow = a[i].key + '.' + k + ' (' + a[i][k] + ' vs ' + m[i][k] + ')'; break; }
+        }
+        if (diffRow) break;
+      }
+      check('buildReferenceList(' + sex + ',' + std + ',' + bsa + ') 逐字段一致', diffRow, null);
+    });
+  });
+});
+
+// 2.4 儿童 Z 值
+const pedsInputs = [
+  { bsa: 0.450894, m: { LVEDD: 38, LVESD: 25, LVM: 20 } },
+  { bsa: 0.761907, m: { LVEDD: 42, LVESD: 28, LVST: 6, LVPWT: 6, LVEDV: 48, LVESV: 18, LVM: 34, ROOT: 18, MPA: 14, ANN: 13 } },
+  { bsa: 1.2, m: { LVEDD: 45, ROOT: 24, MPA: 20, LMCA: 3, LVSI: 1.6 } },
+];
+pedsInputs.forEach(function (c, i) {
+  const a = ApkPeds.buildPedsList(c.bsa, c.m);
+  const m = MpPeds.buildPedsList(c.bsa, c.m);
+
+  check('buildPedsList#' + i + ' 长度', a.length, m.length);
+
+  let diffRow = null;
+  for (let j = 0; j < a.length; j++) {
+    const keys = ['key', 'name', 'unit', 'value', 'z', 'zText', 'rangeText',
+      'range3Text', 'meanText', 'status', 'statusText', 'statusCls', 'hasValue'];
+    for (const k of keys) {
+      const x = a[j][k], y = m[j][k];
+      const same = (typeof x === 'number' && typeof y === 'number')
+        ? Math.abs(x - y) < 1e-9
+        : x === y;
+      if (!same) { diffRow = a[j].key + '.' + k + ' (' + x + ' vs ' + y + ')'; break; }
+    }
+    if (diffRow) break;
+  }
+  check('buildPedsList#' + i + ' 逐字段一致', diffRow, null);
+});
+
+// 2.5 系数表必须完全相同
+check('PEDS_Z 参数数一致',
+  Object.keys(ApkPeds.PEDS_Z).length, Object.keys(MpPeds.PEDS_Z).length);
+check('PEDS_FIELDS 顺序一致',
+  ApkPeds.PEDS_FIELDS.join(','), MpPeds.PEDS_FIELDS.join(','));
+check('PEDS_GROUPS 一致',
+  JSON.stringify(ApkPeds.PEDS_GROUPS), JSON.stringify(MpPeds.PEDS_GROUPS));
+
+let coefDiff = null;
+Object.keys(MpPeds.PEDS_Z).forEach(function (k) {
+  const a = ApkPeds.PEDS_Z[k], m = MpPeds.PEDS_Z[k];
+  if (a.a !== m.a || a.mean !== m.mean || a.sd !== m.sd || a.unit !== m.unit || a.name !== m.name) {
+    coefDiff = k;
+  }
+});
+check('33 项系数逐项相同', coefDiff, null);
+
+// 2.6 CN / ASE 参数清单一致
+check('CN_FIELDS 一致', ApkCore.CN_FIELDS.join(','), MpCore.CN_FIELDS.join(','));
+check('ASE_FIELDS 一致', ApkCore.ASE_FIELDS.join(','), MpCore.ASE_FIELDS.join(','));
+check('BSA_INDEX_MAP 一致',
+  JSON.stringify(ApkCore.BSA_INDEX_MAP), JSON.stringify(MpCore.BSA_INDEX_MAP));
+check('STATUS_TEXT 一致',
+  JSON.stringify(ApkCore.STATUS_TEXT), JSON.stringify(MpCore.STATUS_TEXT));
+
+// 2.7 gradeEF / judgeRange / gradeZ 边界
+[[60, 'normal'], [50, 'mild'], [40, 'moderate'], [20, 'severe']].forEach(function (c) {
+  check('gradeEF(' + c[0] + ').level', ApkCore.gradeEF(c[0]).level, c[1]);
+  check('gradeEF(' + c[0] + ') == 小程序',
+    ApkCore.gradeEF(c[0]).level, MpCore.gradeEF(c[0]).level);
+});
+
+[[2.0, 'normal'], [2.01, 'mild'], [3.0, 'mild'], [3.01, 'severe'], [-4, 'severe'], [0, 'normal']]
+  .forEach(function (c) {
+    check('gradeZ(' + c[0] + ').level', ApkPeds.gradeZ(c[0]).level, c[1]);
+  });
+
+// ── Calc 引擎一致性（APK 内联 vs 小程序源码） ──
+const MpCalc = require(path.join(ROOT, 'miniprogram', 'utils', 'echo-calc.js'));
+
+check('Calc strokeVolume(2,20)', ApkCalc.round(ApkCalc.strokeVolume(2, 20), 4),
+  MpCalc.round(MpCalc.strokeVolume(2, 20), 4));
+check('Calc bernoulli(4,1)', ApkCalc.bernoulli(4, 1), MpCalc.bernoulli(4, 1));
+check('Calc avaContinuity(62.83,30)', ApkCalc.round(ApkCalc.avaContinuity(62.83, 30), 6),
+  MpCalc.round(MpCalc.avaContinuity(62.83, 30), 6));
+check('Calc mvaPht(220)', ApkCalc.mvaPht(220), MpCalc.mvaPht(220));
+check('Calc pisa(0.8,40,5,150).eroa', ApkCalc.round(ApkCalc.pisa(0.8, 40, 5, 150).eroa, 8),
+  MpCalc.round(MpCalc.pisa(0.8, 40, 5, 150).eroa, 8));
+check('Calc rapFromIvc(25,"no")', ApkCalc.rapFromIvc(25, 'no'), MpCalc.rapFromIvc(25, 'no'));
+check('Calc pasp(3,8)', ApkCalc.pasp(3, 8), MpCalc.pasp(3, 8));
+check('Calc pvrEstimate(3,15)', ApkCalc.round(ApkCalc.pvrEstimate(3, 15), 8),
+  MpCalc.round(MpCalc.pvrEstimate(3, 15), 8));
+check('Calc phProbability(3.0,false)', ApkCalc.phProbability(3.0, false),
+  MpCalc.phProbability(3.0, false));
+check('Calc gradeAva(1.2)', ApkCalc.gradeAva(1.2).level, MpCalc.gradeAva(1.2).level);
+check('Calc gradeEe(10).text', ApkCalc.gradeEe(10).text, MpCalc.gradeEe(10).text);
+
+// ── ValveCalc 引擎一致性（APK 内联 vs 小程序源码） ──
+const MpValve = require(path.join(ROOT, 'miniprogram', 'utils', 'valve-calc.js'));
+
+const VALVE_CASES = [
+  ['as', { lvotD: 2.0, lvotVti: 22, avVti: 60, avVmax: 4.2, mg: 45 }, 1.8],
+  ['as', { lvotD: 2.0, lvotVti: 18, avVti: 50, avVmax: 3.0 }, 1.7],
+  ['ar', { radius: 0.6, aliasVa: 40, regV: 5, regVti: 180, vc: 0.7, pht: 300, lvotD: 2.0, lvotVti: 22 }, 1.8],
+  ['ms', { mvaPlani: 1.1, pht: 210, mg: 8, pasp: 42 }, 1.8],
+  ['mr', { radius: 0.8, aliasVa: 40, regV: 5, regVti: 150, vc: 0.8, dt: 30, lvotD: 2.0, lvotVti: 22 }, 1.8],
+  ['tr', { radius: 0.7, aliasVa: 40, regV: 2.8, regVti: 120, vc: 0.75, trV: 3.5, ivc: 24, ivcCollapse: 'no' }, 1.8],
+];
+VALVE_CASES.forEach(function (c, i) {
+  const a = ApkValve.valveCalc(c[0], c[1], c[2]);
+  const m = MpValve.valveCalc(c[0], c[1], c[2]);
+  check('ValveCalc #' + (i + 1) + ' (' + c[0] + ') 行数与小程序一致', a.rows.length, m.rows.length);
+  check('ValveCalc #' + (i + 1) + ' 汇总等级一致', a.level, m.level);
+  check('ValveCalc #' + (i + 1) + ' 逐行结果一致',
+    JSON.stringify(a.rows), JSON.stringify(m.rows));
+  check('ValveCalc #' + (i + 1) + ' 备注一致',
+    JSON.stringify(a.notes), JSON.stringify(m.notes));
+});
+check('ValveCalc pisaEroa(0.8,40,5)', ApkValve.pisaEroa(0.8, 40, 5), MpValve.pisaEroa(0.8, 40, 5));
+check('ValveCalc rapOf(25,"no")', ApkValve.rapOf(25, 'no'), MpValve.rapOf(25, 'no'));
+check('ValveCalc gTrRvol(46).level', ApkValve.gTrRvol(46).level, MpValve.gTrRvol(46).level);
+check('ValveCalc gAva(0.9).level', ApkValve.gAva(0.9).level, MpValve.gAva(0.9).level);
+check('ValveCalc gMsMva(1.5).level', ApkValve.gMsMva(1.5).level, MpValve.gMsMva(1.5).level);
+
+/* ══════════════════════════════════════════════════════════
+   3. 与「期望值」的独立核对（防止两边一起错）
+   ══════════════════════════════════════════════════════════ */
+
+section('3. 独立期望值核对');
+
+// 手算：Teichholz D=5.0cm → 7×125/7.4 = 118.243...
+check('Teichholz(5.0) = 118.243', ApkCore.teichholzVolume(5.0), 118.2432, 1e-3);
+// 手算：Du Bois 170/65 = 0.007184 × 170^0.725 × 65^0.425
+check('Du Bois(170,65) ≈ 1.7536', ApkCore.bsaDuBois(170, 65), 1.7536, 1e-3);
+// 手算：Haycock(110,19) = 0.024265 × 110^0.3964 × 19^0.5378
+check('Haycock(110,19) ≈ 0.7619', ApkPeds.bsaHaycock(110, 19), 0.761907, 1e-5);
+// 手算：Z(LVEDD=3.8cm, bsa=0.450894)
+//   BSA^0.45 = 0.698769 ; 3.8/0.698769 = 5.438136
+//   Z = (5.438136 − 3.89)/0.33 = 4.691322
+check('Z(LVEDD 38mm @bsa .450894) ≈ 4.6913',
+  ApkPeds.zScore(3.8, 'LVEDD', 0.450894), 4.691322, 1e-5);
+// 同一测值在 bsa=0.4506 下应得 4.6962（BSA 微变即 Z 变，验证 BSA 真的参与计算）
+check('Z(LVEDD 38mm @bsa .4506) ≈ 4.6962',
+  ApkPeds.zScore(3.8, 'LVEDD', 0.4506), 4.696160, 1e-5);
+check('Z 随 BSA 变化（两个 BSA 结果不同）',
+  ApkPeds.zScore(3.8, 'LVEDD', 0.450894) !== ApkPeds.zScore(3.8, 'LVEDD', 0.4506), true);
+// 手算：成人 BSA 下 LVEDD ±2SD 下界 ≈ 4.26 cm（对上 ASE 4.2）
+const adultR2 = ApkPeds.rangeFromZ('LVEDD', ApkPeds.bsaHaycock(175, 70), 2);
+check('成人 LVEDD ±2SD 下界 ≈ 4.26', adultR2.lower, 4.2569, 1e-3);
+check('成人 LVEDD ±2SD 上界 ≈ 6.00', adultR2.upper, 5.9965, 1e-3);
+
+/* ══════════════════════════════════════════════════════════
+   4. 页面结构完整性
+   ══════════════════════════════════════════════════════════ */
+
+section('4. 页面元素完整性');
+
+const REQUIRED_IDS = [
+  'appbarTitle', 'resetBtn', 'main', 'tabbar',
+  'page-index', 'page-ef', 'page-calc', 'page-valves', 'page-segments', 'page-peds',
+  'inHeight', 'inWeight', 'outBsa', 'bsaHint', 'stdNote',
+  'jumpRef', 'refBlock', 'refList', 'refDesc', 'refSource', 'aseUnitNote',
+  'calcGroups', 'calcClear', 'calcBsaNote',
+  'valveSwitch', 'valveClear', 'valveSecs',
+  'efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd', 'efResult', 'efKv', 'efMark', 'efGrade',
+  'pdHeight', 'pdWeight', 'pdAge', 'pdBsa', 'pdWarn', 'pdInputs', 'pdMore',
+  'pdClear', 'pdSumCard', 'pdSumV', 'pdList', 'pdRanges',
+];
+REQUIRED_IDS.forEach(function (id) {
+  check('元素 #' + id + ' 存在', new RegExp('id="' + id + '"').test(html), true);
+});
+
+// ── 瓣膜评估页 ──
+['as', 'ar', 'ms', 'mr', 'tr'].forEach(function (v) {
+  check('瓣膜分区 data-sec="' + v + '"', new RegExp('data-sec="' + v + '"').test(html), true);
+  check('瓣膜切换按钮 data-valve="' + v + '"', new RegExp('data-valve="' + v + '"').test(html), true);
+  check('瓣膜结果容器 #vsum-' + v, new RegExp('id="vsum-' + v + '"').test(html), true);
+  check('瓣膜结果行容器 #vres-' + v, new RegExp('id="vres-' + v + '"').test(html), true);
+});
+check('瓣膜页签 data-tab="valves" 存在', /data-tab="valves"/.test(html), true);
+check('瓣膜输入字段 data-vk 共 36 个', (html.match(/data-vk="/g) || []).length, 36);
+check('IVC 选择器 data-seg="valveivc"', /data-seg="valveivc"/.test(html), true);
+check('瓣膜页仅一个 IVC 选择器', (html.match(/data-seg="valveivc"/g) || []).length, 1);
+['主动脉瓣狭窄 AS', '主动脉瓣反流 AR', '二尖瓣狭窄 MS', '二尖瓣反流 MR', '三尖瓣 TR / TS'].forEach(function (t) {
+  check('瓣膜页内容「' + t + '」', html.includes(t), true);
+});
+['AVAi', 'DVI', '缩流颈 VC', 'EROA', 'RVol', '反流分数 RF', 'Wilkins 评分', 'massive', 'PASP ≈ 4V² + RAP'].forEach(function (t) {
+  check('瓣膜页要点「' + t + '」', html.includes(t), true);
+});
+check('瓣膜页提示为速查资料', /不构成诊断依据/.test(html), true);
+
+// ── 节段划分页 ──
+check('SegSvg 引擎已内联', /wallDiagramSvg/.test(html), true);
+check('牛眼图容器 #bullseyeBox', /id="bullseyeBox"/.test(html), true);
+check('选中信息行 #segSelInfo', /id="segSelInfo"/.test(html), true);
+['PLAX', 'PSAX-B', 'PSAX-M', 'PSAX-A', 'A4C', 'A2C', 'A3C'].forEach(function (v) {
+  check('示意图容器 #wd-' + v, new RegExp('id="wd-' + v + '"').test(html), true);
+});
+check('节段数字按钮 data-selseg（36 个，跨切面重复计数）', (html.match(/data-selseg=/g) || []).length, 36);
+check('页签 data-tab="segments" 存在', /data-tab="segments"/.test(html), true);
+const segSvgInline = html.match(/<svg[^>]*aria-label="左室17节段牛眼图"[^>]*>[\s\S]*?<\/svg>/);
+check('牛眼图 SVG 已内联', !!segSvgInline, true);
+check('牛眼图含 17 个节段', segSvgInline ? (segSvgInline[0].match(/data-seg=/g) || []).length : 0, 17);
+['LAD · 前降支', 'RCA · 右冠', 'LCx · 回旋支'].forEach(function (t) {
+  check('分区色块「' + t + '」', html.includes(t), true);
+});
+['胸骨旁长轴', '心尖四腔心', '剑突下', '胸骨上窝', 'PSAX 钟面', 'WMSI', '下外侧壁'].forEach(function (t) {
+  check('节段页内容「' + t + '」', html.includes(t), true);
+});
+
+// 合并后不应再有独立参考值页
+check('旧 page-reference 已移除', /id="page-reference"/.test(html), false);
+check('旧 refBsa 已移除', /id="refBsa"/.test(html), false);
+check('旧快捷跳转按钮已移除', /data-go="reference"/.test(html), false);
+
+// data-seg 分组齐全（calccollapse/calcsigns 为 JS 动态生成，检查组名字面量）
+['sex', 'formula', 'standard', 'pdsex'].forEach(function (g) {
+  check('分段选择器 data-seg="' + g + '"', new RegExp('data-seg="' + g + '"').test(html), true);
+});
+['calccollapse', 'calcsigns'].forEach(function (g) {
+  check('动态分段选择器组 "' + g + '" 已定义', html.indexOf("'" + g + "'") !== -1, true);
+});
+
+// app.js 里引用的 id 必须在 HTML 中存在
+const appJs = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
+const idRefs = [...new Set((appJs.match(/\$\('([A-Za-z][\w]*)'\)/g) || [])
+  .map(function (s) { return s.slice(3, -2); }))];
+const missingIds = idRefs.filter(function (id) { return !new RegExp('id="' + id + '"').test(html); });
+check('app.js 引用的 ' + idRefs.length + ' 个 id 都存在', missingIds.join(',') || null, null);
+
+/* ── 9. 新增功能：BMI 与儿童收缩功能卡 ───────────────────── */
+check('Core.bmi 已导出', typeof ApkCore.bmi, 'function');
+check('Core.bmiClass 已导出', typeof ApkCore.bmiClass, 'function');
+check('BMI 170/65 = 22.5', ApkCore.round(ApkCore.bmi(170, 65), 1), 22.5, 0.05);
+check('bmiClass 22.5 正常', ApkCore.bmiClass(22.5).text, '正常');
+check('bmiClass 30 肥胖', ApkCore.bmiClass(30).text, '肥胖');
+check('HTML 含 stat-row', /class="stat-row"/.test(html) ? 1 : 0, 1, 0);
+check('HTML 含 BMI 展示位 outBmi', /id="outBmi"/.test(html) ? 1 : 0, 1, 0);
+check('HTML 含儿童 BMI 展示位 pdBmi', /id="pdBmi"/.test(html) ? 1 : 0, 1, 0);
+check('HTML 含儿童收缩功能卡 pdFuncCard', /id="pdFuncCard"/.test(html) ? 1 : 0, 1, 0);
+check('app.js 含儿童 EF 推算逻辑', /computeLVFunction\(measured\.LVEDD, measured\.LVESD\)/.test(appJs) ? 1 : 0, 1, 0);
+check('app.js 含推算容积代入 Z 值', /zMeasured\.LVEDV === undefined\) zMeasured\.LVEDV = func\.EDV/.test(appJs) ? 1 : 0, 1, 0);
+
+// 引擎数据同步：CN 37 项 / 新参数抽查（与小程序引擎逐字段比对）
+const cnM = ApkCore.buildReferenceList('male', { ROOT: 30, MPA: 28, RVAW: 7 }, 'CN');
+const cnMmp = MpCore.buildReferenceList('male', { ROOT: 30, MPA: 28, RVAW: 7 }, 'CN');
+check('APK CN 列表 37 项（与小程序一致）', cnM.length, MpCore.buildReferenceList('male', {}, 'CN').length, 0);
+check('APK ROOT 30 判定一致', cnM.find(function (r) { return r.key === 'ROOT'; }).status,
+  cnMmp.find(function (r) { return r.key === 'ROOT'; }).status, 0);
+check('APK MPA 28 判定一致', cnM.find(function (r) { return r.key === 'MPA'; }).status,
+  cnMmp.find(function (r) { return r.key === 'MPA'; }).status, 0);
+
+/* ══════════════════════════════════════════════════════════ */
+
+console.log('\n' + '═'.repeat(60));
+if (fail === 0) {
+  console.log('✅ 全部通过：' + pass + ' 项断言');
+} else {
+  console.log('❌ ' + fail + ' 项失败 / 共 ' + (pass + fail) + ' 项\n');
+  console.log(problems.join('\n\n'));
+}
+console.log('═'.repeat(60));
+
+process.exit(fail === 0 ? 0 : 1);

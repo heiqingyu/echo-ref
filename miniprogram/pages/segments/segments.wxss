@@ -1,0 +1,166 @@
+/* 节段划分页 */
+
+.bull-img {
+  width: 100%;
+  height: 640rpx;
+  margin-top: 16rpx;
+}
+
+.terr-key {
+  display: flex;
+  gap: 14rpx;
+  flex-wrap: wrap;
+  margin: 8rpx 0 4rpx;
+}
+
+.terr-chip {
+  font-size: 24rpx;
+  padding: 8rpx 22rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid var(--c);
+  color: var(--c);
+  background: #fff;
+}
+
+.terr-chip--on {
+  background: var(--c);
+  color: #fff;
+}
+
+.hi-line {
+  font-size: 24rpx;
+  color: var(--main, #2563eb);
+  margin: 6rpx 0 10rpx;
+}
+
+/* 通用小表格 */
+.tbl {
+  margin-top: 16rpx;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.tbl__head {
+  display: flex;
+  background: #eef2ff;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.tbl__head text {
+  padding: 12rpx 16rpx;
+}
+
+.tbl__row {
+  display: flex;
+  border-top: 1rpx solid #f0f1f3;
+  background: #fff;
+}
+
+.tbl__row text {
+  padding: 12rpx 16rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.tbl--2 > text:first-child,
+.tbl--2 .tbl__c1 {
+  width: 26%;
+  flex-shrink: 0;
+}
+
+.tbl--2 .tbl__c2 {
+  flex: 1;
+}
+
+.tbl--3 > text:first-child,
+.tbl--3 .tbl__c1 {
+  width: 25%;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.tbl--3 .tbl__c2 {
+  flex: 1;
+  color: #4b5563;
+}
+
+/* 切面示意图卡片 */
+.wall-card {
+  margin-top: 24rpx;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 14rpx;
+  padding: 18rpx;
+  background: #fff;
+}
+
+.wall-card__t {
+  font-size: 27rpx;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.wall-card__s {
+  font-size: 23rpx;
+  color: #6b7280;
+  margin-top: 4rpx;
+}
+
+.wall-img {
+  width: 100%;
+  height: 480rpx;
+  margin-top: 12rpx;
+}
+
+.wall-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 12rpx;
+}
+
+.wall-group__l {
+  font-size: 23rpx;
+  color: #374151;
+  margin-right: 8rpx;
+}
+
+.wall-chips {
+  display: flex;
+  gap: 10rpx;
+  flex-wrap: wrap;
+}
+
+.segchip {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #fff;
+  background: var(--c);
+  border: 3rpx solid #fff;
+  box-shadow: 0 0 0 2rpx #e5e7eb;
+}
+
+.segchip--on {
+  border-color: #1e293b;
+  box-shadow: 0 0 0 4rpx #1e293b;
+}
+
+.hi-line--sel {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.wall-card__note {
+  font-size: 22rpx;
+  color: #8a9099;
+  margin-top: 8rpx;
+}

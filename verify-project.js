@@ -1,0 +1,331 @@
+/**
+ * 工程完整性检查
+ *  1. 所有 JS 文件语法可解析
+ *  2. 所有 JSON 文件格式合法
+ *  3. app.json 中声明的页面文件齐全
+ *  4. 模拟页面数据流（index -> ef -> reference）
+ */
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+const ROOT = __dirname;
+const MP = path.join(ROOT, 'miniprogram');
+
+// 计算引擎（供第 7、8 节使用）
+const core = require(path.join(MP, 'utils', 'echo-core.js'));
+
+let pass = 0, fail = 0;
+const problems = [];
+
+function ok(msg) { pass++; console.log('  OK   ' + msg); }
+function bad(msg) { fail++; problems.push(msg); console.log(' FAIL  ' + msg); }
+
+/* ---- 1. 收集文件 ---- */
+function walk(dir, out = []) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) { if (e.name !== 'node_modules') walk(p, out); }
+    else out.push(p);
+  }
+  return out;
+}
+const all = walk(MP);
+
+console.log('\n=== 1. JSON 语法检查 ===');
+for (const f of all.filter(f => f.endsWith('.json'))) {
+  try {
+    JSON.parse(fs.readFileSync(f, 'utf8'));
+    ok(path.relative(ROOT, f));
+  } catch (e) {
+    bad(path.relative(ROOT, f) + ' → ' + e.message);
+  }
+}
+
+console.log('\n=== 2. JS 语法检查 ===');
+const node = process.execPath;
+for (const f of all.filter(f => f.endsWith('.js'))) {
+  try {
+    execSync(`"${node}" --check "${f}"`, { stdio: 'pipe' });
+    ok(path.relative(ROOT, f));
+  } catch (e) {
+    bad(path.relative(ROOT, f) + ' → ' + String(e.stderr).split('\n')[0]);
+  }
+}
+
+console.log('\n=== 3. app.json 页面文件齐全性 ===');
+const appJson = JSON.parse(fs.readFileSync(path.join(MP, 'app.json'), 'utf8'));
+for (const pg of appJson.pages) {
+  const exts = ['js', 'json', 'wxml', 'wxss'];
+  const missing = exts.filter(ext => !fs.existsSync(path.join(MP, pg + '.' + ext)));
+  if (missing.length === 0) ok(pg + '  (js/json/wxml/wxss 齐全)');
+  else bad(pg + ' 缺少: ' + missing.join(', '));
+}
+
+console.log('\n=== 4. tabBar 引用的页面必须在 pages 中 ===');
+for (const t of appJson.tabBar.list) {
+  if (appJson.pages.includes(t.pagePath)) ok(t.pagePath + ' → ' + t.text);
+  else bad('tabBar 引用了未注册页面: ' + t.pagePath);
+}
+
+console.log('\n=== 4b. 页面结构：合并 + 其他计算 ===');
+if (appJson.pages.includes('pages/calculators/calculators')) ok('calculators 页已注册');
+else bad('calculators 页未注册');
+if (!appJson.pages.includes('pages/reference/reference')) ok('独立 reference 页已移除（并入 index）');
+else bad('reference 页仍独立存在，未合并');
+if (fs.existsSync(path.join(MP, 'utils', 'echo-calc.js'))) ok('echo-calc.js 引擎存在');
+else bad('echo-calc.js 引擎缺失');
+
+console.log('\n=== 4c. 瓣膜评估页 ===');
+if (appJson.pages.includes('pages/valves/valves')) ok('valves 页已注册');
+else bad('valves 页未注册');
+['valve-data.js', 'valve-calc.js'].forEach(f => {
+  if (fs.existsSync(path.join(MP, 'utils', f))) ok(f + ' 存在');
+  else bad(f + ' 缺失');
+});
+if (appJson.tabBar.list.length <= 5) ok('tabBar 条目 ' + appJson.tabBar.list.length + ' 个（微信上限 5）');
+else bad('tabBar 条目超过微信上限 5 个');
+const valveData = require(path.join(MP, 'utils', 'valve-data.js'));
+const ids = valveData.VALVE_SECTIONS.map(s => s.id).join(',');
+if (ids === 'as,ar,ms,mr,tr') ok('瓣膜分区 = as,ar,ms,mr,tr');
+else bad('瓣膜分区异常: ' + ids);
+const emptyBlocks = valveData.VALVE_SECTIONS.filter(s => !s.blocks.length || !s.fields.length);
+if (emptyBlocks.length === 0) ok('五节均含分级内容与计算字段');
+else bad('以下瓣膜缺少内容: ' + emptyBlocks.map(s => s.id).join(','));
+const calcJs = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
+['主动脉瓣口面积 AVA', '二尖瓣口面积 MVA', 'PISA · EROA'].forEach(t => {
+  if (calcJs.indexOf(t) === -1) ok('瓣膜计算已从其他计算页移出：「' + t + '」');
+  else bad('瓣膜计算仍在其他计算页重复：' + t);
+});
+
+console.log('\n=== 5. WXML 中引用的方法在 JS 中已定义 ===');
+const handlerPat = /bind(?:tap|input|change|confirm)="([^"]+)"/g;
+for (const pg of appJson.pages) {
+  const wxml = fs.readFileSync(path.join(MP, pg + '.wxml'), 'utf8');
+  const js = fs.readFileSync(path.join(MP, pg + '.js'), 'utf8');
+  const handlers = new Set();
+  let m;
+  while ((m = handlerPat.exec(wxml)) !== null) handlers.add(m[1]);
+  const missing = [...handlers].filter(h => !new RegExp(h + '\\s*\\(').test(js));
+  if (missing.length === 0) ok(pg + '  (' + handlers.size + ' 个事件处理器均已定义)');
+  else bad(pg + ' 缺少事件处理器: ' + missing.join(', '));
+}
+
+console.log('\n=== 6. WXML 标签配对检查 ===');
+const SELF_CLOSE = new Set(['input', 'image', 'icon', 'progress', 'import', 'include', 'wxs', 'slot', 'br', 'hr']);
+for (const pg of appJson.pages) {
+  const wxml = fs.readFileSync(path.join(MP, pg + '.wxml'), 'utf8');
+  const stack = [];
+  let err = null;
+  const tagPat = /<(\/?)([a-zA-Z][\w-]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>/g;
+  let t;
+  while ((t = tagPat.exec(wxml)) !== null) {
+    const [, closing, name, , selfClose] = t;
+    if (selfClose || SELF_CLOSE.has(name)) continue;
+    if (closing) {
+      if (stack.length === 0 || stack[stack.length - 1] !== name) {
+        err = `意外的 </${name}>，栈顶为 <${stack[stack.length - 1] || '空'}>`;
+        break;
+      }
+      stack.pop();
+    } else {
+      stack.push(name);
+    }
+  }
+  if (err) bad(pg + ' → ' + err);
+  else if (stack.length) bad(pg + ' 未闭合标签: ' + stack.join(', '));
+  else ok(pg + ' 标签配对正确');
+}
+
+console.log('\n=== 7. ASE 标准端到端（含单位换算）===');
+// 先做基础计算（后续两节共用）
+const profile = { sex: 'male', height: 170, weight: 65, bsa: core.round(core.bsaDuBois(170, 65), 3) };
+const lvedd = 50, lvesd = 32, ivsd = 9, lvpwd = 9;
+const fn = core.computeLVFunction(lvedd, lvesd);
+const lvm = core.computeLVM(lvedd, ivsd, lvpwd, profile.bsa);
+const rwt = core.computeRWT(lvedd, lvpwd);
+
+// 用同一组测量值走 ASE 标准，验证单位换算后判定正确
+const aseRows = core.buildReferenceList('male', {
+  LVEDD: lvedd,      // 50 mm
+  IVSd: ivsd,        // 9 mm
+  LVPWd: lvpwd,      // 9 mm
+  LVEDV: fn.EDV,     // 118.2 mL
+  LVESV: fn.ESV,     // 41 mL
+  EF: fn.EF,         // 65.4 %
+  LVM: lvm.LVM,      // 158.2 g
+  'LVM/BSA': lvm['LVM/BSA'],
+}, 'ASE');
+console.log('  ASE 男性对照（关键几项）：');
+for (const r of aseRows.filter(r => r.hasValue)) {
+  console.log(`    ${r.name.padEnd(16, '　')} ${r.value.padStart(7)}${(r.unit||'').padEnd(6,' ')} 参考 ${r.range.padEnd(14)} [${r.statusText}]`);
+}
+const chk = (key) => aseRows.find(r => r.key === key);
+(chk('LVEDD').status === 'normal')
+  ? ok('LVEDD 50mm → 正常（修复前误判重度）') : bad('LVEDD 判定错误: ' + chk('LVEDD').statusText);
+(chk('IVSd').status === 'normal')
+  ? ok('IVSd 9mm → 正常（cm→mm 换算正确）') : bad('IVSd 判定错误: ' + chk('IVSd').statusText);
+(chk('EF').status === 'normal')
+  ? ok('EF 65.4% → 正常') : bad('EF 判定错误: ' + chk('EF').statusText);
+(chk('LVEDV').status === 'normal')
+  ? ok('LVEDV 118.2mL → 正常（容积不换算）') : bad('LVEDV 判定错误: ' + chk('LVEDV').statusText);
+(chk('LVM').status === 'normal')
+  ? ok('LVM 158.2g → 正常') : bad('LVM 判定错误: ' + chk('LVM').statusText);
+
+// ASE 参数数量
+(aseRows.length === core.ASE_FIELDS.length)
+  ? ok('ASE 参数项数 = ' + aseRows.length)
+  : bad('ASE 项数不符: ' + aseRows.length + ' vs ' + core.ASE_FIELDS.length);
+(aseRows.length >= 20)
+  ? ok('ASE 参数已扩充至 ' + aseRows.length + ' 项') : bad('ASE 参数过少: ' + aseRows.length);
+
+// 所有 ASE 项都必须有有效参考区间
+const noRange = aseRows.filter(r => !r.range || r.range.indexOf('—') === 0);
+(noRange.length === 0)
+  ? ok('所有 ASE 项参考区间完整') : bad('缺参考区间: ' + noRange.map(r => r.key).join(', '));
+
+// 每个 ASE 参数都必须登记原生单位（否则换算会缺失）
+const noUnit = core.ASE_FIELDS.filter(k => !core.PARAM_UNIT_ASE[k]);
+(noUnit.length === 0)
+  ? ok('所有 ASE 参数均已登记原生单位') : bad('未登记原生单位: ' + noUnit.join(', '));
+
+// BSA 联动：切换 BSA 时指数参数的折算范围必须变化
+const bsaA = core.buildReferenceList('male', {}, 'ASE', 1.50).find(r => r.key === 'LVEDD/BSA');
+const bsaB = core.buildReferenceList('male', {}, 'ASE', 2.00).find(r => r.key === 'LVEDD/BSA');
+(bsaA.derivedText !== bsaB.derivedText)
+  ? ok(`BSA 联动生效：1.50→${bsaA.derivedText}mm，2.00→${bsaB.derivedText}mm`)
+  : bad('BSA 切换时指数参数未联动（两者都是 ' + bsaA.derivedText + '）');
+(bsaA.derivedText === '33–47' && bsaB.derivedText === '44–62')
+  ? ok('BSA 折算数值与手算一致') : bad('BSA 折算数值异常');
+// 反算依据必须是 BSA（不是身高）
+const derivedCount = core.buildReferenceList('male', {}, 'ASE', 1.75)
+  .filter(r => r.hasDerived).length;
+(derivedCount === 5)
+  ? ok('共 5 个指数参数参与 BSA 联动') : bad('联动参数数异常: ' + derivedCount);
+
+console.log('\n=== 8. 模拟页面数据流 ===');
+
+// --- index 页：BSA 计算 ---
+(profile.bsa > 1.74 && profile.bsa < 1.76) ? ok('index: BSA = ' + profile.bsa) : bad('index: BSA 异常 ' + profile.bsa);
+
+// --- ef 页：计算并写回 ---
+const grade = core.gradeEF(fn.EF);
+(fn.EDV === 118.2) ? ok('ef: EDV = ' + fn.EDV) : bad('ef: EDV 异常 ' + fn.EDV);
+(fn.EF === 65.4) ? ok('ef: EF = ' + fn.EF + '% → ' + grade.text) : bad('ef: EF 异常 ' + fn.EF);
+(rwt === 0.36) ? ok('ef: RWT = ' + rwt) : bad('ef: RWT 异常 ' + rwt);
+(lvm.LVM === 158.2) ? ok('ef: LVM = ' + lvm.LVM + ' g') : bad('ef: LVM 异常 ' + lvm.LVM);
+// 注意：指数基于真实 Du Bois BSA（1.7536），非凑整的 1.75
+// 158.2 / 1.7536 ≈ 90.2（程序内部先舍入 LVM 再算指数，与界面显示一致）
+const expectLvmBsa = Math.round((158.2 / core.bsaDuBois(170, 65)) * 10) / 10;
+(lvm['LVM/BSA'] === expectLvmBsa)
+  ? ok('ef: LVM/BSA = ' + lvm['LVM/BSA'] + '（基于真实 BSA ' + core.bsaDuBois(170, 65).toFixed(3) + '）')
+  : bad('ef: LVM/BSA 异常 ' + lvm['LVM/BSA'] + '，期望 ' + expectLvmBsa);
+// 交叉验证：界面显示值手算应等于程序输出
+const handCalc = Math.round((Number(lvm.LVM.toFixed(1)) / Number(profile.bsa.toFixed(3))) * 10) / 10;
+(lvm['LVM/BSA'] === handCalc)
+  ? ok('ef: 指数与「显示值手算」一致 (' + handCalc + ')')
+  : bad('ef: 指数与手算不一致，程序 ' + lvm['LVM/BSA'] + ' vs 手算 ' + handCalc);
+
+// --- reference 页：由测量值生成对照表 ---
+const measurements = { lvedd, lvesd, ivsd, lvpwd, EF: fn.EF };
+const dict = core.measurementsToRefDict({
+  lvedd: measurements.lvedd, lvesd: measurements.lvesd,
+  ivsd: measurements.ivsd, lvpwd: measurements.lvpwd,
+  bsa: profile.bsa, height: profile.height,
+});
+const rows = core.buildReferenceList(profile.sex, dict, 'CN');
+(rows.length === 37) ? ok('reference: CN 列表 37 项') : bad('reference: CN 列表 ' + rows.length + ' 项');
+const efRow = rows.find(r => r.key === 'LVEF');
+(efRow && efRow.status === 'normal') ? ok('reference: LVEF 65.4 → 正常') : bad('reference: LVEF 判定异常');
+const lvmRow = rows.find(r => r.key === 'LVM');
+(lvmRow && lvmRow.value === '158.2') ? ok('reference: LVM 联动显示 ' + lvmRow.value) : bad('reference: LVM 未联动');
+const ivsRow = rows.find(r => r.key === 'IVSd');
+(ivsRow && ivsRow.status === 'normal') ? ok('reference: IVSd 9 → 正常') : bad('reference: IVSd 判定异常');
+
+// --- ASE 标准切换（用界面单位 mm）---
+const aseF = core.buildReferenceList('female', { LVEDD: 50, EF: 60 }, 'ASE');
+(aseF.length === core.ASE_FIELDS.length) ? ok('reference: ASE 列表 ' + aseF.length + ' 项') : bad('reference: ASE 列表 ' + aseF.length + ' 项');
+const aseEf = aseF.find(r => r.key === 'EF');
+(aseEf && aseEf.status === 'normal') ? ok('reference: ASE EF 60 → 正常') : bad('reference: ASE EF 判定异常');
+const aseEddF = aseF.find(r => r.key === 'LVEDD');
+(aseEddF && aseEddF.status === 'normal') ? ok('reference: ASE 女性 LVEDD 50mm → 正常') : bad('reference: ASE LVEDD 判定异常');
+
+// --- 边界：女性 ASE LVEDD 54mm（对应指南 5.4cm）应判轻度 ---
+const b1 = core.buildReferenceList('female', { LVEDD: 54 }, 'ASE').find(r => r.key === 'LVEDD');
+(b1 && b1.status === 'mild') ? ok('reference: 边界 女性 LVEDD 54mm → 轻度') : bad('reference: 边界判定异常: ' + (b1 && b1.statusText));
+
+// --- 异常输入不应崩溃 ---
+const hostile = core.buildReferenceList('male', { LVEDD: 0, LVEF: null, LVESV: undefined }, 'CN');
+(hostile.length === core.CN_FIELDS.length) ? ok('reference: 含空值/0 输入不崩溃') : bad('reference: 异常输入处理失败');
+const hostileAse = core.buildReferenceList('male', { LVEDD: 0, EF: null }, 'ASE');
+(hostileAse.length === core.ASE_FIELDS.length) ? ok('reference: ASE 含空值输入不崩溃') : bad('reference: ASE 异常输入处理失败');
+
+console.log('\n=== 9. 儿童 Z 值页 —— 端到端 ===');
+
+const peds = require(path.join(MP, 'utils', 'peds-zscore.js'));
+
+// 9.1 儿科页已被 app.json 注册且四件套齐全（第 3 节已覆盖，这里确认 tab 顺序）
+const pedsTab = appJson.tabBar.list.find(t => t.pagePath === 'pages/pediatric/pediatric');
+pedsTab ? ok('tabBar 已注册「儿童 Z 值」') : bad('tabBar 未注册儿童页');
+(appJson.tabBar.list.length === 5) ? ok('tabBar 共 5 个页签') : bad('tabBar 页签数异常: ' + appJson.tabBar.list.length);
+
+// 9.2 儿科页 JS 必须引用 peds 引擎
+const pedsJs = fs.readFileSync(path.join(MP, 'pages/pediatric/pediatric.js'), 'utf8');
+/peds-zscore/.test(pedsJs)
+  ? ok('儿童页已引入 peds-zscore 引擎') : bad('儿童页未引入 peds-zscore');
+
+// 9.3 1 岁幼儿（75cm/9.5kg）：LVEDD 38mm 应判显著增大
+const pBsa = peds.bsaHaycock(75, 9.5);
+(pBsa > 0.4508 && pBsa < 0.4509) ? ok('Haycock BSA(75,9.5) = ' + pBsa.toFixed(6)) : bad('Haycock BSA 异常 ' + pBsa);
+
+const pRows = peds.buildPedsList(pBsa, { LVEDD: 38, LVESD: 25, LVM: 20 });
+(pRows.length === peds.PEDS_FIELDS.length)
+  ? ok('儿童列表项数 = ' + pRows.length) : bad('儿童列表项数 ' + pRows.length);
+
+const pLvedd = pRows.find(r => r.key === 'LVEDD');
+(pLvedd.unit === 'mm') ? ok('LVEDD 显示单位 mm') : bad('LVEDD 单位异常: ' + pLvedd.unit);
+(pLvedd.status === 'severe') ? ok('LVEDD 38mm（1 岁）→ 显著增大') : bad('LVEDD 判定异常: ' + pLvedd.statusText);
+(pLvedd.z > 4 && pLvedd.z < 5) ? ok('LVEDD Z = ' + pLvedd.z + '（落在合理区间）') : bad('LVEDD Z 异常 ' + pLvedd.z);
+
+// 9.4 长度类必须做 mm→cm 换算：若漏掉，Z 会飞到 ~100
+(Math.abs(pLvedd.z) < 20) ? ok('长度类已换算 mm→cm（Z 未爆炸）') : bad('长度类未换算，Z = ' + pLvedd.z);
+
+// 9.5 均值附近应判正常
+const pNorm = peds.buildPedsList(pBsa, { LVEDD: 27.2 });  // 均值 2.718cm ≈ 27.2mm
+const pNormRow = pNorm.find(r => r.key === 'LVEDD');
+(pNormRow.status === 'normal') ? ok('LVEDD 均值处 → 正常 (Z=' + pNormRow.zText + ')')
+  : bad('均值处判定异常: ' + pNormRow.statusText + ' Z=' + pNormRow.zText);
+
+// 9.6 分组完整性
+const pGrouped = peds.buildPedsGrouped(pBsa, { LVEDD: 38 });
+(pGrouped.length === 9) ? ok('分组数 9') : bad('分组数异常 ' + pGrouped.length);
+const pTotal = pGrouped.reduce((n, g) => n + g.rows.length, 0);
+(pTotal === peds.PEDS_FIELDS.length) ? ok('分组打平 = ' + pTotal + ' 项') : bad('分组打平异常 ' + pTotal);
+
+// 9.7 跨年龄段连续性：成人 BSA 下 PHN 区间应贴近 ASE 成人正常值
+const adultBsaP = peds.bsaHaycock(175, 70);
+const adultR2P = peds.rangeFromZ('LVEDD', adultBsaP, 2);
+(adultR2P.lower > 4.2 && adultR2P.lower < 4.3)
+  ? ok('成人 LVEDD ±2SD 下界 = ' + adultR2P.lower.toFixed(2) + ' cm（≈ASE 4.2）')
+  : bad('成人下界异常 ' + adultR2P.lower);
+(adultR2P.upper > 5.9 && adultR2P.upper < 6.05)
+  ? ok('成人 LVEDD ±2SD 上界 = ' + adultR2P.upper.toFixed(2) + ' cm（≈ASE 5.9）')
+  : bad('成人上界异常 ' + adultR2P.upper);
+
+// 9.8 非法输入不崩溃
+const pHostile = peds.buildPedsList(0, { LVEDD: 38 });
+(pHostile.length === peds.PEDS_FIELDS.length) ? ok('儿童页 BSA=0 不崩溃') : bad('儿童页 BSA=0 异常');
+const pHostile2 = peds.buildPedsList(pBsa, { LVEDD: null, LVM: undefined, ROOT: 0 });
+(pHostile2.length === peds.PEDS_FIELDS.length) ? ok('儿童页空值/0 输入不崩溃') : bad('儿童页异常输入处理失败');
+const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
+(pRoot0.hasValue === true && typeof pRoot0.z === 'number')
+  ? ok('ROOT = 0 作为合法测值参与计算') : bad('ROOT=0 处理异常');
+
+console.log('\n' + '='.repeat(50));
+console.log(`结果： ${pass} 通过 / ${fail} 失败`);
+if (problems.length) {
+  console.log('\n问题列表：');
+  problems.forEach(p => console.log('  - ' + p));
+}
+console.log('='.repeat(50) + '\n');
+process.exit(fail > 0 ? 1 : 0);

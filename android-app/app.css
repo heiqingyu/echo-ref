@@ -1,0 +1,958 @@
+/* ══════════════════════════════════════════════════════════
+   心脏超声参考值 · 移动端样式
+   设计对标微信小程序的视觉，适配 Android WebView + 安全区
+   ══════════════════════════════════════════════════════════ */
+
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --line: #e3e6ea;
+  --text: #1f2329;
+  --sub: #6b7280;
+  --brand: #2563eb;
+  --brand-soft: #eff4ff;
+  --ok: #0f9d58;
+  --hi: #d93838;
+  --lo: #2563eb;
+  --warn: #e8a33d;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --appbar-h: 52px;
+  --tabbar-h: 56px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.55;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+               "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei",
+               Roboto, "Helvetica Neue", sans-serif;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+/* ────────── 顶栏 ────────── */
+.appbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: calc(var(--appbar-h) + var(--safe-t));
+  padding-top: var(--safe-t);
+  display: flex;
+  align-items: center;
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,.12);
+}
+
+.appbar__t {
+  flex: 1;
+  margin: 0;
+  padding-left: 16px;
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appbar__r {
+  margin-right: 12px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(255,255,255,.18);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.appbar__r:active { background: rgba(255,255,255,.3); }
+
+/* ────────── 内容区 ────────── */
+.main {
+  padding: calc(var(--appbar-h) + var(--safe-t) + 14px) 14px
+           calc(var(--tabbar-h) + var(--safe-b) + 26px);
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.page[hidden] { display: none; }
+
+/* ────────── 卡片 ────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.card__t {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 13px;
+  padding-left: 9px;
+  border-left: 3px solid var(--brand);
+  line-height: 1.2;
+}
+
+.card__d {
+  font-size: 13px;
+  color: var(--sub);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+/* ────────── 表单 ────────── */
+.row { display: flex; gap: 11px; }
+.row > .field { flex: 1; min-width: 0; }
+
+.field { margin-bottom: 13px; }
+.field:last-child { margin-bottom: 0; }
+
+.field__l {
+  display: block;
+  font-size: 13px;
+  color: var(--sub);
+  margin-bottom: 6px;
+}
+
+.field__i {
+  width: 100%;
+  height: 46px;
+  padding: 0 12px;
+  font-size: 16px;
+  /* 16px 可防止 iOS/Android WebView 聚焦时自动放大 */
+  color: var(--text);
+  background: #fbfcfd;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field__i:focus {
+  outline: none;
+  border-color: var(--brand);
+  background: #fff;
+}
+.field__i::placeholder { color: #a8aeb6; }
+
+/* 去掉数字输入框的上下箭头 */
+.field__i::-webkit-outer-spin-button,
+.field__i::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.field__i[type=number] { -moz-appearance: textfield; }
+
+/* ────────── 分段选择器 ────────── */
+.seg {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.seg__i {
+  flex: 1;
+  text-align: center;
+  padding: 11px 4px;
+  font-size: 14px;
+  color: var(--sub);
+  background: #fbfcfd;
+  cursor: pointer;
+  user-select: none;
+}
+
+.seg__i + .seg__i { border-left: 1px solid var(--line); }
+
+.seg__i--on {
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ────────── BSA 结果条 ────────── */
+.bsaout {
+  display: flex;
+  align-items: baseline;
+  padding: 14px;
+  margin-top: 12px;
+  background: var(--brand-soft);
+  border-radius: 10px;
+}
+
+.bsaout__v {
+  font-size: 29px;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.bsaout__u { font-size: 14px; color: var(--sub); margin-left: 6px; }
+
+.bsaout__l {
+  font-size: 12px;
+  color: var(--sub);
+  margin-left: auto;
+  text-align: right;
+  line-height: 1.3;
+}
+
+/* ────────── 双指标结果行（BSA + BMI） ────────── */
+.stat-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.stat {
+  flex: 1;
+  padding: 12px 14px;
+  background: var(--brand-soft);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat__main { display: flex; align-items: baseline; }
+
+.stat__v {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.stat__u { font-size: 12px; color: var(--sub); margin-left: 5px; }
+
+.stat__l { font-size: 11.5px; color: var(--sub); }
+
+/* BMI 判级小标签 */
+.bmi-tag {
+  margin-left: 5px;
+  padding: 1px 7px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bmi--low    { background: #e8f1fd; color: #2563eb; }
+.bmi--normal { background: #e5f4ea; color: #0f9d58; }
+.bmi--over   { background: #fdf3e3; color: #b97a12; }
+.bmi--obese  { background: #fdeaea; color: #d93838; }
+
+/* 儿童页收缩功能 EF 大数字 */
+.funcef {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 13px 14px;
+  background: var(--brand-soft);
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.funcef__v {
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.funcef__side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* ────────── 指标网格 ────────── */
+.kv { display: flex; flex-wrap: wrap; gap: 9px; }
+
+.kv__i {
+  flex: 1 1 30%;
+  min-width: 96px;
+  padding: 11px 12px;
+  background: #fafbfc;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.kv__k { font-size: 12px; color: var(--sub); margin-bottom: 4px; }
+
+.kv__v { font-size: 21px; font-weight: 700; line-height: 1.1; }
+
+.kv__u { font-size: 12px; font-weight: 500; color: var(--sub); margin-left: 3px; }
+
+/* ────────── 按钮 ────────── */
+.btn {
+  display: block;
+  width: 100%;
+  height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--brand);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+.btn:active { opacity: .85; }
+
+.btn--ghost {
+  color: var(--brand);
+  background: #fff;
+  border: 1px solid var(--brand);
+}
+
+/* ────────── 列表 ────────── */
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f2f4;
+}
+.list-row:last-child { border-bottom: none; }
+
+.list-row__n { flex: 1.5; font-size: 14px; line-height: 1.35; min-width: 0; }
+.list-row__v { flex: .85; text-align: right; font-size: 14px; font-weight: 600; }
+.list-row__r { flex: 1.25; text-align: right; font-size: 12px; color: var(--sub); }
+.list-row__g { flex: 0 0 92px; text-align: right; }
+
+.list-row__sub {
+  display: block;
+  font-size: 11px;
+  color: var(--sub);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+/* BSA 折算提示（蓝色小胶囊） */
+.derived {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border-radius: 8px;
+}
+
+/* ────────── 标签 ────────── */
+.tag {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.tag--normal { background: #e7f6ee; color: var(--ok); }
+.tag--high { background: #fdeaea; color: var(--hi); }
+.tag--low { background: #e8effd; color: var(--lo); }
+.tag--mild { background: #fdf4e3; color: var(--warn); }
+.tag--moderate { background: #fdeaea; color: var(--hi); }
+.tag--severe { background: #f8dede; color: #a11f1f; }
+.tag--none { color: var(--sub); }
+
+/* 儿童 Z 值：带方向的异常标签 */
+.tag--mild-high { background: #fdf4e3; color: #b3701a; }
+.tag--mild-low { background: #eaf1fd; color: #1d4ed8; }
+.tag--severe-high { background: #f8dede; color: #a11f1f; }
+.tag--severe-low { background: #dfe8fa; color: #12358f; }
+
+/* ────────── EF 进度条 ────────── */
+.efbar-wrap { margin-top: 16px; }
+
+.efbar {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #d93838 0%, #e8a33d 30%, #7bc47f 52%, #0f9d58 70%);
+  position: relative;
+}
+
+.efbar__m {
+  position: absolute;
+  top: -6px;
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+  background: #1f2329;
+  box-shadow: 0 0 0 3px #fff;
+  transform: translateX(-50%);
+  transition: left .3s ease;
+  left: 0;
+}
+
+.efbar-lg {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  font-size: 11px;
+  color: var(--sub);
+}
+
+/* ────────── 儿童 Z 值 ────────── */
+.pgroup {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand);
+  background: var(--brand-soft);
+  padding: 7px 12px;
+  border-radius: 8px;
+  margin: 16px 0 3px;
+}
+.pgroup:first-child { margin-top: 0; }
+
+.zrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f0f2f4;
+}
+.zrow:last-child { border-bottom: none; }
+
+.zrow--none .zrow__n,
+.zrow--none .zrow__v,
+.zrow--none .zrow__r { color: #a8aeb6; }
+
+.zrow__n { flex: 1.5; font-size: 14px; line-height: 1.35; min-width: 0; }
+.zrow__v { flex: .85; text-align: right; font-size: 14px; font-weight: 600; }
+.zrow__r { flex: 1.25; text-align: right; font-size: 12px; color: var(--sub); }
+.zrow__g { flex: 0 0 92px; text-align: right; }
+
+.zrow__sub {
+  display: block;
+  font-size: 11px;
+  color: var(--sub);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+.zbig {
+  display: flex;
+  align-items: baseline;
+  padding: 15px;
+  margin-bottom: 11px;
+  background: #fafbfc;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.zbig__v { font-size: 33px; font-weight: 700; line-height: 1; }
+.zbig__l { font-size: 12px; color: var(--sub); margin-left: 10px; line-height: 1.4; }
+
+.zbig--normal .zbig__v { color: var(--ok); }
+.zbig--mild .zbig__v { color: var(--warn); }
+.zbig--severe .zbig__v { color: var(--hi); }
+
+.key { display: flex; gap: 8px; margin-top: 12px; }
+
+.key__i {
+  flex: 1;
+  padding: 9px 4px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.4;
+  border-radius: 8px;
+}
+
+.key__i--n { background: #e7f6ee; color: #0b7a44; }
+.key__i--m { background: #fdf4e3; color: #a8681a; }
+.key__i--s { background: #f8dede; color: #8f1b1b; }
+
+/* ────────── 提示与说明 ────────── */
+.hint {
+  margin-top: 9px;
+  font-size: 13px;
+  color: var(--warn);
+  line-height: 1.5;
+}
+
+.note {
+  margin-top: 12px;
+  padding: 11px 13px;
+  font-size: 13px;
+  color: var(--sub);
+  line-height: 1.7;
+  background: #fafbfc;
+  border-left: 3px solid var(--line);
+  border-radius: 0 8px 8px 0;
+}
+
+.note--warn {
+  color: #a15c00;
+  background: #fff9ee;
+  border-left-color: var(--warn);
+}
+
+.note sup { font-size: 10px; }
+
+/* ────────── 底部页签 ────────── */
+.tabbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  height: calc(var(--tabbar-h) + var(--safe-b));
+  padding-bottom: var(--safe-b);
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8a9099;
+  font-size: 11px;
+  cursor: pointer;
+  user-select: none;
+  transition: color .15s;
+}
+
+.tab__i { font-size: 19px; line-height: 1; margin-bottom: 3px; }
+
+.tab--on { color: var(--brand); font-weight: 600; }
+
+.tab:active { background: #f7f8fa; }
+
+/* ────────── 窄屏微调 ────────── */
+@media (max-width: 360px) {
+  body { font-size: 14px; }
+  .list-row__g, .zrow__g { flex: 0 0 74px; }
+  .list-row__r, .zrow__r { font-size: 11px; }
+  .kv__v { font-size: 19px; }
+}
+
+/* ────────── 其他计算页：结果行 ────────── */
+.calc-out {
+  display: flex;
+  align-items: flex-start;
+  background: #eff4ff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-top: 10px;
+}
+
+.calc-out__lbl {
+  font-size: 11px;
+  color: #6b7280;
+  margin-right: 8px;
+  line-height: 1.7;
+  flex-shrink: 0;
+}
+
+.calc-out__v {
+  font-size: 13px;
+  color: #1d4ed8;
+  font-weight: 600;
+  line-height: 1.7;
+  word-break: break-all;
+}
+
+/* ────────── 节段划分页 ────────── */
+.bull-wrap {
+  margin-top: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 8px;
+  background: #fafbfc;
+}
+
+.bull-wrap svg {
+  display: block;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.terr-key {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 4px;
+}
+
+.terr-chip {
+  font-size: 12px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--c, #2563eb);
+  color: var(--c, #2563eb);
+  background: #fff;
+  font-family: inherit;
+}
+
+.terr-chip--on {
+  background: var(--c, #2563eb);
+  color: #fff;
+}
+
+.hi-line {
+  font-size: 12px;
+  color: #2563eb;
+  margin: 4px 0 8px;
+}
+
+.bull-wrap svg g[data-terr] {
+  cursor: pointer;
+}
+
+.bull-wrap svg g[data-terr].dim path,
+.bull-wrap svg g[data-terr].dim circle {
+  fill: #d3d7de;
+}
+
+.tbl {
+  margin-top: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tbl__head {
+  display: flex;
+  background: #eef2ff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.tbl__head span {
+  padding: 7px 9px;
+}
+
+.tbl__row {
+  display: flex;
+  border-top: 1px solid #f0f1f3;
+  background: #fff;
+  font-size: 12px;
+}
+
+.tbl__row span {
+  padding: 7px 9px;
+  line-height: 1.5;
+}
+
+.tbl--2 > span:first-child,
+.tbl--2 .tbl__c1 {
+  width: 27%;
+  flex-shrink: 0;
+}
+
+.tbl--2 .tbl__c2 {
+  flex: 1;
+}
+
+.tbl--3 > span:first-child,
+.tbl--3 .tbl__c1 {
+  width: 26%;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.tbl--3 .tbl__c2 {
+  flex: 1;
+  color: #4b5563;
+}
+
+/* 切面示意图卡片（SVG 由 SegSvg 运行时渲染） */
+.wall-card {
+  margin-top: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.wall-card__t {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.wall-card__s {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.wallsvg-box {
+  margin-top: 8px;
+}
+
+.wallsvg-box svg {
+  display: block;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.wallsvg-box g[data-seg],
+.bull-wrap g[data-seg] {
+  cursor: pointer;
+}
+
+.wall-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.wall-group__l {
+  font-size: 12px;
+  color: #374151;
+  margin-right: 4px;
+}
+
+.wall-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.segchip {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--c, #2563eb);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1.5px #e5e7eb;
+  font-family: inherit;
+  padding: 0;
+}
+
+.segchip--on {
+  border-color: #1e293b;
+  box-shadow: 0 0 0 3px #1e293b;
+}
+
+.hi-line--sel {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.wall-card__note {
+  font-size: 11px;
+  color: #8a9099;
+  margin-top: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   瓣膜评估页（AS / AR / MS / MR / TR）
+   ══════════════════════════════════════════════════════════ */
+
+.vswitch {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.vchip {
+  flex: 1;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 8px 4px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.vchip--on {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.vchip__s {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.vchip__n {
+  display: block;
+  font-size: 10px;
+  color: var(--sub);
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.vchip--on .vchip__s,
+.vchip--on .vchip__n {
+  color: #fff;
+}
+
+.vtbl {
+  margin: 10px 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vtbl__r {
+  display: flex;
+  border-top: 1px solid #f0f1f3;
+  background: #fff;
+}
+
+.vtbl__r:first-child {
+  border-top: 0;
+}
+
+.vtbl__r--h {
+  background: #eef2ff;
+  font-weight: 600;
+  color: #374151;
+}
+
+.vtbl__c {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.vtbl--2 .vtbl__c:first-child {
+  flex: 0 0 30%;
+  font-weight: 500;
+  color: #374151;
+}
+
+.vblock__t {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+.vblock__h {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-top: 12px;
+}
+
+.vblock__f {
+  margin-top: 8px;
+  background: #f8fafc;
+  border-left: 3px solid var(--brand);
+  border-radius: 5px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #1d4ed8;
+  line-height: 1.7;
+  word-break: break-all;
+}
+
+.vsum {
+  margin-top: 12px;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.vsum--mild {
+  background: #ecfdf5;
+  color: #0f9d58;
+}
+
+.vsum--moderate {
+  background: #fff7ed;
+  color: #c2740a;
+}
+
+.vsum--severe {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.vres {
+  margin-top: 6px;
+}
+
+.vres__r {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 7px 2px;
+  border-top: 1px solid #f0f1f3;
+}
+
+.vres__r:first-child {
+  border-top: 0;
+}
+
+.vres__k {
+  font-size: 12px;
+  color: #4b5563;
+  flex: 1;
+  padding-right: 8px;
+}
+
+.vres__v {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d4ed8;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.vres__idle {
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 8px 2px;
+}
+
+.lvl {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.lvl--none {
+  background: #eef2ff;
+  color: #2563eb;
+}
+
+.lvl--mild {
+  background: #ecfdf5;
+  color: #0f9d58;
+}
+
+.lvl--moderate {
+  background: #fff7ed;
+  color: #c2740a;
+}
+
+.lvl--severe {
+  background: #fef2f2;
+  color: #b91c1c;
+}

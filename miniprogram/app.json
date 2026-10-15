@@ -1,0 +1,33 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/ef/ef",
+    "pages/calculators/calculators",
+    "pages/valves/valves",
+    "pages/segments/segments",
+    "pages/pediatric/pediatric"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#2563eb",
+    "navigationBarTitleText": "心脏超声参考值",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f6f8"
+  },
+  "tabBar": {
+    "color": "#8a9099",
+    "selectedColor": "#2563eb",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "参数·参考值" },
+      { "pagePath": "pages/ef/ef", "text": "EF 计算" },
+      { "pagePath": "pages/calculators/calculators", "text": "其他计算" },
+      { "pagePath": "pages/segments/segments", "text": "节段划分" },
+      { "pagePath": "pages/pediatric/pediatric", "text": "儿童 Z 值" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
