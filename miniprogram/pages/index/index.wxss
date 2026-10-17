@@ -1,6 +1,11 @@
-/* 页面样式继承 app.wxss，此处仅补充合并进来的参考值列表所需样式 */
+/* 页面样式继承 app.wxss，此处仅补充合并后 EF 结果与参考值列表所需样式 */
 .page-wrap {
   padding-bottom: 60rpx;
+}
+
+/* 数值等宽，避免计算结果跳动（原 ef.wxss） */
+.kv__v {
+  font-variant-numeric: tabular-nums;
 }
 
 .list-row__val {
@@ -17,4 +22,56 @@
   margin-top: 8rpx;
   display: inline-block;
   line-height: 1.5;
+}
+
+/* ══════ 延展阅读：外链条目（点击复制） ══════ */
+.extlink {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 22rpx;
+  margin-top: 16rpx;
+  background: #f7f9fc;
+  border: 1rpx solid #e6ebf3;
+  border-radius: 14rpx;
+}
+
+.extlink--tap {
+  background: #eef4ff;
+  border-color: #c7d9f5;
+}
+
+.extlink__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.extlink__name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1f2329;
+  line-height: 1.4;
+}
+
+.extlink__desc {
+  font-size: 23rpx;
+  color: #6b7280;
+  margin-top: 4rpx;
+  line-height: 1.5;
+}
+
+.extlink__url {
+  font-size: 21rpx;
+  color: #2563eb;
+  margin-top: 6rpx;
+}
+
+.extlink__act {
+  flex: none;
+  font-size: 23rpx;
+  color: #2563eb;
+  border: 1rpx solid #bcd3f7;
+  border-radius: 999rpx;
+  padding: 6rpx 20rpx;
+  background: #fff;
 }

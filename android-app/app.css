@@ -537,6 +537,66 @@ html, body {
   .kv__v { font-size: 19px; }
 }
 
+/* ────────── 延展阅读：外链条目 ────────── */
+
+.extlink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 13px;
+  margin-top: 9px;
+  background: #f7f9fc;
+  border: 1px solid #e6ebf3;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.extlink:active {
+  background: var(--brand-soft);
+  border-color: #c7d9f5;
+}
+
+.extlink__main {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.extlink__name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.extlink__desc {
+  display: block;
+  font-size: 12px;
+  color: var(--sub);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+.extlink__url {
+  display: block;
+  font-size: 11px;
+  color: var(--brand);
+  margin-top: 3px;
+  word-break: break-all;
+}
+
+.extlink__act {
+  flex: none;
+  font-size: 12px;
+  color: var(--brand);
+  border: 1px solid #bcd3f7;
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: #fff;
+}
+
 /* ────────── 其他计算页：结果行 ────────── */
 .calc-out {
   display: flex;

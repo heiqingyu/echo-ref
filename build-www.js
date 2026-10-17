@@ -8,7 +8,7 @@
  *
  * 两个产出：
  *   ① www/index.html            完整版（6 页签），供 APK 内嵌与本地预览
- *   ② docs/index.html           发布版（仅 3 页签：参数·参考值 / EF 计算 / 儿童 Z 值），
+ *   ② docs/index.html           发布版（仅 2 页签：EF·参考值 / 儿童 Z 值），
  *                              可直接作为 GitHub Pages 的发布源，不含转载内容
  *
  * 用法：node build-www.js  [--full]
@@ -22,7 +22,7 @@ const MP = path.join(ROOT, 'miniprogram');
 const OUT = path.join(ROOT, 'www', 'index.html');
 
 /** 发布版（GitHub Pages）保留的页签：只留自有内容，转载内容不上线 */
-const PUBLIC_TABS = ['index', 'ef', 'peds'];
+const PUBLIC_TABS = ['index', 'peds'];
 
 /* ---------- 1. 抽取引擎源码 ---------- */
 
@@ -215,7 +215,7 @@ function buildValvePage() {
       '<div class="card__d">' + escHtml(s.sub) + '　·　' + escHtml(s.source) + '</div>' +
       valveBlocksHtml(s) + '</div>' +
       '<div class="card"><div class="card__t">' + escHtml(s.calcTitle) + '</div>' +
-      '<div class="card__d">BSA 用于面积指数（来自「参数·参考值」页）· 留空跳过；只填一项也会给出该参数的分级</div>' +
+      '<div class="card__d">BSA 用于面积指数（来自「EF·参考值」页上方）· 留空跳过；只填一项也会给出该参数的分级</div>' +
       valveFieldsHtml(s) +
       '<div class="vsum" id="vsum-' + s.id + '">结果 · 等待输入</div>' +
       '<div class="vres" id="vres-' + s.id + '"></div>' +
@@ -258,105 +258,19 @@ const html = `<!DOCTYPE html>
 
 <!-- ══════════ 顶栏 ══════════ -->
 <header class="appbar">
-  <h1 class="appbar__t" id="appbarTitle">参数·参考值</h1>
+  <h1 class="appbar__t" id="appbarTitle">EF·参考值</h1>
   <button class="appbar__r" id="resetBtn" title="重置">重置</button>
 </header>
 
 <!-- ══════════ 内容区 ══════════ -->
 <main class="main" id="main">
 
-  <!-- ───── Tab1 基本参数 ───── -->
+  <!-- ───── Tab1 EF·参考值 ───── -->
   <section class="page" id="page-index">
-    <div class="card">
-      <div class="card__t">受检者基本信息</div>
-      <div class="card__d">身高体重用于计算体表面积（BSA），性别决定参考值区间</div>
-      <div class="row">
-        <div class="field">
-          <label class="field__l">身高 / cm</label>
-          <input class="field__i" type="number" inputmode="decimal" id="inHeight" value="170" step="0.1">
-        </div>
-        <div class="field">
-          <label class="field__l">体重 / kg</label>
-          <input class="field__i" type="number" inputmode="decimal" id="inWeight" value="65" step="0.1">
-        </div>
-      </div>
-      <div class="field">
-        <label class="field__l">性别</label>
-        <div class="seg" data-seg="sex">
-          <div class="seg__i seg__i--on" data-v="male">男</div>
-          <div class="seg__i" data-v="female">女</div>
-        </div>
-      </div>
-      <div class="stat-row">
-        <div class="stat">
-          <div class="stat__main">
-            <span class="stat__v" id="outBsa">—</span>
-            <span class="stat__u">m²</span>
-          </div>
-          <span class="stat__l" id="outBsaLbl">体表面积</span>
-        </div>
-        <div class="stat">
-          <div class="stat__main">
-            <span class="stat__v" id="outBmi">—</span>
-            <span class="stat__u">kg/m²</span>
-          </div>
-          <span class="stat__l">BMI <span class="bmi-tag" id="outBmiTag"></span></span>
-        </div>
-      </div>
-      <div class="hint" id="bsaHint"></div>
-    </div>
 
+    <!-- ══ EF 计算（合并自原「EF 计算」页，置于最上） ══ -->
     <div class="card">
-      <div class="card__t">体表面积公式</div>
-      <div class="field">
-        <label class="field__l">成人 / 通用公式</label>
-        <div class="seg" data-seg="formula">
-          <div class="seg__i seg__i--on" data-v="dubois">Du Bois</div>
-          <div class="seg__i" data-v="mosteller">Mosteller</div>
-        </div>
-      </div>
-      <div class="note">
-        Du Bois：BSA = 0.007184 × 身高<sup>0.725</sup> × 体重<sup>0.425</sup>（临床试验通用）<br>
-        Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）<br>
-        儿童页另有 <b>Haycock</b> 公式（儿科首选，PHN 研究采用）
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card__t">参考值标准</div>
-      <div class="seg" data-seg="standard">
-        <div class="seg__i seg__i--on" data-v="CN">中国成人标准</div>
-        <div class="seg__i" data-v="ASE">ASE 国际标准</div>
-      </div>
-      <div class="note" id="stdNote">《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围</div>
-    </div>
-
-    <div class="card">
-      <div class="card__t">下一步</div>
-      <div class="card__d">参数已保存。可到「EF 计算」由内径推算收缩功能，或到「其他计算」做血流动力学计算。</div>
-      <button class="btn" id="jumpRef">↓ 查看下方参考值</button>
-      <button class="btn btn--ghost" data-go="ef" style="margin-top:10px">去计算 EF</button>
-      <button class="btn btn--ghost" data-go="calc" style="margin-top:10px">其他计算</button>
-    </div>
-
-    <!-- ══════ 参考值列表（合并自原「参考值」页） ══════ -->
-    <div id="refBlock">
-      <div class="note note--warn" id="aseUnitNote" hidden>
-        ASE 指南原文以 <b>cm</b> 表示内径。本表已统一换算为 <b>mm</b> 显示，可直接与你的测量值对照。
-      </div>
-      <div class="card">
-        <div class="card__t" id="refTitle">正常参考范围</div>
-        <div class="card__d" id="refDesc"></div>
-        <div id="refList"></div>
-      </div>
-      <div class="note" id="refSource"></div>
-    </div>
-  </section>
-
-  <!-- ───── Tab3 EF 计算 ───── -->
-  <section class="page" id="page-ef" hidden>
-    <div class="card">
-      <div class="card__t">左室内径测量（M 型）</div>
+      <div class="card__t">M 型 / 二维内径测量</div>
       <div class="card__d">输入内径与室壁厚度，自动推算容积、收缩功能与左室质量</div>
       <div class="row">
         <div class="field">
@@ -392,24 +306,125 @@ const html = `<!DOCTYPE html>
       </div>
       <div class="note" id="efGrade"></div>
       <div class="note" id="efFormula"></div>
+      <button class="btn btn--ghost" id="jumpRef" style="margin-top:10px">↓ 与下方参考值对照</button>
     </div>
 
+    <!-- ══ 受检者基本信息 ══ -->
     <div class="card">
-      <div class="card__t">公式说明</div>
+      <div class="card__t">受检者基本信息</div>
+      <div class="card__d">身高体重用于计算体表面积（BSA），性别决定参考值区间</div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">身高 / cm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="inHeight" value="170" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field__l">体重 / kg</label>
+          <input class="field__i" type="number" inputmode="decimal" id="inWeight" value="65" step="0.1">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__l">性别</label>
+        <div class="seg" data-seg="sex">
+          <div class="seg__i seg__i--on" data-v="male">男</div>
+          <div class="seg__i" data-v="female">女</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__l">体表面积公式</label>
+        <div class="seg" data-seg="formula">
+          <div class="seg__i seg__i--on" data-v="dubois">Du Bois</div>
+          <div class="seg__i" data-v="mosteller">Mosteller</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="outBsa">—</span>
+            <span class="stat__u">m²</span>
+          </div>
+          <span class="stat__l" id="outBsaLbl">体表面积</span>
+        </div>
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="outBmi">—</span>
+            <span class="stat__u">kg/m²</span>
+          </div>
+          <span class="stat__l">BMI <span class="bmi-tag" id="outBmiTag"></span></span>
+        </div>
+      </div>
+      <div class="hint" id="bsaHint"></div>
+    </div>
+
+    <!-- ══ 参考值标准 ══ -->
+    <div class="card">
+      <div class="card__t">参考值标准</div>
+      <div class="seg" data-seg="standard">
+        <div class="seg__i seg__i--on" data-v="CN">中国成人标准</div>
+        <div class="seg__i" data-v="ASE">ASE 国际标准</div>
+      </div>
+      <div class="note" id="stdNote">《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围</div>
+    </div>
+
+    <!-- ══ 参考值列表 ══ -->
+    <div id="refBlock">
+      <div class="note note--warn" id="aseUnitNote" hidden>
+        ASE 指南原文以 <b>cm</b> 表示内径。本表已统一换算为 <b>mm</b> 显示，可直接与你的测量值对照。
+      </div>
+      <div class="card">
+        <div class="card__t" id="refTitle">正常参考范围</div>
+        <div class="card__d" id="refDesc"></div>
+        <div id="refList"></div>
+      </div>
+      <div class="note" id="refSource"></div>
+    </div>
+
+    <!-- ══ 计算公式说明（合并原 EF 页公式 + 体表面积公式） ══ -->
+    <div class="card">
+      <div class="card__t">计算公式说明</div>
       <div class="note">
         <b>Teichholz 法</b>（M 型单平面）<br>
         V = 7 × D³ ÷ (2.4 + D)　　D 单位 cm，V 单位 mL<br>
         EF = (EDV − ESV) ÷ EDV × 100%<br>
-        FS = (LVIDd − LVIDs) ÷ LVIDd × 100%
+        FS = (LVIDd − LVIDs) ÷ LVIDd × 100%<br>
+        RWT = 2 × LVPWd ÷ LVEDD
       </div>
       <div class="note">
         <b>左室质量 Devereux 公式</b><br>
         LVM(g) = 0.8 × 1.04 × [(LVIDd + IVSd + LVPWd)³ − LVIDd³] + 0.6<br>
-        RWT = 2 × LVPWd ÷ LVEDD
+        LVM/BSA = 左室质量 ÷ 体表面积
+      </div>
+      <div class="note">
+        <b>体表面积 BSA</b><br>
+        Du Bois：BSA = 0.007184 × 身高<sup>0.725</sup> × 体重<sup>0.425</sup>（临床试验通用）<br>
+        Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）<br>
+        儿童页另有 <b>Haycock</b> 公式（儿科首选，PHN 研究采用）
       </div>
       <div class="note note--warn">
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
+    </div>
+
+    <!-- ══ 延展阅读（第三方工具，点击由系统浏览器打开） ══ -->
+    <div class="card" id="extLinks">
+      <div class="card__t">延展阅读</div>
+      <div class="card__d">同类心超速查工具，内容更全。点击条目由系统浏览器打开。</div>
+      <a class="extlink" href="https://zs-echo.com" target="_blank" rel="noopener noreferrer">
+        <span class="extlink__main">
+          <span class="extlink__name">心超速查 ZS-Echo Copilot</span>
+          <span class="extlink__desc">86 个计算器 · 19 类参考值 · 瓣膜与决策流程</span>
+          <span class="extlink__url">zs-echo.com</span>
+        </span>
+        <span class="extlink__act">打开</span>
+      </a>
+      <a class="extlink" href="https://bdrwss.github.io/tte-quickref/dist/" target="_blank" rel="noopener noreferrer">
+        <span class="extlink__main">
+          <span class="extlink__name">TTE 心超速查 · 中文版</span>
+          <span class="extlink__desc">床旁速查卡片 · 测量与切面要点</span>
+          <span class="extlink__url">bdrwss.github.io/tte-quickref</span>
+        </span>
+        <span class="extlink__act">打开</span>
+      </a>
     </div>
   </section>
 
@@ -417,7 +432,7 @@ const html = `<!DOCTYPE html>
   <section class="page" id="page-calc" hidden>
     <div class="card">
       <div class="card__t">血流动力学计算</div>
-      <div class="card__d" id="calcBsaNote">BSA — m²（来自「参数·参考值」页）· 各组结果独立计算，留空跳过</div>
+      <div class="card__d" id="calcBsaNote">BSA — m²（来自「EF·参考值」页上方）· 各组结果独立计算，留空跳过</div>
       <div class="note">AVA、MVA、PISA（EROA / RVol）、dP/dt 等瓣膜专项计算已整合到「瓣膜评估」页，两页共用同一套引擎。</div>
     </div>
     <div id="calcGroups"></div>
@@ -557,10 +572,7 @@ ${SEG_HTML}
 <!-- ══════════ 底部页签 ══════════ -->
 <nav class="tabbar" id="tabbar">
   <div class="tab tab--on" data-tab="index">
-    <span class="tab__i">◧</span><span class="tab__t">参数·参考值</span>
-  </div>
-  <div class="tab" data-tab="ef">
-    <span class="tab__i">◉</span><span class="tab__t">EF 计算</span>
+    <span class="tab__i">◧</span><span class="tab__t">EF·参考值</span>
   </div>
   <div class="tab" data-tab="calc">
     <span class="tab__i">∑</span><span class="tab__t">其他计算</span>
@@ -722,11 +734,7 @@ function buildPublicHtml() {
 
   // 4c) 注释与文案清理
   out = out
-    .replace(/\/\* ────────── 其他计算页：结果行 ────────── \*\//, '/* ────────── 计算结果行样式 ────────── */')
-    .replace(
-      '参数已保存。可到「EF 计算」由内径推算收缩功能，或到「其他计算」做血流动力学计算。',
-      '参数已保存。可到「EF 计算」由内径推算收缩功能，或到「儿童 Z 值」按体表面积标准化对照。'
-    );
+    .replace(/\/\* ────────── 其他计算页：结果行 ────────── \*\//, '/* ────────── 计算结果行样式 ────────── */');
 
   // 4d) 剥掉被删页面的专属样式块（按「起止注释行」整段去掉，不用贪婪正则）
   //     —— .calc-out 保留（EF / 儿童 Z 值页也在用），只删节段与瓣膜两段。
@@ -751,7 +759,7 @@ function buildPublicHtml() {
 
   // 5b) 结构完整性自检：切块/删行容易把 HTML 骨架带掉，必须逐项确认
   ['</style>', '</head>', '<body', '</body>', '</html>', '<nav class="tabbar" id="tabbar"',
-   'id="page-index"', 'id="page-ef"', 'id="page-peds"']
+   'id="page-index"', 'id="page-peds"']
     .forEach((s) => {
       if (out.indexOf(s) === -1) throw new Error('发布版：结构缺失 ' + s);
     });
@@ -772,8 +780,8 @@ function buildPublicHtml() {
 
   <div class="pubnote">
     <b>关于本页</b><br>
-    本页为个人整理的成人经胸超声（TTE）参考值速查工具，含三部分：成人正常参考值（中国 2016 指南 37 项 /
-    ASE-EACVI 2015）、M 型 EF 计算、儿童 Z 值（PHN 数据库）。
+    本页为个人整理的成人经胸超声（TTE）参考值速查工具，含三部分：M 型 EF 计算、成人正常参考值
+    （中国 2016 指南 37 项 / ASE-EACVI 2015）、儿童 Z 值（PHN 数据库）。
     <b>本页内容为自行整理，非任何学会或机构的官方产品</b>，仅供医学教育与速查使用；
     参考值需结合患者体型、血流状态及测量方法，<b>不能单凭一个指标作出诊断</b>。
   </div>`

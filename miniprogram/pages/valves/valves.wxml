@@ -36,7 +36,7 @@
   <view class="card" wx:if="{{sec}}">
     <view class="card__title">{{sec.calcTitle}}</view>
     <view class="card__desc">
-      BSA {{bsaText}} m²（来自「参数·参考值」页）· 留空跳过；只填一项也会给出对应的单参数分级
+      BSA {{bsaText}} m²（来自「EF·参考值」页）· 留空跳过；只填一项也会给出对应的单参数分级
     </view>
 
     <view class="row" wx:for="{{fieldRows}}" wx:key="index" wx:for-item="fr">
