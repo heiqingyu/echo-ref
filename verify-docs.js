@@ -103,20 +103,20 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 1500)); // 等 boot
 
   console.log('\n【一】结构');
-  check('页签数 = 3',
-    (await c.evalJs('document.querySelectorAll(".tab").length')) === 3);
+  check('页签数 = 2',
+    (await c.evalJs('document.querySelectorAll(".tab").length')) === 2);
   const tabNames = await c.evalJs(
     '[...document.querySelectorAll(".tab")].map(e=>e.dataset.tab).join(",")');
-  check('页签顺序 index,ef,peds', tabNames === 'index,ef,peds', tabNames);
-  check('页面容器 3 个（无 calc/valves/segments）',
-    (await c.evalJs('document.querySelectorAll(".page").length')) === 3);
+  check('页签顺序 index,peds', tabNames === 'index,peds', tabNames);
+  check('页面容器 2 个（无 ef/calc/valves/segments）',
+    (await c.evalJs('document.querySelectorAll(".page").length')) === 2);
   check('Core 引擎已挂载', (await c.evalJs('typeof window.Core === "object"')) === true);
   check('Peds 引擎已挂载', (await c.evalJs('typeof window.Peds === "object"')) === true);
   check('Calc 引擎已移除', (await c.evalJs('typeof window.Calc')) === 'undefined');
   check('ValveCalc 引擎已移除', (await c.evalJs('typeof window.ValveCalc')) === 'undefined');
   check('SegSvg 引擎已移除', (await c.evalJs('typeof window.SegSvg')) === 'undefined');
 
-  console.log('\n【二】Tab1 参数·参考值');
+  console.log('\n【二】Tab1 EF·参考值（EF 计算 + 参数参考值已合并）');
   // 通用：给输入框赋值并触发 input
   const set = async (id, v) => {
     await c.evalJs(
@@ -126,8 +126,62 @@ function check(name, ok, detail) {
   };
   check('page-index 默认可见',
     (await c.evalJs('!document.getElementById("page-index").hidden')) === true);
+  check('顶栏标题为 EF·参考值',
+    (await c.evalJs('document.getElementById("appbarTitle").textContent')) === 'EF·参考值');
+
+  // 合并的关键：EF 计算卡片必须排在参考值列表之前
+  const order = await c.evalJs(
+    '(function(){var k=[].slice.call(document.querySelectorAll("#page-index > *"));' +
+    'var a=-1,b=-1;k.forEach(function(x,i){' +
+    'if(x.querySelector("#efLvedd"))a=i;if(x.querySelector("#refList"))b=i;});' +
+    'return a+","+b;})()');
+  const ord = String(order).split(',').map(Number);
+  check('EF 计算位于参考值之前', ord[0] >= 0 && ord[1] > ord[0],
+    'EF 序号 ' + ord[0] + ' / 参考值序号 ' + ord[1]);
+
+  // ── EF 计算部分 ──
+  await set('efLvedd', 50); await set('efLvesd', 32);
+  await set('efIvsd', 9);   await set('efLvpwd', 9);
+  await new Promise((r) => setTimeout(r, 600));
+  const ef = await c.evalJs('document.getElementById("efResult").textContent');
+  check('EF 结果已输出（内容非空）', ef && ef.trim().length > 0);
+  const efM = (ef || '').match(/射血分数\s*([\d.]+)\s*%/);
+  const efNum = efM ? parseFloat(efM[1]) : NaN;
+  check('EF 落在合理区间(50–70%)', efNum > 50 && efNum < 70, efNum + '%');
+  check('EF 结论为「正常」', (ef || '').indexOf('正常') !== -1);
+  const efGrade = await c.evalJs('document.getElementById("efGrade").textContent');
+  check('EF 分级已输出', efGrade && efGrade.trim().length > 0, efGrade);
+  // 合并后参考值列表应自动切到「实测值对照」
+  check('参考值列表切到实测值对照',
+    (await c.evalJs('document.getElementById("refTitle").textContent')) === '实测值对照');
+
+  // 同页后 BSA 变化必须联动 EF 结果的 LVM/BSA
+  const kvBefore = await c.evalJs('document.getElementById("efKv").textContent');
+  await set('inHeight', 180);
+  await new Promise((r) => setTimeout(r, 400));
+  const kvAfter = await c.evalJs('document.getElementById("efKv").textContent');
+  check('改身高后 LVM/BSA 联动重算', kvBefore !== kvAfter,
+    kvBefore.slice(0, 40) + ' → ' + kvAfter.slice(0, 40));
+  await set('inHeight', 170);
+  await new Promise((r) => setTimeout(r, 300));
+  // EF 结果卡片里的「与下方参考值对照」按钮
+  check('结果卡片含跳转参考值按钮',
+    (await c.evalJs('!!document.getElementById("jumpRef")')) === true);
+
+  // ── 参考值部分 ──
   const refRows = await c.evalJs('document.querySelectorAll("#refList > *").length');
   check('参考值列表已渲染', refRows > 20, refRows + ' 行');
+  // 每行参数名须为「中文名（英文缩写）」
+  const refAbbr = await c.evalJs(
+    '[...document.querySelectorAll("#refList .list-row__n")].filter(function(e){' +
+    'return /\uff08[A-Za-z]/.test(e.textContent);}).length');
+  check('参考值行均带英文缩写', refAbbr === 37, refAbbr + ' / 37 行');
+  const refSample = await c.evalJs(
+    '[...document.querySelectorAll("#refList .list-row__n")]' +
+    '.map(function(e){return e.textContent;}).join(" ｜ ")');
+  check('缩写形如「左室舒张末期内径（LVEDD）」',
+    refSample.indexOf('（LVEDD）') !== -1 && refSample.indexOf('（LVEF）') !== -1,
+    refSample.slice(0, 96));
   const bsa1 = await c.evalJs('document.getElementById("outBsa").textContent');
   check('BSA 已计算（170/65）', /^[\d.]+\s*m/.test(bsa1) || /\d\.\d+/.test(bsa1), bsa1);
   // 切换性别
@@ -144,28 +198,8 @@ function check(name, ok, detail) {
     (await c.evalJs('document.getElementById("stdNote").textContent')).indexOf('ASE') !== -1);
   await c.evalJs('document.querySelector(\'[data-seg="standard"] [data-v="CN"]\').click()');
 
-  console.log('\n【三】Tab2 EF 计算');
-  await c.evalJs('document.querySelector(\'.tab[data-tab="ef"]\').click()');
-  await new Promise((r) => setTimeout(r, 400));
-  check('切到 EF 页后 page-ef 可见',
-    (await c.evalJs('!document.getElementById("page-ef").hidden')) === true);
-  check('顶栏标题已切换',
-    (await c.evalJs('document.getElementById("appbarTitle").textContent')) === 'EF 计算');
-  // 录入 LVEDD 50 / LVESD 32 / IVSD 9 / LVPWD 9
-  await set('efLvedd', 50); await set('efLvesd', 32);
-  await set('efIvsd', 9);   await set('efLvpwd', 9);
-  await new Promise((r) => setTimeout(r, 600));
-  const ef = await c.evalJs('document.getElementById("efResult").textContent');
-  check('EF 结果已输出（内容非空）', ef && ef.trim().length > 0);
-  // 从「射血分数 65.4%」里取数字
-  const efM = (ef || '').match(/射血分数\s*([\d.]+)\s*%/);
-  const efNum = efM ? parseFloat(efM[1]) : NaN;
-  check('EF 落在合理区间(50–70%)', efNum > 50 && efNum < 70, efNum + '%');
-  check('EF 结论为「正常」', (ef || '').indexOf('正常') !== -1);
-  const efGrade = await c.evalJs('document.getElementById("efGrade").textContent');
-  check('EF 分级已输出', efGrade && efGrade.trim().length > 0, efGrade);
 
-  console.log('\n【四】Tab3 儿童 Z 值');
+  console.log('\n【三】Tab2 儿童 Z 值');
   await c.evalJs('document.querySelector(\'.tab[data-tab="peds"]\').click()');
   await new Promise((r) => setTimeout(r, 400));
   check('切到儿童页后 page-peds 可见',
@@ -177,10 +211,38 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 600));
   const zRows = await c.evalJs('document.querySelectorAll("#pdList > *").length');
   check('Z 值结果行已渲染', zRows > 3, zRows + ' 行');
+  // 儿童 Z 值行同样须带英文缩写
+  const zAbbr = await c.evalJs(
+    '[...document.querySelectorAll("#pdList .zrow__n")].filter(function(e){' +
+    'return /\uff08[A-Za-z]/.test(e.textContent);}).length');
+  check('Z 值行均带英文缩写', zAbbr === 33, zAbbr + ' / 33 行');
   const pdBsa = await c.evalJs('document.getElementById("pdBsa").textContent');
   check('儿童 BSA 已算出', pdBsa && /\d\.\d+/.test(pdBsa), pdBsa);
 
-  console.log('\n【五】控制台');
+  console.log('\n【三·五】延展阅读（首页底部外链卡片）');
+  await c.evalJs('document.querySelector(\'.tab[data-tab="index"]\').click()');
+  await new Promise((r) => setTimeout(r, 400));
+  const extCard = await c.evalJs(
+    '(function(){var el=document.getElementById("extLinks");' +
+    'return el?JSON.stringify({links:el.querySelectorAll("a.extlink").length,' +
+    'hrefs:[...el.querySelectorAll("a.extlink")].map(function(a){return a.getAttribute("href");}),' +
+    'disp:getComputedStyle(el.querySelector("a.extlink")).display,' +
+    'blank:el.querySelectorAll(\'a[target="_blank"][rel~="noopener"]\').length,' +
+    'title:el.querySelector(".card__t").textContent}):"MISSING";})()');
+  if (extCard === 'MISSING') {
+    check('延展阅读卡片存在', false, '未找到 #extLinks');
+  } else {
+    const e = JSON.parse(extCard);
+    check('延展阅读卡片存在', true, e.title);
+    check('外链条目 2 条', e.links === 2, String(e.links));
+    check('条目 1 → zs-echo.com', e.hrefs[0] === 'https://zs-echo.com', e.hrefs[0]);
+    check('条目 2 → tte-quickref',
+      e.hrefs[1] === 'https://bdrwss.github.io/tte-quickref/dist/', e.hrefs[1]);
+    check('外链样式生效（flex 布局）', e.disp === 'flex', e.disp);
+    check('新窗口 + noopener 属性', e.blank === 2, String(e.blank));
+  }
+
+  console.log('\n【四】控制台');
   const errs = c.logs.filter((l) => l.indexOf('EXCEPTION') === 0 ||
     l.indexOf('[console.error') === 0);
   check('无 JS 异常', errs.length === 0, errs.join(' | '));
@@ -196,7 +258,8 @@ function check(name, ok, detail) {
 
   ws.close();
   chrome.kill();
-  fs.rmSync(ud, { recursive: true, force: true });
+  try { fs.rmSync(ud, { recursive: true, force: true }); }
+  catch (e) { /* Windows 下 Chrome 可能尚未释放临时文件，忽略 */ }
   process.exit(failed.length ? 1 : 0);
 })().catch((e) => {
   console.error('测试异常：' + e.message);

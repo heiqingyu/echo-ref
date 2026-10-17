@@ -38,8 +38,7 @@
      ══════════════════════════════════════════════════════════ */
 
   const TAB_TITLE = {
-    index: '参数·参考值',
-    ef: 'EF 计算',
+    index: 'EF·参考值',
     calc: '其他计算',
     valves: '瓣膜评估',
     segments: '节段划分',
@@ -155,7 +154,8 @@
           : '';
       state.bsa = 0;
       setText('calcBsaNote', 'BSA —（请先在上方填写有效身高体重）');
-      renderReference();
+      // renderEF 内部会刷新参考值列表；EF 结果的 LVM/BSA 也随 BSA 变化
+      renderEF();
       renderValves();
       return;
     }
@@ -179,8 +179,8 @@
     setText('calcBsaNote',
       'BSA ' + state.bsa.toFixed(2) + ' m²（来自本页上方）· 各组结果独立计算，留空跳过');
 
-    // 参考值列表与计算页都依赖 BSA，一并刷新
-    renderReference();
+    // 参考值列表、EF 结果（LVM/BSA）与计算页都依赖 BSA，一并刷新
+    renderEF();
     renderValves();
   }
 
@@ -233,7 +233,7 @@
 
     $('refTitle').textContent = hasM ? '实测值对照' : '正常参考范围';
     $('refDesc').textContent = hasM
-      ? '已关联「EF 计算」页的测量值，下表显示实测值与参考范围的对照结果。'
+      ? '已关联上方 EF 计算的测量值，下表显示实测值与参考范围的对照结果。'
       : (state.sex === 'male' ? '男性' : '女性') + ' · ' + STD_NOTE[state.standard];
 
     $('refSource').textContent = '参考值来源：' + STD_SOURCE[state.standard];
@@ -247,7 +247,7 @@
     }
 
     rows.forEach(function (r) {
-      const nameCell = '<div class="list-row__n">' + esc(r.name) +
+      const nameCell = '<div class="list-row__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
         (r.hasDerived
           ? '<span class="derived">按当前 BSA 折算 ' + esc(r.derivedText) + ' ' + esc(r.derivedUnit) + '</span>'
           : '') +
@@ -281,7 +281,7 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     五、Tab3 EF 计算
+     五、Tab1 EF 计算（与参考值同页，置于卡片最上方）
      ══════════════════════════════════════════════════════════ */
 
   const EF_IDS = ['efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd'];
@@ -305,6 +305,8 @@
       } else {
         $('efHint').textContent = '';
       }
+      // 同页的参考值列表要跟着退回「正常参考范围」
+      renderReference();
       return;
     }
 
@@ -355,6 +357,9 @@
       (state.bsa ? '　·　指数基于 BSA ' + state.bsa.toFixed(3) + ' m²' : '');
 
     $('efResult').hidden = false;
+
+    // 同页参考值列表实时切到「实测值对照」
+    renderReference();
   }
 
   function gradeCls(level) {
@@ -817,7 +822,7 @@
       html += '<div class="pgroup">' + esc(g.title) + '</div>';
       g.rows.forEach(function (r) {
         html += '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '">' +
-          '<div class="zrow__n">' + esc(r.name) +
+          '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
             '<span class="zrow__sub">均值 ' + esc(r.meanText) + '</span></div>' +
           '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
           '<div class="zrow__r">' + esc(r.rangeText) + '</div>' +
@@ -835,7 +840,7 @@
       rhtml += '<div class="pgroup">' + esc(g.title) + '</div>';
       g.rows.forEach(function (r) {
         rhtml += '<div class="zrow">' +
-          '<div class="zrow__n">' + esc(r.name) +
+          '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
             '<span class="zrow__sub">' + esc(r.alphaText) + ' · 均值 ' + esc(r.meanText) + '</span></div>' +
           '<div style="flex:2;text-align:right;font-size:12px;color:var(--sub);line-height:1.6">' +
             '±2SD　' + esc(r.rangeText) + '<br>' +

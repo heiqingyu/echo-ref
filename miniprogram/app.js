@@ -13,7 +13,7 @@ App({
     },
     /** 参考标准：CN（中国成人） | ASE（国际） */
     standard: 'CN',
-    /** EF 计算页的测量值缓存 */
+    /** EF 计算（首页最上方）的测量值缓存，供参考值列表对照 */
     measurements: {
       lvedd: 50,
       lvesd: 32,

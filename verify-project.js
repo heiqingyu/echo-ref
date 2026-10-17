@@ -267,7 +267,7 @@ const peds = require(path.join(MP, 'utils', 'peds-zscore.js'));
 // 9.1 儿科页已被 app.json 注册且四件套齐全（第 3 节已覆盖，这里确认 tab 顺序）
 const pedsTab = appJson.tabBar.list.find(t => t.pagePath === 'pages/pediatric/pediatric');
 pedsTab ? ok('tabBar 已注册「儿童 Z 值」') : bad('tabBar 未注册儿童页');
-(appJson.tabBar.list.length === 5) ? ok('tabBar 共 5 个页签') : bad('tabBar 页签数异常: ' + appJson.tabBar.list.length);
+(appJson.tabBar.list.length === 4) ? ok('tabBar 共 4 个页签（EF 已并入参考值页）') : bad('tabBar 页签数异常: ' + appJson.tabBar.list.length);
 
 // 9.2 儿科页 JS 必须引用 peds 引擎
 const pedsJs = fs.readFileSync(path.join(MP, 'pages/pediatric/pediatric.js'), 'utf8');

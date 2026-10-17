@@ -545,6 +545,66 @@ html, body {
   .kv__v { font-size: 19px; }
 }
 
+/* ────────── 延展阅读：外链条目 ────────── */
+
+.extlink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 13px;
+  margin-top: 9px;
+  background: #f7f9fc;
+  border: 1px solid #e6ebf3;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.extlink:active {
+  background: var(--brand-soft);
+  border-color: #c7d9f5;
+}
+
+.extlink__main {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.extlink__name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.extlink__desc {
+  display: block;
+  font-size: 12px;
+  color: var(--sub);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+.extlink__url {
+  display: block;
+  font-size: 11px;
+  color: var(--brand);
+  margin-top: 3px;
+  word-break: break-all;
+}
+
+.extlink__act {
+  flex: none;
+  font-size: 12px;
+  color: var(--brand);
+  border: 1px solid #bcd3f7;
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: #fff;
+}
+
 /* ────────── 其他计算页：结果行 ────────── */
 .calc-out {
   display: flex;
@@ -970,105 +1030,19 @@ html, body {
 
 <!-- ══════════ 顶栏 ══════════ -->
 <header class="appbar">
-  <h1 class="appbar__t" id="appbarTitle">参数·参考值</h1>
+  <h1 class="appbar__t" id="appbarTitle">EF·参考值</h1>
   <button class="appbar__r" id="resetBtn" title="重置">重置</button>
 </header>
 
 <!-- ══════════ 内容区 ══════════ -->
 <main class="main" id="main">
 
-  <!-- ───── Tab1 基本参数 ───── -->
+  <!-- ───── Tab1 EF·参考值 ───── -->
   <section class="page" id="page-index">
-    <div class="card">
-      <div class="card__t">受检者基本信息</div>
-      <div class="card__d">身高体重用于计算体表面积（BSA），性别决定参考值区间</div>
-      <div class="row">
-        <div class="field">
-          <label class="field__l">身高 / cm</label>
-          <input class="field__i" type="number" inputmode="decimal" id="inHeight" value="170" step="0.1">
-        </div>
-        <div class="field">
-          <label class="field__l">体重 / kg</label>
-          <input class="field__i" type="number" inputmode="decimal" id="inWeight" value="65" step="0.1">
-        </div>
-      </div>
-      <div class="field">
-        <label class="field__l">性别</label>
-        <div class="seg" data-seg="sex">
-          <div class="seg__i seg__i--on" data-v="male">男</div>
-          <div class="seg__i" data-v="female">女</div>
-        </div>
-      </div>
-      <div class="stat-row">
-        <div class="stat">
-          <div class="stat__main">
-            <span class="stat__v" id="outBsa">—</span>
-            <span class="stat__u">m²</span>
-          </div>
-          <span class="stat__l" id="outBsaLbl">体表面积</span>
-        </div>
-        <div class="stat">
-          <div class="stat__main">
-            <span class="stat__v" id="outBmi">—</span>
-            <span class="stat__u">kg/m²</span>
-          </div>
-          <span class="stat__l">BMI <span class="bmi-tag" id="outBmiTag"></span></span>
-        </div>
-      </div>
-      <div class="hint" id="bsaHint"></div>
-    </div>
 
+    <!-- ══ EF 计算（合并自原「EF 计算」页，置于最上） ══ -->
     <div class="card">
-      <div class="card__t">体表面积公式</div>
-      <div class="field">
-        <label class="field__l">成人 / 通用公式</label>
-        <div class="seg" data-seg="formula">
-          <div class="seg__i seg__i--on" data-v="dubois">Du Bois</div>
-          <div class="seg__i" data-v="mosteller">Mosteller</div>
-        </div>
-      </div>
-      <div class="note">
-        Du Bois：BSA = 0.007184 × 身高<sup>0.725</sup> × 体重<sup>0.425</sup>（临床试验通用）<br>
-        Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）<br>
-        儿童页另有 <b>Haycock</b> 公式（儿科首选，PHN 研究采用）
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card__t">参考值标准</div>
-      <div class="seg" data-seg="standard">
-        <div class="seg__i seg__i--on" data-v="CN">中国成人标准</div>
-        <div class="seg__i" data-v="ASE">ASE 国际标准</div>
-      </div>
-      <div class="note" id="stdNote">《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围</div>
-    </div>
-
-    <div class="card">
-      <div class="card__t">下一步</div>
-      <div class="card__d">参数已保存。可到「EF 计算」由内径推算收缩功能，或到「其他计算」做血流动力学计算。</div>
-      <button class="btn" id="jumpRef">↓ 查看下方参考值</button>
-      <button class="btn btn--ghost" data-go="ef" style="margin-top:10px">去计算 EF</button>
-      <button class="btn btn--ghost" data-go="calc" style="margin-top:10px">其他计算</button>
-    </div>
-
-    <!-- ══════ 参考值列表（合并自原「参考值」页） ══════ -->
-    <div id="refBlock">
-      <div class="note note--warn" id="aseUnitNote" hidden>
-        ASE 指南原文以 <b>cm</b> 表示内径。本表已统一换算为 <b>mm</b> 显示，可直接与你的测量值对照。
-      </div>
-      <div class="card">
-        <div class="card__t" id="refTitle">正常参考范围</div>
-        <div class="card__d" id="refDesc"></div>
-        <div id="refList"></div>
-      </div>
-      <div class="note" id="refSource"></div>
-    </div>
-  </section>
-
-  <!-- ───── Tab3 EF 计算 ───── -->
-  <section class="page" id="page-ef" hidden>
-    <div class="card">
-      <div class="card__t">左室内径测量（M 型）</div>
+      <div class="card__t">M 型 / 二维内径测量</div>
       <div class="card__d">输入内径与室壁厚度，自动推算容积、收缩功能与左室质量</div>
       <div class="row">
         <div class="field">
@@ -1104,24 +1078,125 @@ html, body {
       </div>
       <div class="note" id="efGrade"></div>
       <div class="note" id="efFormula"></div>
+      <button class="btn btn--ghost" id="jumpRef" style="margin-top:10px">↓ 与下方参考值对照</button>
     </div>
 
+    <!-- ══ 受检者基本信息 ══ -->
     <div class="card">
-      <div class="card__t">公式说明</div>
+      <div class="card__t">受检者基本信息</div>
+      <div class="card__d">身高体重用于计算体表面积（BSA），性别决定参考值区间</div>
+      <div class="row">
+        <div class="field">
+          <label class="field__l">身高 / cm</label>
+          <input class="field__i" type="number" inputmode="decimal" id="inHeight" value="170" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field__l">体重 / kg</label>
+          <input class="field__i" type="number" inputmode="decimal" id="inWeight" value="65" step="0.1">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__l">性别</label>
+        <div class="seg" data-seg="sex">
+          <div class="seg__i seg__i--on" data-v="male">男</div>
+          <div class="seg__i" data-v="female">女</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__l">体表面积公式</label>
+        <div class="seg" data-seg="formula">
+          <div class="seg__i seg__i--on" data-v="dubois">Du Bois</div>
+          <div class="seg__i" data-v="mosteller">Mosteller</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="outBsa">—</span>
+            <span class="stat__u">m²</span>
+          </div>
+          <span class="stat__l" id="outBsaLbl">体表面积</span>
+        </div>
+        <div class="stat">
+          <div class="stat__main">
+            <span class="stat__v" id="outBmi">—</span>
+            <span class="stat__u">kg/m²</span>
+          </div>
+          <span class="stat__l">BMI <span class="bmi-tag" id="outBmiTag"></span></span>
+        </div>
+      </div>
+      <div class="hint" id="bsaHint"></div>
+    </div>
+
+    <!-- ══ 参考值标准 ══ -->
+    <div class="card">
+      <div class="card__t">参考值标准</div>
+      <div class="seg" data-seg="standard">
+        <div class="seg__i seg__i--on" data-v="CN">中国成人标准</div>
+        <div class="seg__i" data-v="ASE">ASE 国际标准</div>
+      </div>
+      <div class="note" id="stdNote">《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围</div>
+    </div>
+
+    <!-- ══ 参考值列表 ══ -->
+    <div id="refBlock">
+      <div class="note note--warn" id="aseUnitNote" hidden>
+        ASE 指南原文以 <b>cm</b> 表示内径。本表已统一换算为 <b>mm</b> 显示，可直接与你的测量值对照。
+      </div>
+      <div class="card">
+        <div class="card__t" id="refTitle">正常参考范围</div>
+        <div class="card__d" id="refDesc"></div>
+        <div id="refList"></div>
+      </div>
+      <div class="note" id="refSource"></div>
+    </div>
+
+    <!-- ══ 计算公式说明（合并原 EF 页公式 + 体表面积公式） ══ -->
+    <div class="card">
+      <div class="card__t">计算公式说明</div>
       <div class="note">
         <b>Teichholz 法</b>（M 型单平面）<br>
         V = 7 × D³ ÷ (2.4 + D)　　D 单位 cm，V 单位 mL<br>
         EF = (EDV − ESV) ÷ EDV × 100%<br>
-        FS = (LVIDd − LVIDs) ÷ LVIDd × 100%
+        FS = (LVIDd − LVIDs) ÷ LVIDd × 100%<br>
+        RWT = 2 × LVPWd ÷ LVEDD
       </div>
       <div class="note">
         <b>左室质量 Devereux 公式</b><br>
         LVM(g) = 0.8 × 1.04 × [(LVIDd + IVSd + LVPWd)³ − LVIDd³] + 0.6<br>
-        RWT = 2 × LVPWd ÷ LVEDD
+        LVM/BSA = 左室质量 ÷ 体表面积
+      </div>
+      <div class="note">
+        <b>体表面积 BSA</b><br>
+        Du Bois：BSA = 0.007184 × 身高<sup>0.725</sup> × 体重<sup>0.425</sup>（临床试验通用）<br>
+        Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）<br>
+        儿童页另有 <b>Haycock</b> 公式（儿科首选，PHN 研究采用）
       </div>
       <div class="note note--warn">
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
+    </div>
+
+    <!-- ══ 延展阅读（第三方工具，点击由系统浏览器打开） ══ -->
+    <div class="card" id="extLinks">
+      <div class="card__t">延展阅读</div>
+      <div class="card__d">同类心超速查工具，内容更全。点击条目由系统浏览器打开。</div>
+      <a class="extlink" href="https://zs-echo.com" target="_blank" rel="noopener noreferrer">
+        <span class="extlink__main">
+          <span class="extlink__name">心超速查 ZS-Echo Copilot</span>
+          <span class="extlink__desc">86 个计算器 · 19 类参考值 · 瓣膜与决策流程</span>
+          <span class="extlink__url">zs-echo.com</span>
+        </span>
+        <span class="extlink__act">打开</span>
+      </a>
+      <a class="extlink" href="https://bdrwss.github.io/tte-quickref/dist/" target="_blank" rel="noopener noreferrer">
+        <span class="extlink__main">
+          <span class="extlink__name">TTE 心超速查 · 中文版</span>
+          <span class="extlink__desc">床旁速查卡片 · 测量与切面要点</span>
+          <span class="extlink__url">bdrwss.github.io/tte-quickref</span>
+        </span>
+        <span class="extlink__act">打开</span>
+      </a>
     </div>
   </section>
 
@@ -1129,7 +1204,7 @@ html, body {
   <section class="page" id="page-calc" hidden>
     <div class="card">
       <div class="card__t">血流动力学计算</div>
-      <div class="card__d" id="calcBsaNote">BSA — m²（来自「参数·参考值」页）· 各组结果独立计算，留空跳过</div>
+      <div class="card__d" id="calcBsaNote">BSA — m²（来自「EF·参考值」页上方）· 各组结果独立计算，留空跳过</div>
       <div class="note">AVA、MVA、PISA（EROA / RVol）、dP/dt 等瓣膜专项计算已整合到「瓣膜评估」页，两页共用同一套引擎。</div>
     </div>
     <div id="calcGroups"></div>
@@ -1149,31 +1224,31 @@ html, body {
         <div class="vblock__f">AVA = (π × LVOT 直径² ÷ 4 × LVOT VTI) ÷ AV VTI　　DVI = LVOT VTI ÷ AV VTI</div>
         <div class="note">AVA 与压差不一致时，先检查 LVOT 内径、PW 取样位置、CW 声束对齐和血压 —— 直径误差会被平方放大。SVi ≤35 mL/m² 为低流量常用界值，边界应结合测量误差。</div>
         <div class="vblock__t">低流量低压差：LVEF &lt;50% 为经典型，LVEF ≥50% 为矛盾型。应结合低剂量多巴酚丁胺负荷、流量变化及 CT 瓣膜钙化判断，而非只凭静息 AVA。</div>
-        <div class="vblock__t">ESC/EACTS 2025：无症状重度高压差 AS、LVEF ≥50%、低操作风险时可考虑早期干预（IIa A，可行时运动试验证实无症状）；LVEF &lt;50% 且无其他原因则为 I 类推荐。</div></div><div class="card"><div class="card__t">AS 计算器 · 连续方程与峰速法</div><div class="card__d">BSA 用于面积指数（来自「参数·参考值」页）· 留空跳过；只填一项也会给出该参数的分级</div><div class="row"><div class="field"><label class="field__l">LVOT 直径 / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:lvotD" placeholder="未填写"></div><div class="field"><label class="field__l">LVOT VTI / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:lvotVti" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">AV VTI（连续方程） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:avVti" placeholder="未填写"></div><div class="field"><label class="field__l">AV Vmax / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:avVmax" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">LVOT Vmax（峰速法，可选） / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:lvotVmax" placeholder="未填写"></div><div class="field"><label class="field__l">平均跨瓣压差（可选） / mmHg</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:mg" placeholder="未填写"></div></div><div class="vsum" id="vsum-as">结果 · 等待输入</div><div class="vres" id="vres-as"></div><div class="vnotes" id="vnotes-as"></div></div></div>
+        <div class="vblock__t">ESC/EACTS 2025：无症状重度高压差 AS、LVEF ≥50%、低操作风险时可考虑早期干预（IIa A，可行时运动试验证实无症状）；LVEF &lt;50% 且无其他原因则为 I 类推荐。</div></div><div class="card"><div class="card__t">AS 计算器 · 连续方程与峰速法</div><div class="card__d">BSA 用于面积指数（来自「EF·参考值」页上方）· 留空跳过；只填一项也会给出该参数的分级</div><div class="row"><div class="field"><label class="field__l">LVOT 直径 / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:lvotD" placeholder="未填写"></div><div class="field"><label class="field__l">LVOT VTI / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:lvotVti" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">AV VTI（连续方程） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:avVti" placeholder="未填写"></div><div class="field"><label class="field__l">AV Vmax / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:avVmax" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">LVOT Vmax（峰速法，可选） / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:lvotVmax" placeholder="未填写"></div><div class="field"><label class="field__l">平均跨瓣压差（可选） / mmHg</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="as:mg" placeholder="未填写"></div></div><div class="vsum" id="vsum-as">结果 · 等待输入</div><div class="vres" id="vres-as"></div><div class="vnotes" id="vnotes-as"></div></div></div>
     <div class="valve-sec" data-sec="ar" hidden><div class="card"><div class="card__t">主动脉瓣反流 AR</div><div class="card__d">Aortic Regurgitation · 主动脉瓣　·　ASE 2017 原生瓣膜反流定量；ESC/EACTS 2025 管理更新</div><div class="vtbl"><div class="vtbl__r vtbl__r--h vtbl--4"><span class="vtbl__c">指标</span><span class="vtbl__c">轻度</span><span class="vtbl__c">中度</span><span class="vtbl__c">重度</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">缩流颈 VC（cm）</span><span class="vtbl__c">&lt;0.3</span><span class="vtbl__c">0.3–0.6</span><span class="vtbl__c">&gt;0.6</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">反流束宽 ÷ LVOT</span><span class="vtbl__c">&lt;25%</span><span class="vtbl__c">25–64%</span><span class="vtbl__c">≥65%</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">PHT（ms）</span><span class="vtbl__c">&gt;500</span><span class="vtbl__c">200–500</span><span class="vtbl__c">&lt;200</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">反流量 RVol（mL）</span><span class="vtbl__c">&lt;30</span><span class="vtbl__c">30–59</span><span class="vtbl__c">≥60</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">反流分数 RF</span><span class="vtbl__c">&lt;30%</span><span class="vtbl__c">30–49%</span><span class="vtbl__c">≥50%</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">EROA（cm²）</span><span class="vtbl__c">&lt;0.10</span><span class="vtbl__c">0.10–0.29</span><span class="vtbl__c">≥0.30</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">降主动脉反向血流</span><span class="vtbl__c">短暂早期</span><span class="vtbl__c">中间表现</span><span class="vtbl__c">全舒张期；舒张末 ≥20 cm/s 为重要线索</span></div></div>
         <div class="vblock__f">EROA（cm²）= PISA 流量 ÷ 反流峰速　　RVol（mL）= EROA × 反流 VTI　　RF = RVol ÷ 前向每搏量</div>
         <div class="note">PHT 受主动脉 / 左室顺应性与血压影响。急性重度 AR 可以没有左室扩大。偏心束不能只按彩色面积判断，需结合 VC 与 CW 频谱形态。</div>
         <div class="vblock__t">测量要点：VC 在主动脉瓣下 5–10 mm 的反流束最窄处测量，彩色标尺建议 50–60 cm/s；反流束宽度比在 PLAX 测量；CW 取样需与反流束平行，偏心束用多切面确认。</div>
         <div class="note">支持重度 AR 的辅助征象：左室扩大（LVEDD &gt;60–65 mm 或 LVESD &gt;45–50 mm）、主动脉根部扩张、二尖瓣提前关闭；CW 频谱密集且陡降（PHT &lt;200 ms）。</div>
-        <div class="vblock__t">ESC/EACTS 2025：重度 AR 结合症状及左室尺寸 / 功能评估干预；低风险无症状患者的较早评估纳入 LVESDi &gt;22 mm/m²、LVESVi &gt;45 mL/m² 或 LVEF ≤55%（IIb，非一律手术）。</div></div><div class="card"><div class="card__t">AR 计算器 · PISA 定量与 VC / PHT</div><div class="card__d">BSA 用于面积指数（来自「参数·参考值」页）· 留空跳过；只填一项也会给出该参数的分级</div><div class="row"><div class="field"><label class="field__l">PISA 半径 / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:radius" placeholder="未填写"></div><div class="field"><label class="field__l">混叠速度 Va / cm/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:aliasVa" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">反流峰速 / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:regV" placeholder="未填写"></div><div class="field"><label class="field__l">反流 VTI / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:regVti" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">缩流颈 VC（可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:vc" placeholder="未填写"></div><div class="field"><label class="field__l">压力半降时间 PHT（可选） / ms</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:pht" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">LVOT 直径（算 RF 用，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:lvotD" placeholder="未填写"></div><div class="field"><label class="field__l">LVOT VTI（算 RF 用，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:lvotVti" placeholder="未填写"></div></div><div class="vsum" id="vsum-ar">结果 · 等待输入</div><div class="vres" id="vres-ar"></div><div class="vnotes" id="vnotes-ar"></div></div></div>
+        <div class="vblock__t">ESC/EACTS 2025：重度 AR 结合症状及左室尺寸 / 功能评估干预；低风险无症状患者的较早评估纳入 LVESDi &gt;22 mm/m²、LVESVi &gt;45 mL/m² 或 LVEF ≤55%（IIb，非一律手术）。</div></div><div class="card"><div class="card__t">AR 计算器 · PISA 定量与 VC / PHT</div><div class="card__d">BSA 用于面积指数（来自「EF·参考值」页上方）· 留空跳过；只填一项也会给出该参数的分级</div><div class="row"><div class="field"><label class="field__l">PISA 半径 / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:radius" placeholder="未填写"></div><div class="field"><label class="field__l">混叠速度 Va / cm/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:aliasVa" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">反流峰速 / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:regV" placeholder="未填写"></div><div class="field"><label class="field__l">反流 VTI / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:regVti" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">缩流颈 VC（可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:vc" placeholder="未填写"></div><div class="field"><label class="field__l">压力半降时间 PHT（可选） / ms</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:pht" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">LVOT 直径（算 RF 用，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:lvotD" placeholder="未填写"></div><div class="field"><label class="field__l">LVOT VTI（算 RF 用，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ar:lvotVti" placeholder="未填写"></div></div><div class="vsum" id="vsum-ar">结果 · 等待输入</div><div class="vres" id="vres-ar"></div><div class="vnotes" id="vnotes-ar"></div></div></div>
     <div class="valve-sec" data-sec="ms" hidden><div class="card"><div class="card__t">二尖瓣狭窄 MS</div><div class="card__d">Mitral Stenosis · 二尖瓣　·　ACC/AHA 2020 分期；ESC/EACTS 2025 临床管理</div><div class="vtbl"><div class="vtbl__r vtbl__r--h vtbl--2"><span class="vtbl__c">项目</span><span class="vtbl__c">参考与解释</span></div><div class="vtbl__r vtbl--2"><span class="vtbl__c">MVA · 瓣口面积</span><span class="vtbl__c">≤1.5 cm² 为临床显著风湿性 MS；≤1.0 cm² 提示非常严重</span></div><div class="vtbl__r vtbl--2"><span class="vtbl__c">平均跨瓣压差</span><span class="vtbl__c">受心率、节律、流量和 MR 影响，必须同时记录心率，不能单独代替瓣口面积</span></div><div class="vtbl__r vtbl--2"><span class="vtbl__c">直接描记</span><span class="vtbl__c">PSAX 瓣尖最小开口，注意切面与增益；必要时 3D 辅助，为最可靠的面积测量</span></div><div class="vtbl__r vtbl--2"><span class="vtbl__c">PHT 法</span><span class="vtbl__c">MVA = 220 ÷ PHT；球囊扩张后、顺应性异常、明显 AR 等不可靠</span></div></div>
         <div class="vtbl"><div class="vtbl__r vtbl__r--h vtbl--4"><span class="vtbl__c">严重程度</span><span class="vtbl__c">MVA（cm²）</span><span class="vtbl__c">平均压差（mmHg）</span><span class="vtbl__c">PASP（mmHg）</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">轻度 / 不显著</span><span class="vtbl__c">&gt;1.5</span><span class="vtbl__c">&lt;5</span><span class="vtbl__c">&lt;30</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">中度（临床显著）</span><span class="vtbl__c">1.0–1.5</span><span class="vtbl__c">5–10</span><span class="vtbl__c">30–50</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">重度</span><span class="vtbl__c">&lt;1.0</span><span class="vtbl__c">&gt;10</span><span class="vtbl__c">&gt;50</span></div></div>
         <div class="note">上表压差与肺动脉压阈值来自 ACC/AHA 分期，压差必须注明心率；心率快、心排量高时压差会被放大。</div>
         <div class="vblock__t">Wilkins 评分：瓣叶活动度、增厚、钙化与瓣下病变各 1–4 分；≤8 分通常较有利，但不能替代交界钙化、MR 及左房血栓评估。经皮交界切开还需排除左房血栓及超过轻度 MR 等禁忌。</div>
-        <div class="note">风湿性：交界融合、前叶穹隆样开放、腱索增厚。退行性 MAC 相关 MS 机制不同，不能直接套用风湿性 MS 的介入选择标准。</div></div><div class="card"><div class="card__t">MS 计算器 · 瓣口面积与压差</div><div class="card__d">BSA 用于面积指数（来自「参数·参考值」页）· 留空跳过；只填一项也会给出该参数的分级</div><div class="row"><div class="field"><label class="field__l">MVA 直接描记（首选） / cm²</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:mvaPlani" placeholder="未填写"></div><div class="field"><label class="field__l">压力半降时间 PHT / ms</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:pht" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">平均跨瓣压差 / mmHg</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:mg" placeholder="未填写"></div><div class="field"><label class="field__l">估测 PASP（可选） / mmHg</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:pasp" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">LVOT 直径（连续方程，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:lvotD" placeholder="未填写"></div><div class="field"><label class="field__l">LVOT VTI（连续方程，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:lvotVti" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">二尖瓣流入 VTI（连续方程，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:mvVti" placeholder="未填写"></div></div><div class="vsum" id="vsum-ms">结果 · 等待输入</div><div class="vres" id="vres-ms"></div><div class="vnotes" id="vnotes-ms"></div></div></div>
+        <div class="note">风湿性：交界融合、前叶穹隆样开放、腱索增厚。退行性 MAC 相关 MS 机制不同，不能直接套用风湿性 MS 的介入选择标准。</div></div><div class="card"><div class="card__t">MS 计算器 · 瓣口面积与压差</div><div class="card__d">BSA 用于面积指数（来自「EF·参考值」页上方）· 留空跳过；只填一项也会给出该参数的分级</div><div class="row"><div class="field"><label class="field__l">MVA 直接描记（首选） / cm²</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:mvaPlani" placeholder="未填写"></div><div class="field"><label class="field__l">压力半降时间 PHT / ms</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:pht" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">平均跨瓣压差 / mmHg</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:mg" placeholder="未填写"></div><div class="field"><label class="field__l">估测 PASP（可选） / mmHg</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:pasp" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">LVOT 直径（连续方程，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:lvotD" placeholder="未填写"></div><div class="field"><label class="field__l">LVOT VTI（连续方程，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:lvotVti" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">二尖瓣流入 VTI（连续方程，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="ms:mvVti" placeholder="未填写"></div></div><div class="vsum" id="vsum-ms">结果 · 等待输入</div><div class="vres" id="vres-ms"></div><div class="vnotes" id="vnotes-ms"></div></div></div>
     <div class="valve-sec" data-sec="mr" hidden><div class="card"><div class="card__t">二尖瓣反流 MR</div><div class="card__d">Mitral Regurgitation · 二尖瓣　·　ASE 2017 定量；ESC/EACTS 2025 · 原发与继发分开评估</div><div class="vtbl"><div class="vtbl__r vtbl__r--h vtbl--4"><span class="vtbl__c">指标</span><span class="vtbl__c">轻度</span><span class="vtbl__c">中度</span><span class="vtbl__c">重度（原发 MR）</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">VC（cm）</span><span class="vtbl__c">&lt;0.3</span><span class="vtbl__c">0.3–0.69</span><span class="vtbl__c">≥0.7</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">EROA（cm²）</span><span class="vtbl__c">&lt;0.20</span><span class="vtbl__c">0.20–0.39</span><span class="vtbl__c">≥0.40</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">RVol（mL）</span><span class="vtbl__c">&lt;30</span><span class="vtbl__c">30–59</span><span class="vtbl__c">≥60</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">RF</span><span class="vtbl__c">&lt;30%</span><span class="vtbl__c">30–49%</span><span class="vtbl__c">≥50%</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">肺静脉血流</span><span class="vtbl__c">S 占优</span><span class="vtbl__c">S 减低</span><span class="vtbl__c">收缩期逆流</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">CW 频谱</span><span class="vtbl__c">淡 / 不完整</span><span class="vtbl__c">致密</span><span class="vtbl__c">致密；可呈早达峰三角形</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">结构</span><span class="vtbl__c">可正常</span><span class="vtbl__c">依病因</span><span class="vtbl__c">连枷瓣、腱索或乳头肌断裂、明显对合缺损</span></div></div>
         <div class="vblock__f">EROA = 2π × r² × Va ÷ 反流峰速　　RVol = EROA × 反流 VTI　　dP/dt = 32000 ÷ Δt（1→3 m/s 时间，ms）</div>
         <div class="vblock__t">Carpentier 分型：Ⅰ 型活动正常（瓣环扩大、穿孔）；Ⅱ 型活动过度（脱垂、连枷）；Ⅲa 型收缩和舒张均受限（如风湿）；Ⅲb 型收缩期受限（如缺血性牵拉）。</div>
         <div class="vblock__t">瓣叶定位：A1/P1 位于外侧、靠左心耳；A2/P2 居中；A3/P3 位于内侧。脱垂反流束常指向病变瓣叶的对侧，但需多切面证实。</div>
         <div class="note">继发 MR 存在低流量、椭圆 / 新月形反流口及动态变化，PISA 可能低估。ESC/EACTS 2025 强调 EROA ≥0.30 cm² 和/或 RVol ≥45 mL 已可具有重要预后及治疗意义，不能机械套用原发 MR 阈值排除严重病变。</div>
-        <div class="vblock__t">重度原发 MR：LVEF ≤60%、LVESD ≥40 mm 是重要左室受累标志；2025 ESC 另纳入 LVESDi ≥20 mm/m²。症状、房颤、肺动脉压力、左房扩大及修复可能性也影响干预时机。</div></div><div class="card"><div class="card__t">MR 计算器 · PISA 定量与 dP/dt</div><div class="card__d">BSA 用于面积指数（来自「参数·参考值」页）· 留空跳过；只填一项也会给出该参数的分级</div><div class="row"><div class="field"><label class="field__l">PISA 半径 / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:radius" placeholder="未填写"></div><div class="field"><label class="field__l">混叠速度 Va / cm/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:aliasVa" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">反流峰速 / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:regV" placeholder="未填写"></div><div class="field"><label class="field__l">反流 VTI / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:regVti" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">缩流颈 VC（可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:vc" placeholder="未填写"></div><div class="field"><label class="field__l">dP/dt：1→3 m/s 时间（可选） / ms</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:dt" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">LVOT 直径（算 RF 用，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:lvotD" placeholder="未填写"></div><div class="field"><label class="field__l">LVOT VTI（算 RF 用，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:lvotVti" placeholder="未填写"></div></div><div class="vsum" id="vsum-mr">结果 · 等待输入</div><div class="vres" id="vres-mr"></div><div class="vnotes" id="vnotes-mr"></div></div></div>
+        <div class="vblock__t">重度原发 MR：LVEF ≤60%、LVESD ≥40 mm 是重要左室受累标志；2025 ESC 另纳入 LVESDi ≥20 mm/m²。症状、房颤、肺动脉压力、左房扩大及修复可能性也影响干预时机。</div></div><div class="card"><div class="card__t">MR 计算器 · PISA 定量与 dP/dt</div><div class="card__d">BSA 用于面积指数（来自「EF·参考值」页上方）· 留空跳过；只填一项也会给出该参数的分级</div><div class="row"><div class="field"><label class="field__l">PISA 半径 / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:radius" placeholder="未填写"></div><div class="field"><label class="field__l">混叠速度 Va / cm/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:aliasVa" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">反流峰速 / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:regV" placeholder="未填写"></div><div class="field"><label class="field__l">反流 VTI / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:regVti" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">缩流颈 VC（可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:vc" placeholder="未填写"></div><div class="field"><label class="field__l">dP/dt：1→3 m/s 时间（可选） / ms</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:dt" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">LVOT 直径（算 RF 用，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:lvotD" placeholder="未填写"></div><div class="field"><label class="field__l">LVOT VTI（算 RF 用，可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="mr:lvotVti" placeholder="未填写"></div></div><div class="vsum" id="vsum-mr">结果 · 等待输入</div><div class="vres" id="vres-mr"></div><div class="vnotes" id="vnotes-mr"></div></div></div>
     <div class="valve-sec" data-sec="tr" hidden><div class="card"><div class="card__t">三尖瓣 TR / TS</div><div class="card__d">Tricuspid Regurgitation · 三尖瓣　·　ASE 2017 定量；ASE 2025 右心；ESC/EACTS 2025 管理</div><div class="vtbl"><div class="vtbl__r vtbl__r--h vtbl--4"><span class="vtbl__c">TR 指标</span><span class="vtbl__c">轻度</span><span class="vtbl__c">中度</span><span class="vtbl__c">重度</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">VC（cm）</span><span class="vtbl__c">&lt;0.3</span><span class="vtbl__c">0.3–0.69</span><span class="vtbl__c">≥0.7</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">EROA（cm²）</span><span class="vtbl__c">&lt;0.20</span><span class="vtbl__c">0.20–0.39</span><span class="vtbl__c">≥0.40</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">RVol（mL）</span><span class="vtbl__c">&lt;30</span><span class="vtbl__c">30–44</span><span class="vtbl__c">≥45</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">肝静脉</span><span class="vtbl__c">S 占优</span><span class="vtbl__c">S 减低</span><span class="vtbl__c">收缩期逆流</span></div><div class="vtbl__r vtbl--4"><span class="vtbl__c">CW 频谱</span><span class="vtbl__c">较淡，抛物线</span><span class="vtbl__c">致密</span><span class="vtbl__c">致密、早达峰三角形</span></div></div>
         <div class="vblock__f">RVSP = 4 × TRV² + RAP　　PASP ≈ RVSP（无 RVOT / 肺动脉瓣梗阻时）　　PVR（WU）≈ 10 × TRV ÷ RVOT VTI + 0.16</div>
         <div class="vblock__t">扩展五级法可将重度以上进一步分为 severe、massive、torrential，用于描述极重反流及介入疗效；不同量化方法的界值不能互换，本表采用常规三级法。</div>
         <div class="note">显著 TR 可能低估 TR 压差；必须结合右室、右房、IVC 及肝静脉。ESC/EACTS 2025 强调在右室或终末器官损害进展前评估干预，合并左侧瓣膜手术时需同时评估三尖瓣。</div>
         <div class="vblock__h">三尖瓣狭窄 TS</div>
         <div class="vblock__t">平均跨瓣压差 ≥5 mmHg、PHT ≥190 ms、TVA ≤1.0 cm²、流入道 VTI ≥60 cm 支持显著狭窄；结合心率、呼吸及流量判读。</div>
-        <div class="note">TR 峰速 &lt;2.5 m/s 不能排除肺高压；房颤、心率快或右心功能差时 TR 频谱常不完整。RAP 用 IVC 估算仅适用于自主呼吸。</div></div><div class="card"><div class="card__t">TR 计算器 · 反流定量与右心压力</div><div class="card__d">BSA 用于面积指数（来自「参数·参考值」页）· 留空跳过；只填一项也会给出该参数的分级</div><div class="row"><div class="field"><label class="field__l">PISA 半径 / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:radius" placeholder="未填写"></div><div class="field"><label class="field__l">混叠速度 Va / cm/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:aliasVa" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">反流峰速 / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:regV" placeholder="未填写"></div><div class="field"><label class="field__l">反流 VTI / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:regVti" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">缩流颈 VC（可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:vc" placeholder="未填写"></div><div class="field"><label class="field__l">TR 峰速（可选） / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:trV" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">IVC 内径（可选） / mm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:ivc" placeholder="未填写"></div></div><div class="field"><label class="field__l">IVC 吸气塌陷</label><div class="seg" data-seg="valveivc"><div class="seg__i seg__i--on" data-v="">未知</div><div class="seg__i" data-v="yes">吸气塌陷 &gt;50%</div><div class="seg__i" data-v="no">吸气塌陷 ≤50%</div></div></div><div class="vsum" id="vsum-tr">结果 · 等待输入</div><div class="vres" id="vres-tr"></div><div class="vnotes" id="vnotes-tr"></div></div></div>
+        <div class="note">TR 峰速 &lt;2.5 m/s 不能排除肺高压；房颤、心率快或右心功能差时 TR 频谱常不完整。RAP 用 IVC 估算仅适用于自主呼吸。</div></div><div class="card"><div class="card__t">TR 计算器 · 反流定量与右心压力</div><div class="card__d">BSA 用于面积指数（来自「EF·参考值」页上方）· 留空跳过；只填一项也会给出该参数的分级</div><div class="row"><div class="field"><label class="field__l">PISA 半径 / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:radius" placeholder="未填写"></div><div class="field"><label class="field__l">混叠速度 Va / cm/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:aliasVa" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">反流峰速 / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:regV" placeholder="未填写"></div><div class="field"><label class="field__l">反流 VTI / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:regVti" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">缩流颈 VC（可选） / cm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:vc" placeholder="未填写"></div><div class="field"><label class="field__l">TR 峰速（可选） / m/s</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:trV" placeholder="未填写"></div></div><div class="row"><div class="field"><label class="field__l">IVC 内径（可选） / mm</label><input class="field__i" type="number" inputmode="decimal" step="any" data-vk="tr:ivc" placeholder="未填写"></div></div><div class="field"><label class="field__l">IVC 吸气塌陷</label><div class="seg" data-seg="valveivc"><div class="seg__i seg__i--on" data-v="">未知</div><div class="seg__i" data-v="yes">吸气塌陷 &gt;50%</div><div class="seg__i" data-v="no">吸气塌陷 ≤50%</div></div></div><div class="vsum" id="vsum-tr">结果 · 等待输入</div><div class="vres" id="vres-tr"></div><div class="vnotes" id="vnotes-tr"></div></div></div>
     </div>
     <button class="btn btn--ghost" id="valveClear">清空全部瓣膜输入</button>
     <div class="note note--warn">
@@ -1350,10 +1425,7 @@ html, body {
 <!-- ══════════ 底部页签 ══════════ -->
 <nav class="tabbar" id="tabbar">
   <div class="tab tab--on" data-tab="index">
-    <span class="tab__i">◧</span><span class="tab__t">参数·参考值</span>
-  </div>
-  <div class="tab" data-tab="ef">
-    <span class="tab__i">◉</span><span class="tab__t">EF 计算</span>
+    <span class="tab__i">◧</span><span class="tab__t">EF·参考值</span>
   </div>
   <div class="tab" data-tab="calc">
     <span class="tab__i">∑</span><span class="tab__t">其他计算</span>
@@ -3522,8 +3594,7 @@ function valveCalc(id, v, bsa) {
      ══════════════════════════════════════════════════════════ */
 
   const TAB_TITLE = {
-    index: '参数·参考值',
-    ef: 'EF 计算',
+    index: 'EF·参考值',
     calc: '其他计算',
     valves: '瓣膜评估',
     segments: '节段划分',
@@ -3639,7 +3710,8 @@ function valveCalc(id, v, bsa) {
           : '';
       state.bsa = 0;
       setText('calcBsaNote', 'BSA —（请先在上方填写有效身高体重）');
-      renderReference();
+      // renderEF 内部会刷新参考值列表；EF 结果的 LVM/BSA 也随 BSA 变化
+      renderEF();
       renderValves();
       return;
     }
@@ -3663,8 +3735,8 @@ function valveCalc(id, v, bsa) {
     setText('calcBsaNote',
       'BSA ' + state.bsa.toFixed(2) + ' m²（来自本页上方）· 各组结果独立计算，留空跳过');
 
-    // 参考值列表与计算页都依赖 BSA，一并刷新
-    renderReference();
+    // 参考值列表、EF 结果（LVM/BSA）与计算页都依赖 BSA，一并刷新
+    renderEF();
     renderValves();
   }
 
@@ -3717,7 +3789,7 @@ function valveCalc(id, v, bsa) {
 
     $('refTitle').textContent = hasM ? '实测值对照' : '正常参考范围';
     $('refDesc').textContent = hasM
-      ? '已关联「EF 计算」页的测量值，下表显示实测值与参考范围的对照结果。'
+      ? '已关联上方 EF 计算的测量值，下表显示实测值与参考范围的对照结果。'
       : (state.sex === 'male' ? '男性' : '女性') + ' · ' + STD_NOTE[state.standard];
 
     $('refSource').textContent = '参考值来源：' + STD_SOURCE[state.standard];
@@ -3731,7 +3803,7 @@ function valveCalc(id, v, bsa) {
     }
 
     rows.forEach(function (r) {
-      const nameCell = '<div class="list-row__n">' + esc(r.name) +
+      const nameCell = '<div class="list-row__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
         (r.hasDerived
           ? '<span class="derived">按当前 BSA 折算 ' + esc(r.derivedText) + ' ' + esc(r.derivedUnit) + '</span>'
           : '') +
@@ -3765,7 +3837,7 @@ function valveCalc(id, v, bsa) {
   }
 
   /* ══════════════════════════════════════════════════════════
-     五、Tab3 EF 计算
+     五、Tab1 EF 计算（与参考值同页，置于卡片最上方）
      ══════════════════════════════════════════════════════════ */
 
   const EF_IDS = ['efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd'];
@@ -3789,6 +3861,8 @@ function valveCalc(id, v, bsa) {
       } else {
         $('efHint').textContent = '';
       }
+      // 同页的参考值列表要跟着退回「正常参考范围」
+      renderReference();
       return;
     }
 
@@ -3839,6 +3913,9 @@ function valveCalc(id, v, bsa) {
       (state.bsa ? '　·　指数基于 BSA ' + state.bsa.toFixed(3) + ' m²' : '');
 
     $('efResult').hidden = false;
+
+    // 同页参考值列表实时切到「实测值对照」
+    renderReference();
   }
 
   function gradeCls(level) {
@@ -4301,7 +4378,7 @@ function valveCalc(id, v, bsa) {
       html += '<div class="pgroup">' + esc(g.title) + '</div>';
       g.rows.forEach(function (r) {
         html += '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '">' +
-          '<div class="zrow__n">' + esc(r.name) +
+          '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
             '<span class="zrow__sub">均值 ' + esc(r.meanText) + '</span></div>' +
           '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
           '<div class="zrow__r">' + esc(r.rangeText) + '</div>' +
@@ -4319,7 +4396,7 @@ function valveCalc(id, v, bsa) {
       rhtml += '<div class="pgroup">' + esc(g.title) + '</div>';
       g.rows.forEach(function (r) {
         rhtml += '<div class="zrow">' +
-          '<div class="zrow__n">' + esc(r.name) +
+          '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
             '<span class="zrow__sub">' + esc(r.alphaText) + ' · 均值 ' + esc(r.meanText) + '</span></div>' +
           '<div style="flex:2;text-align:right;font-size:12px;color:var(--sub);line-height:1.6">' +
             '±2SD　' + esc(r.rangeText) + '<br>' +

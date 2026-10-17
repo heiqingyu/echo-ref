@@ -87,9 +87,9 @@ check('APK Calc 已挂载', !!ApkCalc, true);
 check('APK ValveCalc 已挂载', !!ApkValve, true);
 
 // 页面结构自检
-check('包含 6 个页面容器', (html.match(/class="page"/g) || []).length, 6);
+check('包含 5 个页面容器', (html.match(/class="page"/g) || []).length, 5);
 // 注意：第一个页签的 class 是 "tab tab--on"，所以要用 \btab\b 而非 class="tab"
-check('包含 6 个底部页签', (html.match(/class="tab(?:\s|")/g) || []).length, 6);
+check('包含 5 个底部页签', (html.match(/class="tab(?:\s|")/g) || []).length, 5);
 check('含 viewport meta（移动端适配）', /name="viewport"/.test(html), true);
 check('含 safe-area 适配', /safe-area-inset/.test(html), true);
 
@@ -310,7 +310,7 @@ section('4. 页面元素完整性');
 
 const REQUIRED_IDS = [
   'appbarTitle', 'resetBtn', 'main', 'tabbar',
-  'page-index', 'page-ef', 'page-calc', 'page-valves', 'page-segments', 'page-peds',
+  'page-index', 'page-calc', 'page-valves', 'page-segments', 'page-peds',
   'inHeight', 'inWeight', 'outBsa', 'bsaHint', 'stdNote',
   'jumpRef', 'refBlock', 'refList', 'refDesc', 'refSource', 'aseUnitNote',
   'calcGroups', 'calcClear', 'calcBsaNote',
@@ -402,6 +402,18 @@ check('APK ROOT 30 判定一致', cnM.find(function (r) { return r.key === 'ROOT
   cnMmp.find(function (r) { return r.key === 'ROOT'; }).status, 0);
 check('APK MPA 28 判定一致', cnM.find(function (r) { return r.key === 'MPA'; }).status,
   cnMmp.find(function (r) { return r.key === 'MPA'; }).status, 0);
+
+/* ══════════════════════════════════════════════════════════ */
+
+/* 延展阅读：外链卡片（APK 端点击链接由 MainActivity 交给系统浏览器） */
+check('APK 页面含延展阅读卡片', html.indexOf('延展阅读') !== -1 ? 1 : 0, 1, 0);
+check('APK 外链条目 2 条',
+  (html.match(/class="extlink"/g) || []).length, 2, 0);
+check('APK 外链 zs-echo.com',
+  html.indexOf('href="https://zs-echo.com"') !== -1 ? 1 : 0, 1, 0);
+check('APK 外链 tte-quickref',
+  html.indexOf('href="https://bdrwss.github.io/tte-quickref/dist/"') !== -1 ? 1 : 0, 1, 0);
+check('APK 外链样式已内联', html.indexOf('.extlink {') !== -1 ? 1 : 0, 1, 0);
 
 /* ══════════════════════════════════════════════════════════ */
 

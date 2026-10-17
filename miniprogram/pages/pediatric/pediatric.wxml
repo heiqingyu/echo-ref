@@ -186,7 +186,7 @@
         <view wx:for="{{item.rows}}" wx:for-item="row" wx:key="key"
               class="z-row {{row.hasValue ? '' : 'z-row--none'}}">
           <view class="z-row__name">
-            {{row.name}}
+            {{row.name}}（{{row.key}}）
             <text class="z-row__name-sub">均值 {{row.meanText}}</text>
           </view>
           <text class="z-row__val">{{row.value}}{{row.hasValue ? row.unit : ''}}</text>
@@ -209,7 +209,7 @@
         <view class="peds-group">{{item.title}}</view>
         <view wx:for="{{item.rows}}" wx:for-item="row" wx:key="key" class="z-row">
           <view class="z-row__name">
-            {{row.name}}
+            {{row.name}}（{{row.key}}）
             <text class="z-row__name-sub">{{row.alphaText}} · 均值 {{row.meanText}}</text>
           </view>
           <view style="flex:2;text-align:right">

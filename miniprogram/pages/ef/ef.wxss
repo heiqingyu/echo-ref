@@ -1,4 +1,0 @@
-/* 继承全局样式 */
-.kv__v {
-  font-variant-numeric: tabular-nums;
-}

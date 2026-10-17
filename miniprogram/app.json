@@ -1,7 +1,6 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/ef/ef",
     "pages/calculators/calculators",
     "pages/valves/valves",
     "pages/segments/segments",
@@ -20,8 +19,7 @@
     "backgroundColor": "#ffffff",
     "borderStyle": "black",
     "list": [
-      { "pagePath": "pages/index/index", "text": "参数·参考值" },
-      { "pagePath": "pages/ef/ef", "text": "EF 计算" },
+      { "pagePath": "pages/index/index", "text": "EF·参考值" },
       { "pagePath": "pages/calculators/calculators", "text": "其他计算" },
       { "pagePath": "pages/segments/segments", "text": "节段划分" },
       { "pagePath": "pages/pediatric/pediatric", "text": "儿童 Z 值" }

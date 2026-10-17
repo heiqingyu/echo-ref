@@ -312,6 +312,119 @@ check('TR 汇总 = severe', vTr.level === 'severe' ? 1 : 0, 1, 0);
 });
 check('未知分区返回空', VE.valveCalc('xx', {}, 1.8).rows.length, 0, 0);
 
+console.log('\n=== 20. 界面显示英文缩写（中文名（缩写））===');
+const fsW = require('fs');
+const pathW = require('path');
+const wxmlIndex = fsW.readFileSync(
+  pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.wxml'), 'utf8');
+const wxmlPeds = fsW.readFileSync(
+  pathW.join(__dirname, 'miniprogram', 'pages', 'pediatric', 'pediatric.wxml'), 'utf8');
+check('index.wxml 参考值行 2 处带缩写',
+  (wxmlIndex.match(/\{\{item\.name\}\}（\{\{item\.key\}\}）/g) || []).length, 2, 0);
+check('pediatric.wxml Z 值行 2 处带缩写',
+  (wxmlPeds.match(/\{\{row\.name\}\}（\{\{row\.key\}\}）/g) || []).length, 2, 0);
+check('pediatric.wxml 输入标签保持原样（不加缩写）',
+  (wxmlPeds.match(/\{\{inputs\[index\]\.name\}\} \/ /g) || []).length, 1, 0);
+check('pediatric.wxml 更多参数标签保持原样',
+  (wxmlPeds.match(/\{\{moreInputs\[index\]\.name\}\} \/ /g) || []).length, 1, 0);
+check('行数据均带 key（成人）', C.buildReferenceList('male', null, 'CN', 1.75)
+  .every(r => !!r.key) ? 1 : 0, 1, 0);
+
+console.log('\n=== 21. 合并后首页（EF 计算 + 参考值同页）===');
+{
+  // mock 小程序运行时，直接驱动 Page 逻辑（含 doCalc / rebuildRef）
+  const gData = {
+    profile: { sex: 'male', height: 170, weight: 65, bsa: 1.75 },
+    measurements: null,
+    standard: 'CN',
+  };
+  global.getApp = () => ({ globalData: gData });
+  global.wx = { pageScrollTo() {}, switchTab() {} };
+  let pgCfg = null;
+  global.Page = (c) => { pgCfg = c; };
+
+  require(pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.js'));
+  const pg = Object.assign({}, pgCfg);
+  pg.data = JSON.parse(JSON.stringify(pgCfg.data));
+  pg.setData = function (patch) { Object.assign(this.data, patch); };
+  pg.onLoad();
+
+  check('首屏默认值即出 EF 结果', pg.data.hasResult ? 1 : 0, 1, 0);
+  check('EF = 65.4%', parseFloat(pg.data.r.EF), 65.4, 0.05);
+  check('参考值列表切到实测值对照', pg.data.hasMeasurements ? 1 : 0, 1, 0);
+  check('成人 CN 参考值 37 行', pg.data.rows.length, 37, 0);
+
+  const appJsonRaw = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'app.json'), 'utf8');
+  const appJson = JSON.parse(appJsonRaw);
+  check('独立 EF 页已移除', appJson.pages.indexOf('pages/ef/ef'), -1, 0);
+  check('tabBar 共 4 个页签', appJson.tabBar.list.length, 4, 0);
+  check('首页页签名 = EF·参考值', appJson.tabBar.list[0].text === 'EF·参考值' ? 1 : 0, 1, 0);
+
+  // 非法输入：结果隐藏、实测对照退回正常参考范围
+  pg.data.lvedd = '30'; pg.data.lvesd = '40';
+  pg.doCalc();
+  check('非法输入隐藏结果卡片', pg.data.hasResult ? 0 : 1, 1, 0);
+  check('非法输入清空实测对照', pg.data.hasMeasurements ? 0 : 1, 1, 0);
+  check('内径大小颠倒有提示',
+    /舒张末内径应大于收缩末内径/.test(pg.data.efHint) ? 1 : 0, 1, 0);
+
+  // 恢复有效输入
+  pg.data.lvedd = '50'; pg.data.lvesd = '32';
+  pg.doCalc();
+  check('恢复有效输入后重新出结果', pg.data.hasResult ? 1 : 0, 1, 0);
+  check('参考值列表恢复实测对照', pg.data.hasMeasurements ? 1 : 0, 1, 0);
+}
+
+console.log('\n=== 22. 延展阅读（首页底部外链，复制链接交互）===');
+{
+  // wxml / js / wxss 源码检查
+  check('index.wxml 延展阅读卡片存在',
+    wxmlIndex.indexOf('card__title">延展阅读') !== -1 ? 1 : 0, 1, 0);
+  check('index.wxml 外链条目 2 条（bindtap onCopyLink）',
+    (wxmlIndex.match(/bindtap="onCopyLink"/g) || []).length, 2, 0);
+  check('index.wxml 条目 1 链接 zs-echo.com',
+    wxmlIndex.indexOf('data-url="https://zs-echo.com"') !== -1 ? 1 : 0, 1, 0);
+  check('index.wxml 条目 2 链接 tte-quickref',
+    wxmlIndex.indexOf('data-url="https://bdrwss.github.io/tte-quickref/dist/"') !== -1 ? 1 : 0, 1, 0);
+  const jsIndex = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.js'), 'utf8');
+  check('index.js 实现 onCopyLink（setClipboardData）',
+    /onCopyLink[\s\S]*setClipboardData/.test(jsIndex) ? 1 : 0, 1, 0);
+  const wxssIndex = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.wxss'), 'utf8');
+  check('index.wxss 含 .extlink 样式',
+    wxssIndex.indexOf('.extlink {') !== -1 ? 1 : 0, 1, 0);
+
+  // mock 交互：点击条目 → 链接进剪贴板 + toast 提示
+  let clip = null, toast = null;
+  global.wx = {
+    setClipboardData(o) { clip = o.data; if (o.success) o.success(); },
+    showToast(o) { toast = o.title; },
+  };
+  const gData22 = {
+    profile: { sex: 'male', height: 170, weight: 65, bsa: 1.75 },
+    measurements: null,
+    standard: 'CN',
+  };
+  global.getApp = () => ({ globalData: gData22 });
+  let pgCfg22 = null;
+  global.Page = (c) => { pgCfg22 = c; };
+  delete require.cache[require.resolve(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.js'))];
+  require(pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.js'));
+  const pg22 = Object.assign({}, pgCfg22);
+  pg22.setData = function (patch) { Object.assign(this.data, patch); };
+  pg22.onLoad();
+  pg22.onCopyLink({ currentTarget: { dataset: { url: 'https://zs-echo.com' } } });
+  check('点击条目 1 → 剪贴板为 zs-echo.com 链接',
+    clip === 'https://zs-echo.com' ? 1 : 0, 1, 0);
+  check('复制后有 toast 提示', !!toast ? 1 : 0, 1, 0);
+  pg22.onCopyLink({ currentTarget: { dataset: { url: 'https://bdrwss.github.io/tte-quickref/dist/' } } });
+  check('点击条目 2 → 剪贴板为 tte-quickref 链接',
+    clip === 'https://bdrwss.github.io/tte-quickref/dist/' ? 1 : 0, 1, 0);
+}
+
 console.log(`\n${'='.repeat(46)}`);
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 console.log('='.repeat(46) + '\n');

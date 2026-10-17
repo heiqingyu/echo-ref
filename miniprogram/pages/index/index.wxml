@@ -1,5 +1,113 @@
 <view class="page-wrap">
 
+  <!-- ══════ EF 计算（合并自原「EF 计算」页，置于最上） ══════ -->
+  <view class="card">
+    <view class="card__title">M 型 / 二维内径测量</view>
+    <view class="card__desc">单位为 mm。舒张末内径应大于收缩末内径。</view>
+
+    <view class="row">
+      <view class="field">
+        <text class="field__label">LVIDd 舒张末内径 / mm</text>
+        <input class="field__input" type="digit" value="{{lvedd}}" placeholder="如 50"
+               bindinput="onInput" data-k="lvedd" />
+      </view>
+      <view class="field">
+        <text class="field__label">LVIDs 收缩末内径 / mm</text>
+        <input class="field__input" type="digit" value="{{lvesd}}" placeholder="如 32"
+               bindinput="onInput" data-k="lvesd" />
+      </view>
+    </view>
+
+    <view class="row">
+      <view class="field">
+        <text class="field__label">IVSd 室间隔厚度 / mm</text>
+        <input class="field__input" type="digit" value="{{ivsd}}" placeholder="如 9"
+               bindinput="onInput" data-k="ivsd" />
+      </view>
+      <view class="field">
+        <text class="field__label">LVPWd 后壁厚度 / mm</text>
+        <input class="field__input" type="digit" value="{{lvpwd}}" placeholder="如 9"
+               bindinput="onInput" data-k="lvpwd" />
+      </view>
+    </view>
+
+    <view wx:if="{{!efValid}}" class="hint">{{efHint}}</view>
+
+    <view class="btn" bindtap="doCalc" style="margin-top:22rpx">计算 EF / FS / 左室质量</view>
+  </view>
+
+  <view wx:if="{{hasResult}}" class="card">
+    <view class="card__title">计算结果</view>
+
+    <view class="result-title">容积指标（Teichholz 法）</view>
+    <view class="kv">
+      <view class="kv__item">
+        <view class="kv__k">EDV 舒张末容积</view>
+        <text class="kv__v">{{r.EDV}}</text><text class="kv__u">mL</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">ESV 收缩末容积</view>
+        <text class="kv__v">{{r.ESV}}</text><text class="kv__u">mL</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">SV 每搏量</view>
+        <text class="kv__v">{{r.SV}}</text><text class="kv__u">mL</text>
+      </view>
+    </view>
+
+    <view class="result-title">收缩功能</view>
+    <view class="kv">
+      <view class="kv__item">
+        <view class="kv__k">EF 射血分数</view>
+        <text class="kv__v" style="color:{{efColor}}">{{r.EF}}</text><text class="kv__u">%</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">FS 缩短分数</view>
+        <text class="kv__v">{{r.FS}}</text><text class="kv__u">%</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">RWT 相对室壁厚度</view>
+        <text class="kv__v">{{r.RWT}}</text>
+      </view>
+    </view>
+
+    <view class="efbar">
+      <view class="efbar__mark" style="left:{{efMarkLeft}}%"></view>
+    </view>
+    <view class="efbar-legend">
+      <text>&lt;30 重度</text>
+      <text>30–44 中度</text>
+      <text>45–54 轻度</text>
+      <text>≥55 正常</text>
+    </view>
+    <view style="margin-top:26rpx;font-size:27rpx">
+      EF 分级：
+      <text class="tag {{efCls}}">{{efGrade}}</text>
+      <text style="color:#6b7280;margin-left:14rpx;font-size:24rpx">依据 ASE 2015 阈值</text>
+    </view>
+
+    <view class="result-title">左室质量（Devereux 公式）</view>
+    <view class="kv">
+      <view class="kv__item">
+        <view class="kv__k">LVM 左室质量</view>
+        <text class="kv__v">{{r.LVM}}</text><text class="kv__u">g</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">LVM/BSA 质量指数</view>
+        <text class="kv__v">{{lvmBsaText}}</text><text class="kv__u">g/m²</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">当前 BSA</view>
+        <text class="kv__v">{{bsaText}}</text><text class="kv__u">m²</text>
+      </view>
+    </view>
+
+    <view class="btn btn--ghost" bindtap="goReference" style="margin-top:28rpx">
+      ↓ 与下方参考值对照
+    </view>
+  </view>
+
+  <!-- ══════ 受检者基本信息 ══════ -->
   <view class="card">
     <view class="card__title">受检者基本信息</view>
     <view class="card__desc">身高体重用于计算体表面积（BSA），性别决定参考值区间</view>
@@ -27,6 +135,16 @@
       </view>
     </view>
 
+    <view class="field">
+      <text class="field__label">体表面积公式</text>
+      <view class="seg">
+        <view class="seg__item {{formula === 'dubois' ? 'seg__item--on' : ''}}"
+              data-v="dubois" bindtap="onFormula">Du Bois</view>
+        <view class="seg__item {{formula === 'mosteller' ? 'seg__item--on' : ''}}"
+              data-v="mosteller" bindtap="onFormula">Mosteller</view>
+      </view>
+    </view>
+
     <view class="stat-row">
       <view class="stat">
         <view class="stat__main">
@@ -47,23 +165,7 @@
     <view wx:if="{{!valid}}" class="hint">请输入有效的身高（50–250 cm）与体重（2–300 kg）</view>
   </view>
 
-  <view class="card">
-    <view class="card__title">体表面积公式</view>
-    <view class="field">
-      <text class="field__label">当前公式</text>
-      <view class="seg">
-        <view class="seg__item {{formula === 'dubois' ? 'seg__item--on' : ''}}"
-              data-v="dubois" bindtap="onFormula">Du Bois</view>
-        <view class="seg__item {{formula === 'mosteller' ? 'seg__item--on' : ''}}"
-              data-v="mosteller" bindtap="onFormula">Mosteller</view>
-      </view>
-    </view>
-    <view class="note">
-      Du Bois：BSA = 0.007184 × 身高<text style="font-size:20rpx">0.725</text> × 体重<text style="font-size:20rpx">0.425</text>（临床试验通用）{{'\n'}}
-      Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）
-    </view>
-  </view>
-
+  <!-- ══════ 参考值标准 ══════ -->
   <view class="card">
     <view class="card__title">参考值标准</view>
     <view class="seg">
@@ -75,14 +177,7 @@
     <view class="note">{{standardNote}}</view>
   </view>
 
-  <view class="card">
-    <view class="card__title">下一步</view>
-    <view class="card__desc">参数已保存。可到「EF 计算」由内径推算收缩功能，或到「其他计算」做血流动力学计算。</view>
-    <view class="btn" bindtap="goReference">↓ 查看下方参考值</view>
-    <view class="btn btn--ghost" bindtap="goEF" style="margin-top:20rpx">去计算 EF</view>
-  </view>
-
-  <!-- ══════ 参考值列表（合并自原「参考值」页） ══════ -->
+  <!-- ══════ 参考值列表 ══════ -->
   <view class="ref-block">
 
     <view wx:if="{{standard === 'ASE'}}" class="note note--strong">
@@ -101,7 +196,7 @@
       </view>
       <view wx:for="{{rows}}" wx:key="key" class="list-row">
         <view class="list-row__name">
-          {{item.name}}
+          {{item.name}}（{{item.key}}）
           <view wx:if="{{item.hasDerived}}" class="derived">
             按当前 BSA 折算 {{item.derivedText}} {{item.derivedUnit}}
           </view>
@@ -124,7 +219,7 @@
       </view>
       <view wx:for="{{rows}}" wx:key="key" class="list-row">
         <view class="list-row__name">
-          {{item.name}}
+          {{item.name}}（{{item.key}}）
           <view wx:if="{{item.hasDerived}}" class="derived">
             按当前 BSA 折算 {{item.derivedText}} {{item.derivedUnit}}
           </view>
@@ -135,6 +230,66 @@
 
     <view class="note">参考值来源：{{sourceText}}</view>
 
+  </view>
+
+  <!-- ══════ 计算公式说明（合并原 EF 页公式 + 体表面积公式） ══════ -->
+  <view class="card">
+    <view class="card__title">计算公式说明</view>
+
+    <view class="result-title">收缩功能与容积（Teichholz 法，M 型单平面）</view>
+    <view class="note">
+      V = 7 × D³ ÷ (2.4 + D)，D 为内径（cm），V 为容积（mL）{{'\n'}}
+      EF = (EDV − ESV) ÷ EDV × 100%{{'\n'}}
+      FS = (LVIDd − LVIDs) ÷ LVIDd × 100%{{'\n'}}
+      RWT = 2 × LVPWd ÷ LVEDD
+    </view>
+
+    <view class="result-title">左室质量（Devereux 公式）</view>
+    <view class="note">
+      LVM = 0.8 × 1.04 × [(LVIDd + IVSd + LVPWd)³ − LVIDd³] + 0.6{{'\n'}}
+      LVM/BSA = 左室质量 ÷ 体表面积
+    </view>
+
+    <view class="result-title">体表面积（BSA）</view>
+    <view class="note">
+      Du Bois：BSA = 0.007184 × 身高<text style="font-size:20rpx">0.725</text> × 体重<text style="font-size:20rpx">0.425</text>（临床试验通用）{{'\n'}}
+      Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）
+    </view>
+
+    <view class="note note--strong">
+      Teichholz 法假设左室为对称椭球体，在左室形态明显异常（室壁瘤、显著扩大）时
+      准确性下降，此时建议采用双平面 Simpson 法。本计算结果仅供专业参考，不作为诊断依据。
+    </view>
+  </view>
+
+  <!-- ══════ 延展阅读（第三方工具，小程序内复制链接后到浏览器打开） ══════ -->
+  <view class="card">
+    <view class="card__title">延展阅读</view>
+    <view class="card__desc">
+      同类心超速查工具，内容更全。小程序内无法直接打开外部网页，点击条目复制链接，
+      粘贴到手机浏览器即可访问。
+    </view>
+
+    <view class="extlink" bindtap="onCopyLink" data-url="https://zs-echo.com"
+          hover-class="extlink--tap">
+      <view class="extlink__main">
+        <view class="extlink__name">心超速查 ZS-Echo Copilot</view>
+        <view class="extlink__desc">86 个计算器 · 19 类参考值 · 瓣膜与决策流程</view>
+        <view class="extlink__url">zs-echo.com</view>
+      </view>
+      <view class="extlink__act">复制</view>
+    </view>
+
+    <view class="extlink" bindtap="onCopyLink"
+          data-url="https://bdrwss.github.io/tte-quickref/dist/"
+          hover-class="extlink--tap">
+      <view class="extlink__main">
+        <view class="extlink__name">TTE 心超速查 · 中文版</view>
+        <view class="extlink__desc">床旁速查卡片 · 测量与切面要点</view>
+        <view class="extlink__url">bdrwss.github.io/tte-quickref</view>
+      </view>
+      <view class="extlink__act">复制</view>
+    </view>
   </view>
 
   <view class="note note--strong">
