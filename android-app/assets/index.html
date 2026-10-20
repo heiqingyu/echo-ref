@@ -1419,7 +1419,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.0.2</div>
+    <div class="verline">心脏超声参考值 · v1.0.3</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1462,7 +1462,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.0.2</div>
+      <div class="verline">心脏超声参考值 · v1.0.3</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -4109,56 +4109,44 @@ const LINK_SECTIONS = [
       {
         id: 'tte-sv',
         title: 'TTE 经胸标准切面',
-        sub: '胸骨旁 / 心尖 / 剑下标准窗',
-        url: 'https://pie.med.utoronto.ca/TTE/TTE_content/standardViews.html',
+        sub: '胸骨旁 / 心尖 / 剑下 · 直达交互应用',
+        url: 'https://pie.med.utoronto.ca/TTE/TTE_content/assets/applications/TTE-HTML5-SV/index.html',
       },
       {
-        id: 'tee-spectral',
-        title: 'TEE 频谱多普勒逐项讲解',
-        sub: '主动脉瓣 / 二尖瓣 / 三尖瓣 / 肺静脉…',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_spectral.html',
-      },
-      {
-        id: 'tee-valve',
-        title: 'TEE 心脏瓣膜评估',
-        sub: '术中瓣膜评估方法（TEER 基础）',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_assessment_cardiacValves.html',
-      },
-      {
-        id: 'm-teer',
-        title: 'M-TEER 二尖瓣边缘修复切面',
-        sub: '二尖瓣夹持定位的超声基础',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_spectral_mitralValve.html',
-      },
-      {
-        id: 't-teer',
-        title: 'T-TEER 三尖瓣边缘修复切面',
-        sub: '三尖瓣反流评估与夹持定位',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_spectral_tricuspidValve.html',
-      },
-      {
-        id: 'tee-3d',
-        title: 'TEE 三维与 MPR 测量',
-        sub: '左室容积 / 二尖瓣 / 主动脉瓣 MPR',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_3DTEE.html',
-      },
-      {
-        id: 'tee-path',
-        title: 'TEE 病理实例',
-        sub: '钙化性主动脉瓣狭窄 / 心房黏液瘤 / SOVA',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_synopses.html',
-      },
-      {
-        id: 'tee-guide',
+        id: 'tee-cheat',
         title: 'TEE 标准视图速查表',
-        sub: '探头角度 · 平面 · 对应结构（可打印）',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_guideSheet.html',
+        sub: '探头角度 · 平面 · 对应结构 · 可打印（360 极速浏览器打开）',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/TEE-cheat-sheet/index.htm',
+      },
+    ],
+  },
+  {
+    id: 'guides',
+    title: '切面指南',
+    items: [
+      {
+        id: 'guide-tte-cn',
+        title: '经胸切面指南（中文版）',
+        sub: 'ASE 成人完整 TTE 检查操作指南 · 官方中文翻译 PDF',
+        url: 'https://www.asecho.org/wp-content/uploads/2025/04/Adult-CompTTE_Chinese.pdf',
       },
       {
-        id: 'tee-quiz',
-        title: 'TEE 在线测验',
-        sub: '切面识别与结构辨认自测',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_standardViews_quizzes.html',
+        id: 'guide-tte-en',
+        title: '经胸切面指南（英文原版）',
+        sub: 'ASE 成人完整 TTE 检查操作指南（2019）· 官方 PDF',
+        url: 'https://www.asecho.org/wp-content/uploads/2025/07/Guidelines-for-Performing-a-Comprehensive-Transthoracic-Echocardiographic-Examination-in-Adults.pdf',
+      },
+      {
+        id: 'guide-tee-28',
+        title: '经食道切面指南（28 标准切面）',
+        sub: 'ASE/SCA 成人 TEE 完整检查指南 · 原文全文',
+        url: 'https://www.sciencedirect.com/science/article/pii/S0894731713005622',
+      },
+      {
+        id: 'guide-tee-shd',
+        title: '经食道切面指南（介入筛查）',
+        sub: 'ASE 2021 结构性心脏病介入 TEE 筛查标准 · 官方 PDF',
+        url: 'https://www.asecho.org/wp-content/uploads/2025/04/PIIS0894731721005940.pdf',
       },
     ],
   },
@@ -4167,40 +4155,22 @@ const LINK_SECTIONS = [
     title: 'TEE 模拟器',
     items: [
       {
+        id: 'sim-toronto',
+        title: '多伦多 TEE 交互模拟器',
+        sub: '标准切面全流程交互演示 · 360 极速浏览器兼容模式打开',
+        url: 'https://pie.med.utoronto.ca/tee/TEE_content/assets/applications/teeSimulation/index.html',
+      },
+      {
         id: 'sim-ct2tee',
         title: 'CT2TEE 在线模拟器',
         sub: 'CT 重建驱动 · 旋转 / 俯仰 / 成角操控',
         url: 'https://www.ct2tee.agh.edu.pl/',
       },
       {
-        id: 'sim-virtual',
-        title: 'Virtual TEE（3D 心模型）',
-        sub: '视频与超声平面同步 · 隐藏组织看内部',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_virtualTEE.html',
-      },
-      {
-        id: 'sim-probe',
-        title: 'TEE 探针操控模拟',
-        sub: '练旋转 / 前倾 / 推进 / 退出的手感',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_probeManipulation_intro.html',
-      },
-      {
         id: 'sim-atlas',
         title: 'TEE Simulator 图谱',
-        sub: '交互式切面图谱（英文）',
+        sub: '交互式切面图谱（英文）· 需科学上网',
         url: 'https://tee-simulator.anesthbeta.com/atlas?lang=en',
-      },
-      {
-        id: 'sim-av',
-        title: '备选视图应用（模拟版）',
-        sub: '非常用切面交互演示',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/alternateViewsHTML5/TEE-HTML5-AV/',
-      },
-      {
-        id: 'sim-cd',
-        title: '彩色对比应用（模拟版）',
-        sub: '彩色多普勒使用时机演示',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/colourCompareHTML5/TEE-HTML5-CD/',
       },
     ],
   },
@@ -4277,6 +4247,20 @@ const REFS = [
     en: 'Pediatric Heart Network normative data（Z 值标准化）',
     where: 'Pediatric Echocardiography',
     use: '儿童心脏尺寸按体表面积标准化（见儿童 Z 值页）',
+  },
+  {
+    id: 'R11',
+    zh: '成人完整经胸超声心动图操作指南（ASE 2019）',
+    en: 'Mitchell C, Rahko PS, Blauwet LAB, et al. Guidelines for Performing a Comprehensive Transthoracic Echocardiographic Examination in Adults',
+    where: 'J Am Soc Echocardiogr, 2019, 32(1): 1–64（ASE 官网提供官方中文翻译版）',
+    use: '经胸标准切面命名、采集顺序与测量规范（见「切面指南」）',
+  },
+  {
+    id: 'R12',
+    zh: '成人经食管超声心动图完整检查指南（ASE/SCA）',
+    en: 'Hahn RT, Abraham T, Adams MS, et al. Guidelines for Performing a Comprehensive Transesophageal Echocardiographic Examination',
+    where: 'J Am Soc Echocardiogr, 2013, 26(12): 921–964（28 个标准切面）',
+    use: 'TEE 28 标准切面命名与采集规范（见「切面指南」）',
   },
 ];
 
