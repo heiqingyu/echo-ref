@@ -1419,7 +1419,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.0.8</div>
+    <div class="verline">心脏超声参考值 · v1.0.9</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1462,7 +1462,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.0.8</div>
+      <div class="verline">心脏超声参考值 · v1.0.9</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -3279,6 +3279,194 @@ function trGrade(eroa, rvol) {
   return { grade: g, text: names[g], byEroa: a, byRvol: b };
 }
 
+/* ============================================================
+ * 以下为 v1.0.9 新增：容积 / 质量 / 长轴 / MPI / DVI / mPAP / CTRCD
+ * ============================================================ */
+
+/**
+ * 左室容积与射血分数（Simpson 双平面法）
+ *
+ * EF = (EDV − ESV) / EDV × 100%；SV = EDV − ESV。
+ * 有 BSA 时同出 SVi 与 ESVi（ESVi 是 HFrEF 预后与 ICD 指征的关键量）。
+ *
+ * @param {number} edv 舒张末容积，mL
+ * @param {number} esv 收缩末容积，mL
+ * @param {number} bsa 体表面积，m²（可缺省）
+ */
+function lvEf(edv, esv, bsa) {
+  if (!(edv > 0) || !(esv >= 0)) return {};
+  if (esv >= edv) return { error: 'ESV 不能大于或等于 EDV，请核对描迹' };
+  const sv = edv - esv;
+  const ef = (sv / edv) * 100;
+  const r = { ef: ef, sv: sv, edv: edv, esv: esv };
+  if (bsa > 0) {
+    r.svi = sv / bsa;
+    r.esvi = esv / bsa;
+  }
+  if (ef >= 55) r.text = '收缩功能正常（HFpEF 区间需结合充盈压）';
+  else if (ef >= 50) r.text = '轻度减低（50–54%，已属轻度异常）';
+  else if (ef >= 40) r.text = '中度减低（HFmrEF 区间）';
+  else if (ef >= 30) r.text = '重度减低（HFrEF）';
+  else r.text = '极重度减低（<30%，ICD / CRT 评估指征）';
+  return r;
+}
+
+/**
+ * 左室质量与几何构型（ASE 校正公式）
+ *
+ * LV Mass = 0.8 × 1.04 × [(LVIDd + IVSd + LVPWd)³ − LVIDd³] + 0.6
+ * RWT = 2 × LVPWd / LVIDd；RWT > 0.42 为向心性几何。
+ *
+ * 构型四分法（LVMI 升高 + RWT）：
+ *   正常 / 向心性重构 / 向心性肥厚 / 离心性肥厚
+ *
+ * @param {object} o {lvid, ivs, lvpw, bsa, female}
+ */
+function lvMass(o) {
+  const lvid = o.lvid, ivs = o.ivs, lvpw = o.lvpw;
+  if (!(lvid > 0) || !(ivs > 0) || !(lvpw > 0)) return {};
+  const sum = lvid + ivs + lvpw;
+  const mass = 0.8 * 1.04 * (Math.pow(sum, 3) - Math.pow(lvid, 3)) + 0.6;
+  const rwt = (2 * lvpw) / lvid;
+  const r = { mass: mass, rwt: rwt, conc: rwt > 0.42 };
+
+  if (o.bsa > 0) {
+    const lvmi = mass / o.bsa;
+    r.lvmi = lvmi;
+    // ASE 2015 正常上限：男 115 / 女 95；重度：男 149 / 女 122 g/m²
+    const hi = o.female ? 95 : 115;
+    const severe = o.female ? 122 : 149;
+    r.hi = hi;
+    const massUp = lvmi > hi;
+    if (!massUp && !r.conc) r.text = '正常构型';
+    else if (!massUp && r.conc) r.text = '向心性重构（质量正常，RWT 升高）';
+    else if (massUp && r.conc) r.text = '向心性肥厚';
+    else r.text = '离心性肥厚';
+    if (massUp) r.text += lvmi > severe ? ' · 重度（>' + severe + ' g/m²）' : ' · 轻度（>' + hi + ' g/m²）';
+  } else {
+    r.text = r.conc ? 'RWT 升高（向心性几何）' : 'RWT 正常';
+  }
+  return r;
+}
+
+/**
+ * MAPSE（二尖瓣环收缩期位移）
+ *
+ * 正常 ≥10 mm（部分标准 ≥12 mm）；<10 mm 提示纵向收缩功能减低。
+ * 长轴功能往往早于 EF 下降，EF 正常而 MAPSE 减低提示早期收缩功能障碍。
+ *
+ * @param {number} mapse 二尖瓣环侧壁 / 间隔均值，mm
+ */
+function mapseIndex(mapse) {
+  if (!(mapse > 0)) return {};
+  const r = { value: mapse };
+  if (mapse >= 12) r.text = '正常（≥12 mm）';
+  else if (mapse >= 10) r.text = '临界偏低（10–11 mm）';
+  else if (mapse >= 8) r.text = '减低（提示纵向收缩功能受损，EF 可仍正常）';
+  else r.text = '显著减低（<8 mm，长轴功能明显受损）';
+  r.low = mapse < 10;
+  return r;
+}
+
+/**
+ * Tei 指数（心肌功能指数 MPI）
+ *
+ * MPI = (IVCT + IVRT) / ET = (a − b) / b
+ * 正常值：左室 <0.40、右室 <0.55（脉冲多普勒法）
+ *
+ * @param {number} ivct 等容收缩时间，ms
+ * @param {number} irvt 等容舒张时间，ms
+ * @param {number} et   射血时间，ms
+ * @param {string} side 'lv' | 'rv'
+ */
+function teiIndex(ivct, irvt, et, side) {
+  if (!(ivct >= 0) || !(irvt >= 0) || !(et > 0)) return {};
+  const mpi = (ivct + irvt) / et;
+  const cut = side === 'rv' ? 0.55 : 0.40;
+  return {
+    mpi: mpi,
+    cut: cut,
+    text: mpi > cut
+      ? (side === 'rv' ? '右室 MPI 升高（>0.55）' : '左室 MPI 升高（>0.40）')
+      : 'MPI 在正常范围',
+  };
+}
+
+/**
+ * 无量纲指数 DVI（Dimensionless Index）
+ *
+ * DVI = LVOT VTI / 主动脉瓣 VTI = AVA / LVOT 面积
+ * ≤0.25 支持重度 AS；>0.25 一般不支持重度。
+ * 优点：不受体表面积与流量影响，低流量状态下比 AVA 更稳。
+ *
+ * @param {number} lvti LVOT VTI，cm
+ * @param {number} avti 主动脉瓣 VTI，cm
+ */
+function dviIndex(lvti, avti) {
+  if (!(lvti > 0) || !(avti > 0)) return {};
+  if (lvti >= avti) return { error: 'LVOT VTI 应小于主动脉瓣 VTI，请核对取样位置' };
+  const dvi = lvti / avti;
+  return {
+    dvi: dvi,
+    text: dvi <= 0.25 ? '≤0.25，支持重度 AS' : '>0.25，一般不支持重度 AS',
+  };
+}
+
+/**
+ * 平均肺动脉压（舒张期肺动脉反流法）
+ *
+ * mPAP = 4 × PR Vmax² + RAP（舒张早期压差法，较 PASP 更接近有创均值）
+ * 也可用 Mahan 近似：mPAP = 0.61 × sPAP + 2
+ *
+ * @param {number} prv  舒张早期肺动脉反流峰值速度，m/s
+ * @param {number} rap  右房压，mmHg
+ */
+function mpap(prv, rap) {
+  if (!(prv > 0) || !(rap >= 0)) return {};
+  const m = 4 * prv * prv + rap;
+  return {
+    mpap: m,
+    text: m > 25 ? '升高（>25 mmHg，符合肺高压）'
+      : m > 20 ? '轻度升高（20–25 mmHg，运动性肺高压区间）'
+        : '正常（≤20 mmHg）',
+  };
+}
+
+/**
+ * 肿瘤治疗相关心功能不全（CTRCD）监测
+ *
+ * 相对 GLS 下降 = (|GLS₀| − |GLS₁|) / |GLS₀| × 100%
+ * 轻度：GLS 相对下降 >15% 且 EF 保留
+ * 中度：EF 降至 40–49%，或 EF 下降 ≥10 个百分点至 40–49%
+ * 重度：EF <40%，或出现心衰症状
+ *
+ * @param {object} o {g0, g1, ef0, ef1}  g 为负值
+ */
+function ctrcd(o) {
+  const g0 = Math.abs(o.g0), g1 = Math.abs(o.g1);
+  const hasG = g0 > 0 && g1 > 0;
+  const rel = hasG ? ((g0 - g1) / g0) * 100 : undefined;
+  const drop = (o.ef0 > 0 && o.ef1 > 0) ? (o.ef0 - o.ef1) : undefined;
+  const r = { relDrop: rel, efDrop: drop };
+  if (!hasG && drop === undefined) return r;
+
+  const ef = o.ef1;
+  if (ef > 0 && ef < 40) { r.grade = 3; r.text = '重度 CTRCD（EF <40%）'; return r; }
+  if (ef > 0 && ef < 50 && drop !== undefined && drop >= 10) {
+    r.grade = 2;
+    r.text = '中度 CTRCD（EF 下降 ≥10 个百分点至 40–49%）';
+    return r;
+  }
+  if (hasG && rel > 15) {
+    if (ef > 0 && ef < 50) { r.grade = 2; r.text = '中度 CTRCD（GLS 相对下降 >15% 且 EF 40–49%）'; }
+    else { r.grade = 1; r.text = '轻度 CTRCD（GLS 相对下降 >15%，EF 保留）'; }
+    return r;
+  }
+  r.grade = 0;
+  r.text = '未达 CTRCD 标准';
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -3324,6 +3512,13 @@ function fmt(n, dec) {
     hfaPeff: hfaPeff,
     dukeScore: dukeScore,
     trGrade: trGrade,
+    lvEf: lvEf,
+    lvMass: lvMass,
+    mapseIndex: mapseIndex,
+    teiIndex: teiIndex,
+    dviIndex: dviIndex,
+    mpap: mpap,
+    ctrcd: ctrcd,
     round: round,
     fmt: fmt,
   };
@@ -4737,6 +4932,52 @@ const BRIEF_SECTIONS = [
         ],
         note: '人工瓣膜功能判读以“与基线比较”为核心，单次绝对值易误判。',
       },
+      {
+        id: 'ctrcd',
+        title: '肿瘤治疗相关心功能不全（CTRCD）',
+        sub: 'GLS 相对下降 · 三级分档 · 监测节点',
+        source: ['R32', 'R3'],
+        fields: [
+          { k: 'g0', n: '基线 GLS（负值）', u: '%' },
+          { k: 'g1', n: '本次 GLS（负值）', u: '%' },
+          { k: 'ef0', n: '基线 LVEF', u: '%' },
+          { k: 'ef1', n: '本次 LVEF', u: '%' },
+        ],
+        calc: 'ctrcd',
+        blocks: [
+          { kind: 'h', text: '一、为什么用 GLS 而不是只看 EF' },
+          { kind: 'text', text: '蒽环类、HER2 靶向药、免疫检查点抑制剂造成的心肌损伤，**最早表现为纵向应变下降**，此时 EF 往往还在正常范围。等 EF 掉到 50% 以下才停药，心肌损伤已不可逆。所以 2022 ESC 把 **GLS 相对下降 >15%** 定为最敏感的预警阈值。' },
+          { kind: 'text', text: '相对下降 = (|基线 GLS| − |本次 GLS|) / |基线 GLS| × 100%。例：基线 −20% → 本次 −16.5%，相对下降 17.5%，已达轻度 CTRCD（绝对值只差 3.5 个点，看着不吓人，但相对意义明确）。' },
+
+          { kind: 'h', text: '二、分级（2022 ESC 肿瘤心脏病学指南）' },
+          {
+            kind: 'table',
+            heads: ['分级', '标准', '处理'],
+            rows: [
+              ['轻度', 'GLS 相对下降 >15%，EF 保留，无标志物升高或症状', '1 周内复查确认，缩短监测间隔，继续治疗可接受'],
+              ['中度', 'EF 降至 40–49%；或 EF 下降 ≥10 个百分点至 40–49%；或 GLS 降 >15% 合并标志物升高', '启动 ACEI/ARB + β 阻滞剂（必要时），多学科讨论是否继续抗肿瘤治疗'],
+              ['重度', 'EF <40%；或出现心衰症状；或需正性肌力 / 机械支持', '立即暂停心脏毒性药物，按心衰规范治疗'],
+            ],
+          },
+          { kind: 'note', text: '**必须同机、同软件版本、同分析者随访**。不同厂商的 GLS 正常值可差 2–3 个点，跨机器比较的相对下降值不可信——这是假阳性最主要来源。', warn: true },
+
+          { kind: 'h', text: '三、高危药物与监测节点' },
+          {
+            kind: 'table',
+            heads: ['药物类别', '风险', '监测节点'],
+            rows: [
+              ['蒽环类（阿霉素等）', '剂量相关，累积剂量越高风险越大', '基线、每 2 个周期、疗程结束 3 个月与 12 个月'],
+              ['HER2 靶向（曲妥珠单抗）', '多为可逆，与蒽环联用风险叠加', '基线、每 3 个月'],
+              ['免疫检查点抑制剂', '可暴发性心肌炎，死亡率高', '基线、每周期前查 ECG / 肌钙蛋白，疑诊立即超声'],
+              ['蛋白酶体抑制剂 / 酪氨酸激酶抑制剂', '心衰、肺高压、血栓', '基线、每 3–6 个月'],
+            ],
+          },
+          { kind: 'text', text: '**基线必须在抗肿瘤治疗开始前完成**。治疗中途才做第一次超声的患者，没有基线就无法判断相对下降，只能靠人群正常值硬判，容易漏诊。' },
+          { kind: 'h', text: '四、容易误判的三种情况' },
+          { kind: 'text', text: '① **负荷状态不同**：化疗后脱水、贫血、发热都会改变前负荷，GLS 会跟着变，复查应尽量在相似临床状态下；② **后负荷骤变**：新发高血压或降压过度都会影响应变；③ **房颤 / 心动过速**：心率过快时帧率不足会让应变追踪跳帧，报告里应注明心律与帧率。' },
+        ],
+        note: '报告写法建议直接给「基线 / 本次 / 相对下降百分比 / 分级」四行，不要只写一个 GLS 值——临床决策看的是趋势。',
+      },
     ],
   },
   {
@@ -5004,6 +5245,124 @@ const BRIEF_SECTIONS = [
     ],
   },
   {
+    id: 'vascular',
+    title: '大血管与急症',
+    items: [
+      {
+        id: 'aorta',
+        title: '主动脉疾病评估',
+        sub: '根部扩张 · 二叶式瓣 · 夹层征象',
+        source: ['R30', 'R1'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '一、超声能看哪一段，看不到哪一段' },
+          { kind: 'text', text: '经胸能稳定显示的是**主动脉根部与近段升主动脉**（胸骨旁长轴、心尖五腔、胸骨上窝）。弓部与降主动脉近段可从胸骨上窝看到一部分，**降主动脉中远段与腹主动脉需腹部探查，整体评估靠 CT/MRI**。报告里不要因为「超声没看到异常」就写「主动脉正常」。' },
+          { kind: 'text', text: '测量规范：**舒张末期、垂直于长轴、从内缘到内缘**（leading edge 与 inner-inner 结果差 1–2 mm，随访必须同一方法）。三个标准位点分别报：瓣环、窦部（Valsalva）、窦管交界，另加近段升主动脉。' },
+
+          { kind: 'h', text: '二、成人主动脉根部参考值（cm，舒张末）' },
+          {
+            kind: 'table',
+            heads: ['位点', '男性', '女性'],
+            rows: [
+              ['主动脉瓣环', '2.3–2.9', '2.1–2.7'],
+              ['窦部（Valsalva）', '3.0–3.8', '2.7–3.5'],
+              ['窦管交界', '2.6–3.2', '2.4–3.0'],
+              ['近段升主动脉', '2.7–3.5', '2.5–3.3'],
+            ],
+          },
+          { kind: 'note', text: '不同指南与国内参考值有 1–2 mm 差异，**随访必须用本机同一参考标准**。体型差异大时看指数：升主动脉指数 ≥2.1 cm/m²（男）/ ≥2.0 cm/m²（女）提示扩张。', warn: true },
+
+          { kind: 'h', text: '三、扩张分级与手术阈值' },
+          {
+            kind: 'table',
+            heads: ['升主动脉内径', '分级', '处理原则'],
+            rows: [
+              ['<40 mm', '正常 / 轻度增宽', '1–2 年复查'],
+              ['40–44 mm', '轻度扩张', '每年复查；二叶式瓣患者 ≥40 mm 需更密切'],
+              ['45–49 mm', '中度扩张', '每 6–12 个月复查'],
+              ['≥50 mm', '重度扩张', '每 6 个月复查，评估外科 / 介入时机'],
+              ['≥55 mm', '手术阈值（一般人群）', '考虑置换；马凡 ≥50 mm、二叶式瓣合并危险因素可放宽至 ≥50–52 mm'],
+            ],
+          },
+          { kind: 'text', text: '增长速度同样关键：**≥5 mm/年** 或短期内明显增宽，即使未达阈值也应考虑手术。测量值 >45 mm 时建议同一医师、同一超声机、同一时相复查，避免因测量误差误判「在长」。' },
+
+          { kind: 'h', text: '四、二叶式主动脉瓣（BAV）' },
+          { kind: 'text', text: '按 Sievers 分型：**0 型**（无嵴，两个瓣叶）、**1 型**（一条嵴，最常见）、**2 型**（两条嵴）。分型影响 TAVR 器械选择与瓣叶钙化处理策略。' },
+          { kind: 'text', text: 'BAV 患者约 20–40% 合并升主动脉扩张，且**扩张可在瓣膜功能正常时独立发生**。发现 BAV 必须同时测升主动脉四个位点，并筛查主动脉缩窄（胸骨上窝看降主动脉起始部血流速度）。' },
+
+          { kind: 'h', text: '五、夹层与壁内血肿的超声征象' },
+          { kind: 'text', text: '直接征象是**内膜片**——管腔内随心动周期摆动的线样回声，将管腔分为真假两腔；假腔常更大、血流更慢、可有自发显影或血栓。壁内血肿表现为主动脉壁新月形增厚（>5 mm）而**无内膜片、无血流**。' },
+          { kind: 'note', text: '经胸超声对**降主动脉夹层敏感性低**，阴性绝不能排除。急诊胸痛患者出现「新发主动脉瓣反流 + 心包积液 + 升主动脉增宽」，即使没看到内膜片，也要按 A 型夹层处理并立即 CT。', warn: true },
+        ],
+        note: '主动脉评估的三条铁律：同一测量方法、同一时相、同一测量者；跨方法比较等于没比较。',
+      },
+      {
+        id: 'pe',
+        title: '肺栓塞超声征象',
+        sub: '右心负荷 · McConnell 征 · 危险分层',
+        source: ['R31', 'R5'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '一、先明确一件事：超声不能诊断也不能排除肺栓塞' },
+          { kind: 'text', text: '经胸超声对肺动脉内血栓的直接显示率很低（只能看到主肺动脉与左右肺动脉近段）。**它的价值在于床旁快速识别「右心负荷过重」**，用于血流动力学不稳定患者的危险分层与治疗决策，而不是替代 CTPA。' },
+          { kind: 'h', text: '二、右心负荷的超声征象（按实用性排序）' },
+          {
+            kind: 'table',
+            heads: ['征象', '判定', '说明'],
+            rows: [
+              ['RV/LV 基底径比值', '>1.0', '最常用的半定量指标，敏感性高于单一右室径线'],
+              ['右室游离壁运动减弱', '节段性或弥漫性', '与下壁心梗鉴别：心梗为区域性，PE 多为游离壁整体'],
+              ['McConnell 征', '游离壁无运动 / 运动减弱而**心尖部保留**', '特异性较高，但右室梗死也可出现'],
+              ['室间隔左移 / D 形左室', '收缩末期更明显', '提示右室压力负荷超过左室'],
+              ['TR 峰速 / PASP', '>2.8 m/s；PASP 升高', '急性期 PASP 常仅轻度升高（右室尚未扩张）'],
+              ['PAAT（肺动脉加速时间）', '<90 ms 提示肺高压', '「60/60 征」：PAAT<60 ms 且 TR 压差<60 mmHg'],
+              ['IVC 扩张且吸气塌陷 <50%', '右房压升高', '需结合容量状态，年轻患者可不明显'],
+              ['TAPSE / PASP', '<0.36 mm/mmHg', '右室-肺动脉失耦联，提示代偿已到极限'],
+            ],
+          },
+          { kind: 'note', text: '**急性 PE 的 PASP 常常不高**——右室还没扩张就已失代偿。用「PASP 正常」来排除 PE 是最常见的误判。', warn: true },
+          { kind: 'h', text: '三、在危险分层中的位置（2019 ESC）' },
+          { kind: 'text', text: '血流动力学不稳定（休克 / 持续低血压）= **高危**，直接再灌注治疗，不等影像确诊，床旁超声的作用是排除心包压塞、右室梗死等其他休克原因。' },
+          { kind: 'text', text: '血流动力学稳定者用 sPESI + 右心功能 + 肌钙蛋白分层：右心功能不全（超声或 CT）**合并**肌钙蛋白升高 = **中高危**，需密切监测、考虑补救性再灌注；仅一项阳性 = 中低危。' },
+          { kind: 'h', text: '四、随访' },
+          { kind: 'text', text: '出院前应留基线右心功能。约 0.5–4% 患者发展为**慢性血栓栓塞性肺高压（CTEPH）**，抗凝 3 个月后仍有呼吸困难者需复查超声，右心功能未恢复或 PASP 持续升高应转诊评估。' },
+        ],
+        note: '急诊床旁超声在 PE 里的正确问法不是「有没有血栓」，而是「右室扛不扛得住」。',
+      },
+      {
+        id: 'thrombus',
+        title: '心腔内血栓与占位鉴别',
+        sub: '形态鉴别 · 好发部位 · 造影增强',
+        source: ['R8', 'R2'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '一、血栓 vs 肿瘤：形态学鉴别表' },
+          {
+            kind: 'table',
+            heads: ['特征', '血栓', '肿瘤'],
+            rows: [
+              ['位置', '血流淤滞处（心尖、左心耳、瓣后）', '黏液瘤好发房间隔卵圆窝；转移瘤多在右心'],
+              ['形态', '层状、边界清楚、可呈「双叶」或带蒂', '分叶、形态不规则、可有出血 / 坏死区'],
+              ['活动度', '多数固定或随心动周期摆动', '活动度差异大，黏液瘤可随心动周期脱入瓣口'],
+              ['回声', '与心肌相近或略高，陈旧者钙化', '不均匀，可有低回声区'],
+              ['基底', '宽基底贴附室壁 / 心耳', '多有蒂附着于间隔或瓣膜'],
+              ['造影灌注', '**无灌注**（增强后始终为暗区）', '有灌注（增强后回声增强）'],
+              ['临床背景', '房颤、EF 低、机械瓣、留置导管', '发热、消瘦、栓塞史、家族史'],
+            ],
+          },
+          { kind: 'h', text: '二、常见心腔肿瘤的位置规律' },
+          { kind: 'text', text: '**黏液瘤**约 75% 位于左房，典型附着于房间隔卵圆窝，可有蒂随心动周期在 LA 与 LV 之间往返。**乳头状弹力纤维瘤**多位于瓣膜（主动脉瓣心室面、二尖瓣心房面），体积小、活动度大、易栓塞。**横纹肌瘤**见于婴幼儿心室，可多发、可自行消退。**纤维瘤**位于心室壁内、单发。**转移瘤**多累及右心，黑色素瘤、肾癌、肝癌可经下腔静脉长入右房（甚至达右室）。' },
+          { kind: 'h', text: '三、最容易漏诊的四种血栓' },
+          { kind: 'text', text: '① **左心耳血栓**——经胸几乎看不到，房颤患者复律前必须 TEE；② **左室心尖部血栓**——心尖部常因近场伪影与短轴缩短显示不清，需用超声造影或调整探头频率，LV 扩大 / 前壁心梗患者尤其要主动找；③ **起搏导线与导管相关血栓**——沿导线走行逐段扫查，不要只看右房；④ **机械瓣上的小血栓**——表现为瓣叶活动受限或跨瓣压差升高，而非明确团块。' },
+          { kind: 'note', text: '**超声造影（UCA）是鉴别血栓与肿瘤最实用的手段**：血栓无血供，增强后仍为暗区；肿瘤有血供会增强。对计划手术或抗凝方案决策有直接影响，别省这一步。', warn: true },
+          { kind: 'h', text: '四、报告要写清的三件事' },
+          { kind: 'text', text: '① **大小（三个径线）+ 部位 + 附着基底宽度**——直接决定手术 vs 抗凝；② **活动度与是否脱入瓣口**——脱入瓣口者栓塞风险高，需紧急处理；③ **有无血流梗阻**（跨瓣压差、瓣口面积）。只写「左房占位」对临床没有帮助。' },
+        ],
+        note: '血栓与肿瘤的鉴别，形态学只是第一步，真正分水岭是「有无血供」与「临床背景」——必要时用超声造影，别靠猜。',
+      },
+    ],
+  },
+  {
     id: 'stress',
     title: '负荷与功能试验',
     items: [
@@ -5188,6 +5547,44 @@ const BRIEF_SECTIONS = [
           { kind: 'note', text: 'TEER 后需长期抗凝 / 抗血小板，并监测夹合器血栓（术后 1 个月 TEE 复查）。随访中压差进行性升高要警惕瓣叶增厚或夹合器内皮化异常。', warn: true },
         ],
         note: 'TEER 的核心不是「能不能夹」，而是「夹完会不会狭窄、残余反流能不能接受」——四项测量（瓣叶长度、间隙、深度、MVA）缺一不可。',
+      },
+      {
+        id: 'tavr',
+        title: 'TAVR 术前超声评估',
+        sub: '瓣环测量 · 冠脉高度 · 入路 · 术后压差',
+        source: ['R33', 'R22'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '一、超声在 TAVR 里负责什么（CT 负责什么）' },
+          { kind: 'text', text: '**CT 是 TAVR 术前的主力**：瓣环面积 / 周长、钙化分布、冠脉高度、入路血管，都靠 CT 定量。超声的任务是补 CT 看不全的部分：**功能状态（EF、右心、肺高压）、合并瓣膜病（尤其 MR 与 TR）、心包、心腔内血栓（房颤患者左心耳）、以及床旁实时引导**。' },
+          { kind: 'text', text: '瓣环测量若用超声，**必须用 3D 多平面重建**在收缩中期测「真正的瓣环」——2D 长轴测的是冠状面斜切，会系统性低估，且各切面之间能差 2–3 mm，直接导致选错瓣膜尺寸。' },
+
+          { kind: 'h', text: '二、术前必查清单' },
+          {
+            kind: 'table',
+            heads: ['项目', '关注点', '阈值 / 说明'],
+            rows: [
+              ['主动脉瓣', '类型（三叶 / 二叶）、钙化程度与分布', '二叶式需单独评估，器械选择受限'],
+              ['瓣环', '3D 面积 / 周长 / 周长衍生直径', '决定瓣膜尺寸，超声与 CT 交叉核对'],
+              ['LVOT', '有无钙化、距瓣环距离', '影响瓣周漏与器械移位风险'],
+              ['冠脉高度', '左冠 / 右冠开口距瓣环高度', '<10 mm 为低冠脉，堵塞风险高（以 CT 为准）'],
+              ['左室功能', 'EF、GLS、有无低流量', 'EF <30% 需评估心肌存活'],
+              ['合并 MR', '机制（功能性 / 器质性）与程度', '功能性 MR 多在 TAVR 后减轻，器质性需单独处理'],
+              ['右心与肺高压', 'TAPSE、RVFAC、PASP', '重度右心功能不全是预后不良因素'],
+              ['左心耳', '房颤患者有无血栓', '有血栓须先抗凝 3–6 周并复查'],
+            ],
+          },
+          { kind: 'note', text: '**EF <20%、无收缩储备、或合并重度右心功能不全**的患者，即使瓣膜解剖合适，获益也很有限。这类判断要在术前写进报告，而不是术后再说。', warn: true },
+
+          { kind: 'h', text: '三、术中超声引导的关键节点' },
+          { kind: 'text', text: '① 建立入路后确认导丝位置；② 球囊预扩时监测有无瓣叶撕裂、冠脉堵塞（新发区域性室壁运动异常或 ST 改变）；③ 瓣膜释放过程中观察位置（瓣环平面以下 2–6 mm 为理想）；④ 释放后立即测**跨瓣平均压差与反流**；⑤ 撤除器械前排除心包积液与瓣环破裂。' },
+
+          { kind: 'h', text: '四、术后判读' },
+          { kind: 'text', text: '正常 TAVR 瓣术后**平均压差通常 8–12 mmHg**（自膨胀瓣略高），峰值流速 1.8–2.5 m/s。压差 >20 mmHg 需区分：瓣膜过小（PPM）、瓣叶增厚 / 血栓、还是高流量状态（贫血、甲亢、AR）。' },
+          { kind: 'text', text: '**瓣周漏（PVL）是 TAVR 最常见的并发症**，用彩色多普勒 circumferential extent 半定量（<10% 轻、10–29% 中、≥30% 重），但更推荐多普勒超声敏感度评估。中重度 PVL 与远期死亡率相关，需要介入封堵。' },
+          { kind: 'note', text: '术后 30 天、1 年必须复查并留基线。TAVR 瓣的**亚临床血栓**（HALT）在 CT 上发现率不低，超声表现为压差进行性升高 + 瓣叶增厚，此时不要直接判为「结构衰败」——先抗凝 3 个月复查。', warn: true },
+        ],
+        note: '超声在 TAVR 中是 CT 的补充而非替代：解剖定尺寸靠 CT，功能与合并症靠超声，两者结论冲突时以 CT 为尺寸依据、以超声为风险判断依据。',
       },
     ],
   },
@@ -5497,6 +5894,30 @@ const REFS = [
     en: 'Pellikka PA, et al. Guidelines for Performance, Interpretation, and Application of Stress Echocardiography in Ischemic Heart Disease',
     where: 'J Am Soc Echocardiogr, 2020, 33(1): 1–41',
     use: '室壁运动评分、阳性标准、WMSI 与负荷方式选择',
+  },
+  {
+    id: 'R30',
+    zh: '胸主动脉疾病多模态影像评估指南（2015 ASE）',
+    where: 'J Am Soc Echocardiogr, 2015, 28(2): 119–182',
+    use: '主动脉根部测量位点、扩张分级、二叶式瓣与夹层征象',
+  },
+  {
+    id: 'R31',
+    zh: '急性肺栓塞诊断与管理指南（2019 ESC）',
+    where: 'Eur Heart J, 2020, 41(4): 543–603',
+    use: '右心功能不全的危险分层地位、McConnell 征与随访',
+  },
+  {
+    id: 'R32',
+    zh: '肿瘤心脏病学指南（2022 ESC）',
+    where: 'Eur Heart J, 2022, 43(41): 4229–4361',
+    use: 'CTRCD 三级分档、GLS 相对下降 15% 阈值与监测节点',
+  },
+  {
+    id: 'R33',
+    zh: '经导管瓣膜介入术后瓣膜反流评估指南（2019 ASE）',
+    where: 'J Am Soc Echocardiogr, 2019, 32(4): 431–475',
+    use: 'TAVR 术后跨瓣压差、瓣周漏半定量与随访基线',
   },
 ];
 
@@ -5888,6 +6309,24 @@ const REFS = [
     { id: 'flow', title: 'LVOT · 每搏量与心排量',
       fields: [['ld', 'LVOT 直径', 'cm'], ['lvti', 'LVOT VTI', 'cm'], ['hr', '心率', '次/min']],
       note: 'SV = πd²/4 × VTI；CO = SV × HR ÷ 1000' },
+    { id: 'ef', title: '左室容积与射血分数',
+      fields: [['edv', '舒张末容积 EDV', 'mL'], ['esv', '收缩末容积 ESV', 'mL']],
+      note: 'EF = (EDV − ESV) / EDV；SV = EDV − ESV。有 BSA 时同出 SVi 与 ESVi（ESVi 决定 ICD 指征）' },
+    { id: 'lvmass', title: '左室质量与几何构型',
+      fields: [['lvid', 'LVIDd（舒张末内径）', 'cm'], ['ivs', 'IVSd（室间隔厚度）', 'cm'], ['lvpw', 'LVPWd（后壁厚度）', 'cm']],
+      note: 'LV Mass = 0.8 × 1.04 × [(LVIDd+IVSd+LVPWd)³ − LVIDd³] + 0.6；RWT = 2×LVPWd/LVIDd。LVMI 上限男 115 / 女 95 g/m²' },
+    { id: 'mapse', title: 'MAPSE 长轴收缩',
+      fields: [['mapse', 'MAPSE', 'mm']],
+      note: 'MAPSE 正常 ≥10–12 mm；长轴功能常早于 EF 下降，EF 正常而 MAPSE 减低提示早期收缩功能障碍' },
+    { id: 'dvi', title: '无量纲指数 DVI',
+      fields: [['dlvti', 'LVOT VTI', 'cm'], ['davti', '主动脉瓣 VTI', 'cm']],
+      note: 'DVI ≤0.25 支持重度 AS；不受体表面积与流量影响，低流量状态下比 AVA 更稳' },
+    { id: 'tei', title: 'Tei 指数（MPI）',
+      fields: [['ivct', '等容收缩时间 IVCT', 'ms'], ['ivrt', '等容舒张时间 IVRT', 'ms'], ['et', '射血时间 ET', 'ms'], ['tside', '侧别（右室填 2，留空按左室）', '']],
+      note: 'MPI = (IVCT + IVRT) / ET；左室 >0.40、右室 >0.55 为异常。心率与负荷会影响测值' },
+    { id: 'mpap', title: '平均肺动脉压',
+      fields: [['prv', '肺动脉反流峰速 Vmax', 'm/s'], ['mrap', '右房压 RAP', 'mmHg']],
+      note: 'mPAP = 4 × PR Vmax² + RAP；>25 mmHg 符合肺高压。也可用 Mahan 近似 0.61 × sPAP + 2' },
     { id: 'shunt', title: 'Qp/Qs 肺体循环血流比',
       fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm']],
       note: '使用上方 LVOT 的 SV 作为体循环流量；反流、多处梗阻会影响结果' },
@@ -5921,6 +6360,12 @@ const REFS = [
   /** 目录里每条公式的一句话说明 */
   const CALC_SUB = {
     flow: 'SV · CO · SVi · CI',
+    ef: 'Simpson 双平面 · EF · SVi · ESVi',
+    lvmass: 'LV Mass · LVMI · RWT · 四分法',
+    mapse: '二尖瓣环收缩期位移',
+    dvi: 'LVOT VTI ÷ 主动脉瓣 VTI',
+    tei: '等容时间之和 ÷ 射血时间',
+    mpap: '舒张期肺动脉反流法',
     shunt: '分流方向与分流量',
     bernoulli: 'ΔP = 4(V₂² − V₁²)',
     atrial: 'LAVI · RAVI',
@@ -6284,6 +6729,60 @@ const REFS = [
       put('dias', partsOf(parts));
     }
 
+    const female = state.sex === 'female';
+
+    // 左室容积与射血分数
+    if (has('edv', 'esv')) {
+      const r = Calc.lvEf(v.edv, v.esv, bsa);
+      if (r.error) put('ef', r.error);
+      else {
+        const parts = ['EF ' + Calc.fmt(r.ef, 1) + '%', 'SV ' + Calc.fmt(r.sv, 1) + ' mL'];
+        if (r.svi !== undefined) {
+          parts.push('SVi ' + Calc.fmt(r.svi, 1) + ' mL/m²');
+          parts.push('ESVi ' + Calc.fmt(r.esvi, 1) + ' mL/m²');
+        }
+        if (r.text) parts.push('→ ' + r.text);
+        put('ef', partsOf(parts));
+      }
+    } else put('ef');
+
+    // 左室质量与几何构型
+    if (has('lvid', 'ivs', 'lvpw')) {
+      const r = Calc.lvMass({ lvid: v.lvid, ivs: v.ivs, lvpw: v.lvpw, bsa: bsa, female: female });
+      const parts = ['LV Mass ' + Calc.fmt(r.mass, 1) + ' g', 'RWT ' + Calc.fmt(r.rwt, 2)];
+      if (r.lvmi !== undefined) {
+        parts.push('LVMI ' + Calc.fmt(r.lvmi, 1) + ' g/m²（' + (female ? '女' : '男') + ' 上限 ' + r.hi + '）');
+      }
+      if (r.text) parts.push('→ ' + r.text);
+      put('lvmass', partsOf(parts));
+    } else put('lvmass');
+
+    // MAPSE
+    if (has('mapse')) {
+      const r = Calc.mapseIndex(v.mapse);
+      put('mapse', 'MAPSE ' + Calc.fmt(v.mapse, 0) + ' mm → ' + r.text);
+    } else put('mapse');
+
+    // DVI
+    if (has('dlvti', 'davti')) {
+      const r = Calc.dviIndex(v.dlvti, v.davti);
+      put('dvi', r.error ? r.error : 'DVI = ' + Calc.fmt(r.dvi, 2) + ' → ' + r.text);
+    } else put('dvi');
+
+    // Tei 指数 MPI
+    if (has('ivct', 'ivrt', 'et')) {
+      const side = v.tside === 2 ? 'rv' : 'lv';
+      const r = Calc.teiIndex(v.ivct, v.ivrt, v.et, side);
+      put('tei', 'MPI = ' + Calc.fmt(r.mpi, 2) + '（' + (side === 'rv' ? '右室' : '左室') +
+        ' 上限 ' + Calc.fmt(r.cut, 2) + '）→ ' + r.text);
+    } else put('tei');
+
+    // 平均肺动脉压
+    if (has('prv', 'mrap')) {
+      const r = Calc.mpap(v.prv, v.mrap);
+      put('mpap', 'mPAP ≈ ' + Calc.fmt(r.mpap, 1) + ' mmHg → ' + r.text);
+    } else put('mpap');
+
     // ── 评估类条目（器械支持 / 心腔与应变）──
 
     // CRT：SV / SVi（低流量）+ QRS 时限提示
@@ -6474,6 +6973,18 @@ const REFS = [
         if (g.byEroa !== g.byRvol) parts.push('EROA 与 RVol 不一致，取较重档');
       }
       put('tr-interv', partsOf(parts));
+    }
+
+    // CTRCD 肿瘤治疗相关心功能不全
+    {
+      const r = Calc.ctrcd({ g0: v.g0, g1: v.g1, ef0: v.ef0, ef1: v.ef1 });
+      const parts = [];
+      if (r.relDrop !== undefined) parts.push('GLS 相对下降 ' + Calc.fmt(r.relDrop, 1) + '%');
+      if (r.efDrop !== undefined && r.efDrop !== 0) {
+        parts.push('EF 变化 ' + Calc.fmt(-r.efDrop, 1) + ' 个百分点');
+      }
+      if (r.text) parts.push('→ ' + r.text);
+      put('ctrcd', partsOf(parts));
     }
 
     // 心肌应变判读

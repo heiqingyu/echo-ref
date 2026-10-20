@@ -249,15 +249,15 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 血流动力学 / 瓣膜评估 / 器械支持 / 心腔与应变 / 心肌病变 / 负荷与功能试验 / 介入 TEE 评估 / 切面学习 / 切面指南 / TEE 模拟器',
-      d.groups.join('|') === '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器',
+    check('公式集分组 = 血流动力学 / 瓣膜评估 / 器械支持 / 心腔与应变 / 心肌病变 / 大血管与急症 / 负荷与功能试验 / 介入 TEE 评估 / 切面学习 / 切面指南 / TEE 模拟器',
+      d.groups.join('|') === '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 37 条（5 计算 + 20 评估 + 12 外链）', d.items === 37, d.items);
+    check('条目 48 条（11 计算 + 25 评估 + 12 外链）', d.items === 48, d.items);
     check('外链条目 12 条', d.links === 12, d.links);
     check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
-    check('参考文献 29 条', d.refs === 29, d.refs);
+    check('参考文献 33 条', d.refs === 33, d.refs);
     check('延展阅读卡片在公式集页', d.ext, true);
   }
 

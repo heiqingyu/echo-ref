@@ -216,6 +216,72 @@ Page({
       if (r.ea !== undefined) parts.push('E/A = ' + calc.fmt(r.ea));
       if (r.avgEe !== undefined) parts.push('平均 E/e′ = ' + calc.fmt(r.avgEe) + '（' + calc.gradeEe(r.avgEe).text + '）');
       out = parts.join('；');
+    } else if (gid === 'ef') {
+      // —— 左室容积与射血分数 ——
+      if (valid(v.edv, v.esv)) {
+        const r = calc.lvEf(v.edv, v.esv, bsa);
+        if (r.error) out = r.error;
+        else {
+          const parts = ['EF ' + calc.fmt(r.ef, 1) + '%', 'SV ' + calc.fmt(r.sv, 1) + ' mL'];
+          if (r.svi !== undefined) {
+            parts.push('SVi ' + calc.fmt(r.svi, 1) + ' mL/m²');
+            parts.push('ESVi ' + calc.fmt(r.esvi, 1) + ' mL/m²');
+          }
+          if (r.text) parts.push('→ ' + r.text);
+          out = parts.join('；');
+        }
+      }
+    } else if (gid === 'lvmass') {
+      // —— 左室质量与几何构型 ——
+      if (valid(v.lvid, v.ivs, v.lvpw)) {
+        const r = calc.lvMass({ lvid: v.lvid, ivs: v.ivs, lvpw: v.lvpw, bsa: bsa, female: female });
+        const parts = ['LV Mass ' + calc.fmt(r.mass, 1) + ' g', 'RWT ' + calc.fmt(r.rwt, 2)];
+        if (r.lvmi !== undefined) {
+          parts.push('LVMI ' + calc.fmt(r.lvmi, 1) + ' g/m²（' + (female ? '女' : '男') + ' 上限 ' + r.hi + '）');
+        }
+        if (r.text) parts.push('→ ' + r.text);
+        out = parts.join('；');
+      }
+    } else if (gid === 'mapse') {
+      // —— MAPSE ——
+      if (valid(v.mapse)) {
+        const r = calc.mapseIndex(v.mapse);
+        out = 'MAPSE ' + calc.fmt(v.mapse, 0) + ' mm → ' + r.text;
+      }
+    } else if (gid === 'dvi') {
+      // —— 无量纲指数 DVI ——
+      if (valid(v.dlvti, v.davti)) {
+        const r = calc.dviIndex(v.dlvti, v.davti);
+        out = r.error ? r.error : 'DVI = ' + calc.fmt(r.dvi, 2) + ' → ' + r.text;
+      }
+    } else if (gid === 'tei') {
+      // —— Tei 指数 MPI ——
+      if (valid(v.ivct, v.ivrt, v.et)) {
+        const side = v.tside === 2 ? 'rv' : 'lv';
+        const r = calc.teiIndex(v.ivct, v.ivrt, v.et, side);
+        out = 'MPI = ' + calc.fmt(r.mpi, 2) + '（' + (side === 'rv' ? '右室' : '左室') +
+          ' 上限 ' + calc.fmt(r.cut, 2) + '）→ ' + r.text;
+      }
+    } else if (gid === 'mpap') {
+      // —— 平均肺动脉压 ——
+      if (valid(v.prv, v.mrap)) {
+        const r = calc.mpap(v.prv, v.mrap);
+        out = 'mPAP ≈ ' + calc.fmt(r.mpap, 1) + ' mmHg → ' + r.text;
+      }
+    } else if (gid === 'ctrcd') {
+      // —— CTRCD 监测 ——
+      const r = calc.ctrcd({
+        g0: v.g0, g1: v.g1, ef0: v.ef0, ef1: v.ef1,
+      });
+      const parts = [];
+      if (r.relDrop !== undefined) {
+        parts.push('GLS 相对下降 ' + calc.fmt(r.relDrop, 1) + '%');
+      }
+      if (r.efDrop !== undefined && r.efDrop !== 0) {
+        parts.push('EF 变化 ' + calc.fmt(-r.efDrop, 1) + ' 个百分点');
+      }
+      if (r.text) parts.push('→ ' + r.text);
+      out = parts.join('；');
     } else if (gid === 'crt') {
       // —— CRT：SV / SVi + QRS 时限提示 ——
       const parts = [];

@@ -482,6 +482,194 @@ function trGrade(eroa, rvol) {
   return { grade: g, text: names[g], byEroa: a, byRvol: b };
 }
 
+/* ============================================================
+ * 以下为 v1.0.9 新增：容积 / 质量 / 长轴 / MPI / DVI / mPAP / CTRCD
+ * ============================================================ */
+
+/**
+ * 左室容积与射血分数（Simpson 双平面法）
+ *
+ * EF = (EDV − ESV) / EDV × 100%；SV = EDV − ESV。
+ * 有 BSA 时同出 SVi 与 ESVi（ESVi 是 HFrEF 预后与 ICD 指征的关键量）。
+ *
+ * @param {number} edv 舒张末容积，mL
+ * @param {number} esv 收缩末容积，mL
+ * @param {number} bsa 体表面积，m²（可缺省）
+ */
+function lvEf(edv, esv, bsa) {
+  if (!(edv > 0) || !(esv >= 0)) return {};
+  if (esv >= edv) return { error: 'ESV 不能大于或等于 EDV，请核对描迹' };
+  const sv = edv - esv;
+  const ef = (sv / edv) * 100;
+  const r = { ef: ef, sv: sv, edv: edv, esv: esv };
+  if (bsa > 0) {
+    r.svi = sv / bsa;
+    r.esvi = esv / bsa;
+  }
+  if (ef >= 55) r.text = '收缩功能正常（HFpEF 区间需结合充盈压）';
+  else if (ef >= 50) r.text = '轻度减低（50–54%，已属轻度异常）';
+  else if (ef >= 40) r.text = '中度减低（HFmrEF 区间）';
+  else if (ef >= 30) r.text = '重度减低（HFrEF）';
+  else r.text = '极重度减低（<30%，ICD / CRT 评估指征）';
+  return r;
+}
+
+/**
+ * 左室质量与几何构型（ASE 校正公式）
+ *
+ * LV Mass = 0.8 × 1.04 × [(LVIDd + IVSd + LVPWd)³ − LVIDd³] + 0.6
+ * RWT = 2 × LVPWd / LVIDd；RWT > 0.42 为向心性几何。
+ *
+ * 构型四分法（LVMI 升高 + RWT）：
+ *   正常 / 向心性重构 / 向心性肥厚 / 离心性肥厚
+ *
+ * @param {object} o {lvid, ivs, lvpw, bsa, female}
+ */
+function lvMass(o) {
+  const lvid = o.lvid, ivs = o.ivs, lvpw = o.lvpw;
+  if (!(lvid > 0) || !(ivs > 0) || !(lvpw > 0)) return {};
+  const sum = lvid + ivs + lvpw;
+  const mass = 0.8 * 1.04 * (Math.pow(sum, 3) - Math.pow(lvid, 3)) + 0.6;
+  const rwt = (2 * lvpw) / lvid;
+  const r = { mass: mass, rwt: rwt, conc: rwt > 0.42 };
+
+  if (o.bsa > 0) {
+    const lvmi = mass / o.bsa;
+    r.lvmi = lvmi;
+    // ASE 2015 正常上限：男 115 / 女 95；重度：男 149 / 女 122 g/m²
+    const hi = o.female ? 95 : 115;
+    const severe = o.female ? 122 : 149;
+    r.hi = hi;
+    const massUp = lvmi > hi;
+    if (!massUp && !r.conc) r.text = '正常构型';
+    else if (!massUp && r.conc) r.text = '向心性重构（质量正常，RWT 升高）';
+    else if (massUp && r.conc) r.text = '向心性肥厚';
+    else r.text = '离心性肥厚';
+    if (massUp) r.text += lvmi > severe ? ' · 重度（>' + severe + ' g/m²）' : ' · 轻度（>' + hi + ' g/m²）';
+  } else {
+    r.text = r.conc ? 'RWT 升高（向心性几何）' : 'RWT 正常';
+  }
+  return r;
+}
+
+/**
+ * MAPSE（二尖瓣环收缩期位移）
+ *
+ * 正常 ≥10 mm（部分标准 ≥12 mm）；<10 mm 提示纵向收缩功能减低。
+ * 长轴功能往往早于 EF 下降，EF 正常而 MAPSE 减低提示早期收缩功能障碍。
+ *
+ * @param {number} mapse 二尖瓣环侧壁 / 间隔均值，mm
+ */
+function mapseIndex(mapse) {
+  if (!(mapse > 0)) return {};
+  const r = { value: mapse };
+  if (mapse >= 12) r.text = '正常（≥12 mm）';
+  else if (mapse >= 10) r.text = '临界偏低（10–11 mm）';
+  else if (mapse >= 8) r.text = '减低（提示纵向收缩功能受损，EF 可仍正常）';
+  else r.text = '显著减低（<8 mm，长轴功能明显受损）';
+  r.low = mapse < 10;
+  return r;
+}
+
+/**
+ * Tei 指数（心肌功能指数 MPI）
+ *
+ * MPI = (IVCT + IVRT) / ET = (a − b) / b
+ * 正常值：左室 <0.40、右室 <0.55（脉冲多普勒法）
+ *
+ * @param {number} ivct 等容收缩时间，ms
+ * @param {number} irvt 等容舒张时间，ms
+ * @param {number} et   射血时间，ms
+ * @param {string} side 'lv' | 'rv'
+ */
+function teiIndex(ivct, irvt, et, side) {
+  if (!(ivct >= 0) || !(irvt >= 0) || !(et > 0)) return {};
+  const mpi = (ivct + irvt) / et;
+  const cut = side === 'rv' ? 0.55 : 0.40;
+  return {
+    mpi: mpi,
+    cut: cut,
+    text: mpi > cut
+      ? (side === 'rv' ? '右室 MPI 升高（>0.55）' : '左室 MPI 升高（>0.40）')
+      : 'MPI 在正常范围',
+  };
+}
+
+/**
+ * 无量纲指数 DVI（Dimensionless Index）
+ *
+ * DVI = LVOT VTI / 主动脉瓣 VTI = AVA / LVOT 面积
+ * ≤0.25 支持重度 AS；>0.25 一般不支持重度。
+ * 优点：不受体表面积与流量影响，低流量状态下比 AVA 更稳。
+ *
+ * @param {number} lvti LVOT VTI，cm
+ * @param {number} avti 主动脉瓣 VTI，cm
+ */
+function dviIndex(lvti, avti) {
+  if (!(lvti > 0) || !(avti > 0)) return {};
+  if (lvti >= avti) return { error: 'LVOT VTI 应小于主动脉瓣 VTI，请核对取样位置' };
+  const dvi = lvti / avti;
+  return {
+    dvi: dvi,
+    text: dvi <= 0.25 ? '≤0.25，支持重度 AS' : '>0.25，一般不支持重度 AS',
+  };
+}
+
+/**
+ * 平均肺动脉压（舒张期肺动脉反流法）
+ *
+ * mPAP = 4 × PR Vmax² + RAP（舒张早期压差法，较 PASP 更接近有创均值）
+ * 也可用 Mahan 近似：mPAP = 0.61 × sPAP + 2
+ *
+ * @param {number} prv  舒张早期肺动脉反流峰值速度，m/s
+ * @param {number} rap  右房压，mmHg
+ */
+function mpap(prv, rap) {
+  if (!(prv > 0) || !(rap >= 0)) return {};
+  const m = 4 * prv * prv + rap;
+  return {
+    mpap: m,
+    text: m > 25 ? '升高（>25 mmHg，符合肺高压）'
+      : m > 20 ? '轻度升高（20–25 mmHg，运动性肺高压区间）'
+        : '正常（≤20 mmHg）',
+  };
+}
+
+/**
+ * 肿瘤治疗相关心功能不全（CTRCD）监测
+ *
+ * 相对 GLS 下降 = (|GLS₀| − |GLS₁|) / |GLS₀| × 100%
+ * 轻度：GLS 相对下降 >15% 且 EF 保留
+ * 中度：EF 降至 40–49%，或 EF 下降 ≥10 个百分点至 40–49%
+ * 重度：EF <40%，或出现心衰症状
+ *
+ * @param {object} o {g0, g1, ef0, ef1}  g 为负值
+ */
+function ctrcd(o) {
+  const g0 = Math.abs(o.g0), g1 = Math.abs(o.g1);
+  const hasG = g0 > 0 && g1 > 0;
+  const rel = hasG ? ((g0 - g1) / g0) * 100 : undefined;
+  const drop = (o.ef0 > 0 && o.ef1 > 0) ? (o.ef0 - o.ef1) : undefined;
+  const r = { relDrop: rel, efDrop: drop };
+  if (!hasG && drop === undefined) return r;
+
+  const ef = o.ef1;
+  if (ef > 0 && ef < 40) { r.grade = 3; r.text = '重度 CTRCD（EF <40%）'; return r; }
+  if (ef > 0 && ef < 50 && drop !== undefined && drop >= 10) {
+    r.grade = 2;
+    r.text = '中度 CTRCD（EF 下降 ≥10 个百分点至 40–49%）';
+    return r;
+  }
+  if (hasG && rel > 15) {
+    if (ef > 0 && ef < 50) { r.grade = 2; r.text = '中度 CTRCD（GLS 相对下降 >15% 且 EF 40–49%）'; }
+    else { r.grade = 1; r.text = '轻度 CTRCD（GLS 相对下降 >15%，EF 保留）'; }
+    return r;
+  }
+  r.grade = 0;
+  r.text = '未达 CTRCD 标准';
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -527,6 +715,13 @@ module.exports = {
   hfaPeff,
   dukeScore,
   trGrade,
+  lvEf,
+  lvMass,
+  mapseIndex,
+  teiIndex,
+  dviIndex,
+  mpap,
+  ctrcd,
   round,
   fmt,
 };
