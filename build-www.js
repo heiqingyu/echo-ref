@@ -428,18 +428,27 @@ const html = `<!DOCTYPE html>
     </div>
   </section>
 
-  <!-- ───── Tab3 其他计算 ───── -->
+  <!-- ───── Tab3 其他计算（公式集） ───── -->
   <section class="page" id="page-calc" hidden>
-    <div class="card">
-      <div class="card__t">血流动力学计算</div>
-      <div class="card__d" id="calcBsaNote">BSA — m²（来自「EF·参考值」页上方）· 各组结果独立计算，留空跳过</div>
-      <div class="note">AVA、MVA、PISA（EROA / RVol）、dP/dt 等瓣膜专项计算已整合到「瓣膜评估」页，两页共用同一套引擎。</div>
+
+    <!-- 视图一：公式集目录（点条目进对应公式） -->
+    <div id="calcIndex">
+      <div class="card">
+        <div class="card__t">公式集</div>
+        <div class="card__d" id="calcBsaNote">按主题分组，点击条目进入对应公式 · BSA — m²（来自「EF·参考值」页上方）</div>
+      </div>
+      <div id="calcList"></div>
+      <div class="note note--warn">
+        公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
+        Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
+      </div>
     </div>
-    <div id="calcGroups"></div>
-    <button class="btn btn--ghost" id="calcClear">清空全部输入</button>
-    <div class="note note--warn">
-      公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
-      Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
+
+    <!-- 视图二：单个公式详情 -->
+    <div id="calcDetail" hidden>
+      <button class="fx-back" id="calcBack">‹ 返回公式集</button>
+      <div id="calcGroups"></div>
+      <button class="btn btn--ghost" id="calcClear">清空本组输入</button>
     </div>
   </section>
 
@@ -575,7 +584,7 @@ ${SEG_HTML}
     <span class="tab__i">◧</span><span class="tab__t">EF·参考值</span>
   </div>
   <div class="tab" data-tab="calc">
-    <span class="tab__i">∑</span><span class="tab__t">其他计算</span>
+    <span class="tab__i">∑</span><span class="tab__t">公式集</span>
   </div>
   <div class="tab" data-tab="valves">
     <span class="tab__i">◇</span><span class="tab__t">瓣膜评估</span>
@@ -690,13 +699,13 @@ function buildPublicHtml() {
     /^[ \t]*calccollapse: function[^\n]*\n/m,
     /^[ \t]*calcsigns: function[^\n]*\n/m,
     /^[ \t]*valveivc: function[^\n]*\n/m,
-    /^[ \t]*calc: '其他计算',[^\n]*\n/m,
+    /^[ \t]*calc: '[^']*',[^\n]*\n/m,
     /^[ \t]*valves: '瓣膜评估',[^\n]*\n/m,
     /^[ \t]*segments: '节段划分',[^\n]*\n/m,
     // 已切块的引擎/页面，其顶部声明与页签分派也要摘掉
     /^[ \t]*const Calc = window\.Calc;[^\n]*\n/m,
     /^[ \t]*const ValveCalc = window\.ValveCalc;[^\n]*\n/m,
-    /^[ \t]*if \(name === 'calc'\) renderCalc\(\);[^\n]*\n/m,
+    /^[ \t]*if \(name === 'calc'\)[^\n]*\n/m,
     /^[ \t]*if \(name === 'valves'\) renderValves\(\);[^\n]*\n/m,
     /^[ \t]*<!--[^\n]*其他计算[^\n]*-->[^\n]*\n/m,
     /^[ \t]*<!--[^\n]*瓣膜评估[^\n]*-->[^\n]*\n/m,
@@ -736,7 +745,14 @@ function buildPublicHtml() {
   out = out
     .replace(/\/\* ────────── 其他计算页：结果行 ────────── \*\//, '/* ────────── 计算结果行样式 ────────── */');
 
-  // 4d) 剥掉被删页面的专属样式块（按「起止注释行」整段去掉，不用贪婪正则）
+  // 4d) 剥掉公式集目录的样式（仅完整版使用），再删残留的结束标记行
+  out = stripCssBlock(out,
+    '/* ────────── 公式集目录（仅完整版） ────────── */',
+    '/* ────────── 公式集目录结束 ────────── */'
+  );
+  out = out.replace(/\/\* ────────── 公式集目录结束 ────────── \*\/\n?/, '');
+
+  // 4e) 剥掉被删页面的专属样式块（按「起止注释行」整段去掉，不用贪婪正则）
   //     —— .calc-out 保留（EF / 儿童 Z 值页也在用），只删节段与瓣膜两段。
   out = stripCssBlock(out,
     '/* ────────── 节段划分页 ────────── */',
@@ -749,6 +765,8 @@ function buildPublicHtml() {
 
   // 5) 兜底自检：被移除的页面 id / 入口 / 样式不得残留
   ['id="page-calc"', 'id="page-valves"', 'id="page-segments"', 'id="calcGroups"', 'data-go="calc"',
+   'id="calcIndex"', 'id="calcList"', 'id="calcDetail"', 'id="calcBack"',
+   '.fx-item', '.fx-back', 'openCalcGroup', 'closeCalcGroup', 'VALVE_INDEX', 'fxItemHtml',
    'PUBLIC-CUT', 'END-CUT',
    '节段划分页', '瓣膜评估页', '.vswitch', '.vchip', '.bull-wrap', '.lvl--severe', '.vsum',
    '肝静脉', 'Wilkins', 'PISA', 'EROA',

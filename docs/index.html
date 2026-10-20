@@ -605,6 +605,7 @@ html, body {
   background: #fff;
 }
 
+
 /* ────────── 计算结果行样式 ────────── */
 .calc-out {
   display: flex;
@@ -2187,7 +2188,7 @@ function describeZ(z) {
           ? '请输入有效的身高（50–250 cm）与体重（2–300 kg）'
           : '';
       state.bsa = 0;
-      setText('calcBsaNote', 'BSA —（请先在上方填写有效身高体重）');
+      setText('calcBsaNote', '按主题分组，点击条目进入公式 · BSA —（请先在上方填写有效身高体重）');
       // renderEF 内部会刷新参考值列表；EF 结果的 LVM/BSA 也随 BSA 变化
       renderEF();
       return;
@@ -2210,7 +2211,7 @@ function describeZ(z) {
 
     $('bsaHint').textContent = '';
     setText('calcBsaNote',
-      'BSA ' + state.bsa.toFixed(2) + ' m²（来自本页上方）· 各组结果独立计算，留空跳过');
+      '按主题分组，点击条目进入公式 · BSA ' + state.bsa.toFixed(2) + ' m²（来自本页上方）');
 
     // 参考值列表、EF 结果（LVM/BSA）与计算页都依赖 BSA，一并刷新
     renderEF();

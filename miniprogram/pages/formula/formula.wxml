@@ -1,0 +1,47 @@
+<view class="page-wrap">
+
+  <view class="card">
+    <view class="card__title">{{title}}</view>
+    <view class="card__desc">BSA {{bsaText}} m²（来自「EF·参考值」页）· 留空跳过，只填一项也会给出对应结果</view>
+
+    <view wx:for="{{inputs}}" wx:key="key" class="field">
+      <text class="field__label">{{item.name}} / {{item.unit}}</text>
+      <input class="field__input" type="digit" value="{{item.value}}"
+             data-idx="{{index}}" bindinput="onInput" placeholder="未填写" />
+    </view>
+
+    <!-- 右心压力组的附加选项 -->
+    <block wx:if="{{gid === 'pressure'}}">
+      <view class="field">
+        <text class="field__label">IVC 吸气塌陷</text>
+        <view class="seg">
+          <view wx:for="{{collapse}}" wx:key="v"
+                class="seg__item {{collapseV === item.v ? 'seg__item--on' : ''}}"
+                data-v="{{item.v}}" bindtap="onCollapse">{{item.n}}</view>
+        </view>
+      </view>
+      <view class="field">
+        <text class="field__label">PH 支持征象（≥2 类）</text>
+        <view class="seg">
+          <view wx:for="{{signs}}" wx:key="v"
+                class="seg__item {{signsV === item.v ? 'seg__item--on' : ''}}"
+                data-v="{{item.v}}" bindtap="onSigns">{{item.n}}</view>
+        </view>
+      </view>
+    </block>
+
+    <view class="note">{{note}}</view>
+
+    <view wx:if="{{hasOut}}" class="calc-out">
+      <text class="calc-out__lbl">结果</text>
+      <text class="calc-out__v">{{out}}</text>
+    </view>
+    <view wx:else class="calc-out calc-out--idle">
+      <text class="calc-out__lbl">结果</text>
+      <text class="calc-out__v">等待输入</text>
+    </view>
+  </view>
+
+  <button class="clear-btn" bindtap="onClear">清空本组输入</button>
+
+</view>

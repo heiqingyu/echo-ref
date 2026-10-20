@@ -313,7 +313,7 @@ const REQUIRED_IDS = [
   'page-index', 'page-calc', 'page-valves', 'page-segments', 'page-peds',
   'inHeight', 'inWeight', 'outBsa', 'bsaHint', 'stdNote',
   'jumpRef', 'refBlock', 'refList', 'refDesc', 'refSource', 'aseUnitNote',
-  'calcGroups', 'calcClear', 'calcBsaNote',
+  'calcGroups', 'calcClear', 'calcBsaNote', 'calcIndex', 'calcList', 'calcDetail', 'calcBack',
   'valveSwitch', 'valveClear', 'valveSecs',
   'efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd', 'efResult', 'efKv', 'efMark', 'efGrade',
   'pdHeight', 'pdWeight', 'pdAge', 'pdBsa', 'pdWarn', 'pdInputs', 'pdMore',
@@ -402,6 +402,17 @@ check('APK ROOT 30 判定一致', cnM.find(function (r) { return r.key === 'ROOT
   cnMmp.find(function (r) { return r.key === 'ROOT'; }).status, 0);
 check('APK MPA 28 判定一致', cnM.find(function (r) { return r.key === 'MPA'; }).status,
   cnMmp.find(function (r) { return r.key === 'MPA'; }).status, 0);
+
+/* ══════════════════════════════════════════════════════════ */
+
+/* 公式集：目录 + 单个公式详情 */
+check('页签名 = 公式集', /data-tab="calc"[^\n]*>[^\n]*<span class="tab__i">[^<]*<\/span><span class="tab__t">公式集<\/span>/.test(html) || (html.indexOf('data-tab="calc"') !== -1 && html.indexOf('>公式集</span>') !== -1), true);
+check('目录容器 #calcList 存在', html.indexOf('id="calcList"') !== -1, true);
+check('详情容器 #calcDetail 存在（初始隐藏）', /id="calcDetail" hidden/.test(html), true);
+check('返回按钮 #calcBack 存在', html.indexOf('id="calcBack"') !== -1, true);
+check('返回按钮文案', html.indexOf('返回公式集') !== -1, true);
+check('公式集目录样式已内联', html.indexOf('.fx-item {') !== -1, true);
+check('清空按钮改为「清空本组输入」', html.indexOf('清空本组输入') !== -1, true);
 
 /* ══════════════════════════════════════════════════════════ */
 

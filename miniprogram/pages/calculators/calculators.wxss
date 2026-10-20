@@ -1,61 +1,58 @@
-/* 继承全局样式 */
+/* 公式集目录（入口列表） */
 
-/* 瓣膜评估入口 */
-.valve-entry {
-  margin: 8rpx 0 4rpx;
-  background: #2563eb;
-  color: #fff;
-  font-size: 27rpx;
-  border-radius: 14rpx;
-}
-
-.valve-entry::after {
-  border: none;
-}
-
-/* 每组计算卡底部的结果行 */
-.calc-out {
-  display: flex;
-  align-items: flex-start;
-  background: #eff4ff;
-  border-radius: 12rpx;
-  padding: 16rpx 20rpx;
-  margin-top: 16rpx;
-}
-
-.calc-out--idle {
-  background: #f3f4f6;
-}
-
-.calc-out__lbl {
-  font-size: 22rpx;
-  color: #6b7280;
-  margin-right: 16rpx;
-  line-height: 1.7;
-  flex-shrink: 0;
-}
-
-.calc-out__v {
-  font-size: 26rpx;
-  color: #1d4ed8;
+.fx-group {
+  margin: 28rpx 4rpx 12rpx;
+  font-size: 25rpx;
   font-weight: 600;
-  line-height: 1.7;
-  word-break: break-all;
-}
-
-.calc-out--idle .calc-out__v {
-  color: #9ca3af;
-  font-weight: 400;
-}
-
-.clear-btn {
-  margin: 24rpx 0;
-  background: #ffffff;
   color: #6b7280;
-  font-size: 28rpx;
-  border-radius: 14rpx;
+  letter-spacing: 1rpx;
 }
 
-.clear-btn::after {
-  border: 1rpx solid #e3e6ea;
+.fx-list {
+  background: #fff;
+  border-radius: 18rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 10rpx rgba(16, 32, 64, 0.04);
+}
+
+.fx-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 26rpx 24rpx;
+  border-bottom: 1rpx solid #f0f1f3;
+}
+
+.fx-item:last-child {
+  border-bottom: none;
+}
+
+.fx-item--tap {
+  background: #f2f7ff;
+}
+
+.fx-item__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.fx-item__n {
+  font-size: 29rpx;
+  font-weight: 600;
+  color: #1f2329;
+  line-height: 1.45;
+}
+
+.fx-item__d {
+  font-size: 23rpx;
+  color: #8a9099;
+  margin-top: 4rpx;
+  line-height: 1.5;
+}
+
+.fx-item__a {
+  flex: none;
+  font-size: 34rpx;
+  color: #c4c9d1;
+  line-height: 1;
 }
