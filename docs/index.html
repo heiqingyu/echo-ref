@@ -1036,7 +1036,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.0.6</div>
+    <div class="verline">心脏超声参考值 · v1.0.7</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1079,7 +1079,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.0.6</div>
+      <div class="verline">心脏超声参考值 · v1.0.7</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -2579,6 +2579,123 @@ function lvFilling(o) {
   return r;
 }
 
+/**
+ * 主动脉瓣狭窄「低流量低压差（LF-LG）」专项判读
+ *
+ * 判定链路：先看流量（SVi ≤35 mL/m² 为低流量）→ 再看压差（mPG <40 mmHg 为低压差）
+ * → 最后看 AVA 是否 ≤1.0 cm²（否则不满足重度形态学标准）。
+ * 三者同时成立才是 LF-LG AS，再按 LVEF 分经典型（<50%）与反常型（≥50%）。
+ * 若提供负荷后数据（SVi / AVA），按 SV 增幅与 AVA 变化区分真性 / 假性重度。
+ *
+ * @param {object} o {lvef, svi, mpg, ava, dsvi, dava} 可选项传 undefined
+ */
+function asLflg(o) {
+  const r = {};
+  const lvef = o.lvef, svi = o.svi, mpg = o.mpg, ava = o.ava;
+  const dsvi = o.dsvi, dava = o.dava;
+
+  if (svi > 0) r.lowFlow = svi <= 35;
+  if (mpg > 0) r.lowGrad = mpg < 40;
+  if (ava > 0) r.severeAva = ava <= 1.0;
+
+  if (r.lowFlow && r.lowGrad && r.severeAva) {
+    r.type = (lvef > 0 && lvef < 50) ? 'classic' : 'paradoxical';
+    r.text = r.type === 'classic'
+      ? '经典低流量低压差重度 AS（LVEF<50%）'
+      : '反常低流量低压差重度 AS（LVEF≥50%）';
+  } else if (r.severeAva) {
+    r.text = r.lowGrad
+      ? 'AVA 达重度但压差偏低：流量正常时先复核 SV 与 AVA 测量'
+      : '重度 AS（流量与压差一致）';
+  } else if (r.severeAva === false) {
+    r.text = 'AVA >1.0 cm²，未达重度形态学标准';
+  }
+
+  // 负荷试验（多巴酚丁胺或流量负荷）
+  if (dsvi > 0 && svi > 0) {
+    r.flowReserve = dsvi / svi;
+    r.hasReserve = r.flowReserve >= 1.2;
+    if (dava > 0) {
+      if (r.hasReserve && dava > 1.0) r.dse = '假性重度（负荷后 AVA >1.0 cm²）';
+      else if (r.hasReserve) r.dse = '真性重度（负荷后 AVA 仍 ≤1.0 cm²，且有收缩储备）';
+      else r.dse = '无收缩储备 + AVA 不增：真性重度可能性大，手术风险高';
+    } else {
+      r.dse = r.hasReserve
+        ? '有收缩储备（SV 增幅 ≥20%），需结合负荷后 AVA 判断'
+        : '无收缩储备（SV 增幅 <20%）：真性重度可能性大';
+    }
+  }
+  return r;
+}
+
+/**
+ * 右室功能分级（ASE 2015 六指标积分法）
+ *
+ * 每项异常记 1 分：RV 基底径 >41 mm、RV 长径 >83 mm、FAC <35%、
+ * TAPSE <17 mm、S′ <9.5 cm/s、3D RVEF <45%。
+ * 合计 0 分正常；1–2 分轻度；3–4 分中度；≥5 分重度。
+ * 缺项不扣分，只按实际提供的项计分（n 为参与评估的项数）。
+ */
+function rvFuncScore(o) {
+  const items = [];
+  const add = (name, val, bad) => {
+    if (val > 0) items.push({ name: name, bad: bad });
+  };
+  add('RV 基底径 >41 mm', o.rvbase, o.rvbase > 41);
+  add('RV 长径 >83 mm', o.rvlen, o.rvlen > 83);
+  add('FAC <35%', o.fac, o.fac < 35);
+  add('TAPSE <17 mm', o.tapse, o.tapse < 17);
+  add('S′ <9.5 cm/s', o.rvs, o.rvs < 9.5);
+  add('3D RVEF <45%', o.rvef, o.rvef < 45);
+
+  const bad = items.filter(function (i) { return i.bad; }).length;
+  const r = { score: bad, n: items.length, items: items };
+  if (items.length) {
+    r.grade = bad === 0 ? 0 : bad <= 2 ? 1 : bad <= 4 ? 2 : 3;
+    r.text = ['功能正常', '轻度功能障碍', '中度功能障碍', '重度功能障碍'][r.grade];
+  }
+  return r;
+}
+
+/**
+ * 缩窄性心包炎 vs 限制型心肌病：呼吸变异量化
+ *
+ * 缩窄的核心是「心腔充盈受外部心包约束，随胸腔内压周期性改变」，
+ * 因此血流速度的呼吸变异幅度远大于限制型心肌病（后者是心肌本身舒张受限，
+ * 心腔间相互制约不明显）。三项阳性支持缩窄、零阳性支持限制型。
+ *
+ * 变异率定义（都要带符号看，方向反了说明取错了呼吸时相）：
+ *   二尖瓣 E 变异 = (呼气 − 吸气) / 呼气 × 100%，正常吸气时轻度下降
+ *   三尖瓣 E 变异 = (吸气 − 呼气) / 呼气 × 100%，正常吸气时上升
+ *
+ * @param {object} o {mvex, mvinsp, tvex, tvinsp, medee}
+ */
+function cpRm(o) {
+  const r = { feats: [] };
+  if (o.mvex > 0 && o.mvinsp >= 0) {
+    r.mvVar = (o.mvex - o.mvinsp) / o.mvex * 100;
+    if (Math.abs(r.mvVar) > 25) r.feats.push('二尖瓣 E 呼吸变异 >25%');
+  }
+  if (o.tvex > 0 && o.tvinsp >= 0) {
+    r.tvVar = (o.tvinsp - o.tvex) / o.tvex * 100;
+    if (Math.abs(r.tvVar) > 40) r.feats.push('三尖瓣 E 呼吸变异 >40%');
+  }
+  if (o.medee > 0) {
+    if (o.medee < 8) r.feats.push('间隔 E/e′ <8（瓣环矛盾）');
+    else if (o.medee > 14) r.feats.push('间隔 E/e′ >14（不支持缩窄）');
+  }
+
+  r.score = r.feats.filter(function (f) { return f.indexOf('不支持') < 0; }).length;
+  const n = (r.mvVar !== undefined ? 1 : 0) + (r.tvVar !== undefined ? 1 : 0) +
+    (o.medee > 0 ? 1 : 0);
+  if (n) {
+    if (r.score >= 2) r.text = '支持缩窄性心包炎';
+    else if (r.score === 0) r.text = '支持限制型心肌病';
+    else r.text = '证据不足：需结合心包厚度 / 钙化、室间隔抖动与右心导管';
+  }
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -2618,6 +2735,9 @@ function fmt(n, dec) {
     gradeEe: gradeEe,
     tapsePasp: tapsePasp,
     lvFilling: lvFilling,
+    asLflg: asLflg,
+    rvFuncScore: rvFuncScore,
+    cpRm: cpRm,
     round: round,
     fmt: fmt,
   };
@@ -2770,17 +2890,46 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'text', text: '相对室壁厚度 RWT =（室间隔厚度 + 后壁厚度）÷ 2 ÷ 左室舒张末内径。RWT > 0.42 提示向心性肥厚，≤0.42 提示离心性重构。' },
-          { kind: 'h', text: '左室充盈压与舒张功能要点' },
-          { kind: 'text', text: 'E/A <0.8 且 E′<10 cm/s：充盈压低；E/A ≥2 且 E′<10 cm/s：充盈压升高；E/A 在 0.8–2 之间为灰区，需结合左房容积、纵向应变、肺静脉血流综合判断。' },
-          { kind: 'text', text: '估算充盈压（左心房平均压）：E/e′ 平均 >14 mmHg 时提示充盈压升高（此阈值以平均 E/e′ 判读，勿用侧壁单独数值）。' },
-          { kind: 'note', text: '上述分级来自欧美指南的体型校正式阈值，中国成人原始参考区间见「EF·参考值」页；体型差异大时建议同时看按身高（H^2.7）与体表面积（BSA）校准的指标。', warn: true },
+          { kind: 'h', text: '左室充盈压综合判读（四步定级）' },
+          { kind: 'text', text: 'E/e′ 单点值受节段性室壁运动异常、二尖瓣环钙化、心包疾病、机械通气影响；E/A 又会随年龄「假性正常化」。2016 ASE/EACVI 因此改为**多指标综合**：先看 E/A 决定路径，再用三个「升高指标」计数定级。' },
+          {
+            kind: 'table',
+            heads: ['升高指标', '正常阈值', '升高阈值', '备注'],
+            rows: [
+              ['平均 E/e′（间隔+侧壁 ÷2）', '≤14', '>14', '间隔 e′<7 cm/s 或侧壁 e′<10 cm/s 即提示松弛受损'],
+              ['左房容积指数 LAVi', '≤34 mL/m²', '>34 mL/m²', '比左房内径可靠，房颤者不可用'],
+              ['三尖瓣反流峰速 TR Vmax', '≤2.8 m/s', '>2.8 m/s', '反映收缩期肺动脉压，间接反映左房压'],
+            ],
+          },
+          { kind: 'text', text: '判读路径：① E/A ≥2 → 直接判 Ⅲ 级（限制性充盈）。② E/A ≤0.8 → 基础为 Ⅰ 级；若平均 E/e′ >8 或升高指标 ≥2 项，升级为 Ⅱ 级。③ E/A 0.8–2（灰区）→ 按升高指标计数：0 项正常、1 项 Ⅰ 级、2 项 Ⅱ 级、3 项 Ⅲ 级。' },
+          {
+            kind: 'table',
+            heads: ['等级', '充盈模式', '左房压', '临床提示'],
+            rows: [
+              ['正常', 'E/A 0.8–2，指标 0 项', '正常', '—'],
+              ['Ⅰ级', '松弛受损，E/A<0.8', '正常或轻度升高', '高血压、衰老、肥厚型心肌病早期'],
+              ['Ⅱ级', '假性正常化，E/A 0.8–2', '升高', 'HFpEF 常见；Valsalva 后 E/A 下降可证实'],
+              ['Ⅲ级', '限制性，E/A≥2', '明显升高', '预后差，需限钠/利尿并查找病因'],
+            ],
+          },
+          { kind: 'h', text: '三个最常见的踩坑点' },
+          { kind: 'text', text: '① **房颤患者**：E/A 无法测量，改用 E/e′ + LAVi + TR Vmax 三项计数，≥2 项升高提示左房压高。' },
+          { kind: 'text', text: '② **缩窄性心包炎**：会出现「限制性充盈」，但 E/e′ 通常不高（室间隔反常在吸气时右移），需结合呼吸变异与室间隔抖动鉴别（见「缩窄性心包炎 vs 限制型心肌病」）。' },
+          { kind: 'text', text: '③ **重度二尖瓣反流 / 狭窄**：跨瓣血流本身异常，充盈压判读可靠性下降，应以右心、PASP 与临床为主。' },
+          { kind: 'note', text: '充盈压计算器为简化版（未纳入 E 波减速时间、肺静脉 A 波时限、L 波），仅用于快速分级；灰区与临床不符时以完整评估为准。上述分级来自欧美指南的体型校正式阈值，中国成人原始参考区间见「EF·参考值」页；体型差异大时建议同时看按身高（H^2.7）与体表面积（BSA）校准的指标。', warn: true },
         ],
         fields: [
           { k: 'lvmi', n: '左室质量指数', u: 'g/m²' },
           { k: 'rwt', n: '相对室壁厚度（可选）', u: '' },
+          { k: 'dge', n: 'E 峰', u: 'cm/s' },
+          { k: 'dga', n: 'A 峰', u: 'cm/s' },
+          { k: 'dges', n: '间隔 e′', u: 'cm/s' },
+          { k: 'dgel', n: '侧壁 e′', u: 'cm/s' },
+          { k: 'dglavi', n: 'LAVi（可选）', u: 'mL/m²' },
+          { k: 'dgtrv', n: 'TR Vmax（可选）', u: 'm/s' },
         ],
         calc: 'lv',
-        note: 'LVMI 需按性别对照分级；RWT 可判断肥厚类型（向心 vs 离心）。',
+        note: 'LVMI 按性别对照分级，RWT 判断肥厚类型（向心 vs 离心）；E/A + 三个升高指标给出充盈压分级。两部分可分开填。',
       },
       {
         id: 'rv',
@@ -2925,6 +3074,80 @@ const BRIEF_SECTIONS = [
         note: 'PASP 可由「右心评估」由 TR 峰速 + RAP 算出（PASP = 4V² + RAP）后填入此。',
       },
       {
+        id: 'rvfail',
+        title: '右室功能分级与右心衰',
+        sub: '六指标积分 · RV 应变 · 右心衰分期',
+        source: ['R23', 'R14'],
+        blocks: [
+          { kind: 'h', text: '一、右室功能障碍分级（ASE 2015 六指标积分）' },
+          { kind: 'text', text: '右室形状不规则，任何单一指标都不足以定级。ASE 2015 的做法是：把六项指标逐一与阈值比较，**每异常一项记 1 分**，用总分定级。' },
+          {
+            kind: 'table',
+            heads: ['指标', '异常阈值'],
+            rows: [
+              ['RV 基底径（心尖四腔）', '>41 mm'],
+              ['RV 长径', '>83 mm'],
+              ['RV FAC', '<35%'],
+              ['TAPSE', '<17 mm'],
+              ['三尖瓣环 S′', '<9.5 cm/s'],
+              ['3D RVEF', '<45%'],
+            ],
+          },
+          {
+            kind: 'table',
+            heads: ['积分', '分级', '随访强度'],
+            rows: [
+              ['0 分', '功能正常', '常规随访'],
+              ['1–2 分', '轻度功能障碍', '每 6–12 个月复查'],
+              ['3–4 分', '中度功能障碍', '每 3–6 个月，评估病因与可逆因素'],
+              ['≥5 分', '重度功能障碍', '按右心衰管理，评估器械 / 移植'],
+            ],
+          },
+          { kind: 'note', text: '缺项不扣分，但要标明「未评估」——只测了 3 项就得出「正常」，可信度远低于六项齐全。', warn: true },
+
+          { kind: 'h', text: '二、右室应变（RVFWS）：比 TAPSE 更早发现问题' },
+          { kind: 'text', text: '右室游离壁纵向应变（RVFWS）取心尖四腔右室游离壁三个节段（基底、中段、心尖）的平均值。正常 ≤ −20%（即绝对值 ≥20%）。' },
+          {
+            kind: 'table',
+            heads: ['RVFWS', '判读', '说明'],
+            rows: [
+              ['≤ −20%', '正常', '纵向收缩功能保留'],
+              ['−15% 至 −20%', '轻度减低', '常早于 TAPSE 下降'],
+              ['> −15%', '明显减低', '预后意义独立于 LVEF 与 PASP'],
+            ],
+          },
+          { kind: 'text', text: 'RVFWS 的优势是**不受右室几何形状与前负荷的过度影响**：TAPSE 只测三尖瓣环一个点的位移，右室扩大或切面角度稍偏就会失真；应变看的是整段心肌的形变。缺点是对图像质量与帧率要求高，房颤、心律不齐时追踪易失败。' },
+          { kind: 'text', text: '临床价值最明确的两个场景：① **HFrEF 患者**——RVFWS 减低提示右室已受累，是预后不良的独立预测因子；② **重度 TR 术前**——RVFWS 明显减低者术后右心衰风险高。' },
+
+          { kind: 'h', text: '三、右心衰的临床分期（与超声分级对应）' },
+          {
+            kind: 'table',
+            heads: ['阶段', '定义', '超声对应表现'],
+            rows: [
+              ['A 期（高危）', '有右心衰危险因素，无结构病变、无症状', '右室大小与功能正常，可能有轻度 TR'],
+              ['B 期（前临床）', '右室结构 / 功能异常，但无右心衰症状', '积分 1–4 分，静息 PASP 正常或轻度升高'],
+              ['C 期（症状性）', '已有右心衰症状（水肿、腹水、活动耐量下降）', '右室扩大 + FAC/TAPSE 减低 + IVC 扩张 + RAP 升高'],
+              ['D 期（难治性）', '规范治疗后仍反复失代偿，需静脉正性肌力 / 移植评估', '重度功能障碍，常伴重度 TR 与肝淤血'],
+            ],
+          },
+          { kind: 'note', text: '超声定级（轻/中/重）描述的是「结构功能状态」，临床分期（A–D）描述的是「疾病阶段」，两者不同维度，报告里应分别写清楚。', warn: true },
+
+          { kind: 'h', text: '四、右心衰的超声组合拳（六看）' },
+          { kind: 'text', text: '① 看大小：RV 基底径 >41 mm、RV/LV 基底径比 >1（心尖四腔）；② 看收缩：FAC / TAPSE / S′ / RVFWS；③ 看压力：TR 峰速 → PASP；④ 看容量：IVC 内径与塌陷率 → RAP；⑤ 看淤血：肝静脉血流频谱（收缩期反向提示右房压高）；⑥ 看并发症：心包积液、重度 TR、房间隔向左膨出。' },
+          { kind: 'text', text: '六项里「RV/LV 比 >1 + IVC 不塌陷 + S′ <9.5」三项同时出现，基本可确认右心失代偿已经影响到全身淤血，需立即调整利尿与病因治疗。' },
+        ],
+        fields: [
+          { k: 'rvfbase', n: 'RV 基底径', u: 'mm' },
+          { k: 'rvffac', n: 'RV FAC', u: '%' },
+          { k: 'rvftapse', n: 'TAPSE', u: 'mm' },
+          { k: 'rvfs', n: '三尖瓣环 S′', u: 'cm/s' },
+          { k: 'rvfws', n: 'RV 游离壁应变（可选）', u: '%' },
+          { k: 'rvfe', n: '3D RVEF（可选）', u: '%' },
+        ],
+        calc: 'rvfail',
+        note: '六项均可填则可按 ASE 积分定级；应变（RVFWS）单独给判读，不计入积分。',
+      },
+      {
         id: 'strain',
         title: '心肌应变',
         sub: 'GLS · 分层应变 · 左房/右室应变',
@@ -2970,58 +3193,6 @@ const BRIEF_SECTIONS = [
         note: 'GLS 越接近 0（绝对值越小）提示纵向收缩越差；−18% 可作为多数成人的实用下限。',
       },
       {
-        id: 'dias-grade',
-        title: '左室充盈压综合判读',
-        sub: 'E/A · 平均 E/e′ · LAVi · TR Vmax → 四级判定',
-        source: ['R16'],
-        blocks: [
-          { kind: 'h', text: '为什么不能只看 E/e′' },
-          { kind: 'text', text: 'E/e′ 单点值受节段性室壁运动异常、二尖瓣环钙化、心包疾病、机械通气影响；E/A 又会随年龄「假性正常化」。2016 ASE/EACVI 因此改为**多指标综合**：先看 E/A 决定路径，再用三个「升高指标」计数定级。' },
-
-          { kind: 'h', text: '三个升高指标（各自独立计数 1 分）' },
-          {
-            kind: 'table',
-            heads: ['指标', '正常阈值', '升高阈值', '备注'],
-            rows: [
-              ['平均 E/e′（间隔+侧壁 ÷2）', '≤14', '>14', '间隔 e′<7 cm/s 或侧壁 e′<10 cm/s 即提示松弛受损'],
-              ['左房容积指数 LAVi', '≤34 mL/m²', '>34 mL/m²', '比左房内径可靠，房颤者不可用'],
-              ['三尖瓣反流峰速 TR Vmax', '≤2.8 m/s', '>2.8 m/s', '反映收缩期肺动脉压，间接反映左房压'],
-            ],
-          },
-
-          { kind: 'h', text: '判读路径（简化三步）' },
-          { kind: 'text', text: '① E/A ≥2 → 直接判 Ⅲ 级（限制性充盈）。' },
-          { kind: 'text', text: '② E/A ≤0.8 → 基础为 Ⅰ 级；若平均 E/e′ >8 或升高指标 ≥2 项，升级为 Ⅱ 级。' },
-          { kind: 'text', text: '③ E/A 0.8–2（灰区）→ 按升高指标计数：0 项正常、1 项 Ⅰ 级、2 项 Ⅱ 级、3 项 Ⅲ 级。' },
-
-          {
-            kind: 'table',
-            heads: ['等级', '充盈模式', '左房压', '临床提示'],
-            rows: [
-              ['正常', 'E/A 0.8–2，指标 0 项', '正常', '—'],
-              ['Ⅰ级', '松弛受损，E/A<0.8', '正常或轻度升高', '高血压、衰老、肥厚型心肌病早期'],
-              ['Ⅱ级', '假性正常化，E/A 0.8–2', '升高', 'HFpEF 常见；Valsalva 后 E/A 下降可证实'],
-              ['Ⅲ级', '限制性，E/A≥2', '明显升高', '预后差，需限钠/利尿并查找病因'],
-            ],
-          },
-
-          { kind: 'h', text: '三个最常见的踩坑点' },
-          { kind: 'text', text: '① **房颤患者**：E/A 无法测量，改用 E/e′ + LAVi + TR Vmax 三项计数，≥2 项升高提示左房压高。' },
-          { kind: 'text', text: '② **缩窄性心包炎**：会出现「限制性充盈」，但 E/e′ 通常不高（室间隔反常在吸气时右移），需结合呼吸变异与室间隔抖动鉴别。' },
-          { kind: 'text', text: '③ **重度二尖瓣反流 / 狭窄**：跨瓣血流本身异常，充盈压判读可靠性下降，应以右心、PASP 与临床为主。' },
-          { kind: 'note', text: '本计算器为简化版（未纳入 E 波减速时间、肺静脉 A 波时限、L 波），仅用于快速分级；灰区与临床不符时以完整评估为准。', warn: true },
-        ],
-        fields: [
-          { k: 'dge', n: 'E 峰', u: 'cm/s' },
-          { k: 'dga', n: 'A 峰', u: 'cm/s' },
-          { k: 'dges', n: '间隔 e′', u: 'cm/s' },
-          { k: 'dgel', n: '侧壁 e′', u: 'cm/s' },
-          { k: 'dglavi', n: 'LAVi（可选）', u: 'mL/m²' },
-          { k: 'dgtrv', n: 'TR Vmax（可选）', u: 'm/s' },
-        ],
-        note: 'E/A 决定路径，三个升高指标决定分级；填得越全，判定越可靠。',
-      },
-      {
         id: 'peri',
         title: '心包积液与心脏压塞',
         sub: '半定量 · 压塞征象 · 缩窄鉴别',
@@ -3045,6 +3216,53 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '心包增厚（>3–4 mm）伴钙化提示缩窄性心包炎可能，需与限制性心肌病鉴别（呼吸变异、室间隔摆动、充盈模式随呼吸变化）。' },
         ],
         note: '心包穿刺引流前需评估积液量、定位（剑下 / 心尖）、有无包裹及凝血状态。',
+      },
+      {
+        id: 'cp-rm',
+        title: '缩窄性心包炎 vs 限制型心肌病',
+        sub: '呼吸变异量化 · 瓣环反转 · 鉴别要点',
+        source: ['R24', 'R15'],
+        blocks: [
+          { kind: 'h', text: '一、为什么要量化呼吸变异' },
+          { kind: 'text', text: '两者都表现为「心室舒张受限、心房扩大、射血分数正常或接近正常」，形态学上极难区分。核心差异在于**受限是来自心包外面，还是来自心肌本身**：' },
+          { kind: 'text', text: '缩窄性心包炎的心包像一层僵硬的壳，心腔总容积被卡死。吸气时胸腔内压下降，右心回心血量增加、右心腔膨胀，只能把室间隔向左挤——于是左心充盈减少，二尖瓣 E 波明显下降；呼气时相反。**整个心腔之间的血流此消彼长，随呼吸周期性摆动**。' },
+          { kind: 'text', text: '限制型心肌病是心肌本身舒张僵硬，心包正常。吸气时右心充盈增加并不会「挤占」左心到同样程度，因此呼吸变异幅度小。' },
+          { kind: 'formula', text: '二尖瓣 E 变异 =（呼气末 E − 吸气末 E）÷ 呼气末 E × 100%\n三尖瓣 E 变异 =（吸气末 E − 呼气末 E）÷ 呼气末 E × 100%' },
+          { kind: 'text', text: '测量方法：同步记录血流频谱与呼吸（呼吸描记带或鼻压管），取呼气末第一次心搏与吸气末第一次心搏的 E 峰速度。房颤时无规律，此法不适用。' },
+
+          { kind: 'h', text: '二、量化切点' },
+          {
+            kind: 'table',
+            heads: ['指标', '缩窄性心包炎', '限制型心肌病'],
+            rows: [
+              ['二尖瓣 E 呼吸变异', '>25%', '<15%（多数 <10%）'],
+              ['三尖瓣 E 呼吸变异', '>40%', '不明显'],
+              ['二尖瓣瓣环 e′ 呼吸变异', '>25%', '不明显'],
+              ['间隔 E/e′', '常 <8（瓣环矛盾）', '常 >14（左房压升高）'],
+              ['肝静脉舒张期血流', '呼气期明显反转', '反转不明显'],
+            ],
+          },
+          { kind: 'note', text: '「间隔 E/e′ <8」是最反直觉的一条：限制型心肌病 E/e′ 升高（左房压高），缩窄性心包炎反而可能正常甚至偏低——因为缩窄时心室纵向舒张（e′）本身受限更严重，掩盖了左房压的影响，称为瓣环矛盾（annulus paradoxus）。', warn: true },
+
+          { kind: 'h', text: '三、瓣环反转：一个不依赖呼吸的静态线索' },
+          { kind: 'text', text: '正常人的二尖瓣环侧壁 e′ > 间隔 e′。缩窄性心包炎时，心包对左室外侧壁的束缚更紧，侧壁纵向位移受限更明显，于是出现**间隔 e′ ≥ 侧壁 e′**，即「瓣环反转」（annulus reversus）。这个征象不需要呼吸配合，床旁就能看出来，特异性比呼吸变异更好用。' },
+
+          { kind: 'h', text: '四、四张必须一起看的图' },
+          { kind: 'text', text: '① **心包**：厚度 >4 mm、钙化、脏层壁层粘连——缩窄的直接证据（但约 20% 缩窄患者心包厚度正常，阴性不能排除）；② **室间隔**：舒张早期的「抖动」（septal shudder）或「弹跳」（septal bounce），是缩窄的典型动态征象；③ **下腔静脉**：扩张且呼吸塌陷率 <50%，提示右房压升高；④ **双心房扩大 + 心室腔不大**，是两者共有的形态，不能用来鉴别。' },
+
+          { kind: 'h', text: '五、超声拿不准时怎么办' },
+          { kind: 'text', text: '① **组织多普勒 + 应变**：缩窄者心肌应变多正常（心肌本身没病），限制型（尤其淀粉样变）常有「心尖保留」的苹果核图案；② **CMR**：延迟强化可看心包炎症 / 纤维化，同时评估心肌浸润；③ **右心导管**：两者心室压力曲线均有「平方根征」，但缩窄者**吸气时左室收缩压下降、右室收缩压升高**（心室间相互制约），限制型者同向变化——这是鉴别金标准。' },
+          { kind: 'note', text: '两者治疗方向完全不同：缩窄靠心包切除可根治，限制型靠病因治疗与对症。误判的代价是错过可治愈的机会，因此拿不准时宁可做右心导管。', warn: true },
+        ],
+        fields: [
+          { k: 'cpmex', n: '二尖瓣 E（呼气末）', u: 'cm/s' },
+          { k: 'cpmix', n: '二尖瓣 E（吸气末）', u: 'cm/s' },
+          { k: 'cptex', n: '三尖瓣 E（呼气末）', u: 'cm/s' },
+          { k: 'cptix', n: '三尖瓣 E（吸气末）', u: 'cm/s' },
+          { k: 'cpmee', n: '间隔 E/e′（可选）', u: '' },
+        ],
+        calc: 'cp-rm',
+        note: '只需填二尖瓣呼 / 吸两值即可看到变异率；四值齐全可同时判读三尖瓣侧。',
       },
       {
         id: 'prosthetic',
@@ -3146,6 +3364,57 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '急性 AR（夹层、感染性心内膜炎）与慢性 AR 表现不同；慢性者左室可长期耐受，一旦出现症状或 LVEF<50% 应考虑手术。' },
         ],
         note: 'AS 与 AR 定量均应先在「瓣膜评估」页用连续性方程 / PISA 法精算。',
+      },
+      {
+        id: 'lf-lg',
+        title: '主动脉瓣狭窄 LF-LG 判读',
+        sub: '低流量低压差 · 真性 / 假性重度 · 负荷试验',
+        source: ['R22', 'R9'],
+        blocks: [
+          { kind: 'h', text: '一、为什么「重度」会测不出来' },
+          { kind: 'text', text: '重度 AS 的形态学标准是 AVA ≤1.0 cm²，但 AVA 由连续性方程算出，而连续性方程的分母里就有每搏输出量。当左室射血能力下降（LVEF 低）、或左室腔本身很小（向心性肥厚、女性小体型、房颤），流经瓣口的流量不足，压差就升不上去——此时 AVA 已经 ≤1.0，压差却 <40 mmHg。这就是低流量低压差（LF-LG）型 AS。' },
+          { kind: 'formula', text: 'SVi（每搏量指数）= SV ÷ BSA；低流量切点 ≤35 mL/m²' },
+          { kind: 'text', text: '反过来讲：压差低不等于狭窄不重，流量不足时压差会被系统性低估。这是老年 AS 最容易被判轻的一类。' },
+
+          { kind: 'h', text: '二、诊断三条件与两型分流（看 LVEF）' },
+          { kind: 'text', text: '必须三条同时满足才能叫 LF-LG 重度 AS：① SVi ≤35 mL/m²；② 平均压差 <40 mmHg；③ AVA ≤1.0 cm²。缺任一条都不是 LF-LG。' },
+          {
+            kind: 'table',
+            heads: ['类型', 'LVEF', '流量不足的原因', '临床画像'],
+            rows: [
+              ['经典型（classic）', '<50%', '左室收缩功能减低 → 每搏量下降', '常已伴心衰症状，需负荷试验确认'],
+              ['反常型（paradoxical）', '≥50%', '左室腔小 / 向心性肥厚 / 房颤 / 二尖瓣反流', '老年、女性、小瓣环多见，预后同样差'],
+            ],
+          },
+          { kind: 'note', text: '反常型最容易被误判为「中度 AS」而延误手术时机。LVEF 正常不等于流量正常——务必自己算一次 SVi。', warn: true },
+
+          { kind: 'h', text: '三、多巴酚丁胺负荷（DSE）：真性重度还是假性重度' },
+          { kind: 'text', text: '负荷试验要回答的其实是一个问题：这个瓣口在流量增加时会不会「打开」？会打开说明它本来没那么窄（假性重度），打不开说明是真性重度。' },
+          {
+            kind: 'table',
+            heads: ['负荷后表现', '判读', '处理方向'],
+            rows: [
+              ['SV 增加 ≥20% 且 AVA 增至 >1.0 cm²', '假性重度（实际为中度）', '按中度 AS 随访，不急于手术'],
+              ['SV 增加 ≥20% 且 AVA 仍 ≤1.0 cm²', '真性重度，有收缩储备', '可考虑手术 / TAVR，获益明确'],
+              ['SV 增加 <20%（无收缩储备）', '真性重度可能性大', '手术风险高，需心脏团队综合评估'],
+            ],
+          },
+          { kind: 'text', text: '判读 DSE 时还要看压差是否随流量「同步上升」：真性重度者平均压差会明显升高，假性重度者压差上升有限而 AVA 显著增大。' },
+
+          { kind: 'h', text: '四、负荷试验做不了或不适用时' },
+          { kind: 'text', text: '① CT 钙化评分：主动脉瓣 Agatston 评分男性 >2000、女性 >1300 AU 支持真性重度；② AVA 投影法（planimetry）直接描记瓣口，但钙化重时边界难辨；③ DVI（AV VTI ÷ LVOT VTI）<0.25 支持重度；④ 结合临床：有症状 + 左室肥厚 + 钙化重，倾向按重度处理。' },
+          { kind: 'note', text: '有症状的 LF-LG 患者若负荷试验不能耐受、或结果模棱两可，指南允许直接由心脏团队按「可能重度」决策，不必等到所有指标都齐。', warn: true },
+        ],
+        fields: [
+          { k: 'lflgef', n: 'LVEF', u: '%' },
+          { k: 'lflgsvi', n: 'SVi 每搏量指数', u: 'mL/m²' },
+          { k: 'lflgmpg', n: '平均压差', u: 'mmHg' },
+          { k: 'lflgava', n: 'AVA（连续性方程）', u: 'cm²' },
+          { k: 'lflgdsvi', n: '负荷后 SVi（可选）', u: 'mL/m²' },
+          { k: 'lflgdava', n: '负荷后 AVA（可选）', u: 'cm²' },
+        ],
+        calc: 'lf-lg',
+        note: '只填前三项也能判型；填了负荷后 SVi 与 AVA 才会给出真性 / 假性重度的结论。',
       },
       {
         id: 'ie',
@@ -3534,6 +3803,27 @@ const REFS = [
     en: 'Garcia-Pavia P, et al. Diagnosis and Treatment of Cardiac Amyloidosis: A Position Statement of the ESC Working Group on Myocardial and Pericardial Diseases',
     where: 'Eur Heart J, 2021, 42(16): 1554–1568',
     use: '心肌「苹果核」应变、心尖保留比值与确诊路径',
+  },
+  {
+    id: 'R22',
+    zh: '瓣膜性心脏病管理指南（2020 ACC/AHA）',
+    en: 'Otto CM, et al. 2020 ACC/AHA Guideline for the Management of Patients With Valvular Heart Disease',
+    where: 'Circulation, 2021, 143(4): e72–e227',
+    use: '低流量低压差 AS 的负荷试验、钙化评分与手术时机',
+  },
+  {
+    id: 'R23',
+    zh: '右心超声评估指南（2015 ASE）',
+    en: 'Rudski LG, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults: 2015 Update',
+    where: 'J Am Soc Echocardiogr, 2015, 28(1): 1–39',
+    use: '右室功能障碍六指标积分分级、RV 应变与右心衰评估',
+  },
+  {
+    id: 'R24',
+    zh: '心包疾病诊断与管理指南（2015 ESC）',
+    en: 'Adler Y, et al. 2015 ESC Guidelines for the Diagnosis and Management of Pericardial Diseases',
+    where: 'Eur Heart J, 2015, 36(42): 2921–2964',
+    use: '缩窄性心包炎的呼吸变异、瓣环反转与鉴别路径',
   },
 ];
 
@@ -4362,6 +4652,22 @@ const REFS = [
         parts.push('RWT ' + Calc.fmt(v.rwt, 2) + ' · ' +
           (v.rwt > 0.42 ? '升高：向心性肥厚' : '正常或偏低：离心性重构'));
       }
+      // 左室充盈压（原独立条目已并入本组）
+      const f = Calc.lvFilling({
+        e: v.dge === undefined ? null : v.dge,
+        a: v.dga === undefined ? null : v.dga,
+        es: v.dges === undefined ? null : v.dges,
+        el: v.dgel === undefined ? null : v.dgel,
+        lavi: v.dglavi === undefined ? null : v.dglavi,
+        trv: v.dgtrv === undefined ? null : v.dgtrv,
+      });
+      if (f.ea !== undefined) parts.push('E/A ' + Calc.fmt(f.ea));
+      if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + Calc.fmt(f.avgEe));
+      if (f.count > 0) parts.push('充盈压升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
+      else if (v.dglavi !== undefined || v.dgtrv !== undefined) {
+        parts.push('充盈压升高指标 0 项');
+      }
+      if (f.text) parts.push('→ ' + f.text);
       put('lv', partsOf(parts));
     }
 
@@ -4397,25 +4703,54 @@ const REFS = [
       put('rcoupling', 'TAPSE/PASP = ' + Calc.fmt(rc.ratio, 2) + ' mm/mmHg · ' + rc.text);
     } else put('rcoupling');
 
-    // 左室充盈压综合判读
+    // 主动脉瓣狭窄 LF-LG 判读
     {
-      const r = Calc.lvFilling({
-        e: v.dge === undefined ? null : v.dge,
-        a: v.dga === undefined ? null : v.dga,
-        es: v.dges === undefined ? null : v.dges,
-        el: v.dgel === undefined ? null : v.dgel,
-        lavi: v.dglavi === undefined ? null : v.dglavi,
-        trv: v.dgtrv === undefined ? null : v.dgtrv,
+      const r = Calc.asLflg({
+        lvef: v.lflgef, svi: v.lflgsvi, mpg: v.lflgmpg, ava: v.lflgava,
+        dsvi: v.lflgdsvi, dava: v.lflgdava,
       });
       const parts = [];
-      if (r.ea !== undefined) parts.push('E/A ' + Calc.fmt(r.ea));
-      if (r.avgEe !== undefined) parts.push('平均 E/e′ ' + Calc.fmt(r.avgEe));
-      if (r.count > 0) parts.push('升高指标 ' + r.count + ' 项（' + r.crit.join('、') + '）');
-      else if (r.avgEe !== undefined || v.dglavi !== undefined || v.dgtrv !== undefined) {
-        parts.push('升高指标 0 项');
+      if (r.text) parts.push(r.text);
+      if (r.flowReserve !== undefined) {
+        parts.push('SV 增幅 ' + Calc.fmt((r.flowReserve - 1) * 100, 1) + '%（' +
+          (r.hasReserve ? '有收缩储备' : '无收缩储备') + '）');
       }
+      if (r.dse) parts.push(r.dse);
+      put('lf-lg', partsOf(parts));
+    }
+
+    // 右室功能分级（ASE 六指标积分）+ 右室应变
+    {
+      const r = Calc.rvFuncScore({
+        rvbase: v.rvfbase, fac: v.rvffac, tapse: v.rvftapse,
+        rvs: v.rvfs, rvef: v.rvfe,
+      });
+      const parts = [];
+      if (r.n) {
+        const bad = r.items.filter(function (i) { return i.bad; })
+          .map(function (i) { return i.name; });
+        parts.push(r.score + '/' + r.n + ' 项异常 → ' + r.text);
+        if (bad.length) parts.push('异常项：' + bad.join('、'));
+      }
+      if (v.rvfws !== undefined) {
+        parts.push('RVFWS ' + Calc.fmt(v.rvfws, 1) + '% · ' +
+          (v.rvfws <= -20 ? '正常' : v.rvfws <= -15 ? '轻度减低' : '明显减低（预后不良）'));
+      }
+      put('rvfail', partsOf(parts));
+    }
+
+    // 缩窄性心包炎 vs 限制型心肌病：呼吸变异量化
+    {
+      const r = Calc.cpRm({
+        mvex: v.cpmex, mvinsp: v.cpmix, tvex: v.cptex, tvinsp: v.cptix,
+        medee: v.cpmee,
+      });
+      const parts = [];
+      if (r.mvVar !== undefined) parts.push('二尖瓣 E 变异 ' + Calc.fmt(Math.abs(r.mvVar), 1) + '%');
+      if (r.tvVar !== undefined) parts.push('三尖瓣 E 变异 ' + Calc.fmt(Math.abs(r.tvVar), 1) + '%');
+      if (r.feats.length) parts.push(r.feats.join('、'));
       if (r.text) parts.push('→ ' + r.text);
-      put('dias-grade', partsOf(parts));
+      put('cp-rm', partsOf(parts));
     }
 
     // 心肌应变判读
