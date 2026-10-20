@@ -293,6 +293,31 @@ Page({
         parts.push('RV S′ ' + calc.fmt(v.rvs, 1) + ' cm/s（正常 >9.5）');
       }
       out = parts.join('；');
+    } else if (gid === 'rcoupling') {
+      // —— 右室-肺动脉耦联：TAPSE / PASP ——
+      if (valid(v.tapse, v.paspv)) {
+        const rc = calc.tapsePasp(v.tapse, v.paspv);
+        out = 'TAPSE/PASP = ' + calc.fmt(rc.ratio, 2) + ' mm/mmHg · ' + rc.text;
+      }
+    } else if (gid === 'dias-grade') {
+      // —— 左室充盈压综合判读 ——
+      const r = calc.lvFilling({
+        e: v.dge === undefined ? null : v.dge,
+        a: v.dga === undefined ? null : v.dga,
+        es: v.dges === undefined ? null : v.dges,
+        el: v.dgel === undefined ? null : v.dgel,
+        lavi: v.dglavi === undefined ? null : v.dglavi,
+        trv: v.dgtrv === undefined ? null : v.dgtrv,
+      });
+      const parts = [];
+      if (r.ea !== undefined) parts.push('E/A ' + calc.fmt(r.ea));
+      if (r.avgEe !== undefined) parts.push('平均 E/e′ ' + calc.fmt(r.avgEe));
+      if (r.count > 0) parts.push('升高指标 ' + r.count + ' 项（' + r.crit.join('、') + '）');
+      else if (r.avgEe !== undefined || v.dglavi !== undefined || v.dgtrv !== undefined) {
+        parts.push('升高指标 0 项');
+      }
+      if (r.text) parts.push('→ ' + r.text);
+      out = parts.join('；');
     } else if (gid === 'strain') {
       // —— 应变判读 ——
       const parts = [];

@@ -190,6 +190,68 @@ function gradeEe(v) {
   return { level: 'moderate', text: '灰区' };
 }
 
+/**
+ * 右室-肺动脉耦联：TAPSE / PASP（mm/mmHg）
+ *
+ * 把「右室收缩功能」与「右室面对的肺动脉负荷」放进同一个比值：
+ * 负荷升高但收缩功能代偿时比值可维持；一旦失耦联即提示右室储备耗竭。
+ * 常用切点（Guazzi 2013；Tello 等在 PAH 队列中的验证）：
+ *   ≥0.55 保留耦联；0.36–0.55 临界（早期失耦联）；<0.36 显著失耦联、预后差。
+ *
+ * @param {number} tapseMm TAPSE，单位 mm
+ * @param {number} paspMmhg PASP，单位 mmHg
+ */
+function tapsePasp(tapseMm, paspMmhg) {
+  if (!(tapseMm > 0) || !(paspMmhg > 0)) return {};
+  const ratio = tapseMm / paspMmhg;
+  let level, text;
+  if (ratio >= 0.55) { level = 'normal'; text = '耦联保留'; }
+  else if (ratio >= 0.36) { level = 'moderate'; text = '临界 / 早期失耦联'; }
+  else { level = 'severe'; text = '显著失耦联（预后差）'; }
+  return { ratio: ratio, level: level, text: text };
+}
+
+/**
+ * 左室充盈压综合判读（2016 ASE/EACVI 简化路径）
+ *
+ * 只用「E/A + 三个升高指标（平均 E/e′、LAVi、TR Vmax）」给出分级，
+ * 不输入 E 波减速时间与肺静脉频谱，故为简化版，灰区必须结合临床。
+ *
+ * @param {object} o {e,a,es,el,lavi,trv} 缺省项传 null / undefined
+ */
+function lvFilling(o) {
+  const r = { crit: [] };
+  const e = o.e, a = o.a, es = o.es, el = o.el;
+  if (e !== null && e !== undefined && a !== null && a !== undefined && a > 0) r.ea = e / a;
+  if (e !== null && e !== undefined && es !== null && es !== undefined &&
+      el !== null && el !== undefined) {
+    const avg = (es + el) / 2;
+    if (avg > 0) r.avgEe = e / avg;
+  }
+  if (r.avgEe !== undefined && r.avgEe > 14) r.crit.push('平均 E/e′ >14');
+  if (o.lavi !== null && o.lavi !== undefined && o.lavi > 34) r.crit.push('LAVi >34');
+  if (o.trv !== null && o.trv !== undefined && o.trv > 2.8) r.crit.push('TR Vmax >2.8');
+  r.count = r.crit.length;
+
+  let grade = null;
+  if (r.ea !== undefined) {
+    if (r.ea >= 2) grade = 3;
+    else if (r.ea <= 0.8) {
+      const eeR = r.avgEe !== undefined && r.avgEe > 8;
+      grade = (eeR || r.count >= 2) ? 2 : 1;
+    } else {
+      grade = r.count === 0 ? 0 : r.count === 1 ? 1 : r.count === 2 ? 2 : 3;
+    }
+  } else if (r.avgEe !== undefined) {
+    grade = r.avgEe > 14 ? 2 : 0;
+  }
+  r.grade = grade;
+  if (grade !== null) {
+    r.text = ['正常充盈', 'Ⅰ级（松弛受损）', 'Ⅱ级（假性正常化）', 'Ⅲ级（限制性）'][grade];
+  }
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -227,6 +289,8 @@ module.exports = {
   fac,
   diastolicRatios,
   gradeEe,
+  tapsePasp,
+  lvFilling,
   round,
   fmt,
 };
