@@ -122,8 +122,33 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 11) ok('公式集定义 11 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 29) ok('公式集定义 29 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
+// 计算条目按 4 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
+const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
+if (calcSecIds.join('/') === 'hemo/right/vq/recon') ok('计算组 4 个（血流动力学 / 右心与肺循环 / 瓣膜与舒张定量 / 重构与心肌功能）');
+else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
+const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1);
+if (!badSec.length) ok('29 条公式的 sec 归属均合法');
+else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
+const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
+const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
+const nVq = CG.GROUPS.filter(g => g.sec === 'vq').length;
+const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
+if (nHemo === 11 && nRight === 6 && nVq === 5 && nRecon === 7)
+  ok('分组条目数 11 / 6 / 5 / 7');
+else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon].join('/'));
+// 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
+// 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
+const SHARED_KEYS = { ld: 1, lvti: 1 };
+const dupField = [];
+const seen = {};
+CG.GROUPS.forEach(g => g.fields.forEach(f => {
+  if (seen[f.k] && !SHARED_KEYS[f.k]) dupField.push(f.k);
+  seen[f.k] = 1;
+}));
+if (!dupField.length) ok('29 条公式的输入键全局唯一（除有意共享的 ld / lvti）');
+else bad('输入键冲突: ' + dupField.join(','));
 const badGroups = CG.GROUPS.filter(g => !g.id || !g.title || !g.fields.length || !g.note);
 if (badGroups.length === 0) ok('各组均含 id/标题/字段/备注');
 else bad('以下组定义不完整: ' + badGroups.map(g => g.id || '?').join(','));

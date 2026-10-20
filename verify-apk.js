@@ -51,12 +51,28 @@ section('1. 构建产物完整性');
 check('www/index.html 存在', fs.existsSync(WWW), true);
 
 const html = fs.readFileSync(WWW, 'utf8');
-// 完整版（含瓣膜页）体积上限；真正打包进 APK 的是发布版 docs，另有更严的约束
-check('www 完整版体积 < 520 KB', Buffer.byteLength(html, 'utf8') < 520 * 1024, true);
-check('docs 发布版存在（APK 实际打包源）', fs.existsSync(DOCS), true);
+// ★ 2026-10-20 起 APK 打包的是完整版 www（自用不公开，内容与小程序一致），
+//   发布版 docs 只用于 GitHub Pages，不再进 APK。
+check('www 完整版体积 < 520 KB（APK 内存约束）', Buffer.byteLength(html, 'utf8') < 520 * 1024, true);
+check('docs 发布版存在（仅 GitHub Pages 用）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 420 KB（APK 内存约束）', Buffer.byteLength(dh, 'utf8') < 420 * 1024, true);
+  check('docs 发布版体积 < 470 KB', Buffer.byteLength(dh, 'utf8') < 470 * 1024, true);
+  check('docs 发布版不含瓣膜页（转载内容不上线）',
+    dh.indexOf('id="page-valves"') === -1, true);
+  check('docs 发布版仍含节段划分页（自有内容）',
+    dh.indexOf('id="page-segments"') !== -1, true);
+}
+// APK 实际打包源：android-app/assets/index.html 必须与 www 完全一致
+const ASSET = path.join(ROOT, 'android-app', 'assets', 'index.html');
+check('android-app/assets/index.html 存在', fs.existsSync(ASSET), true);
+if (fs.existsSync(ASSET)) {
+  const ah = fs.readFileSync(ASSET, 'utf8');
+  check('APK 打包源与完整版 www 完全一致（字节数相等 + 内容相等）',
+    Buffer.byteLength(ah, 'utf8') === Buffer.byteLength(html, 'utf8') && ah === html,
+    true);
+  check('APK 打包源含瓣膜评估页', ah.indexOf('id="page-valves"') !== -1, true);
+  check('APK 打包源含节段划分页', ah.indexOf('id="page-segments"') !== -1, true);
 }
 
 // 抽取 <script> 里两个 IIFE 引擎块
@@ -484,7 +500,7 @@ check('外链渲染为 a[target=_blank]',
   html.indexOf("' target=\"_blank\" rel=\"noopener noreferrer\'") !== -1 ||
   html.indexOf('target=\"_blank\" rel=\"noopener noreferrer\"') !== -1 ||
   html.indexOf('target="_blank" rel="noopener noreferrer"') !== -1, true);
-check('发布版页签 = 3（EF·参考值 / 儿童 Z 值 / 公式集）',
+check('页签含公式集（完整版 5 页签之一）',
   html.indexOf('data-tab="calc"') !== -1, true);
 
 /* 延展阅读：外链卡片（APK 端点击链接由 MainActivity 交给系统浏览器） */
