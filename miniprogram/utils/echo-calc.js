@@ -670,6 +670,200 @@ function ctrcd(o) {
   return r;
 }
 
+/* ============================================================
+ * 以下为 v1.1.0 新增：右室应变 / 心尖保留 / 负荷 PASP / 分流分级 / LVAD
+ * ============================================================ */
+
+/**
+ * 右室游离壁应变（RVFWS）细化判读
+ *
+ * 三段平均 = (基底 + 中段 + 心尖) / 3，正常 ≤ −20%（绝对值 ≥20%）。
+ * 右室整体应变 RVGLS 需并入院间隔三段，正常约 ≤ −17%。
+ *
+ * 基底-心尖梯度：正常右室游离壁应变绝对值呈「基底 ≥ 中段 ≥ 心尖」的轻微递减；
+ * 若心尖绝对值反而明显大于基底（apex − base > 5，均为负值时即 apex 更负），
+ * 属「反向梯度 / 心尖保留」，见于 ARVC 与慢性右室压力负荷。
+ *
+ * RVFWS/PASP 耦联（%/mmHg）：≥0.35 保留；0.31–0.35 临界；<0.31 失耦联。
+ * 与 TAPSE/PASP（mm/mmHg，切点 0.55 / 0.36）不是同一量纲，切勿混用。
+ *
+ * @param {object} o {base, mid, apex, sep, pasp} 应变均为负值
+ */
+function rvStrain(o) {
+  const b = o.base, m = o.mid, a = o.apex;
+  if (!(b < 0) || !(m < 0) || !(a < 0)) return {};
+  const avg = (b + m + a) / 3;
+  const r = { base: b, mid: m, apex: a, avg: avg };
+
+  // 分级（取绝对值比较更直观）
+  const ab = Math.abs(avg);
+  if (ab >= 20) { r.grade = 0; r.gradeText = '正常'; }
+  else if (ab >= 15) { r.grade = 1; r.gradeText = '轻度减低'; }
+  else if (ab >= 10) { r.grade = 2; r.gradeText = '中度减低'; }
+  else { r.grade = 3; r.gradeText = '重度减低'; }
+
+  // 基底-心尖梯度：apex − base（负值越多表示心尖越强）
+  r.gradient = a - b;
+  r.apicalSparing = (a - b) <= -5;
+  if (r.apicalSparing) r.gradText = '反向梯度：心尖相对保留（基底段受累为主）';
+  else if ((a - b) >= 5) r.gradText = '心尖段受累更重（少见，需核对节段归属）';
+  else r.gradText = '基底-心尖梯度正常';
+
+  // 右室整体应变（含室间隔）
+  if (o.sep < 0) {
+    r.rvgls = (b + m + a + o.sep * 3) / 6;
+    r.sepLower = Math.abs(o.sep) < Math.abs(avg);
+  }
+
+  // RVFWS / PASP 耦联
+  if (o.pasp > 0) {
+    r.ratio = ab / o.pasp;
+    if (r.ratio >= 0.35) r.coupling = '耦联保留';
+    else if (r.ratio >= 0.31) r.coupling = '临界';
+    else r.coupling = '失耦联（右室收缩功能跟不上后负荷）';
+  }
+  return r;
+}
+
+/**
+ * 心尖保留比值（relative apical sparing, RAR）
+ *
+ * RAR = |心尖段平均 GLS| ÷ (|基底段平均 GLS| + |中段平均 GLS|)
+ *   >0.94 高度提示心脏淀粉样变（Phelan 2012：敏感度 88%、特异度 85%）
+ *   0.70–0.94 灰区，需结合分层应变与临床
+ *   <0.70 不支持心尖保留
+ *
+ * 另算心内膜/心外膜梯度：正常 >1.5，淀粉样变梯度消失（趋近 1）。
+ *
+ * @param {object} o {base, mid, apex, endo, epi} 应变均为负值
+ */
+function rcmStrain(o) {
+  const b = Math.abs(o.base), m = Math.abs(o.mid), a = Math.abs(o.apex);
+  if (!(b > 0) || !(m > 0) || !(a > 0)) return {};
+  const r = { rar: a / (b + m), gls: (b + m + a) / 3 };
+  if (r.rar > 0.94) { r.level = 2; r.text = '心尖保留阳性：高度提示心脏淀粉样变'; }
+  else if (r.rar >= 0.70) { r.level = 1; r.text = '灰区：需结合分层应变、ECG 与 CMR'; }
+  else { r.level = 0; r.text = '不支持心尖保留（考虑 HCM / 其他限制型心肌病）'; }
+
+  if (o.endo > 0 && o.epi > 0) {
+    r.transGrad = o.endo / o.epi;
+    r.gradLost = r.transGrad < 1.2;
+  }
+  return r;
+}
+
+/**
+ * 负荷超声的肺动脉收缩压运动反应
+ *
+ * 静息 PASP 与峰值 PASP 之差 ΔPASP；若同时给出静息/峰值心排量，
+ * 可算 ΔPASP/ΔCO 斜率（2022 ESC/ERS：运动 mPAP/CO 斜率 >3 WU 为异常，
+ * 超声以 ΔPASP/ΔCO >3 mmHg/(L/min) 近似）。
+ *
+ * 判读（超声替代标准）：
+ *   峰值 PASP ≤ 50 且 ΔPASP ≤ 20 → 反应正常
+ *   峰值 PASP 51–60 或 ΔPASP 21–30 → 边缘 / 需结合 E/e′
+ *   峰值 PASP > 60 或 ΔPASP > 30 → 运动诱发肺高压，支持 HFpEF
+ *
+ * @param {object} o {rest, peak, co0, co1}
+ */
+function paspStress(o) {
+  if (!(o.rest > 0) || !(o.peak > 0)) return {};
+  const r = { rest: o.rest, peak: o.peak, delta: o.peak - o.rest };
+  if (o.co0 > 0 && o.co1 > o.co0) {
+    r.slope = r.delta / (o.co1 - o.co0);
+  }
+  const hi = o.peak > 60 || r.delta > 30;
+  const mid = !hi && (o.peak > 50 || r.delta > 20);
+  if (hi) { r.level = 2; r.text = '运动诱发肺高压（支持 HFpEF / 左心疾病相关）'; }
+  else if (mid) { r.level = 1; r.text = '边缘反应：结合负荷 E/e′ 与症状判断'; }
+  else { r.level = 0; r.text = 'PASP 运动反应正常'; }
+  if (r.slope !== undefined && r.slope > 3) {
+    r.level = 2;
+    r.text = 'ΔPASP/ΔCO >3 mmHg/(L/min)，符合运动诱发肺高压';
+  }
+  return r;
+}
+
+/**
+ * 左向右分流（Qp/Qs）分级与干预提示
+ *
+ * Qp/Qs 分级（成人先心病通用）：
+ *   <1.0      右向左净分流 → 提示不可逆肺血管病（艾森曼格方向），禁忌关闭
+ *   1.0–1.5   无显著分流 / 少量
+ *   1.5–2.0   中等量 → 有症状或心腔扩大者可考虑干预
+ *   >2.0      大量 → 通常具备干预指征
+ *   >2.5      极大 → 尽快评估，须先排除重度肺高压
+ *
+ * 注意：Qp/Qs 只说明「分流量」，不能单独决定手术；需叠加分流方向、
+ * 肺血管阻力（PVR）、症状与心腔大小。
+ *
+ * @param {number} qp 肺循环每搏量 mL
+ * @param {number} qs 体循环每搏量 mL
+ * @param {number} pvr 肺血管阻力 WU（可缺省）
+ */
+function shuntGrade(qp, qs, pvr) {
+  if (!(qp > 0) || !(qs > 0)) return {};
+  const ratio = qp / qs;
+  const r = { ratio: ratio };
+  if (ratio < 1.0) { r.grade = -1; r.text = '净右向左分流：警惕艾森曼格，禁忌关闭'; }
+  else if (ratio < 1.5) { r.grade = 0; r.text = '无显著分流（或微量），随访观察'; }
+  else if (ratio < 2.0) { r.grade = 1; r.text = '中等量分流：有症状或心腔扩大者考虑干预'; }
+  else if (ratio < 2.5) { r.grade = 2; r.text = '大量分流：通常具备干预指征'; }
+  else { r.grade = 3; r.text = '极大分流：尽快评估，须先排除重度肺高压'; }
+
+  if (pvr > 0) {
+    r.operable = (ratio >= 1.5 && pvr < 5);
+    if (pvr >= 8) { r.operable = false; r.pvrText = 'PVR ≥8 WU：多属不可逆，关闭风险高'; }
+    else if (pvr >= 5) { r.pvrText = 'PVR 5–8 WU：需急性血管反应试验或靶向治疗后复评'; }
+    else { r.pvrText = 'PVR <5 WU：肺血管阻力尚可'; }
+  }
+  return r;
+}
+
+/**
+ * LVAD（连续流左心室辅助装置）超声要点判读
+ *
+ * 三个核心量：
+ *   ① 出血道每搏量 = πd²/4 × VTI，CO = SV × HR（LVOT VTI 不能用于 LVAD 患者）
+ *   ② LV 舒张末内径：持续缩小（常 <30 mm）提示抽吸；持续增大提示泵效不足
+ *   ③ 主动脉瓣开放状态：1 = 每次开放 / 2 = 间断开放 / 3 = 持续关闭
+ *
+ * 判读要点：主动脉瓣持续关闭 → 根部淤滞、血栓与反流风险升高，宜降低泵速；
+ * 室间隔左移 + LVEDD 骤降 → 抽吸事件；TAPSE <7.5 mm 提示右心衰高危。
+ *
+ * @param {object} o {d, vti, hr, lvedd, avOpen, tapse}
+ */
+function lvadEcho(o) {
+  const r = { notes: [] };
+  if (o.d > 0 && o.vti > 0) {
+    r.sv = Math.PI * o.d * o.d / 4 * o.vti;
+    if (o.hr > 0) r.co = r.sv * o.hr / 1000;
+  }
+  if (o.lvedd > 0) {
+    if (o.lvedd < 30) {
+      r.suction = true;
+      r.notes.push('LVEDD <30 mm：抽吸高危（室间隔左移、泵入口贴近心肌）');
+    } else if (o.lvedd > 65) {
+      r.unloading = true;
+      r.notes.push('LVEDD >65 mm：卸载不足，评估泵速与容量');
+    } else {
+      r.notes.push('LVEDD 处于可接受区间（30–65 mm）');
+    }
+  }
+  if (o.avOpen === 3) {
+    r.notes.push('主动脉瓣持续关闭：根部淤滞 → 血栓 / 主动脉瓣反流 / 瓣叶融合风险，宜降速使瓣膜间断开放');
+  } else if (o.avOpen === 2) {
+    r.notes.push('主动脉瓣间断开放：泵速基本合适，注意随访反流');
+  } else if (o.avOpen === 1) {
+    r.notes.push('主动脉瓣每次开放：泵速偏低或自身心功能恢复，注意卸载是否充分');
+  }
+  if (o.tapse > 0 && o.tapse < 7.5) {
+    r.rvFail = true;
+    r.notes.push('TAPSE <7.5 mm：右心衰高危，术后需临时右心辅助的准备');
+  }
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -722,6 +916,11 @@ module.exports = {
   dviIndex,
   mpap,
   ctrcd,
+  rvStrain,
+  rcmStrain,
+  paspStress,
+  shuntGrade,
+  lvadEcho,
   round,
   fmt,
 };

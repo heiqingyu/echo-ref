@@ -91,12 +91,14 @@ const GROUPS = [
   {
     id: 'shunt',
     title: 'Qp/Qs 肺体循环血流比',
-    sub: '分流方向与分流量',
+    sub: '分流方向与分流量分级',
     fields: [
       { k: 'rd', n: 'RVOT 直径', u: 'cm' },
       { k: 'rvti', n: 'RVOT VTI', u: 'cm' },
+      { k: 'ld', n: 'LVOT 直径（体循环）', u: 'cm' },
+      { k: 'lvti', n: 'LVOT VTI（体循环）', u: 'cm' },
     ],
-    note: '使用上方 LVOT 的 SV 作为体循环流量；反流、多处梗阻会影响结果',
+    note: 'Qp/Qs = (π·d_RVOT²/4 × VTI_RVOT) ÷ (π·d_LVOT²/4 × VTI_LVOT)；>2.0 大量分流、1.5–2.0 中等量、<1.0 提示净右向左。反流、多处梗阻会影响结果',
   },
   {
     id: 'bernoulli',

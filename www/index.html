@@ -1419,7 +1419,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.0.9</div>
+    <div class="verline">心脏超声参考值 · v1.1.0</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1462,7 +1462,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.0.9</div>
+      <div class="verline">心脏超声参考值 · v1.1.0</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -3467,6 +3467,200 @@ function ctrcd(o) {
   return r;
 }
 
+/* ============================================================
+ * 以下为 v1.1.0 新增：右室应变 / 心尖保留 / 负荷 PASP / 分流分级 / LVAD
+ * ============================================================ */
+
+/**
+ * 右室游离壁应变（RVFWS）细化判读
+ *
+ * 三段平均 = (基底 + 中段 + 心尖) / 3，正常 ≤ −20%（绝对值 ≥20%）。
+ * 右室整体应变 RVGLS 需并入院间隔三段，正常约 ≤ −17%。
+ *
+ * 基底-心尖梯度：正常右室游离壁应变绝对值呈「基底 ≥ 中段 ≥ 心尖」的轻微递减；
+ * 若心尖绝对值反而明显大于基底（apex − base > 5，均为负值时即 apex 更负），
+ * 属「反向梯度 / 心尖保留」，见于 ARVC 与慢性右室压力负荷。
+ *
+ * RVFWS/PASP 耦联（%/mmHg）：≥0.35 保留；0.31–0.35 临界；<0.31 失耦联。
+ * 与 TAPSE/PASP（mm/mmHg，切点 0.55 / 0.36）不是同一量纲，切勿混用。
+ *
+ * @param {object} o {base, mid, apex, sep, pasp} 应变均为负值
+ */
+function rvStrain(o) {
+  const b = o.base, m = o.mid, a = o.apex;
+  if (!(b < 0) || !(m < 0) || !(a < 0)) return {};
+  const avg = (b + m + a) / 3;
+  const r = { base: b, mid: m, apex: a, avg: avg };
+
+  // 分级（取绝对值比较更直观）
+  const ab = Math.abs(avg);
+  if (ab >= 20) { r.grade = 0; r.gradeText = '正常'; }
+  else if (ab >= 15) { r.grade = 1; r.gradeText = '轻度减低'; }
+  else if (ab >= 10) { r.grade = 2; r.gradeText = '中度减低'; }
+  else { r.grade = 3; r.gradeText = '重度减低'; }
+
+  // 基底-心尖梯度：apex − base（负值越多表示心尖越强）
+  r.gradient = a - b;
+  r.apicalSparing = (a - b) <= -5;
+  if (r.apicalSparing) r.gradText = '反向梯度：心尖相对保留（基底段受累为主）';
+  else if ((a - b) >= 5) r.gradText = '心尖段受累更重（少见，需核对节段归属）';
+  else r.gradText = '基底-心尖梯度正常';
+
+  // 右室整体应变（含室间隔）
+  if (o.sep < 0) {
+    r.rvgls = (b + m + a + o.sep * 3) / 6;
+    r.sepLower = Math.abs(o.sep) < Math.abs(avg);
+  }
+
+  // RVFWS / PASP 耦联
+  if (o.pasp > 0) {
+    r.ratio = ab / o.pasp;
+    if (r.ratio >= 0.35) r.coupling = '耦联保留';
+    else if (r.ratio >= 0.31) r.coupling = '临界';
+    else r.coupling = '失耦联（右室收缩功能跟不上后负荷）';
+  }
+  return r;
+}
+
+/**
+ * 心尖保留比值（relative apical sparing, RAR）
+ *
+ * RAR = |心尖段平均 GLS| ÷ (|基底段平均 GLS| + |中段平均 GLS|)
+ *   >0.94 高度提示心脏淀粉样变（Phelan 2012：敏感度 88%、特异度 85%）
+ *   0.70–0.94 灰区，需结合分层应变与临床
+ *   <0.70 不支持心尖保留
+ *
+ * 另算心内膜/心外膜梯度：正常 >1.5，淀粉样变梯度消失（趋近 1）。
+ *
+ * @param {object} o {base, mid, apex, endo, epi} 应变均为负值
+ */
+function rcmStrain(o) {
+  const b = Math.abs(o.base), m = Math.abs(o.mid), a = Math.abs(o.apex);
+  if (!(b > 0) || !(m > 0) || !(a > 0)) return {};
+  const r = { rar: a / (b + m), gls: (b + m + a) / 3 };
+  if (r.rar > 0.94) { r.level = 2; r.text = '心尖保留阳性：高度提示心脏淀粉样变'; }
+  else if (r.rar >= 0.70) { r.level = 1; r.text = '灰区：需结合分层应变、ECG 与 CMR'; }
+  else { r.level = 0; r.text = '不支持心尖保留（考虑 HCM / 其他限制型心肌病）'; }
+
+  if (o.endo > 0 && o.epi > 0) {
+    r.transGrad = o.endo / o.epi;
+    r.gradLost = r.transGrad < 1.2;
+  }
+  return r;
+}
+
+/**
+ * 负荷超声的肺动脉收缩压运动反应
+ *
+ * 静息 PASP 与峰值 PASP 之差 ΔPASP；若同时给出静息/峰值心排量，
+ * 可算 ΔPASP/ΔCO 斜率（2022 ESC/ERS：运动 mPAP/CO 斜率 >3 WU 为异常，
+ * 超声以 ΔPASP/ΔCO >3 mmHg/(L/min) 近似）。
+ *
+ * 判读（超声替代标准）：
+ *   峰值 PASP ≤ 50 且 ΔPASP ≤ 20 → 反应正常
+ *   峰值 PASP 51–60 或 ΔPASP 21–30 → 边缘 / 需结合 E/e′
+ *   峰值 PASP > 60 或 ΔPASP > 30 → 运动诱发肺高压，支持 HFpEF
+ *
+ * @param {object} o {rest, peak, co0, co1}
+ */
+function paspStress(o) {
+  if (!(o.rest > 0) || !(o.peak > 0)) return {};
+  const r = { rest: o.rest, peak: o.peak, delta: o.peak - o.rest };
+  if (o.co0 > 0 && o.co1 > o.co0) {
+    r.slope = r.delta / (o.co1 - o.co0);
+  }
+  const hi = o.peak > 60 || r.delta > 30;
+  const mid = !hi && (o.peak > 50 || r.delta > 20);
+  if (hi) { r.level = 2; r.text = '运动诱发肺高压（支持 HFpEF / 左心疾病相关）'; }
+  else if (mid) { r.level = 1; r.text = '边缘反应：结合负荷 E/e′ 与症状判断'; }
+  else { r.level = 0; r.text = 'PASP 运动反应正常'; }
+  if (r.slope !== undefined && r.slope > 3) {
+    r.level = 2;
+    r.text = 'ΔPASP/ΔCO >3 mmHg/(L/min)，符合运动诱发肺高压';
+  }
+  return r;
+}
+
+/**
+ * 左向右分流（Qp/Qs）分级与干预提示
+ *
+ * Qp/Qs 分级（成人先心病通用）：
+ *   <1.0      右向左净分流 → 提示不可逆肺血管病（艾森曼格方向），禁忌关闭
+ *   1.0–1.5   无显著分流 / 少量
+ *   1.5–2.0   中等量 → 有症状或心腔扩大者可考虑干预
+ *   >2.0      大量 → 通常具备干预指征
+ *   >2.5      极大 → 尽快评估，须先排除重度肺高压
+ *
+ * 注意：Qp/Qs 只说明「分流量」，不能单独决定手术；需叠加分流方向、
+ * 肺血管阻力（PVR）、症状与心腔大小。
+ *
+ * @param {number} qp 肺循环每搏量 mL
+ * @param {number} qs 体循环每搏量 mL
+ * @param {number} pvr 肺血管阻力 WU（可缺省）
+ */
+function shuntGrade(qp, qs, pvr) {
+  if (!(qp > 0) || !(qs > 0)) return {};
+  const ratio = qp / qs;
+  const r = { ratio: ratio };
+  if (ratio < 1.0) { r.grade = -1; r.text = '净右向左分流：警惕艾森曼格，禁忌关闭'; }
+  else if (ratio < 1.5) { r.grade = 0; r.text = '无显著分流（或微量），随访观察'; }
+  else if (ratio < 2.0) { r.grade = 1; r.text = '中等量分流：有症状或心腔扩大者考虑干预'; }
+  else if (ratio < 2.5) { r.grade = 2; r.text = '大量分流：通常具备干预指征'; }
+  else { r.grade = 3; r.text = '极大分流：尽快评估，须先排除重度肺高压'; }
+
+  if (pvr > 0) {
+    r.operable = (ratio >= 1.5 && pvr < 5);
+    if (pvr >= 8) { r.operable = false; r.pvrText = 'PVR ≥8 WU：多属不可逆，关闭风险高'; }
+    else if (pvr >= 5) { r.pvrText = 'PVR 5–8 WU：需急性血管反应试验或靶向治疗后复评'; }
+    else { r.pvrText = 'PVR <5 WU：肺血管阻力尚可'; }
+  }
+  return r;
+}
+
+/**
+ * LVAD（连续流左心室辅助装置）超声要点判读
+ *
+ * 三个核心量：
+ *   ① 出血道每搏量 = πd²/4 × VTI，CO = SV × HR（LVOT VTI 不能用于 LVAD 患者）
+ *   ② LV 舒张末内径：持续缩小（常 <30 mm）提示抽吸；持续增大提示泵效不足
+ *   ③ 主动脉瓣开放状态：1 = 每次开放 / 2 = 间断开放 / 3 = 持续关闭
+ *
+ * 判读要点：主动脉瓣持续关闭 → 根部淤滞、血栓与反流风险升高，宜降低泵速；
+ * 室间隔左移 + LVEDD 骤降 → 抽吸事件；TAPSE <7.5 mm 提示右心衰高危。
+ *
+ * @param {object} o {d, vti, hr, lvedd, avOpen, tapse}
+ */
+function lvadEcho(o) {
+  const r = { notes: [] };
+  if (o.d > 0 && o.vti > 0) {
+    r.sv = Math.PI * o.d * o.d / 4 * o.vti;
+    if (o.hr > 0) r.co = r.sv * o.hr / 1000;
+  }
+  if (o.lvedd > 0) {
+    if (o.lvedd < 30) {
+      r.suction = true;
+      r.notes.push('LVEDD <30 mm：抽吸高危（室间隔左移、泵入口贴近心肌）');
+    } else if (o.lvedd > 65) {
+      r.unloading = true;
+      r.notes.push('LVEDD >65 mm：卸载不足，评估泵速与容量');
+    } else {
+      r.notes.push('LVEDD 处于可接受区间（30–65 mm）');
+    }
+  }
+  if (o.avOpen === 3) {
+    r.notes.push('主动脉瓣持续关闭：根部淤滞 → 血栓 / 主动脉瓣反流 / 瓣叶融合风险，宜降速使瓣膜间断开放');
+  } else if (o.avOpen === 2) {
+    r.notes.push('主动脉瓣间断开放：泵速基本合适，注意随访反流');
+  } else if (o.avOpen === 1) {
+    r.notes.push('主动脉瓣每次开放：泵速偏低或自身心功能恢复，注意卸载是否充分');
+  }
+  if (o.tapse > 0 && o.tapse < 7.5) {
+    r.rvFail = true;
+    r.notes.push('TAPSE <7.5 mm：右心衰高危，术后需临时右心辅助的准备');
+  }
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -3519,6 +3713,11 @@ function fmt(n, dec) {
     dviIndex: dviIndex,
     mpap: mpap,
     ctrcd: ctrcd,
+    rvStrain: rvStrain,
+    rcmStrain: rcmStrain,
+    paspStress: paspStress,
+    shuntGrade: shuntGrade,
+    lvadEcho: lvadEcho,
     round: round,
     fmt: fmt,
   };
@@ -4423,6 +4622,76 @@ const BRIEF_SECTIONS = [
         calc: 'la',
         note: 'LAVi = 左房最大容积 ÷ BSA。正常 ≤34 mL/m²（男女通用）。',
       },
+      {
+        id: 'lvad',
+        title: '机械辅助循环（LVAD）超声评估',
+        sub: '入血道 / 出血道 · 泵速优化 · 抽吸事件',
+        source: ['R37', 'R5'],
+        blocks: [
+          { kind: 'h', text: '一、先搞清楚血往哪里流' },
+          { kind: 'text', text: '连续流 LVAD 把血从左室心尖的**入血道**抽走，经泵体从**出血道**（人工血管）泵入升主动脉。理解这条通路，就知道每一处该看什么：左室心尖看卸载是否充分，升主动脉看泵的前向血流，两者之间看主动脉瓣。' },
+          {
+            kind: 'table',
+            heads: ['结构', '超声切面', '要看的三件事'],
+            rows: [
+              ['入血道（心尖）', '心尖四腔 / 两腔 / 三腔', '位置是否居中、有无心肌被吸入、入口附近有无血栓'],
+              ['出血道（升主动脉）', '胸骨上窝 / 右胸骨旁，彩色 + 脉冲多普勒', '前向血流速度、有无吻合口假性动脉瘤 / 狭窄'],
+              ['主动脉瓣', 'PLAX / 心尖三腔 + M 型', '每次开放 / 间断开放 / 持续关闭'],
+              ['右心', '心尖四腔', 'TAPSE / FAC / RVFWS、三尖瓣反流、IVC'],
+            ],
+          },
+
+          { kind: 'h', text: '二、六个必测项（每次随访都做）' },
+          { kind: 'text', text: '① **主动脉瓣开放状态**——整套评估里最关键的一项；② **左室舒张末内径**与室间隔位置；③ **右室功能**（TAPSE / FAC / RVFWS）；④ **出血道血流**与压差；⑤ **主动脉瓣反流**；⑥ **心包积液**（术后早期尤其）。' },
+          {
+            kind: 'table',
+            heads: ['主动脉瓣状态', '提示', '处理方向'],
+            rows: [
+              ['每次心搏开放', '泵速偏低，或自身心功能恢复', '评估卸载是否足够，警惕 EF 被高估'],
+              ['间断开放（数搏一次）', '多数情况下是理想状态', '维持，随访反流'],
+              ['持续关闭', '泵速偏高，主动脉根部血流淤滞', '降低泵速，警惕根部血栓、瓣叶融合与反流加重'],
+            ],
+          },
+          { kind: 'note', text: '主动脉瓣持续关闭超过 1 个月，主动脉瓣反流与瓣叶融合的发生率明显上升。临床上常要求「至少每隔数搏开放一次」，具体转速区间以厂家手册与患者基线为准。', warn: true },
+
+          { kind: 'h', text: '三、泵速高了还是低了：三个方向反着看' },
+          {
+            kind: 'table',
+            heads: ['征象', '泵速偏低（卸载不足）', '泵速偏高（抽吸）'],
+            rows: [
+              ['LV 舒张末内径', '偏大，常 >65 mm', '骤降，常 <30 mm'],
+              ['室间隔', '右移，左室呈 D 形（同时提示右心负荷重）', '左移，贴近入血道'],
+              ['主动脉瓣', '每次开放', '持续关闭'],
+              ['临床', '气促、水肿、泵流量偏低报警', '头晕、低流量报警、室性心律失常'],
+            ],
+          },
+          { kind: 'text', text: '室间隔位置是三者里最敏感的一个：室间隔左移出现在 LVEDD 明显缩小之前，是抽吸的早期信号；室间隔右移除了泵速偏低，还要考虑右心衰把间隔推向左侧之外的反向情形（左室充盈不足）。' },
+
+          { kind: 'h', text: '四、抽吸事件（suction event）怎么认' },
+          { kind: 'text', text: '典型组合是：**LVEDD 突然缩小 + 室间隔左移 + 入血道附近心肌内陷 + 间断高速血流信号 + 低流量报警**。诱因按出现频率排：容量不足（利尿过度、出血）、泵速过高、右心衰导致左室充盈不足、心包压塞、心律失常。' },
+          { kind: 'text', text: '处理顺序是「先降速、再补容量、后查原因」。抽吸反复出现会造成心尖心肌损伤、室性心律失常，不能只靠调参掩盖。' },
+
+          { kind: 'h', text: '五、右心衰：术前预警比术后抢救重要' },
+          { kind: 'text', text: '右心衰是 LVAD 术后最常见的严重并发症。术前这些指标同时异常，提示需要临时右心辅助或暂缓手术：TAPSE <7.5 mm、RVFWS 绝对值 <8%、RV/LV 基底径比 >0.75、重度三尖瓣反流、右房压明显升高、需要大剂量利尿。' },
+          { kind: 'text', text: '术后判断右心衰，看三件事：新发或加重的三尖瓣反流、IVC 扩张不塌陷、以及**室间隔持续右移**（左室装不满，泵抽不到血）。' },
+
+          { kind: 'h', text: '六、三个容易犯的错' },
+          { kind: 'text', text: '① **用 LVEF 判断心功能**——LVAD 患者的 EF 取决于泵速与左室相互作用的平衡状态，不代表心肌收缩力，同一患者调一次转速 EF 可以变十几个百分点。' },
+          { kind: 'text', text: '② **用 LVOT VTI 算心排量**——出血道在 LVOT 之外。心排量应测出血道内径与 VTI（见下方计算）。' },
+          { kind: 'text', text: '③ **忽略主动脉瓣反流**——已有的反流在 LVAD 后形成「泵 → 主动脉 → 反流回左室 → 再被泵出」的再循环，有效前向血流显著下降，是泵流量正常但患者仍低灌注的常见原因。' },
+          { kind: 'note', text: 'LVAD 患者的超声报告应固定模板：泵速、LVEDD、室间隔位置、主动脉瓣状态、出血道 VTI 与压差、右室功能、主动脉瓣反流、心包积液。随访时同一模板逐项对比，比单次绝对值更有价值。', warn: true },
+        ],
+        fields: [
+          { k: 'lvadd', n: '出血道内径', u: 'cm' },
+          { k: 'lvadvti', n: '出血道 VTI', u: 'cm' },
+          { k: 'lvadhr', n: '心率', u: '次/min' },
+          { k: 'lvadlv', n: 'LV 舒张末内径', u: 'mm' },
+          { k: 'lvadav', n: '主动脉瓣开放 1=每次 2=间断 3=持续关闭', u: '' },
+          { k: 'lvadtp', n: 'TAPSE（可选）', u: 'mm' },
+        ],
+        calc: 'lvad',
+        note: '出血道 SV = πd²/4 × VTI，CO = SV × 心率。LVOT VTI 不能用于 LVAD 患者（出血道位于 LVOT 之外）。',
+      },
     ],
   },
   {
@@ -4713,6 +4982,72 @@ const BRIEF_SECTIONS = [
         ],
         calc: 'rvfail',
         note: '六项均可填则可按 ASE 积分定级；应变（RVFWS）单独给判读，不计入积分。',
+      },
+      {
+        id: 'rv-strain',
+        title: '右室应变与 RVFWS 细化',
+        sub: '两种测法 · 基底-心尖梯度 · RVFWS/PASP 耦联',
+        source: ['R27', 'R23', 'R5'],
+        blocks: [
+          { kind: 'h', text: '一、RVFWS 有两种测法，别混用' },
+          {
+            kind: 'table',
+            heads: ['指标', '包含节段', '正常参考', '适用'],
+            rows: [
+              ['右室游离壁应变 RVFWS', '游离壁 3 段（基底 / 中段 / 心尖）', '绝对值 ≥20%', '最常用；受室间隔与左室影响小'],
+              ['右室整体纵向应变 RVGLS', '游离壁 3 段 + 室间隔 3 段', '绝对值 ≥17%', '反映双室交互；肺高压时室间隔先受累'],
+            ],
+          },
+          { kind: 'text', text: '两个数值不能互相代入。因为室间隔同时属于左、右两个心室，RVGLS 天生受左室影响大：左室病变（如 HFrEF、左束支阻滞）会把 RVGLS 拉低，此时 RVFWS 更能代表右室自己。反过来，评估肺高压对右室的整体影响时，RVGLS 更全面。' },
+
+          { kind: 'h', text: '二、为什么 RVFWS 比 TAPSE 更早报警' },
+          { kind: 'text', text: 'TAPSE 只测三尖瓣环**一个点**的位移：右室扩大、切面角度稍偏、前负荷变化都会让它失真。RVFWS 追踪的是整段心肌的形变，不受右室几何形状影响，因此能在右室还没扩大、TAPSE 还正常时就发现纵向收缩受损。' },
+          { kind: 'text', text: '代价是它更「挑图」：帧率不足会低估、房颤时追踪容易断、软件平台之间绝对值差异可达 15–20%。同一个患者纵向随访必须用同一平台，跨平台只看趋势不看绝对值。' },
+          { kind: 'note', text: 'RVFWS 是负荷依赖指标：肺动脉压急性升高时 RVFWS 会下降，这不等于右室收缩力下降。判读必须同时看后负荷（PASP）。', warn: true },
+
+          { kind: 'h', text: '三、四级判读与临床落点' },
+          {
+            kind: 'table',
+            heads: ['RVFWS', '判读', '常见场景'],
+            rows: [
+              ['≤ −20%', '正常', '—'],
+              ['−15% 至 −20%', '轻度减低', 'HFrEF 早期右室受累、化疗随访'],
+              ['−10% 至 −15%', '中度减低', '重度 TR 术前评估、慢性肺高压'],
+              ['> −10%', '重度减低', '右室心肌梗死、终末期右心衰、ARVC'],
+            ],
+          },
+          { kind: 'text', text: '三个预后证据最硬的场景：① **HFrEF**——RVFWS 减低独立于 LVEF 与 PASP 预测死亡与心衰住院；② **重度 TR 术前**——RVFWS 明显减低者术后右心衰风险高，是介入与外科决策的关键一项；③ **ARVC 筛查**——基底段与中段应变减低、心尖相对保留，可早于形态学改变出现。' },
+
+          { kind: 'h', text: '四、基底-心尖梯度：比平均值更有信息' },
+          { kind: 'text', text: '正常右室游离壁应变绝对值呈「基底 ≈ 中段 ≥ 心尖」的轻微递减。如果出现**基底段明显减低、心尖段相对保留**（心尖绝对值反而大于基底 5 个百分点以上），称为反向梯度，提示基底段承受的室壁应力最高：' },
+          { kind: 'text', text: '· **ARVC**：典型为基底 / 中段减低、心尖保留，需结合家族史、室性心律失常、右室扩大；· **慢性右室压力负荷（肺高压）**：基底段最早受累；· **右室心肌梗死**：多为基底或中段节段性减低，与冠脉供血区一致。' },
+          { kind: 'text', text: '注意方向：这里的「心尖保留」发生在**右室**，与心脏淀粉样变左室的「心尖保留」是两回事，机制不同，不要互相套用。' },
+
+          { kind: 'h', text: '五、RVFWS / PASP 耦联' },
+          { kind: 'formula', text: 'RVFWS/PASP 比值（%/mmHg）= |RVFWS| ÷ PASP' },
+          {
+            kind: 'table',
+            heads: ['比值', '判读', '说明'],
+            rows: [
+              ['≥0.35', '耦联保留', '右室收缩力与后负荷匹配'],
+              ['0.31–0.35', '临界', '每 3–6 个月复查，关注症状与运动耐量'],
+              ['<0.31', '失耦联', '右室收缩力跟不上后负荷，预后不良'],
+            ],
+          },
+          { kind: 'note', text: '这个比值与 TAPSE/PASP（切点 0.55 / 0.36 mm/mmHg）量纲不同，阈值也不同，绝不能互相替代或混着记。', warn: true },
+
+          { kind: 'h', text: '六、测量最容易错的三处' },
+          { kind: 'text', text: '① ROI 宽度：软件默认值对右室偏窄，需手动加宽，但不要框进右房与调节束；② 三尖瓣环与心尖必须落在 ROI 内，心尖漏掉会系统性高估；③ 帧率低于 40 帧/s 会明显低估，房颤取 3–5 个周期平均并注明心律。' },
+        ],
+        fields: [
+          { k: 'rvsb', n: '游离壁基底段应变', u: '%（负值）' },
+          { k: 'rvsm', n: '游离壁中段应变', u: '%（负值）' },
+          { k: 'rvsa', n: '游离壁心尖段应变', u: '%（负值）' },
+          { k: 'rvssep', n: '室间隔平均应变（可选）', u: '%（负值）' },
+          { k: 'rvspasp', n: 'PASP（可选）', u: 'mmHg' },
+        ],
+        calc: 'rv-strain',
+        note: '填三段即可得 RVFWS 平均与四级判读；再填室间隔得 RVGLS，填 PASP 得耦联比值。',
       },
       {
         id: 'strain',
@@ -5220,8 +5555,8 @@ const BRIEF_SECTIONS = [
 
           { kind: 'h', text: '二、应变特征（最有价值的一项）' },
           { kind: 'text', text: '纵向应变的基底段严重减低、心尖段相对保留，形成「苹果核（apical sparing）」图形。定量表达为**心尖/基底应变比值**：' },
-          { kind: 'formula', text: '心尖保留比值 = 心尖段平均纵向应变 ÷（基底段 + 中间段平均纵向应变）；>2.1 高度提示淀粉样变' },
-          { kind: 'note', text: '该征象在重度主动脉瓣狭窄、长期高血压中也可见到减弱版，比值需 >2.1 且结合临床；单看 GLS 绝对值（常为 −10% 至 −15%）不足以鉴别。', warn: true },
+          { kind: 'formula', text: '心尖保留比值 RAR = |心尖段平均 GLS| ÷ (|基底段平均 GLS| + |中段平均 GLS|)；>0.94 高度提示淀粉样变' },
+          { kind: 'note', text: '该征象在重度主动脉瓣狭窄、长期高血压中也可见到减弱版，比值需 >0.94 且结合临床；单看 GLS 绝对值（常为 −10% 至 −15%）不足以鉴别。部分软件把分母写成「基底与中段的平均值」，此时阈值约 1.9–2.1，两套写法不能直接比。', warn: true },
 
           { kind: 'h', text: '三、与肥厚型心肌病、高血压心脏病的鉴别' },
           {
@@ -5230,7 +5565,7 @@ const BRIEF_SECTIONS = [
             rows: [
               ['壁厚分布', '对称性增厚为主', '不对称（多为室间隔）', '对称，程度轻'],
               ['心电图电压', '低电压 / 电压-质量比低', '电压常增高', '可增高'],
-              ['应变图形', '心尖保留（比值 >2.1）', '病变段局灶减低', '整体均匀轻度减低'],
+              ['应变图形', '心尖保留（和式 RAR >0.94）', '病变段局灶减低', '整体均匀轻度减低'],
               ['心房', '双房显著扩大', '左房扩大', '左房轻中度扩大'],
               ['心包积液', '常见（少量）', '少见', '少见'],
             ],
@@ -5241,6 +5576,79 @@ const BRIEF_SECTIONS = [
           { kind: 'note', text: '一旦怀疑 AL 型淀粉样变，必须尽快转诊血液科——延误数周即可显著影响生存；不要停在「壁厚原因待查」。', warn: true },
         ],
         note: '看到「室壁厚 + 心房大 + 低电压 + 心尖保留」四联征，就应主动启动淀粉样变筛查流程。',
+      },
+      {
+        id: 'rcm-strain',
+        title: '限制型心肌病 vs 淀粉样变的应变鉴别',
+        sub: '心尖保留比值 · 分层应变 · 三类限制性表型对照',
+        source: ['R21', 'R34', 'R3'],
+        blocks: [
+          { kind: 'h', text: '一、三种「限制性表型」的应变长什么样' },
+          {
+            kind: 'table',
+            heads: ['特征', '心脏淀粉样变', '特发性限制型心肌病', 'HCM（限制型表型）'],
+            rows: [
+              ['GLS', '明显减低（多在 −8% 至 −14%）', '轻中度减低（−14% 至 −18%）', '肥厚节段 <10%，非肥厚节段可正常'],
+              ['心尖保留', '有（和式 RAR >0.94）', '无，整体均匀减低', '无，呈斑片状'],
+              ['分层应变梯度', '消失或反转', '保留', '保留'],
+              ['右室游离壁应变', '常减低（绝对值 <15%）', '可变', '多正常'],
+              ['左房储备应变 LASr', '明显减低（<15%）', '中度减低', '轻中度减低'],
+            ],
+          },
+          { kind: 'text', text: '一句话记法：**淀粉样变是「基底先坏、心尖假好、分层消失」；限制型心肌病是「整体均匀坏」；HCM 是「肥厚的地方坏」**。' },
+
+          { kind: 'h', text: '二、心尖保留比值（RAR）怎么算' },
+          { kind: 'formula', text: 'RAR = |心尖段平均 GLS| ÷ (|基底段平均 GLS| + |中段平均 GLS|)' },
+          {
+            kind: 'table',
+            heads: ['RAR', '判读', '说明'],
+            rows: [
+              ['>0.94', '心尖保留阳性', '高度提示心脏淀粉样变（敏感度 88% / 特异度 85%）'],
+              ['0.70–0.94', '灰区', '结合分层应变、ECG 电压、CMR 与临床'],
+              ['<0.70', '不支持', '考虑 HCM、特发性 RCM 或其他病因'],
+            ],
+          },
+          { kind: 'note', text: '文献与软件里流传两套写法：一套分母是「基底 + 中段」（阈值 0.94），一套分母是「基底与中段的平均值」（阈值约 1.9–2.1）。本工具与上面表格统一用「和」的写法。两套数值不能直接比，换算前先确认分母。', warn: true },
+
+          { kind: 'h', text: '三、为什么淀粉样变会出现心尖保留' },
+          { kind: 'text', text: '淀粉样蛋白沉积从**心内膜下**开始，越靠近基底段沉积越重——因为基底段承受的室壁应力最高、灌注相对薄弱。于是基底段纵向应变首先受损，而心尖段沉积最少、相对完好。' },
+          { kind: 'text', text: '还有一层几何因素：心尖本身以环向与径向收缩为主，纵向位移绝对值天然就小。所谓「保留」有一部分是相对现象，不是心尖真的健康——这也是为什么单独看 RAR 会假阳性，必须结合分层应变与整体 GLS。' },
+
+          { kind: 'h', text: '四、分层应变：更早，也更特异' },
+          { kind: 'text', text: '正常左室壁从内到外，纵向应变绝对值依次递减：心内膜 > 中膜 > 心外膜，比例约 1.5–2 倍。淀粉样变因为从心内膜下起病，这个梯度**消失甚至反转**（心外膜反而 ≥ 心内膜），这是它区别于 HCM 的要点之一——HCM 的梯度通常保留。' },
+          { kind: 'note', text: '分层应变对图像质量的要求远高于整体应变：帧率、心内膜边界清晰度、ROI 厚度设定都会显著影响结果。图像质量一般时不要强行报分层数值。', warn: true },
+
+          { kind: 'h', text: '五、右室与左房别漏掉' },
+          { kind: 'text', text: '淀粉样变是全身性浸润，右室壁同样受累：RVFWS 绝对值 <15% 在 CA 中很常见，且与预后相关。左房应变也明显减低（LASr <15%）——往往早于左房容积增大出现。限制型心肌病的左房应变虽也减低，但幅度通常小于 CA。' },
+
+          { kind: 'h', text: '六、把三类都放在一张表里（含缩窄性心包炎）' },
+          {
+            kind: 'table',
+            heads: ['指标', '心脏淀粉样变', '限制型心肌病', '缩窄性心包炎'],
+            rows: [
+              ['GLS', '明显减低 + 心尖保留', '均匀轻中度减低', '多正常'],
+              ['室壁厚度', '增厚', '正常或轻度增厚', '正常'],
+              ['呼吸变异', '无', '无', '明显（二尖瓣 E >25%）'],
+              ['瓣环反转', '无', '无', '间隔 e′ ≥ 侧壁 e′'],
+              ['心包', '可有少量积液', '正常', '增厚 / 钙化 / 粘连'],
+              ['心电图', '低电压', '低电压或非特异', '低电压'],
+              ['确诊手段', '核素显像 / 活检', '排除性诊断', '心包病理 / 右心导管'],
+            ],
+          },
+
+          { kind: 'h', text: '七、三个容易踩的坑' },
+          { kind: 'text', text: '① **重度主动脉瓣狭窄**可出现假性心尖保留——后负荷整体升高时基底段更早受损，不是淀粉样变；② **心尖肥厚型心肌病**正好相反：心尖段增厚、应变减低，RAR 偏低而不是偏高；③ **节段归属差异**：16 段与 17 段模型要不要算心尖帽，各软件不同，同一患者随访必须固定平台。' },
+          { kind: 'text', text: '超声的任务是「提示」而不是「确诊」：RAR 阳性 + 分层梯度消失 + 室壁增厚，应启动轻链筛查与 ⁹⁹ᵐTc-DPD/PYP 显像；ATTR 型 2–3 级摄取可免活检确诊。' },
+        ],
+        fields: [
+          { k: 'rcmb', n: '基底段平均 GLS', u: '%（负值）' },
+          { k: 'rcmm', n: '中段平均 GLS', u: '%（负值）' },
+          { k: 'rcma', n: '心尖段平均 GLS', u: '%（负值）' },
+          { k: 'rcmendo', n: '心内膜下应变（可选）', u: '%（负值）' },
+          { k: 'rcmepi', n: '心外膜下应变（可选）', u: '%（负值）' },
+        ],
+        calc: 'rcm-strain',
+        note: 'RAR >0.94 提示心尖保留；再填心内膜 / 心外膜应变，可看梯度是否消失（正常比值 >1.5）。',
       },
     ],
   },
@@ -5363,6 +5771,141 @@ const BRIEF_SECTIONS = [
     ],
   },
   {
+    id: 'chd',
+    title: '先天性心脏病',
+    items: [
+      {
+        id: 'shd',
+        title: '先心病分流判读（ASD / VSD / PDA）',
+        sub: 'Qp/Qs 分级 · 取样位置 · 分型与封堵可行性',
+        source: ['R35', 'R36', 'R13'],
+        blocks: [
+          { kind: 'h', text: '一、Qp/Qs 的五档判读' },
+          {
+            kind: 'table',
+            heads: ['Qp/Qs', '分流程度', '一般处理倾向'],
+            rows: [
+              ['<1.0', '净右向左分流', '提示不可逆肺血管病（艾森曼格方向），禁忌关闭'],
+              ['1.0–1.5', '无显著分流 / 微量', '随访观察'],
+              ['1.5–2.0', '中等量', '有症状或心腔扩大者考虑干预'],
+              ['2.0–2.5', '大量', '通常具备干预指征'],
+              ['>2.5', '极大', '尽快评估，须先排除重度肺高压'],
+            ],
+          },
+          { kind: 'note', text: 'Qp/Qs 只反映「分流量」，不能单独决定手术。必须叠加分流方向、肺血管阻力、症状与心腔大小——同样 Qp/Qs = 1.8，一个 30 岁无症状 ASD 和一个 65 岁已出现双向分流者，处理完全相反。', warn: true },
+
+          { kind: 'h', text: '二、三个病变的取样位置（最容易错的地方）' },
+          {
+            kind: 'table',
+            heads: ['病变', 'Qp（肺循环）取样', 'Qs（体循环）取样', '常见错误'],
+            rows: [
+              ['ASD 房间隔缺损', 'RVOT 直径 + VTI', 'LVOT 直径 + VTI', 'ASD 时左心容量相对减少，LVOT 的 SV 偏低 → Qp/Qs 被高估'],
+              ['VSD 室间隔缺损', '二尖瓣环或肺动脉瓣环 VTI', 'LVOT 或主动脉瓣环 VTI', '流出道 VSD 伴主动脉瓣反流时，SV 计算失真'],
+              ['PDA 动脉导管未闭', '二尖瓣环或肺动脉瓣环 VTI', '分流远端降主动脉', 'LVOT 的 SV 已包含分流量，不能直接当 Qs'],
+            ],
+          },
+          { kind: 'text', text: '记住一个原则：**Qp 与 Qs 必须取在分流点的「两侧」**。取错一侧，比值会系统性偏高或偏低，而这个错误在数值上完全看不出来——1.9 和 2.1 的分界，往往就差在取样位置上。' },
+
+          { kind: 'h', text: '三、分流方向：比值之外的另一半信息' },
+          { kind: 'text', text: '① **左向右**：收缩期或全周期高速血流，压差大、彩色明亮，提示限制性缺损；② **双向分流**：同一缺损在收缩期与舒张期方向相反，提示两心腔压力接近，肺血管阻力已显著升高；③ **右向左**：出现发绀与杵状指，属艾森曼格生理，关闭会致命。' },
+          { kind: 'text', text: '缺损的「限制性」看两处：缺损直径相对瓣环的大小，以及分流束的缩流颈宽度。大缺损两端压差小，彩色血流反而不明显，容易漏诊——此时要靠二维测量缺损本身，而不是靠彩色。' },
+
+          { kind: 'h', text: '四、ASD 四种类型与能否封堵' },
+          {
+            kind: 'table',
+            heads: ['类型', '位置', '占比', '介入封堵'],
+            rows: [
+              ['继发孔型（secundum）', '卵圆窝区', '70–75%', '多数可封堵（需评估边缘）'],
+              ['原发孔型（primum）', '靠近房室瓣', '15–20%', '需外科（常伴二尖瓣裂）'],
+              ['静脉窦型', '上 / 下腔静脉入口', '5–10%', '需外科（常伴部分肺静脉异位引流）'],
+              ['冠状静脉窦型', '冠状静脉窦顶', '<1%', '需外科'],
+            ],
+          },
+          { kind: 'text', text: '封堵前必测：缺损最大径、房间隔总长度、以及各缘长度。继发孔型通常要求各缘 ≥5 mm，主动脉侧边缘可适当放宽；边缘不足者封堵器易脱落或压迫主动脉根部。静脉窦型术前必须确认有无肺静脉异位引流——漏掉这一条是封堵失败的主要原因。' },
+
+          { kind: 'h', text: '五、VSD 四种类型' },
+          {
+            kind: 'table',
+            heads: ['类型', '位置', '特点'],
+            rows: [
+              ['膜周部', '三尖瓣隔瓣下', '最常见（约 70%）；部分可自愈；易伴三尖瓣反流与主动脉瓣脱垂'],
+              ['流出道型（双动脉下 / 嵴下）', 'RVOT 内', '亚洲人多见；易伴主动脉瓣脱垂与反流，需尽早干预'],
+              ['流入道型', '三尖瓣隔瓣后', '常合并房室通道畸形'],
+              ['肌部', '小梁部', '可多发（瑞士奶酪样）；部分可自愈，封堵难度较大'],
+            ],
+          },
+
+          { kind: 'h', text: '六、PDA 形态分型（影响封堵器选择）' },
+          {
+            kind: 'table',
+            heads: ['分型', '形态', '封堵要点'],
+            rows: [
+              ['A 型', '锥形，主动脉端宽、肺动脉端窄', '最常见的类型，封堵器选择相对容易'],
+              ['B 型', '窗形，短而宽', '需注意残余分流与封堵器稳定性'],
+              ['C 型', '管形，无收缩', '按管径选择，长度要足够'],
+              ['D 型', '复杂型，多处收缩', '需 3D 或造影辅助'],
+              ['E 型', '延长型，长管状', '需较长封堵器'],
+            ],
+          },
+
+          { kind: 'h', text: '七、成人先心病分流评估的五个坑' },
+          { kind: 'text', text: '① **合并瓣膜反流**：主动脉瓣或肺动脉瓣反流会让 SV 计算失真，Qp/Qs 不可靠；② **房颤**：VTI 需取 3–5 个周期平均，单周期误差大；③ **大缺损压差小**：彩色血流不明显，需靠二维测缺损径；④ **ASD 的左心偏小**：LVOT 的 SV 偏低，比值被高估；⑤ **单切面确认方向**：双向分流在不同切面表现不同，至少两个切面确认。' },
+        ],
+        fields: [
+          { k: 'shqp', n: 'Qp 肺循环每搏量', u: 'mL' },
+          { k: 'shqs', n: 'Qs 体循环每搏量', u: 'mL' },
+        ],
+        calc: 'shd',
+        note: 'Qp、Qs 由各自的直径与 VTI 算出（πd²/4 × VTI）后填入；也可直接用「Qp/Qs」计算器联动。',
+      },
+      {
+        id: 'pht-rev',
+        title: '分流性肺高压的可手术性',
+        sub: 'Qp/Qs · PVR · 急性血管反应试验',
+        source: ['R36', 'R13', 'R7'],
+        blocks: [
+          { kind: 'h', text: '一、能不能关闭，看三组数字' },
+          {
+            kind: 'table',
+            heads: ['参数', '倾向可关闭', '灰区（需复评）', '倾向禁忌'],
+            rows: [
+              ['Qp/Qs', '>1.5', '1.0–1.5', '<1.0（净右向左）'],
+              ['PVR（WU）', '<5', '5–8', '>8'],
+              ['PVRI（WU·m²）', '<6', '6–8', '>8'],
+              ['分流方向', '左 → 右', '双向', '右 → 左'],
+              ['症状', '有症状且以左向右分流为主', '—', '静息发绀、咯血'],
+            ],
+          },
+          { kind: 'text', text: '这一组阈值不是绝对界限。判断的核心是：**关闭后肺循环能否承受全部体循环回流量**。PVR 升高意味着肺血管床已经重建（内膜增生、丛样病变），关闭分流会让右室面对更高的后负荷，可能诱发急性右心衰。' },
+
+          { kind: 'h', text: '二、超声怎么估 PVR' },
+          { kind: 'formula', text: 'PVR ≈ 10 × TR Vmax（m/s）÷ RVOT VTI（cm）+ 0.16　（Abbas 经验公式，单位 WU）' },
+          { kind: 'text', text: '这个公式只是「估」，精度远不及右心导管。它的价值在于筛查：算出来 >6 WU 就应该把患者转去做导管，而不是据此决定手术。已有一项更直观的替代：TR Vmax >3.4 m/s 且 RVOT VTI <10 cm 时，PVR 多数已明显升高。' },
+          { kind: 'note', text: 'PVR 与肺血管阻力指数 PVRI 都要算：小体型患者（尤其儿童、女性）PVR 的绝对值会低估阻力负荷，PVRI 更有可比性。', warn: true },
+
+          { kind: 'h', text: '三、急性肺血管反应试验' },
+          { kind: 'text', text: '方法：右心导管下吸入一氧化氮（或静注腺苷、依前列醇），复测血流动力学。阳性标准是 mPAP 下降 ≥10 mmHg 且绝对值降至 ≤40 mmHg，同时心排量不下降或上升。' },
+          { kind: 'text', text: '阳性说明肺血管仍有可逆的收缩成分，提示关闭后风险相对可控；但**阳性不等于长期获益**，仍需靶向治疗后复评。阴性而 PVR 处于灰区者，可先给予靶向药物 3–6 个月再评估，而不是直接判定不可手术。' },
+
+          { kind: 'h', text: '四、艾森曼格综合征：认出来就别再想着关闭' },
+          { kind: 'text', text: '识别要点：静息发绀与杵状指、红细胞增多、TR Vmax >4.0 m/s（右室压接近体循环压）、肺动脉主干显著扩张、双向或右向左分流。此时缺损已成为「压力释放口」，关闭会导致右室急性衰竭。' },
+          { kind: 'text', text: '管理原则是靶向药物治疗、避免妊娠、避免脱水与缺氧诱因、预防感染，同时**不做缺损关闭**。房间隔造口术在部分重度患者中反而用于减压。' },
+
+          { kind: 'h', text: '五、关闭之后仍要随访的理由' },
+          { kind: 'text', text: '① **残留肺高压**：部分患者关闭后 PVR 不降反升，尤其 >40 岁关闭的 ASD；② **术后右心衰**：长期容量负荷导致右室已扩张、收缩储备耗尽者；③ **房颤不消失**：ASD 关闭后房颤仍可能持续，需继续抗凝评估；④ **封堵器相关**：残余分流、封堵器血栓、主动脉根部受压。' },
+          { kind: 'note', text: '这类决策必须由先心病团队（心内科 + 心外科 + 影像 + 肺高压专科）共同做出，超声提供的是「结构与血流证据」，不是最终结论。', warn: true },
+        ],
+        fields: [
+          { k: 'pvrqp', n: 'Qp/Qs（可选）', u: '' },
+          { k: 'pvrv', n: 'PVR 肺血管阻力', u: 'WU' },
+          { k: 'pvrvi', n: 'PVRI 阻力指数（可选）', u: 'WU·m²' },
+        ],
+        calc: 'pht-rev',
+        note: '填 PVR 即可给出可手术性提示；同时填 Qp/Qs 与 PVRI 判读更完整。最终决策仍需右心导管与多学科评估。',
+      },
+    ],
+  },
+  {
     id: 'stress',
     title: '负荷与功能试验',
     items: [
@@ -5418,9 +5961,24 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: 'Duke 评分原本用于平板运动试验，配合负荷超声看意义更大：**超声有缺血 + Duke 高危** 比单看任一项都更可靠；两者矛盾时以影像证据为主。' },
 
           { kind: 'h', text: '五、负荷时别只看室壁运动' },
-          { kind: 'text', text: '① **收缩储备**：负荷后 LVEF 较静息升高 ≥5% 为正常，升高不足提示多支病变或预后不良；② **肺动脉压**：负荷后 PASP 明显升高（>60 mmHg）提示左房压传导性升高，是 HFpEF 的重要线索；③ **E/e′**：负荷后 E/e′ 升高 >13–15 支持充盈压升高；④ **二尖瓣反流**：负荷后新发或加重的 MR 提示缺血性 MR。' },
+          { kind: 'text', text: '① **收缩储备**：负荷后 LVEF 较静息升高 ≥5% 为正常，升高不足提示多支病变或预后不良；② **肺动脉压**：见下一节；③ **E/e′**：负荷后 E/e′ 升高 >13–15 支持充盈压升高；④ **二尖瓣反流**：负荷后新发或加重的 MR 提示缺血性 MR。' },
 
-          { kind: 'h', text: '六、运动负荷还是药物负荷' },
+          { kind: 'h', text: '六、肺动脉收缩压的运动反应（衔接 Duke 评分）' },
+          { kind: 'formula', text: 'ΔPASP = 峰值 PASP − 静息 PASP\nΔPASP/ΔCO 斜率（mmHg/(L/min)）>3 与右心导管 mPAP/CO >3 WU 对应' },
+          { kind: 'text', text: '机制很直接：运动时心排量上升，正常肺血管床会「扩容不升压」；如果左房压随运动明显升高（舒张储备不足），压力就顺着肺静脉传到肺动脉，PASP 明显上升。所以**运动后 PASP 异常升高本质上是左心充盈压升高的间接证据**，而不是肺血管本身有病。' },
+          {
+            kind: 'table',
+            heads: ['反应', '峰值 PASP', 'ΔPASP', '判读'],
+            rows: [
+              ['正常', '≤50 mmHg', '≤20 mmHg', '肺血管床扩张储备正常'],
+              ['边缘', '51–60 mmHg', '21–30 mmHg', '结合负荷 E/e′ 与症状判断'],
+              ['异常（运动诱发肺高压）', '>60 mmHg', '>30 mmHg', '支持 HFpEF / 左心疾病相关肺高压'],
+            ],
+          },
+          { kind: 'note', text: '实操上有个硬约束：约 40–50% 的患者在运动峰值测不到完整的三尖瓣反流频谱（心率快、呼吸干扰、TR 束偏移）。请务必在**停止运动后 60 秒内**补测；测不到就如实记录「未测及」，不要用其他指标硬凑一个 PASP。', warn: true },
+          { kind: 'text', text: '与 Duke 评分配合的读法：Duke 评分回答「冠脉缺血风险有多高」，运动 PASP 反应回答「充盈压储备够不够」。两者同时异常，提示缺血与舒张功能不全并存；若 Duke 低危而运动 PASP 明显升高，则更支持 HFpEF 而非冠心病，检查方向应转向舒张功能与负荷影像。' },
+
+          { kind: 'h', text: '七、运动负荷还是药物负荷' },
           {
             kind: 'table',
             heads: ['方式', '适用', '局限'],
@@ -5438,9 +5996,11 @@ const BRIEF_SECTIONS = [
           { k: 'dkang', n: '心绞痛指数 0/1/2', u: '' },
           { k: 'dkefr', n: '静息 LVEF', u: '%' },
           { k: 'dkefp', n: '负荷峰值 LVEF', u: '%' },
+          { k: 'dksp0', n: '静息 PASP（可选）', u: 'mmHg' },
+          { k: 'dksp1', n: '峰值 PASP（可选）', u: 'mmHg' },
         ],
         calc: 'stress-echo',
-        note: '填运动时间即可算 Duke 评分；再填静息与峰值 EF 会给出收缩储备判读。',
+        note: '填运动时间即可算 Duke 评分；填静息与峰值 EF 给收缩储备判读；再填两个 PASP 给运动诱发肺高压判读。',
       },
     ],
   },
@@ -5919,6 +6479,34 @@ const REFS = [
     where: 'J Am Soc Echocardiogr, 2019, 32(4): 431–475',
     use: 'TAVR 术后跨瓣压差、瓣周漏半定量与随访基线',
   },
+  {
+    id: 'R34',
+    zh: '心尖保留比值诊断心脏淀粉样变（Phelan 等）',
+    en: 'Phelan D, Collier P, Thavendiranathan P, et al. Relative apical sparing of longitudinal strain using two-dimensional speckle-tracking echocardiography is both sensitive and specific for the diagnosis of cardiac amyloidosis',
+    where: 'Heart, 2012, 98(19): 1442–1448',
+    use: '心尖保留比值（RAR）的算法与 0.94 阈值',
+  },
+  {
+    id: 'R35',
+    zh: '成人先天性心脏病管理指南（2018 AHA/ACC）',
+    en: 'Stout KK, Daniels CJ, Aboulhosn JA, et al. 2018 AHA/ACC Guideline for the Management of Adults With Congenital Heart Disease',
+    where: 'Circulation, 2019, 139(14): e698–e800',
+    use: 'ASD / VSD / PDA 的分型、干预指征与随访节点',
+  },
+  {
+    id: 'R36',
+    zh: '成人先天性心脏病管理指南（2020 ESC）',
+    en: 'Baumgartner H, De Backer J, Babu-Narayan SV, et al. 2020 ESC Guidelines for the management of adult congenital heart disease',
+    where: 'Eur Heart J, 2021, 42(6): 563–645',
+    use: '分流性肺高压的可手术性评估、艾森曼格综合征管理',
+  },
+  {
+    id: 'R37',
+    zh: '左心室辅助装置患者的超声心动图管理建议（2015 ASE）',
+    en: 'Stainback RF, Estep JD, Agler DA, et al. Echocardiography in the Management of Patients with Left Ventricular Assist Devices: Recommendations from the American Society of Echocardiography',
+    where: 'J Am Soc Echocardiogr, 2015, 28(8): 853–909',
+    use: '入血道 / 出血道评估、泵速优化与抽吸事件的超声识别',
+  },
 ];
 
   window.ExtraData = {
@@ -6328,8 +6916,9 @@ const REFS = [
       fields: [['prv', '肺动脉反流峰速 Vmax', 'm/s'], ['mrap', '右房压 RAP', 'mmHg']],
       note: 'mPAP = 4 × PR Vmax² + RAP；>25 mmHg 符合肺高压。也可用 Mahan 近似 0.61 × sPAP + 2' },
     { id: 'shunt', title: 'Qp/Qs 肺体循环血流比',
-      fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm']],
-      note: '使用上方 LVOT 的 SV 作为体循环流量；反流、多处梗阻会影响结果' },
+      fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm'],
+        ['ld', 'LVOT 直径（体循环）', 'cm'], ['lvti', 'LVOT VTI（体循环）', 'cm']],
+      note: 'Qp/Qs = (π·d_RVOT²/4 × VTI_RVOT) ÷ (π·d_LVOT²/4 × VTI_LVOT)；>2.0 大量分流、1.5–2.0 中等量、<1.0 提示净右向左' },
     { id: 'bernoulli', title: '简化伯努利压差',
       fields: [['v2', '远端峰速 V₂', 'm/s'], ['v1', '近端峰速 V₁（可选）', 'm/s']],
       note: 'ΔP = 4(V₂² − V₁²)；缺省 V₁ 按 0 处理。瓣膜狭窄 / 反流定量见「瓣膜评估」页' },
@@ -6366,7 +6955,7 @@ const REFS = [
     dvi: 'LVOT VTI ÷ 主动脉瓣 VTI',
     tei: '等容时间之和 ÷ 射血时间',
     mpap: '舒张期肺动脉反流法',
-    shunt: '分流方向与分流量',
+    shunt: '分流方向与分流量分级',
     bernoulli: 'ΔP = 4(V₂² − V₁²)',
     atrial: 'LAVI · RAVI',
     dias: 'E/A · 平均 E/e′',
@@ -6696,8 +7285,11 @@ const REFS = [
     // shunt
     if (has('rd', 'rvti', 'ld', 'lvti')) {
       const qs = Calc.strokeVolume(v.ld, v.lvti);
-      if (qs > 0) put('shunt', 'Qp/Qs = ' + Calc.fmt(Calc.strokeVolume(v.rd, v.rvti) / qs));
-      else put('shunt');
+      const qp = Calc.strokeVolume(v.rd, v.rvti);
+      if (qs > 0) {
+        const g = Calc.shuntGrade(qp, qs);
+        put('shunt', 'Qp/Qs = ' + Calc.fmt(g.ratio) + ' · ' + g.text);
+      } else put('shunt');
     } else put('shunt');
 
     // bernoulli
@@ -6961,7 +7553,92 @@ const REFS = [
         parts.push('EF 变化 ' + (d >= 0 ? '+' : '') + Calc.fmt(d, 1) + '% · ' +
           (d >= 5 ? '收缩储备正常' : '收缩储备不足（提示多支病变 / 预后不良）'));
       }
+      // 肺动脉收缩压运动反应
+      if (has('dksp0', 'dksp1')) {
+        const p = Calc.paspStress({ rest: v.dksp0, peak: v.dksp1 });
+        if (p.text) {
+          parts.push('PASP ' + Calc.fmt(v.dksp0, 0) + '→' + Calc.fmt(v.dksp1, 0) +
+            ' mmHg（Δ' + Calc.fmt(p.delta, 0) + '）· ' + p.text);
+        }
+      }
       put('stress-echo', partsOf(parts));
+    }
+
+    // 右室应变与 RVFWS 细化
+    {
+      const r = Calc.rvStrain({
+        base: v.rvsb, mid: v.rvsm, apex: v.rvsa, sep: v.rvssep, pasp: v.rvspasp,
+      });
+      const parts = [];
+      if (r.avg !== undefined) {
+        parts.push('RVFWS ' + Calc.fmt(r.avg, 1) + '% → ' + r.gradeText);
+        parts.push(r.gradText);
+      }
+      if (r.rvgls !== undefined) {
+        parts.push('RVGLS ' + Calc.fmt(r.rvgls, 1) + '%' +
+          (r.sepLower ? '（室间隔受累更重，提示双室受累）' : ''));
+      }
+      if (r.ratio !== undefined) {
+        parts.push('RVFWS/PASP ' + Calc.fmt(r.ratio, 2) + ' · ' + r.coupling);
+      }
+      put('rv-strain', partsOf(parts));
+    }
+
+    // 限制型心肌病 vs 淀粉样变：心尖保留比值
+    {
+      const r = Calc.rcmStrain({
+        base: v.rcmb, mid: v.rcmm, apex: v.rcma,
+        endo: v.rcmendo, epi: v.rcmepi,
+      });
+      const parts = [];
+      if (r.rar !== undefined) {
+        parts.push('RAR ' + Calc.fmt(r.rar, 2) + '（GLS ' + Calc.fmt(-r.gls, 1) + '%）→ ' + r.text);
+      }
+      if (r.transGrad !== undefined) {
+        parts.push('心内膜/心外膜 ' + Calc.fmt(r.transGrad, 2) +
+          (r.gradLost ? ' · 梯度消失（支持浸润性病变）' : ' · 梯度保留'));
+      }
+      put('rcm-strain', partsOf(parts));
+    }
+
+    // 先心病分流：Qp/Qs 分级
+    {
+      const r = (has('shqp', 'shqs') ? Calc.shuntGrade(v.shqp, v.shqs) : {});
+      put('shd', r.text ? 'Qp/Qs = ' + Calc.fmt(r.ratio) + ' · ' + r.text : '');
+    }
+
+    // 分流性肺高压的可手术性
+    {
+      const parts = [];
+      if (has('pvrv')) {
+        const pvr = v.pvrv;
+        if (v.pvrqp !== undefined && v.pvrqp < 1.0) {
+          parts.push('Qp/Qs ' + Calc.fmt(v.pvrqp) + '：净右向左分流，倾向禁忌关闭');
+        }
+        if (pvr > 8) parts.push('PVR ' + Calc.fmt(pvr) + ' WU：多属不可逆，禁忌关闭');
+        else if (pvr >= 5) parts.push('PVR ' + Calc.fmt(pvr) + ' WU：灰区，需急性血管反应试验或靶向治疗后复评');
+        else parts.push('PVR ' + Calc.fmt(pvr) + ' WU：阻力尚可，可考虑关闭');
+      }
+      if (has('pvrvi')) {
+        parts.push('PVRI ' + Calc.fmt(v.pvrvi) + ' WU·m² · ' +
+          (v.pvrvi > 8 ? '显著升高' : v.pvrvi >= 6 ? '灰区' : '可接受'));
+      }
+      put('pht-rev', partsOf(parts));
+    }
+
+    // LVAD 超声要点
+    {
+      const r = Calc.lvadEcho({
+        d: v.lvadd, vti: v.lvadvti, hr: v.lvadhr,
+        lvedd: v.lvadlv, avOpen: v.lvadav, tapse: v.lvadtp,
+      });
+      const parts = [];
+      if (r.sv !== undefined) {
+        parts.push('出血道 SV ' + Calc.fmt(r.sv, 1) + ' mL');
+        if (r.co !== undefined) parts.push('CO ' + Calc.fmt(r.co) + ' L/min');
+      }
+      if (r.notes && r.notes.length) parts.push(r.notes.join('；'));
+      put('lvad', partsOf(parts));
     }
 
     // 三尖瓣反流五级严重度

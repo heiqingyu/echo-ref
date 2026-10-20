@@ -180,12 +180,16 @@ Page({
         out = parts.join('；');
       }
     } else if (gid === 'shunt') {
-      // —— shunt：Qp/Qs ——
+      // —— shunt：Qp/Qs + 分级判读 ——
       if (valid(v.rd, v.rvti) && valid(v.ld, v.lvti)) {
         const qs = calc.strokeVolume(v.ld, v.lvti);
-        if (qs > 0) out = 'Qp/Qs = ' + calc.fmt(calc.strokeVolume(v.rd, v.rvti) / qs);
-      } else if (valid(v.rd, v.rvti) && !valid(v.ld, v.lvti)) {
-        out = '需先在「LVOT · 每搏量与心排量」填写 LVOT 直径与 VTI（体循环流量）';
+        const qp = calc.strokeVolume(v.rd, v.rvti);
+        if (qs > 0) {
+          const g = calc.shuntGrade(qp, qs);
+          out = 'Qp/Qs = ' + calc.fmt(g.ratio) + ' · ' + g.text;
+        }
+      } else if (valid(v.rd, v.rvti)) {
+        out = '还需填写 LVOT 直径与 VTI（体循环流量）才能算 Qp/Qs';
       }
     } else if (gid === 'bernoulli') {
       // —— bernoulli ——
@@ -451,6 +455,14 @@ Page({
         parts.push('EF 变化 ' + (d >= 0 ? '+' : '') + calc.fmt(d, 1) + '% · ' +
           (d >= 5 ? '收缩储备正常' : '收缩储备不足（提示多支病变 / 预后不良）'));
       }
+      // 肺动脉收缩压运动反应
+      if (valid(v.dksp0, v.dksp1)) {
+        const p = calc.paspStress({ rest: v.dksp0, peak: v.dksp1 });
+        if (p.text) {
+          parts.push('PASP ' + calc.fmt(v.dksp0, 0) + '→' + calc.fmt(v.dksp1, 0) +
+            ' mmHg（Δ' + calc.fmt(p.delta, 0) + '）· ' + p.text);
+        }
+      }
       out = parts.join('；');
     } else if (gid === 'tr-interv') {
       // —— TR 五级严重度 ——
@@ -460,6 +472,76 @@ Page({
         parts.push('TR ' + g.text);
         if (g.byEroa !== g.byRvol) parts.push('EROA 与 RVol 不一致，取较重档');
       }
+      out = parts.join('；');
+    } else if (gid === 'rv-strain') {
+      // —— 右室应变与 RVFWS 细化 ——
+      const r = calc.rvStrain({
+        base: v.rvsb, mid: v.rvsm, apex: v.rvsa, sep: v.rvssep, pasp: v.rvspasp,
+      });
+      const parts = [];
+      if (r.avg !== undefined) {
+        parts.push('RVFWS ' + calc.fmt(r.avg, 1) + '% → ' + r.gradeText);
+        parts.push(r.gradText);
+      }
+      if (r.rvgls !== undefined) {
+        parts.push('RVGLS ' + calc.fmt(r.rvgls, 1) + '%' +
+          (r.sepLower ? '（室间隔受累更重，提示双室受累）' : ''));
+      }
+      if (r.ratio !== undefined) {
+        parts.push('RVFWS/PASP ' + calc.fmt(r.ratio, 2) + ' · ' + r.coupling);
+      }
+      out = parts.join('；');
+    } else if (gid === 'rcm-strain') {
+      // —— 限制型心肌病 vs 淀粉样变：心尖保留比值 ——
+      const r = calc.rcmStrain({
+        base: v.rcmb, mid: v.rcmm, apex: v.rcma,
+        endo: v.rcmendo, epi: v.rcmepi,
+      });
+      const parts = [];
+      if (r.rar !== undefined) {
+        parts.push('RAR ' + calc.fmt(r.rar, 2) + '（GLS ' + calc.fmt(-r.gls, 1) + '%）→ ' + r.text);
+      }
+      if (r.transGrad !== undefined) {
+        parts.push('心内膜/心外膜 ' + calc.fmt(r.transGrad, 2) +
+          (r.gradLost ? ' · 梯度消失（支持浸润性病变）' : ' · 梯度保留'));
+      }
+      out = parts.join('；');
+    } else if (gid === 'shd') {
+      // —— 先心病分流：Qp/Qs 分级 ——
+      if (valid(v.shqp, v.shqs)) {
+        const r = calc.shuntGrade(v.shqp, v.shqs);
+        out = r.text ? 'Qp/Qs = ' + calc.fmt(r.ratio) + ' · ' + r.text : '';
+      }
+    } else if (gid === 'pht-rev') {
+      // —— 分流性肺高压的可手术性 ——
+      const parts = [];
+      if (valid(v.pvrv)) {
+        const pvr = v.pvrv;
+        const qp = valid(v.pvrqp) ? v.pvrqp : null;
+        if (qp !== null && qp < 1.0) {
+          parts.push('Qp/Qs ' + calc.fmt(qp) + '：净右向左分流，倾向禁忌关闭');
+        }
+        if (pvr > 8) parts.push('PVR ' + calc.fmt(pvr) + ' WU：多属不可逆，禁忌关闭');
+        else if (pvr >= 5) parts.push('PVR ' + calc.fmt(pvr) + ' WU：灰区，需急性血管反应试验或靶向治疗后复评');
+        else parts.push('PVR ' + calc.fmt(pvr) + ' WU：阻力尚可，可考虑关闭');
+      }
+      if (valid(v.pvrvi)) {
+        parts.push('PVRI ' + calc.fmt(v.pvrvi) + ' WU·m² · ' +
+          (v.pvrvi > 8 ? '显著升高' : v.pvrvi >= 6 ? '灰区' : '可接受'));
+      }
+      out = parts.join('；');
+    } else if (gid === 'lvad') {
+      // —— LVAD：出血道 SV/CO + 泵速判读 ——
+      const r = calc.lvadEcho({
+        d: v.lvadd, vti: v.lvadvti, hr: v.lvadhr,
+        lvedd: v.lvadlv, avOpen: v.lvadav, tapse: v.lvadtp,
+      });
+      const parts = [];
+      if (r.sv !== undefined) {
+        parts.push('出血道 SV ' + calc.fmt(r.sv, 1) + ' mL');
+        if (r.co !== undefined) parts.push('CO ' + calc.fmt(r.co) + ' L/min');
+      }
+      if (r.notes && r.notes.length) parts.push(r.notes.join('；'));
       out = parts.join('；');
     } else if (gid === 'strain') {
       // —— 应变判读 ——
