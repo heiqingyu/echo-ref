@@ -431,6 +431,14 @@ const html = `<!DOCTYPE html>
         <div class="card__t">公式集</div>
         <div class="card__d" id="calcBsaNote">按主题分组，点击条目进入对应公式 · BSA — m²（来自「EF·参考值」页上方）</div>
       </div>
+
+      <!-- 搜索：条目较多，顶部常驻过滤（输入即筛，不再往下翻长列表） -->
+      <div class="fx-search">
+        <input id="fxSearch" class="fx-search__i" type="search" autocomplete="off"
+               placeholder="搜索公式 / 评估 / 视频，如 EF、TAPSE、房间隔">
+        <button class="fx-search__x" id="fxSearchClear" hidden>✕</button>
+      </div>
+
       <div id="calcList"></div>
 
       <!-- 参考文献（列表由 app.js 渲染） -->
@@ -474,6 +482,17 @@ const html = `<!DOCTYPE html>
       <button class="fx-back" id="calcBack">‹ 返回公式集</button>
       <div id="calcGroups"></div>
       <button class="btn btn--ghost" id="calcClear">清空本组输入</button>
+    </div>
+
+    <!-- 视图三：专辑（整本书 / 整套视频的切面列表） -->
+    <div id="calcAlbum" hidden>
+      <button class="fx-back" id="albumBack">‹ 返回公式集</button>
+      <div class="card">
+        <div class="card__t" id="albumTitle"></div>
+        <div class="card__d" id="albumDesc"></div>
+        <div class="fx-gnote" id="albumNote" hidden></div>
+      </div>
+      <div id="albumList"></div>
     </div>
   </section>
 

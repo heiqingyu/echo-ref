@@ -6,6 +6,7 @@
     "pages/valves/valves",
     "pages/segments/segments",
     "pages/pediatric/pediatric",
+    "pages/album/album",
     "pages/video/video"
   ],
   "window": {

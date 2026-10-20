@@ -753,6 +753,75 @@ html, body {
 
 
 
+/* 目录搜索框：吸顶，长列表下也能随时改关键词 */
+.fx-search {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 1px 4px rgba(16, 32, 64, 0.08);
+}
+
+.fx-search__i {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.fx-search__i::placeholder {
+  color: #a3aab5;
+}
+
+/* 去掉 WebView 给 type=search 自带的清除按钮，改用下方自绘的 ✕ */
+.fx-search__i::-webkit-search-cancel-button,
+.fx-search__i::-webkit-search-decoration {
+  -webkit-appearance: none;
+  display: none;
+}
+
+.fx-search__x[hidden] {
+  display: none;
+}
+
+.fx-search__x {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #eef1f5;
+  color: #8a9099;
+  font-size: 12px;
+  line-height: 26px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* 搜索无结果 */
+.fx-empty {
+  margin: 6px 0 12px;
+  padding: 26px 14px;
+  border-radius: 12px;
+  background: var(--card);
+  text-align: center;
+  font-size: 13px;
+  color: var(--sub);
+}
+
 .fx-group {
   margin: 18px 2px 8px;
   font-size: 12px;

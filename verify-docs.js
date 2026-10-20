@@ -236,6 +236,10 @@ function check(name, ok, detail) {
       items: idx.querySelectorAll('.fx-item').length,
       links: idx.querySelectorAll('a.fx-item').length,
       valve: idx.querySelectorAll('.fx-item[data-kind="valve"]').length,
+      album: idx.querySelectorAll('.fx-item[data-kind="album"]').length,
+      albumTxt: (idx.querySelector('.fx-item[data-kind="album"]') || {}).textContent || '',
+      search: !!document.getElementById('fxSearch'),
+      albumView: !!document.getElementById('calcAlbum'),
       refs: document.querySelectorAll('#calcRefList .ref-item').length,
       ext: !!document.getElementById('extLinks'),
       media: idx.querySelectorAll('img, iframe, video').length,
@@ -252,8 +256,11 @@ function check(name, ok, detail) {
     check('公式集分组 = 血流动力学 / 瓣膜评估 / 器械支持 / 心腔与应变 / 心肌病变 / 大血管与急症 / 先天性心脏病 / 先心术后 / 负荷与功能试验 / 介入 TEE 评估 / 切面学习 / 书籍视频 / 切面指南 / TEE 模拟器',
       d.groups.join('|') === '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|实用超声规范化检查与操作（视频）|切面指南|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 84 条（11 计算 + 36 评估 + 37 外链）', d.items === 84, d.items);
-    check('外链条目 37 条', d.links === 37, d.links);
+    check('条目 60 条（11 计算 + 36 评估 + 13 外链，其中专辑入口 1 条）', d.items === 60, d.items);
+    check('外链 <a> 条目 12 条（专辑入口为按钮，另行校验）', d.links === 12, d.links);
+    check('书籍视频收成 1 条专辑入口且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
+    check('公式集目录带搜索框', d.search, true);
+    check('专辑二级视图容器存在', d.albumView, true);
     check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);

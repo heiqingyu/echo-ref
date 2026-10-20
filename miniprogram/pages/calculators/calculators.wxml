@@ -7,6 +7,19 @@
     </view>
   </view>
 
+  <!-- 搜索：条目较多，顶部常驻过滤 -->
+  <view class="fx-search">
+    <input class="fx-search__i" value="{{kw}}" type="text"
+           placeholder="搜索公式 / 评估 / 视频，如 EF、TAPSE、房间隔"
+           placeholder-class="fx-search__ph" confirm-type="search"
+           bindinput="onSearch" />
+    <view wx:if="{{kw}}" class="fx-search__x" bindtap="onClearSearch">✕</view>
+  </view>
+
+  <view wx:if="{{searching && sections.length === 0}}" class="fx-empty">
+    没有匹配「{{kw}}」的条目
+  </view>
+
   <block wx:for="{{sections}}" wx:key="id" wx:for-item="sec">
     <view class="fx-group">{{sec.title}}</view>
     <view wx:if="{{sec.note}}" class="fx-group__note">{{sec.note}}</view>
@@ -15,12 +28,12 @@
       <view wx:for="{{sec.items}}" wx:key="id" wx:for-item="it"
             class="fx-item" hover-class="fx-item--tap"
             data-kind="{{it.kind}}" data-id="{{it.id}}" data-url="{{it.url}}"
-            data-title="{{it.title}}" bindtap="onOpen">
+            data-sec="{{it.sec}}" data-title="{{it.title}}" bindtap="onOpen">
         <view class="fx-item__main">
           <view class="fx-item__n">{{it.title}}</view>
           <view class="fx-item__d">{{it.sub}}</view>
         </view>
-        <view class="fx-item__a">{{it.video ? '▶' : '›'}}</view>
+        <view class="fx-item__a">{{it.kind === 'album' ? it.count + ' ›' : (it.video ? '▶' : '›')}}</view>
       </view>
     </view>
   </block>
