@@ -405,10 +405,10 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('card__title">参考文献') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 21 条', EXD.REFS.length, 21, 0);
+  check('参考文献 24 条', EXD.REFS.length, 24, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
-  check('文献编号连续 R1–R21',
-    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21' ? 1 : 0, 1, 0);
+  check('文献编号连续 R1–R24',
+    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24' ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
 
@@ -481,7 +481,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirs.map(d => d.title).join('|') ===
       '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 36 条（5 血流动力学 + 8 瓣膜 + 11 评估 + 12 外链）', nItems, 36, 0);
+  check('目录共 38 条（5 血流动力学 + 9 瓣膜 + 12 评估 + 12 外链）', nItems, 38, 0);
   check('切面学习 5 条', dirs[5].items.length, 5, 0);
   check('切面指南 4 条', dirs[6].items.length, 4, 0);
   check('TEE 模拟器 3 条', dirs[7].items.length, 3, 0);
@@ -501,16 +501,16 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirs[2].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
   check('器械支持含 LAD 参数',
     dirs[2].items.some(i => i.id === 'la') ? 1 : 0, 1, 0);
-  check('心腔与应变 7 条', dirs[3].items.length, 7, 0);
-  ['lv', 'rv', 'rcoupling', 'strain', 'dias-grade', 'peri', 'prosthetic'].forEach(id => {
+  check('心腔与应变 8 条', dirs[3].items.length, 8, 0);
+  ['lv', 'rv', 'rcoupling', 'rvfail', 'strain', 'peri', 'cp-rm', 'prosthetic'].forEach(id => {
     check('心腔与应变含 ' + id,
       dirs[3].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  // 瓣膜评估组 = 5 个瓣膜计算器 + 3 条判读（合并为一组，不再有「瓣膜疾病评估」）
-  check('瓣膜评估组合并为 8 条（5 计算器 + 3 判读）', dirs[1].items.length, 8, 0);
+  // 瓣膜评估组 = 5 个瓣膜计算器 + 4 条判读（合并为一组，不再有「瓣膜疾病评估」）
+  check('瓣膜评估组合并为 9 条（5 计算器 + 4 判读）', dirs[1].items.length, 9, 0);
   check('瓣膜评估组含 5 个瓣膜计算器入口',
     ['as', 'ar', 'ms', 'mr', 'tr'].every(id => dirs[1].items.some(i => i.id === id && i.kind === 'valve')) ? 1 : 0, 1, 0);
-  ['mitral', 'aortic', 'ie'].forEach(id => {
+  ['mitral', 'aortic', 'lf-lg', 'ie'].forEach(id => {
     check('瓣膜评估组含判读条目 ' + id,
       dirs[1].items.some(i => i.id === id && i.kind === 'brief') ? 1 : 0, 1, 0);
   });

@@ -805,7 +805,9 @@ function buildPublicHtml() {
   ['id="page-valves"', 'id="page-segments"', 'data-go="calc"',
    'PUBLIC-CUT', 'END-CUT',
    '节段划分页', '瓣膜评估页', '.vswitch', '.vchip', '.bull-wrap', '.lvl--severe', '.vsum',
-   '肝静脉', 'Wilkins',
+   // 「肝静脉」不再作为残留标记：公式集「右心功能分级与右心衰」「缩窄 vs 限制型」
+   // 两条判读合法引用肝静脉血流频谱，不能再据此判定瓣膜页残留。
+   'Wilkins',
    // PISA / EROA 属于 echo-calc.js 的通用公式注释，发布版保留 Calc 引擎，故不禁止
    'window.ValveCalc', 'ValveCalc', 'renderValves', 'clearValves', '__HAS_']
     .forEach((s) => {

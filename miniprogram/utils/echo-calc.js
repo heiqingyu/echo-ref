@@ -252,6 +252,123 @@ function lvFilling(o) {
   return r;
 }
 
+/**
+ * 主动脉瓣狭窄「低流量低压差（LF-LG）」专项判读
+ *
+ * 判定链路：先看流量（SVi ≤35 mL/m² 为低流量）→ 再看压差（mPG <40 mmHg 为低压差）
+ * → 最后看 AVA 是否 ≤1.0 cm²（否则不满足重度形态学标准）。
+ * 三者同时成立才是 LF-LG AS，再按 LVEF 分经典型（<50%）与反常型（≥50%）。
+ * 若提供负荷后数据（SVi / AVA），按 SV 增幅与 AVA 变化区分真性 / 假性重度。
+ *
+ * @param {object} o {lvef, svi, mpg, ava, dsvi, dava} 可选项传 undefined
+ */
+function asLflg(o) {
+  const r = {};
+  const lvef = o.lvef, svi = o.svi, mpg = o.mpg, ava = o.ava;
+  const dsvi = o.dsvi, dava = o.dava;
+
+  if (svi > 0) r.lowFlow = svi <= 35;
+  if (mpg > 0) r.lowGrad = mpg < 40;
+  if (ava > 0) r.severeAva = ava <= 1.0;
+
+  if (r.lowFlow && r.lowGrad && r.severeAva) {
+    r.type = (lvef > 0 && lvef < 50) ? 'classic' : 'paradoxical';
+    r.text = r.type === 'classic'
+      ? '经典低流量低压差重度 AS（LVEF<50%）'
+      : '反常低流量低压差重度 AS（LVEF≥50%）';
+  } else if (r.severeAva) {
+    r.text = r.lowGrad
+      ? 'AVA 达重度但压差偏低：流量正常时先复核 SV 与 AVA 测量'
+      : '重度 AS（流量与压差一致）';
+  } else if (r.severeAva === false) {
+    r.text = 'AVA >1.0 cm²，未达重度形态学标准';
+  }
+
+  // 负荷试验（多巴酚丁胺或流量负荷）
+  if (dsvi > 0 && svi > 0) {
+    r.flowReserve = dsvi / svi;
+    r.hasReserve = r.flowReserve >= 1.2;
+    if (dava > 0) {
+      if (r.hasReserve && dava > 1.0) r.dse = '假性重度（负荷后 AVA >1.0 cm²）';
+      else if (r.hasReserve) r.dse = '真性重度（负荷后 AVA 仍 ≤1.0 cm²，且有收缩储备）';
+      else r.dse = '无收缩储备 + AVA 不增：真性重度可能性大，手术风险高';
+    } else {
+      r.dse = r.hasReserve
+        ? '有收缩储备（SV 增幅 ≥20%），需结合负荷后 AVA 判断'
+        : '无收缩储备（SV 增幅 <20%）：真性重度可能性大';
+    }
+  }
+  return r;
+}
+
+/**
+ * 右室功能分级（ASE 2015 六指标积分法）
+ *
+ * 每项异常记 1 分：RV 基底径 >41 mm、RV 长径 >83 mm、FAC <35%、
+ * TAPSE <17 mm、S′ <9.5 cm/s、3D RVEF <45%。
+ * 合计 0 分正常；1–2 分轻度；3–4 分中度；≥5 分重度。
+ * 缺项不扣分，只按实际提供的项计分（n 为参与评估的项数）。
+ */
+function rvFuncScore(o) {
+  const items = [];
+  const add = (name, val, bad) => {
+    if (val > 0) items.push({ name: name, bad: bad });
+  };
+  add('RV 基底径 >41 mm', o.rvbase, o.rvbase > 41);
+  add('RV 长径 >83 mm', o.rvlen, o.rvlen > 83);
+  add('FAC <35%', o.fac, o.fac < 35);
+  add('TAPSE <17 mm', o.tapse, o.tapse < 17);
+  add('S′ <9.5 cm/s', o.rvs, o.rvs < 9.5);
+  add('3D RVEF <45%', o.rvef, o.rvef < 45);
+
+  const bad = items.filter(function (i) { return i.bad; }).length;
+  const r = { score: bad, n: items.length, items: items };
+  if (items.length) {
+    r.grade = bad === 0 ? 0 : bad <= 2 ? 1 : bad <= 4 ? 2 : 3;
+    r.text = ['功能正常', '轻度功能障碍', '中度功能障碍', '重度功能障碍'][r.grade];
+  }
+  return r;
+}
+
+/**
+ * 缩窄性心包炎 vs 限制型心肌病：呼吸变异量化
+ *
+ * 缩窄的核心是「心腔充盈受外部心包约束，随胸腔内压周期性改变」，
+ * 因此血流速度的呼吸变异幅度远大于限制型心肌病（后者是心肌本身舒张受限，
+ * 心腔间相互制约不明显）。三项阳性支持缩窄、零阳性支持限制型。
+ *
+ * 变异率定义（都要带符号看，方向反了说明取错了呼吸时相）：
+ *   二尖瓣 E 变异 = (呼气 − 吸气) / 呼气 × 100%，正常吸气时轻度下降
+ *   三尖瓣 E 变异 = (吸气 − 呼气) / 呼气 × 100%，正常吸气时上升
+ *
+ * @param {object} o {mvex, mvinsp, tvex, tvinsp, medee}
+ */
+function cpRm(o) {
+  const r = { feats: [] };
+  if (o.mvex > 0 && o.mvinsp >= 0) {
+    r.mvVar = (o.mvex - o.mvinsp) / o.mvex * 100;
+    if (Math.abs(r.mvVar) > 25) r.feats.push('二尖瓣 E 呼吸变异 >25%');
+  }
+  if (o.tvex > 0 && o.tvinsp >= 0) {
+    r.tvVar = (o.tvinsp - o.tvex) / o.tvex * 100;
+    if (Math.abs(r.tvVar) > 40) r.feats.push('三尖瓣 E 呼吸变异 >40%');
+  }
+  if (o.medee > 0) {
+    if (o.medee < 8) r.feats.push('间隔 E/e′ <8（瓣环矛盾）');
+    else if (o.medee > 14) r.feats.push('间隔 E/e′ >14（不支持缩窄）');
+  }
+
+  r.score = r.feats.filter(function (f) { return f.indexOf('不支持') < 0; }).length;
+  const n = (r.mvVar !== undefined ? 1 : 0) + (r.tvVar !== undefined ? 1 : 0) +
+    (o.medee > 0 ? 1 : 0);
+  if (n) {
+    if (r.score >= 2) r.text = '支持缩窄性心包炎';
+    else if (r.score === 0) r.text = '支持限制型心肌病';
+    else r.text = '证据不足：需结合心包厚度 / 钙化、室间隔抖动与右心导管';
+  }
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -291,6 +408,9 @@ module.exports = {
   gradeEe,
   tapsePasp,
   lvFilling,
+  asLflg,
+  rvFuncScore,
+  cpRm,
   round,
   fmt,
 };

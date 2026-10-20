@@ -262,6 +262,22 @@ Page({
         parts.push('RWT ' + calc.fmt(v.rwt, 2) + ' · ' +
           (v.rwt > 0.42 ? '升高：向心性肥厚' : '正常或偏低：离心性重构'));
       }
+      // —— 左室充盈压（原独立条目已并入本组）——
+      const f = calc.lvFilling({
+        e: v.dge === undefined ? null : v.dge,
+        a: v.dga === undefined ? null : v.dga,
+        es: v.dges === undefined ? null : v.dges,
+        el: v.dgel === undefined ? null : v.dgel,
+        lavi: v.dglavi === undefined ? null : v.dglavi,
+        trv: v.dgtrv === undefined ? null : v.dgtrv,
+      });
+      if (f.ea !== undefined) parts.push('E/A ' + calc.fmt(f.ea));
+      if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + calc.fmt(f.avgEe));
+      if (f.count > 0) parts.push('充盈压升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
+      else if (v.dglavi !== undefined || v.dgtrv !== undefined) {
+        parts.push('充盈压升高指标 0 项');
+      }
+      if (f.text) parts.push('→ ' + f.text);
       out = parts.join('；');
     } else if (gid === 'rv') {
       // —— 右心：RAP + PASP + PVR + PADP + PH 概率 + 右室功能 ——
@@ -299,23 +315,48 @@ Page({
         const rc = calc.tapsePasp(v.tapse, v.paspv);
         out = 'TAPSE/PASP = ' + calc.fmt(rc.ratio, 2) + ' mm/mmHg · ' + rc.text;
       }
-    } else if (gid === 'dias-grade') {
-      // —— 左室充盈压综合判读 ——
-      const r = calc.lvFilling({
-        e: v.dge === undefined ? null : v.dge,
-        a: v.dga === undefined ? null : v.dga,
-        es: v.dges === undefined ? null : v.dges,
-        el: v.dgel === undefined ? null : v.dgel,
-        lavi: v.dglavi === undefined ? null : v.dglavi,
-        trv: v.dgtrv === undefined ? null : v.dgtrv,
+    } else if (gid === 'lf-lg') {
+      // —— 主动脉瓣狭窄 LF-LG 判读 ——
+      const r = calc.asLflg({
+        lvef: v.lflgef, svi: v.lflgsvi, mpg: v.lflgmpg, ava: v.lflgava,
+        dsvi: v.lflgdsvi, dava: v.lflgdava,
       });
       const parts = [];
-      if (r.ea !== undefined) parts.push('E/A ' + calc.fmt(r.ea));
-      if (r.avgEe !== undefined) parts.push('平均 E/e′ ' + calc.fmt(r.avgEe));
-      if (r.count > 0) parts.push('升高指标 ' + r.count + ' 项（' + r.crit.join('、') + '）');
-      else if (r.avgEe !== undefined || v.dglavi !== undefined || v.dgtrv !== undefined) {
-        parts.push('升高指标 0 项');
+      if (r.text) parts.push(r.text);
+      if (r.flowReserve !== undefined) {
+        parts.push('SV 增幅 ' + calc.fmt((r.flowReserve - 1) * 100, 1) + '%（' +
+          (r.hasReserve ? '有收缩储备' : '无收缩储备') + '）');
       }
+      if (r.dse) parts.push(r.dse);
+      out = parts.join('；');
+    } else if (gid === 'rvfail') {
+      // —— 右室功能分级（ASE 六指标积分）+ 应变 ——
+      const r = calc.rvFuncScore({
+        rvbase: v.rvfbase, fac: v.rvffac, tapse: v.rvftapse,
+        rvs: v.rvfs, rvef: v.rvfe,
+      });
+      const parts = [];
+      if (r.n) {
+        const bad = r.items.filter(function (i) { return i.bad; })
+          .map(function (i) { return i.name; });
+        parts.push(r.score + '/' + r.n + ' 项异常 → ' + r.text);
+        if (bad.length) parts.push('异常项：' + bad.join('、'));
+      }
+      if (valid(v.rvfws)) {
+        parts.push('RVFWS ' + calc.fmt(v.rvfws, 1) + '% · ' +
+          (v.rvfws <= -20 ? '正常' : v.rvfws <= -15 ? '轻度减低' : '明显减低（预后不良）'));
+      }
+      out = parts.join('；');
+    } else if (gid === 'cp-rm') {
+      // —— 缩窄性心包炎 vs 限制型心肌病：呼吸变异 ——
+      const r = calc.cpRm({
+        mvex: v.cpmex, mvinsp: v.cpmix, tvex: v.cptex, tvinsp: v.cptix,
+        medee: v.cpmee,
+      });
+      const parts = [];
+      if (r.mvVar !== undefined) parts.push('二尖瓣 E 变异 ' + calc.fmt(Math.abs(r.mvVar), 1) + '%');
+      if (r.tvVar !== undefined) parts.push('三尖瓣 E 变异 ' + calc.fmt(Math.abs(r.tvVar), 1) + '%');
+      if (r.feats.length) parts.push(r.feats.join('、'));
       if (r.text) parts.push('→ ' + r.text);
       out = parts.join('；');
     } else if (gid === 'strain') {
