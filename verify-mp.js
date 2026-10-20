@@ -384,6 +384,8 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     pathW.join(__dirname, 'miniprogram', 'pages', 'calculators', 'calculators.wxss'), 'utf8');
   const idxWxml = fsW.readFileSync(
     pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.wxml'), 'utf8');
+  const calcJs = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'calculators', 'calculators.js'), 'utf8');
 
   // 延展阅读已从首页搬到公式集页
   check('首页不再含延展阅读卡片', idxWxml.indexOf('延展阅读') === -1 ? 1 : 0, 1, 0);
@@ -400,9 +402,19 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
   check('calculators.wxss 含 .extlink 样式',
     calcWxss.indexOf('.extlink {') !== -1 ? 1 : 0, 1, 0);
 
-  // 参考文献区
-  check('公式集页含参考文献区',
-    calcWxml.indexOf('card__title">参考文献') !== -1 ? 1 : 0, 1, 0);
+  // 参考文献区（默认折叠：40 条平铺会把页面拉得极长）
+  check('公式集页含参考文献区（折叠头）',
+    calcWxml.indexOf('refs-hd') !== -1 && calcWxml.indexOf('参考文献') !== -1 ? 1 : 0, 1, 0);
+  check('参考文献默认折叠（refsOpen 初值 false）',
+    /refsOpen:\s*false/.test(calcJs) ? 1 : 0, 1, 0);
+  check('折叠头点开绑定 onToggleRefs',
+    calcWxml.indexOf('bindtap="onToggleRefs"') !== -1 &&
+    /onToggleRefs\s*\(\s*\)/.test(calcJs) ? 1 : 0, 1, 0);
+  check('折叠头显示条数（refsCount）',
+    calcWxml.indexOf('{{refsCount}}') !== -1 &&
+    /refsCount:\s*EX\.REFS\.length/.test(calcJs) ? 1 : 0, 1, 0);
+  check('参考文献列表受 refsOpen 控制',
+    calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
   check('参考文献 40 条', EXD.REFS.length, 40, 0);

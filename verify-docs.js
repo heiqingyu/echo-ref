@@ -410,6 +410,49 @@ function check(name, ok, detail) {
   check('发布版可打开评估类详情（CRT）', dd.g[0] === 'crt', det);
   check('详情内表格已渲染', dd.tbl >= 2, dd.tbl);
 
+  // ── 参考文献：默认折叠，点标题才展开全部（40 条平铺会把目录拉得极长）──
+  await c.evalJs('(function(){var b=document.getElementById("calcBack");if(b)b.click();return 1;})()');
+  const refsInit = await c.evalJs(`(function(){
+    var l = document.getElementById('calcRefList');
+    var hd = document.getElementById('refsToggle');
+    return JSON.stringify({
+      hidden: !!l.hidden,
+      h: l.offsetHeight,
+      n: l.querySelectorAll('.ref-item').length,
+      cnt: (document.getElementById('refsCount') || {}).textContent || '',
+      aria: hd ? hd.getAttribute('aria-expanded') : '',
+      open: hd ? hd.classList.contains('refs-hd--open') : null
+    });
+  })()`);
+  const ri = JSON.parse(refsInit);
+  check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
+  check('折叠头显示 40 条', /40/.test(ri.cnt), refsInit);
+  check('折叠头 aria-expanded=false、无 open 类',
+    ri.aria === 'false' && ri.open === false, refsInit);
+
+  await c.evalJs('(function(){document.getElementById("refsToggle").click();return 1;})()');
+  const refsOpen = await c.evalJs(`(function(){
+    var l = document.getElementById('calcRefList');
+    var hd = document.getElementById('refsToggle');
+    return JSON.stringify({
+      hidden: !!l.hidden,
+      h: l.offsetHeight,
+      n: l.querySelectorAll('.ref-item').length,
+      aria: hd.getAttribute('aria-expanded'),
+      open: hd.classList.contains('refs-hd--open'),
+      first: (l.querySelector('.ref-item__zh') || {}).textContent || ''
+    });
+  })()`);
+  const ro = JSON.parse(refsOpen);
+  check('点击后展开全部 40 条', ro.hidden === false && ro.n === 40 && ro.h > 0, refsOpen);
+  check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
+  check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
+
+  await c.evalJs('(function(){document.getElementById("refsToggle").click();return 1;})()');
+  const refsAgain = await c.evalJs(
+    'JSON.stringify({hidden: !!document.getElementById("calcRefList").hidden})');
+  check('再点一次可收起', JSON.parse(refsAgain).hidden === true, refsAgain);
+
   // 转载内容仍应剥离干净；节段划分页（自有内容）已回归发布版
   const stripped = await c.evalJs(`(function(){
     return JSON.stringify({

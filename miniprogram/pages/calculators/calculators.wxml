@@ -38,20 +38,27 @@
     </view>
   </block>
 
-  <!-- ══════ 参考文献 ══════ -->
+  <!-- ══════ 参考文献（默认折叠，点标题展开全部） ══════ -->
   <view class="card">
-    <view class="card__title">参考文献</view>
+    <view class="card__title refs-hd {{refsOpen ? 'refs-hd--open' : ''}}"
+          bindtap="onToggleRefs">
+      <text class="refs-hd__t">参考文献</text>
+      <text class="refs-hd__n">{{refsCount}} 条</text>
+      <text class="refs-hd__a">›</text>
+    </view>
     <view class="card__desc">
-      本工具全部数据与分级标准的来源。详情页底部会标注该条目使用的文献编号。
+      本工具全部数据与分级标准的来源。详情页底部会标注该条目使用的文献编号，点标题展开全部。
     </view>
 
-    <view wx:for="{{refs}}" wx:key="id" class="ref-item">
-      <view class="ref-item__id">{{item.id}}</view>
-      <view class="ref-item__body">
-        <view class="ref-item__zh">{{item.zh}}</view>
-        <view class="ref-item__en">{{item.en}}</view>
-        <view class="ref-item__where">{{item.where}}</view>
-        <view class="ref-item__use">用于：{{item.use}}</view>
+    <view wx:if="{{refsOpen}}">
+      <view wx:for="{{refs}}" wx:key="id" class="ref-item">
+        <view class="ref-item__id">{{item.id}}</view>
+        <view class="ref-item__body">
+          <view class="ref-item__zh">{{item.zh}}</view>
+          <view class="ref-item__en">{{item.en}}</view>
+          <view class="ref-item__where">{{item.where}}</view>
+          <view class="ref-item__use">用于：{{item.use}}</view>
+        </view>
       </view>
     </view>
   </view>
