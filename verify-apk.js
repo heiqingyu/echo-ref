@@ -51,28 +51,32 @@ section('1. 构建产物完整性');
 check('www/index.html 存在', fs.existsSync(WWW), true);
 
 const html = fs.readFileSync(WWW, 'utf8');
-// ★ 2026-10-20 起 APK 打包的是完整版 www（自用不公开，内容与小程序一致），
-//   发布版 docs 只用于 GitHub Pages，不再进 APK。
-check('www 完整版体积 < 520 KB（APK 内存约束）', Buffer.byteLength(html, 'utf8') < 520 * 1024, true);
-check('docs 发布版存在（仅 GitHub Pages 用）', fs.existsSync(DOCS), true);
+// ★ APK 打包源 = docs/index.html（4 页签）。用户明确：不要「瓣膜评估」单独页，
+//   它的判读条目本来就在公式集的「瓣膜评估」组里；只有 5 个瓣膜计算器依赖该页。
+//   但「节段划分」（室壁划分）必须保留 —— 这是之前 app 内容比小程序少的原因。
+check('www 完整版体积 < 520 KB', Buffer.byteLength(html, 'utf8') < 520 * 1024, true);
+check('docs 发布版存在（APK 打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
   check('docs 发布版体积 < 470 KB', Buffer.byteLength(dh, 'utf8') < 470 * 1024, true);
-  check('docs 发布版不含瓣膜页（转载内容不上线）',
-    dh.indexOf('id="page-valves"') === -1, true);
-  check('docs 发布版仍含节段划分页（自有内容）',
-    dh.indexOf('id="page-segments"') !== -1, true);
+  check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
+  check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
 }
-// APK 实际打包源：android-app/assets/index.html 必须与 www 完全一致
+// APK 实际打包源：android-app/assets/index.html 必须与 docs 完全一致
 const ASSET = path.join(ROOT, 'android-app', 'assets', 'index.html');
 check('android-app/assets/index.html 存在', fs.existsSync(ASSET), true);
-if (fs.existsSync(ASSET)) {
+if (fs.existsSync(ASSET) && fs.existsSync(DOCS)) {
   const ah = fs.readFileSync(ASSET, 'utf8');
-  check('APK 打包源与完整版 www 完全一致（字节数相等 + 内容相等）',
-    Buffer.byteLength(ah, 'utf8') === Buffer.byteLength(html, 'utf8') && ah === html,
+  const dh2 = fs.readFileSync(DOCS, 'utf8');
+  check('APK 打包源与 docs 完全一致（字节数相等 + 内容相等）',
+    Buffer.byteLength(ah, 'utf8') === Buffer.byteLength(dh2, 'utf8') && ah === dh2,
     true);
-  check('APK 打包源含瓣膜评估页', ah.indexOf('id="page-valves"') !== -1, true);
-  check('APK 打包源含节段划分页', ah.indexOf('id="page-segments"') !== -1, true);
+  check('APK 内不含瓣膜单独页（用户要求）', ah.indexOf('id="page-valves"') === -1, true);
+  check('APK 内含节段划分页（室壁划分）', ah.indexOf('id="page-segments"') !== -1, true);
+  check('APK 内 4 个页签', (ah.match(/class="tab[ "][^>]*data-tab="/g) || []).length, 4);
+  // 公式集里必须仍能查到瓣膜评估这一组（否则「公式集里有就行」就不成立）
+  check('APK 公式集仍含「瓣膜评估」组', ah.indexOf("title: '瓣膜评估'") !== -1 ||
+    ah.indexOf('瓣膜评估') !== -1, true);
 }
 
 // 抽取 <script> 里两个 IIFE 引擎块
