@@ -379,6 +379,24 @@
     { id: 'flow', title: 'LVOT · 每搏量与心排量',
       fields: [['ld', 'LVOT 直径', 'cm'], ['lvti', 'LVOT VTI', 'cm'], ['hr', '心率', '次/min']],
       note: 'SV = πd²/4 × VTI；CO = SV × HR ÷ 1000' },
+    { id: 'ef', title: '左室容积与射血分数',
+      fields: [['edv', '舒张末容积 EDV', 'mL'], ['esv', '收缩末容积 ESV', 'mL']],
+      note: 'EF = (EDV − ESV) / EDV；SV = EDV − ESV。有 BSA 时同出 SVi 与 ESVi（ESVi 决定 ICD 指征）' },
+    { id: 'lvmass', title: '左室质量与几何构型',
+      fields: [['lvid', 'LVIDd（舒张末内径）', 'cm'], ['ivs', 'IVSd（室间隔厚度）', 'cm'], ['lvpw', 'LVPWd（后壁厚度）', 'cm']],
+      note: 'LV Mass = 0.8 × 1.04 × [(LVIDd+IVSd+LVPWd)³ − LVIDd³] + 0.6；RWT = 2×LVPWd/LVIDd。LVMI 上限男 115 / 女 95 g/m²' },
+    { id: 'mapse', title: 'MAPSE 长轴收缩',
+      fields: [['mapse', 'MAPSE', 'mm']],
+      note: 'MAPSE 正常 ≥10–12 mm；长轴功能常早于 EF 下降，EF 正常而 MAPSE 减低提示早期收缩功能障碍' },
+    { id: 'dvi', title: '无量纲指数 DVI',
+      fields: [['dlvti', 'LVOT VTI', 'cm'], ['davti', '主动脉瓣 VTI', 'cm']],
+      note: 'DVI ≤0.25 支持重度 AS；不受体表面积与流量影响，低流量状态下比 AVA 更稳' },
+    { id: 'tei', title: 'Tei 指数（MPI）',
+      fields: [['ivct', '等容收缩时间 IVCT', 'ms'], ['ivrt', '等容舒张时间 IVRT', 'ms'], ['et', '射血时间 ET', 'ms'], ['tside', '侧别（右室填 2，留空按左室）', '']],
+      note: 'MPI = (IVCT + IVRT) / ET；左室 >0.40、右室 >0.55 为异常。心率与负荷会影响测值' },
+    { id: 'mpap', title: '平均肺动脉压',
+      fields: [['prv', '肺动脉反流峰速 Vmax', 'm/s'], ['mrap', '右房压 RAP', 'mmHg']],
+      note: 'mPAP = 4 × PR Vmax² + RAP；>25 mmHg 符合肺高压。也可用 Mahan 近似 0.61 × sPAP + 2' },
     { id: 'shunt', title: 'Qp/Qs 肺体循环血流比',
       fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm']],
       note: '使用上方 LVOT 的 SV 作为体循环流量；反流、多处梗阻会影响结果' },
@@ -412,6 +430,12 @@
   /** 目录里每条公式的一句话说明 */
   const CALC_SUB = {
     flow: 'SV · CO · SVi · CI',
+    ef: 'Simpson 双平面 · EF · SVi · ESVi',
+    lvmass: 'LV Mass · LVMI · RWT · 四分法',
+    mapse: '二尖瓣环收缩期位移',
+    dvi: 'LVOT VTI ÷ 主动脉瓣 VTI',
+    tei: '等容时间之和 ÷ 射血时间',
+    mpap: '舒张期肺动脉反流法',
     shunt: '分流方向与分流量',
     bernoulli: 'ΔP = 4(V₂² − V₁²)',
     atrial: 'LAVI · RAVI',
@@ -775,6 +799,60 @@
       put('dias', partsOf(parts));
     }
 
+    const female = state.sex === 'female';
+
+    // 左室容积与射血分数
+    if (has('edv', 'esv')) {
+      const r = Calc.lvEf(v.edv, v.esv, bsa);
+      if (r.error) put('ef', r.error);
+      else {
+        const parts = ['EF ' + Calc.fmt(r.ef, 1) + '%', 'SV ' + Calc.fmt(r.sv, 1) + ' mL'];
+        if (r.svi !== undefined) {
+          parts.push('SVi ' + Calc.fmt(r.svi, 1) + ' mL/m²');
+          parts.push('ESVi ' + Calc.fmt(r.esvi, 1) + ' mL/m²');
+        }
+        if (r.text) parts.push('→ ' + r.text);
+        put('ef', partsOf(parts));
+      }
+    } else put('ef');
+
+    // 左室质量与几何构型
+    if (has('lvid', 'ivs', 'lvpw')) {
+      const r = Calc.lvMass({ lvid: v.lvid, ivs: v.ivs, lvpw: v.lvpw, bsa: bsa, female: female });
+      const parts = ['LV Mass ' + Calc.fmt(r.mass, 1) + ' g', 'RWT ' + Calc.fmt(r.rwt, 2)];
+      if (r.lvmi !== undefined) {
+        parts.push('LVMI ' + Calc.fmt(r.lvmi, 1) + ' g/m²（' + (female ? '女' : '男') + ' 上限 ' + r.hi + '）');
+      }
+      if (r.text) parts.push('→ ' + r.text);
+      put('lvmass', partsOf(parts));
+    } else put('lvmass');
+
+    // MAPSE
+    if (has('mapse')) {
+      const r = Calc.mapseIndex(v.mapse);
+      put('mapse', 'MAPSE ' + Calc.fmt(v.mapse, 0) + ' mm → ' + r.text);
+    } else put('mapse');
+
+    // DVI
+    if (has('dlvti', 'davti')) {
+      const r = Calc.dviIndex(v.dlvti, v.davti);
+      put('dvi', r.error ? r.error : 'DVI = ' + Calc.fmt(r.dvi, 2) + ' → ' + r.text);
+    } else put('dvi');
+
+    // Tei 指数 MPI
+    if (has('ivct', 'ivrt', 'et')) {
+      const side = v.tside === 2 ? 'rv' : 'lv';
+      const r = Calc.teiIndex(v.ivct, v.ivrt, v.et, side);
+      put('tei', 'MPI = ' + Calc.fmt(r.mpi, 2) + '（' + (side === 'rv' ? '右室' : '左室') +
+        ' 上限 ' + Calc.fmt(r.cut, 2) + '）→ ' + r.text);
+    } else put('tei');
+
+    // 平均肺动脉压
+    if (has('prv', 'mrap')) {
+      const r = Calc.mpap(v.prv, v.mrap);
+      put('mpap', 'mPAP ≈ ' + Calc.fmt(r.mpap, 1) + ' mmHg → ' + r.text);
+    } else put('mpap');
+
     // ── 评估类条目（器械支持 / 心腔与应变）──
 
     // CRT：SV / SVi（低流量）+ QRS 时限提示
@@ -965,6 +1043,18 @@
         if (g.byEroa !== g.byRvol) parts.push('EROA 与 RVol 不一致，取较重档');
       }
       put('tr-interv', partsOf(parts));
+    }
+
+    // CTRCD 肿瘤治疗相关心功能不全
+    {
+      const r = Calc.ctrcd({ g0: v.g0, g1: v.g1, ef0: v.ef0, ef1: v.ef1 });
+      const parts = [];
+      if (r.relDrop !== undefined) parts.push('GLS 相对下降 ' + Calc.fmt(r.relDrop, 1) + '%');
+      if (r.efDrop !== undefined && r.efDrop !== 0) {
+        parts.push('EF 变化 ' + Calc.fmt(-r.efDrop, 1) + ' 个百分点');
+      }
+      if (r.text) parts.push('→ ' + r.text);
+      put('ctrcd', partsOf(parts));
     }
 
     // 心肌应变判读
