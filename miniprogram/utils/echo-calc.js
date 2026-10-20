@@ -993,6 +993,30 @@ function tofPr(o) {
   return r;
 }
 
+/**
+ * Ebstein 畸形的三尖瓣隔瓣下移指数
+ *
+ * 下移指数 = 隔瓣下移距离（mm） ÷ 体表面积（m²）
+ *
+ * 判读（>8 mm/m² 为诊断 Ebstein 的常用界值）：
+ *   ≤8   未达显著下移（正常 ≤8）
+ *   8–15 显著下移，符合 Ebstein
+ *   >15  重度下移，房化右室大、修复难度高
+ * 注：8 为文献常用界值；15 为经验分层，用于提示重构程度，非指南硬切点。
+ *
+ * @param {number} disp 隔瓣下移距离 mm
+ * @param {number} bsa  体表面积 m²
+ */
+function ebsteinIndex(disp, bsa) {
+  if (!(disp > 0) || !(bsa > 0)) return {};
+  const idx = disp / bsa;
+  const r = { index: idx, disp: disp, bsa: bsa };
+  if (idx <= 8) { r.level = 0; r.text = '未达显著下移（≤8 mm/m²）'; }
+  else if (idx <= 15) { r.level = 1; r.text = '显著下移，符合 Ebstein（8–15 mm/m²）'; }
+  else { r.level = 2; r.text = '重度下移（>15 mm/m²），房化右室大、修复难度高'; }
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -1052,6 +1076,7 @@ module.exports = {
   lvadEcho,
   rvReserve,
   tofPr,
+  ebsteinIndex,
   round,
   fmt,
 };

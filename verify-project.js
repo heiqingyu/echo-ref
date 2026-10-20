@@ -140,10 +140,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 8) ok('评估内容 8 个分组（器械 / 心腔与应变 / 瓣膜 / 心肌病变 / 大血管与急症 / 先天性心脏病 / 负荷试验 / 介入 TEE）');
+if (EX.BRIEF_SECTIONS.length === 9) ok('评估内容 9 个分组（器械 / 心腔与应变 / 瓣膜 / 心肌病变 / 大血管与急症 / 先天性心脏病 / 先心术后 / 负荷试验 / 介入 TEE）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,lf-lg,ie,hcm,amyloid,rcm-strain,aorta,pe,thrombus,shd,pht-rev,tof-pr,stress-echo,tr-interv,mv-interv,tavr') ok('评估条目 = 31 条（器械 3 + 心腔 11 + 瓣膜 4 + 心肌 3 + 大血管 3 + 先心 3 + 负荷 1 + 介入 3）');
+if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,lf-lg,ie,hcm,amyloid,rcm-strain,aorta,pe,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr') ok('评估条目 = 36 条（器械 3 + 心腔 11 + 瓣膜 4 + 心肌 3 + 大血管 3 + 先心 5 + 先心术后 3 + 负荷 1 + 介入 3）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];

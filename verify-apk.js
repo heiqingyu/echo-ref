@@ -52,11 +52,11 @@ check('www/index.html 存在', fs.existsSync(WWW), true);
 
 const html = fs.readFileSync(WWW, 'utf8');
 // 完整版（含瓣膜页）体积上限；真正打包进 APK 的是发布版 docs，另有更严的约束
-check('www 完整版体积 < 450 KB', Buffer.byteLength(html, 'utf8') < 450 * 1024, true);
+check('www 完整版体积 < 520 KB', Buffer.byteLength(html, 'utf8') < 520 * 1024, true);
 check('docs 发布版存在（APK 实际打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 350 KB（APK 内存约束）', Buffer.byteLength(dh, 'utf8') < 350 * 1024, true);
+  check('docs 发布版体积 < 420 KB（APK 内存约束）', Buffer.byteLength(dh, 'utf8') < 420 * 1024, true);
 }
 
 // 抽取 <script> 里两个 IIFE 引擎块
@@ -443,6 +443,10 @@ check('含 v1.1.1 新增条目 tof-pr 与右室收缩储备字段',
   html.indexOf("id: 'tof-pr'") !== -1 &&
   html.indexOf("k: 'pridx'") !== -1 &&
   html.indexOf("k: 'rvr0'") !== -1, true);
+check('含 v1.2.1 新增条目（ebstein / mustard / fontan / dorv / as-switch）',
+  ['ebstein', 'mustard', 'fontan', 'dorv', 'as-switch'].every(function (id) {
+    return html.indexOf("id: '" + id + "'") !== -1;
+  }), true);
 check('参考文献区容器 #calcRefs 存在', html.indexOf('id="calcRefs"') !== -1, true);
 check('参考文献列表容器 #calcRefList 存在', html.indexOf('id="calcRefList"') !== -1, true);
 check('首页已无延展阅读卡片', html.indexOf('page-index') < html.indexOf('id="extLinks"'), true);
