@@ -156,22 +156,10 @@ const BRIEF_SECTIONS = [
       {
         id: 'rv',
         title: '右心评估',
-        sub: 'TAPSE · RV S′ · FAC · 右房压 · PASP',
-        source: ['R5', 'R7'],
+        sub: 'RAP · PASP · PVR · PADP · PH 概率 · 右室功能',
+        source: ['R5', 'R7', 'R13', 'R14'],
         blocks: [
-          { kind: 'h', text: '右室功能：超声三大核心指标' },
-          {
-            kind: 'table',
-            heads: ['指标', '正常', '降低', '说明'],
-            rows: [
-              ['TAPSE（mm）', '>17', '<17', '高度依赖纵向运动，受前负荷与胸膜压力影响'],
-              ['FAC（%）', '>35', '<35', '面积变化率，受整体形状改变影响较小'],
-              ['RV S′（cm/s）', '>9.5', '<9.5', '右室侧壁瓣环 TDI 峰值速度'],
-              ['右房面积（cm²）', '≤18', '>18', '四腔心收缩末面积'],
-              ['右房面积/BSA（cm²/m²）', '≤9', '>9', '体型校正后判断右房扩大'],
-            ],
-          },
-          { kind: 'h', text: '右房压（RAP）估算' },
+          { kind: 'h', text: '一、右房压 RAP 估算' },
           {
             kind: 'table',
             heads: ['IVC 直径', '吸气塌陷 ≥50%', '估计 RAP'],
@@ -183,7 +171,8 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'note', text: 'RAP 估算仅适用自主呼吸且无显著三尖瓣狭窄；机械通气与容量状态会显著影响结果。', warn: true },
-          { kind: 'h', text: '肺动脉压力（PASP）' },
+
+          { kind: 'h', text: '二、肺动脉收缩压 PASP' },
           { kind: 'formula', text: 'TR 峰速 Vmax（m/s）→ 压差 ΔP = 4V² → PASP ≈ ΔP + RAP' },
           {
             kind: 'table',
@@ -195,16 +184,69 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'text', text: '同样 2.8–3.4 m/s 的 TR 峰速，在活动、年轻、低流量人群中多属生理性；需结合是否存在右心扩大、功能下降等结构性改变再判定。' },
-          { kind: 'h', text: '严重三尖瓣反流的超声预警组合' },
+
+          { kind: 'h', text: '三、肺动脉阻力 PVR 与舒张压 PADP（超声估测）' },
+          { kind: 'text', text: 'PVR 经验估测：PVR ≈ (TR 峰速 / RVOT VTI) × 10 + 0.16（WU）；或 PVR ≈ TR 峰速² / RVOT VTI。PVR >3 WU 提示肺血管阻力升高，>5 WU 提示中重度升高。' },
+          { kind: 'text', text: 'PADP = PR 舒张末压差 + RAP。PR 舒张末速度 ≤2.2 m/s 时 PADP 多正常（<15 mmHg）；2.3–2.7 m/s 提示升高可能；≥2.8 m/s 多 ≥25 mmHg（需 PR 无显著反流、无肺动脉瓣狭窄）。' },
+          { kind: 'note', text: '以上为经验公式，不能替代右心导管；心衰、左心疾病、容量状态会显著影响估测值。', warn: true },
+
+          { kind: 'h', text: '四、肺动脉高压 PH 的超声概率（双征象法）' },
+          {
+            kind: 'table',
+            heads: ['PH 支持征象', '判读'],
+            rows: [
+              ['TR 峰速 >2.8–3.4 m/s', '压力增高最直接证据'],
+              ['右室 / 左室基底径比 >1.0', '右室扩大、室间隔左移'],
+              ['左室偏心指数 >1.0', '右心压力负荷致左室受压'],
+              ['McConnell 征（右室游离壁运动减低、心尖保留）', '急性肺栓塞 / 右心应激特征'],
+              ['60/60 征（肺动脉加速时间 <60 ms 且 TR 峰速 <3.6 m/s）', '中重度 PH 早期表现'],
+              ['下腔静脉固定扩张（>21 mm 且不塌陷）', '右房压持续升高'],
+              ['肺动脉瓣舒张期提前关闭切迹', '肺动脉舒张压升高'],
+            ],
+          },
+          { kind: 'text', text: '同时满足「TR 峰速升高」与「≥2 类支持征象」→ 高概率 PH；仅一项或无可疑，需结合临床与右心导管。' },
+
+          { kind: 'h', text: '五、右室功能：三大核心指标' },
+          {
+            kind: 'table',
+            heads: ['指标', '正常', '降低', '说明'],
+            rows: [
+              ['TAPSE（mm）', '>17', '<17', '高度依赖纵向运动，受前负荷与胸膜压力影响'],
+              ['FAC（%）', '>35', '<35', '面积变化率，受整体形状改变影响较小'],
+              ['RV S′（cm/s）', '>9.5', '<9.5', '右室侧壁瓣环 TDI 峰值速度'],
+              ['右房面积（cm²）', '≤18', '>18', '四腔心收缩末面积'],
+              ['右房面积/BSA（cm²/m²）', '≤9', '>9', '体型校正后判断右房扩大'],
+            ],
+          },
+
+          { kind: 'h', text: '六、右室功能进阶指标（三维 / 应变）' },
+          {
+            kind: 'table',
+            heads: ['指标', '参考', '说明'],
+            rows: [
+              ['3D RVEF（%）', '45–60', '<35 提示右室收缩功能减低'],
+              ['右室游离壁应变 RVFWS（%）', '≤ −20', '绝对值减小提示右室纵向应变受损'],
+              ['RV FAC（EDA−ESA）/EDA', '见上', '需完整标准心尖四腔切面'],
+              ['三尖瓣环收缩期位移 TAPSE', '见上', '床旁首选指标'],
+            ],
+          },
+          { kind: 'text', text: '右室几何复杂，单一指标易误判：TAPSE 受前负荷与负荷影响大，FAC 依赖标准心尖四腔切面，3D RVEF 与 RV 应变对形状改变不敏感但需专用软件与良好心内膜追踪。' },
+
+          { kind: 'h', text: '七、严重三尖瓣反流的超声预警组合' },
           { kind: 'text', text: 'TAPSE <14 mm、RV S′ <10 cm/s、PASP >50 mmHg、IVC >21 mm —— 四项中≥2 项提示预后不良，宜考虑瓣膜介入评估。' },
           { kind: 'text', text: '症状性重度 TR 需手术或介入治疗时，推荐术中同期三维超声或经食管超声确认反流机制与导管可操作性（ASE 2019 经导管瓣膜评估）。' },
         ],
         fields: [
           { k: 'tr', n: 'TR 峰速', u: 'm/s' },
           { k: 'ivc', n: 'IVC 内径', u: 'mm' },
+          { k: 'prend', n: 'PR 舒张末速度（可选）', u: 'm/s' },
+          { k: 'rvti2', n: 'RVOT VTI（PVR 用，可选）', u: 'cm' },
+          { k: 'eda', n: 'RV 舒张末面积（可选）', u: 'cm²' },
+          { k: 'esa', n: 'RV 收缩末面积（可选）', u: 'cm²' },
+          { k: 'rvs', n: '右室 S′（可选）', u: 'cm/s' },
         ],
         calc: 'rv',
-        note: '与「右心压力与 PH 概率」同源算法：PASP = 4V² + RAP（RAP 由 IVC 内径与塌陷程度决定）。',
+        note: '已合并右心压力、PH 概率与右室功能：PASP = 4V² + RAP（RAP 由 IVC 内径与塌陷程度决定），PVR/PADP 由 PR 速度估测。',
       },
       {
         id: 'strain',
@@ -318,8 +360,8 @@ const LINK_SECTIONS = [
       {
         id: 'guide-tee-28',
         title: '经食道切面指南（28 标准切面）',
-        sub: 'ASE/SCA 成人 TEE 完整检查指南 · 原文全文',
-        url: 'https://www.sciencedirect.com/science/article/pii/S0894731713005622',
+        sub: 'ASE/SCA 成人 TEE 完整检查指南（2013）· 官方 PDF 直链',
+        url: 'https://www.asecho.org/wp-content/uploads/2014/05/2013_Performing-Comprehensive-TEE.pdf',
       },
       {
         id: 'guide-tee-shd',
@@ -440,6 +482,20 @@ const REFS = [
     en: 'Hahn RT, Abraham T, Adams MS, et al. Guidelines for Performing a Comprehensive Transesophageal Echocardiographic Examination',
     where: 'J Am Soc Echocardiogr, 2013, 26(12): 921–964（28 个标准切面）',
     use: 'TEE 28 标准切面命名与采集规范（见「切面指南」）',
+  },
+  {
+    id: 'R13',
+    zh: '肺动脉高压诊断与治疗指南（ESC/ERS 2022）',
+    en: 'Humbert M, et al. 2022 ESC/ERS Guidelines for the diagnosis and treatment of pulmonary hypertension',
+    where: 'Eur Respir J, 2022, 60(1): 2200879',
+    use: 'PH 血流动力学分型、超声概率与右心导管定义',
+  },
+  {
+    id: 'R14',
+    zh: '成人右心超声评估指南（ASE 2010）',
+    en: 'Rudski LG, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults',
+    where: 'J Am Soc Echocardiogr, 2010, 23(7): 685–713',
+    use: '右室功能、右房压与 PH 超声评估的金标准参考',
   },
 ];
 

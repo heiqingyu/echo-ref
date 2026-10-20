@@ -33,8 +33,8 @@
              data-idx="{{index}}" bindinput="onInput" placeholder="未填写" />
     </view>
 
-    <!-- 右心压力组的附加选项 -->
-    <block wx:if="{{gid === 'pressure'}}">
+    <!-- 右心评估的附加选项（IVC 塌陷 / PH 征象） -->
+    <block wx:if="{{gid === 'rv'}}">
       <view class="field">
         <text class="field__label">IVC 吸气塌陷</text>
         <view class="seg">

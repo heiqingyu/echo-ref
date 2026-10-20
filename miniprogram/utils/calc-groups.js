@@ -57,29 +57,6 @@ const GROUPS = [
     note: '容积 ÷ BSA；LAVI 正常 ≤34 mL/m²；右房正常值需匹配测量方法',
   },
   {
-    id: 'pressure',
-    title: '右心压力与 PH 概率',
-    sub: 'RAP · PASP · PVR · PADP',
-    fields: [
-      { k: 'tr', n: 'TR 峰速', u: 'm/s' },
-      { k: 'ivc', n: 'IVC 内径', u: 'mm' },
-      { k: 'prend', n: 'PR 舒张末速度（可选）', u: 'm/s' },
-      { k: 'rvti2', n: 'RVOT VTI（PVR 用，可选）', u: 'cm' },
-    ],
-    note: 'RAP 估算仅适用自主呼吸；PASP 估算要求无 RVOT/肺动脉瓣梗阻',
-  },
-  {
-    id: 'rvcalc',
-    title: '右室功能',
-    sub: 'FAC · 右室 S′',
-    fields: [
-      { k: 'eda', n: 'RV 舒张末面积', u: 'cm²' },
-      { k: 'esa', n: 'RV 收缩末面积', u: 'cm²' },
-      { k: 'rvs', n: '右室 S′（可选）', u: 'cm/s' },
-    ],
-    note: 'FAC 正常 >35%；右室 S′ 正常 >9.5 cm/s',
-  },
-  {
     id: 'dias',
     title: '舒张功能基础比值',
     sub: 'E/A · 平均 E/e′',

@@ -388,12 +388,6 @@
     { id: 'atrial', title: '心房容积指数',
       fields: [['lav', '左房容积', 'mL'], ['rav', '右房容积', 'mL']],
       note: '容积 ÷ BSA；LAVI 正常 ≤34 mL/m²；右房正常值需匹配测量方法' },
-    { id: 'pressure', title: '右心压力与 PH 概率',
-      fields: [['tr', 'TR 峰速', 'm/s'], ['ivc', 'IVC 内径', 'mm'], ['prend', 'PR 舒张末速度（可选）', 'm/s'], ['rvti2', 'RVOT VTI（PVR 用，可选）', 'cm']],
-      note: 'RAP 估算仅适用自主呼吸；PASP 估算要求无 RVOT/肺动脉瓣梗阻' },
-    { id: 'rvcalc', title: '右室功能',
-      fields: [['eda', 'RV 舒张末面积', 'cm²'], ['esa', 'RV 收缩末面积', 'cm²'], ['rvs', '右室 S′（可选）', 'cm/s']],
-      note: 'FAC 正常 >35%；右室 S′ 正常 >9.5 cm/s' },
     { id: 'dias', title: '舒张功能基础比值',
       fields: [['e', 'E 峰', 'cm/s'], ['a', 'A 峰', 'cm/s'], ['es', '间隔 e′', 'cm/s'], ['el', '侧壁 e′', 'cm/s']],
       note: 'E/e′ <8 左房压正常，>14 升高，8–14 为灰区；完整分级需结合 LAVI、肺静脉等' },
@@ -421,8 +415,6 @@
     shunt: '分流方向与分流量',
     bernoulli: 'ΔP = 4(V₂² − V₁²)',
     atrial: 'LAVI · RAVI',
-    pressure: 'RAP · PASP · PVR · PADP',
-    rvcalc: 'FAC · 右室 S′',
     dias: 'E/A · 平均 E/e′',
   };
 
@@ -607,10 +599,6 @@
       html += '<div class="card" data-g="' + g.id + '" hidden>' +
         '<div class="card__t">' + esc(g.title) + '</div>' +
         fieldsHtml(g.fields.map(function (f) { return { k: f[0], n: f[1], u: f[2] }; }));
-      if (g.id === 'pressure') {
-        html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse) +
-          segHtml('calcsigns', CALC_SIGNS, calcSigns);
-      }
       html += '<div class="note">' + esc(g.note) + '</div>' +
         '<div class="calc-out" id="calcOut-' + g.id + '">' +
         '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div></div>';
@@ -623,8 +611,9 @@
           blocksHtml(it.blocks);
         if (it.fields && it.fields.length) {
           html += fieldsHtml(it.fields);
-          if (it.id === 'pressure' || it.id === 'rv') {
-            html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse);
+          if (it.id === it.id === 'rv') {
+            html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse) +
+              segHtml('calcsigns', CALC_SIGNS, calcSigns);
           }
         }
         if (it.note) html += '<div class="note">' + esc(it.note) + '</div>';
@@ -757,35 +746,6 @@
       put('atrial', partsOf(parts));
     } else put('atrial');
 
-    // pressure
-    {
-      const parts = [];
-      let rap = null;
-      if (has('ivc')) {
-        rap = Calc.rapFromIvc(v.ivc, calcCollapse);
-        parts.push('RAP 估计 ' + rap + ' mmHg');
-      }
-      if (has('tr') && rap !== null) parts.push('PASP ≈ ' + Calc.fmt(Calc.pasp(v.tr, rap), 1) + ' mmHg');
-      if (has('tr', 'rvti2')) parts.push('PVR ≈ ' + Calc.fmt(Calc.pvrEstimate(v.tr, v.rvti2)) + ' WU');
-      if (has('prend') && rap !== null) parts.push('PADP ≈ ' + Calc.fmt(Calc.padp(v.prend, rap), 1) + ' mmHg');
-      if (has('tr')) {
-        const signs = calcSigns === '' ? null : calcSigns === 'yes';
-        parts.push('PH 超声概率：' + Calc.phProbability(v.tr, signs));
-      }
-      put('pressure', partsOf(parts));
-    }
-
-    // rvcalc
-    {
-      let s = '';
-      if (has('eda', 'esa')) {
-        s = v.esa > v.eda ? 'ESA 不可大于 EDA'
-          : 'FAC ' + Calc.fmt(Calc.fac(v.eda, v.esa), 1) + '%（正常 >35%）';
-      }
-      if (has('rvs')) s += (s ? '；' : '') + 'S′ ' + Calc.fmt(v.rvs, 1) + ' cm/s（正常 >9.5）';
-      put('rvcalc', s);
-    }
-
     // dias
     {
       const r = Calc.diastolicRatios(
@@ -852,7 +812,7 @@
       put('lv', partsOf(parts));
     }
 
-    // 右心：RAP + PASP（含分级）
+    // 右心：RAP + PASP（含分级）+ PVR + PADP + PH 概率 + 右室功能
     {
       const parts = [];
       let rap = null;
@@ -864,6 +824,17 @@
         parts.push('PASP ≈ ' + Calc.fmt(Calc.pasp(v.tr, rap), 1) + ' mmHg · ' +
           (v.tr <= 2.8 ? '无肺高压' : v.tr < 3.4 ? '轻度升高' : '中重度升高'));
       }
+      if (has('tr', 'rvti2')) parts.push('PVR ≈ ' + Calc.fmt(Calc.pvrEstimate(v.tr, v.rvti2)) + ' WU');
+      if (has('prend') && rap !== null) parts.push('PADP ≈ ' + Calc.fmt(Calc.padp(v.prend, rap), 1) + ' mmHg');
+      if (v.tr !== undefined) {
+        const signs = calcSigns === '' ? null : calcSigns === 'yes';
+        parts.push('PH 超声概率：' + Calc.phProbability(v.tr, signs));
+      }
+      if (has('eda', 'esa')) {
+        parts.push(v.esa > v.eda ? 'RV EDA/ESA 不匹配（ESA 不可大于 EDA）'
+          : 'FAC ' + Calc.fmt(Calc.fac(v.eda, v.esa), 1) + '%（正常 >35%）');
+      }
+      if (has('rvs')) parts.push('RV S′ ' + Calc.fmt(v.rvs, 1) + ' cm/s（正常 >9.5）');
       put('rv', partsOf(parts));
     }
 
@@ -894,7 +865,7 @@
       document.querySelectorAll('#calcGroups input[data-ck="' + k + '"]')
         .forEach(function (o) { o.value = ''; });
     });
-    if (curCalcGroup === 'pressure') {
+    if (curCalcGroup === curCalcGroup === 'rv') {
       calcCollapse = '';
       calcSigns = '';
       setSeg('calccollapse', '');

@@ -201,40 +201,6 @@ Page({
       } else if (valid(v.lav) || valid(v.rav)) {
         out = '请先在「EF·参考值」页填写身高体重（BSA 为 0 时无法计算指数）';
       }
-    } else if (gid === 'pressure') {
-      // —— pressure ——
-      const parts = [];
-      let rap = null;
-      if (valid(v.ivc)) {
-        rap = calc.rapFromIvc(v.ivc, this.data.collapseV);
-        parts.push('RAP 估计 ' + rap + ' mmHg');
-      }
-      if (valid(v.tr) && rap !== null) {
-        parts.push('PASP ≈ ' + calc.fmt(calc.pasp(v.tr, rap), 1) + ' mmHg');
-      }
-      if (valid(v.tr, v.rvti2)) {
-        parts.push('PVR ≈ ' + calc.fmt(calc.pvrEstimate(v.tr, v.rvti2)) + ' WU');
-      }
-      if (valid(v.prend) && rap !== null) {
-        parts.push('PADP ≈ ' + calc.fmt(calc.padp(v.prend, rap), 1) + ' mmHg');
-      }
-      if (valid(v.tr)) {
-        const signs = this.data.signsV === '' ? null : this.data.signsV === 'yes';
-        parts.push('PH 超声概率：' + calc.phProbability(v.tr, signs));
-      }
-      out = parts.join('；');
-    } else if (gid === 'rvcalc') {
-      // —— rvcalc ——
-      let s = '';
-      if (valid(v.eda, v.esa)) {
-        s = v.esa > v.eda
-          ? 'ESA 不可大于 EDA'
-          : 'FAC ' + calc.fmt(calc.fac(v.eda, v.esa), 1) + '%（正常 >35%）';
-      }
-      if (valid(v.rvs)) {
-        s += (s ? '；' : '') + 'S′ ' + calc.fmt(v.rvs, 1) + ' cm/s（正常 >9.5）';
-      }
-      out = s;
     } else if (gid === 'dias') {
       // —— dias ——
       const r = calc.diastolicRatios(
@@ -295,7 +261,7 @@ Page({
       }
       out = parts.join('；');
     } else if (gid === 'rv') {
-      // —— 右心：RAP + PASP ——
+      // —— 右心：RAP + PASP + PVR + PADP + PH 概率 + 右室功能 ——
       const parts = [];
       let rap = null;
       if (valid(v.ivc)) {
@@ -305,6 +271,23 @@ Page({
       if (valid(v.tr) && rap !== null) {
         parts.push('PASP ≈ ' + calc.fmt(calc.pasp(v.tr, rap), 1) + ' mmHg · ' +
           (v.tr <= 2.8 ? '无肺高压' : v.tr < 3.4 ? '轻度升高' : '中重度升高'));
+      }
+      if (valid(v.tr, v.rvti2)) {
+        parts.push('PVR ≈ ' + calc.fmt(calc.pvrEstimate(v.tr, v.rvti2)) + ' WU');
+      }
+      if (valid(v.prend) && rap !== null) {
+        parts.push('PADP ≈ ' + calc.fmt(calc.padp(v.prend, rap), 1) + ' mmHg');
+      }
+      if (valid(v.tr)) {
+        const signs = this.data.signsV === '' ? null : this.data.signsV === 'yes';
+        parts.push('PH 超声概率：' + calc.phProbability(v.tr, signs));
+      }
+      if (valid(v.eda, v.esa)) {
+        parts.push(v.esa > v.eda ? 'RV EDA/ESA 不匹配（ESA 不可大于 EDA）'
+          : 'FAC ' + calc.fmt(calc.fac(v.eda, v.esa), 1) + '%（正常 >35%）');
+      }
+      if (valid(v.rvs)) {
+        parts.push('RV S′ ' + calc.fmt(v.rvs, 1) + ' cm/s（正常 >9.5）');
       }
       out = parts.join('；');
     } else if (gid === 'strain') {

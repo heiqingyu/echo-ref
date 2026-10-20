@@ -405,10 +405,10 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('card__title">参考文献') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 12 条', EXD.REFS.length, 12, 0);
+  check('参考文献 14 条', EXD.REFS.length, 14, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
-  check('文献编号连续 R1–R12',
-    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12' ? 1 : 0, 1, 0);
+  check('文献编号连续 R1–R14',
+    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14' ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
 
@@ -481,7 +481,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirs.map(d => d.title).join('|') ===
       '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 29 条（7 血流动力学 + 5 瓣膜 + 5 评估 + 12 外链）', nItems, 29, 0);
+  check('目录共 27 条（5 血流动力学 + 5 瓣膜 + 5 评估 + 12 外链）', nItems, 27, 0);
   check('切面学习 5 条', dirs[4].items.length, 5, 0);
   check('切面指南 4 条', dirs[5].items.length, 4, 0);
   check('TEE 模拟器 3 条', dirs[6].items.length, 3, 0);
@@ -542,15 +542,20 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('结果写入输入缓存',
     gData23.calcCache.flow && gData23.calcCache.flow.ld === '2' ? 1 : 0, 1, 0);
 
-  // —— 计算公式详情：pressure ——
-  pgF.onLoad({ id: 'pressure' });
-  check('pressure 输入项 4 个', pgF.data.inputs.length, 4, 0);
-  check('pressure 含 IVC 塌陷选项', pgF.data.collapse.length, 3, 0);
-  pgF.data.inputs[0].value = '2.8';
-  pgF.data.inputs[1].value = '20';
+  // —— 右心评估详情（已合并右心压力 / PH 概率 / 右室功能）——
+  pgF.onLoad({ id: 'rv' });
+  check('右心评估为 brief 模式', pgF.data.mode === 'brief' ? 1 : 0, 1, 0);
+  check('右心评估输入项 7 个（tr/ivc/prend/rvti2/eda/esa/rvs）', pgF.data.inputs.length, 7, 0);
+  check('右心评估含 IVC 塌陷选项', pgF.data.collapse.length, 3, 0);
+  check('右心评估含 PH 征象选项', pgF.data.signs.length, 3, 0);
+  // 设 TR=3.0, IVC=22 不塌陷 → RAP 15, PASP≈51 中重度
+  pgF.data.inputs[0].value = '3.0';
+  pgF.data.inputs[1].value = '22';
+  pgF.data.collapseV = 'no';
   pgF.onShow();
-  check('右心压力结果含 RAP 与 PASP',
+  check('右心结果含 RAP 与 PASP',
     /RAP/.test(pgF.data.out) && /PASP/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('右心结果含 PH 超声概率', /PH 超声概率/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
   // —— 未知 id 回退 ——
   pgF.onLoad({ id: 'nope' });
