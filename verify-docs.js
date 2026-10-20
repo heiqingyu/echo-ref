@@ -253,12 +253,12 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 血流动力学 / 瓣膜评估 / 器械支持 / 心腔与应变 / 心肌病变 / 大血管与急症 / 先天性心脏病 / 先心术后 / 负荷与功能试验 / 介入 TEE 评估 / 切面学习 / 书籍视频 / 切面指南 / TEE 模拟器',
-      d.groups.join('|') === '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|实用超声规范化检查与操作（视频）|切面指南|TEE 模拟器',
+    check('公式集分组 = 血流动力学 / 瓣膜评估 / 器械支持 / 心腔与应变 / 心肌病变 / 大血管与急症 / 先天性心脏病 / 先心术后 / 负荷与功能试验 / 介入 TEE 评估 / 切面学习 / 切面指南 / TEE 模拟器',
+      d.groups.join('|') === '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器',
       d.groups.join('|'));
     check('条目 60 条（11 计算 + 36 评估 + 13 外链，其中专辑入口 1 条）', d.items === 60, d.items);
     check('外链 <a> 条目 12 条（专辑入口为按钮，另行校验）', d.links === 12, d.links);
-    check('书籍视频收成 1 条专辑入口且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
+    check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
     check('专辑二级视图容器存在', d.albumView, true);
     check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);

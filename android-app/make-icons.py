@@ -1,261 +1,122 @@
-#!/usr/bin/env python3
-"""
-生成应用图标（纯 Python，零第三方依赖）
+# -*- coding: utf-8 -*-
+"""从「霓虹心脏超声」源图（icon-src.jpg）生成三端图标。
 
-输出：
-  res/mipmap-anydpi-v26/ic_launcher.xml   自适应图标描述
-  res/mipmap-hdpi/ic_launcher.png         72×72
-  res/mipmap-xhdpi/ic_launcher.png        96×96
-  res/mipmap-xxhdpi/ic_launcher.png       144×144
-  res/mipmap-xxxhdpi/ic_launcher.png      192×192
-  res/drawable-*/ic_launcher_fg.png       前景层（自适应图标用）
-  res/values/colors.xml                   背景色
+用法：
+    python make-icons.py
 
-图形：品牌蓝底 + 白色心形轮廓 + 心内一条超声波形线
+产出：
+  res/mipmap-{mdpi..xxxhdpi}/ic_launcher.png      传统图标 48/72/96/144/192
+  res/drawable-{mdpi..xxxhdpi}/ic_launcher_fg.png 自适应前景（108dp 系列，已按 72% 内缩）
+  res/drawable-{mdpi..xxxhdpi}/ic_launcher_bg.png 自适应背景（纯底色）
+  ../miniprogram/images/app-icon.png              小程序后台头像 144×144
+  ../miniprogram/images/app-icon-512.png          备用大图 512×512
+
+源图是"深蓝底 + 圆角矩形、四角为白"，因此：
+  · 先把四角白角填成图内底色（否则 launcher 圆角处会露白边）
+  · 自适应前景再抠掉底色（透明），并用收缩的圆角遮罩抹掉边界 JPEG 噪点
+网页 favicon 以 base64 内嵌在 build-www.js 的 FAVICON_DATA（脚本末尾会打印新值）。
 """
-import os
-import struct
-import zlib
-import math
+import os, io, base64
+from PIL import Image, ImageDraw
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 RES = os.path.join(ROOT, 'res')
+MP_DIR = os.path.join(ROOT, '..', 'miniprogram', 'images')
+SRC = os.path.join(ROOT, 'icon-src.jpg')
 
-BRAND = (0x25, 0x63, 0xEB)      # #2563eb 品牌蓝
-WHITE = (0xFF, 0xFF, 0xFF)
-LIGHT = (0xEF, 0xF4, 0xFF)      # #eff4ff 浅蓝
+im = Image.open(SRC).convert('RGB')
+W, H = im.size
+print('source', im.size)
+
+# ── 底色取样（顶部中心：圆角矩形内部、扇形之外） ──
+bg = im.getpixel((W // 2, 20))
+if sum(bg) > 600:                      # 万一取到白角，四边中点投票
+    bg = min([im.getpixel((W // 2, 12)), im.getpixel((12, H // 2)),
+              im.getpixel((W - 12, H // 2)), im.getpixel((W // 2, H - 12))], key=sum)
+BR = bg
+print('bg', bg, '#%02X%02X%02X' % BR)
+
+# ── 去白：接近白色的像素按程度混到底色 ──
+px = im.load()
+for y in range(H):
+    for x in range(W):
+        r, g, b = px[x, y]
+        m = min(r, g, b)
+        if m < 205:
+            continue
+        if max(r, g, b) - m > 40:      # 三通道都要亮，避免误伤青色描边
+            continue
+        t = min(1.0, (m - 205) / 50.0)
+        px[x, y] = (int(r + (BR[0] - r) * t),
+                    int(g + (BR[1] - g) * t),
+                    int(b + (BR[2] - b) * t))
+flat = im.copy()
 
 
-# ══════════════════════════════════════════════════════════
-#  PNG 编码（RGBA, 8bit）
-# ══════════════════════════════════════════════════════════
-
-def png_chunk(tag: bytes, data: bytes) -> bytes:
-    return (struct.pack('>I', len(data)) + tag + data
-            + struct.pack('>I', zlib.crc32(tag + data) & 0xFFFFFFFF))
-
-
-def write_png(path: str, w: int, h: int, pixels):
-    """pixels: 二维列表 [y][x] = (r,g,b,a)"""
-    raw = bytearray()
-    for y in range(h):
-        raw.append(0)                       # filter type 0 (None)
-        for x in range(w):
-            r, g, b, a = pixels[y][x]
-            raw += bytes((r, g, b, a))
-
-    ihdr = struct.pack('>IIBBBBB', w, h, 8, 6, 0, 0, 0)   # 8bit RGBA
-    png = (b'\x89PNG\r\n\x1a\n'
-           + png_chunk(b'IHDR', ihdr)
-           + png_chunk(b'IDAT', zlib.compress(bytes(raw), 9))
-           + png_chunk(b'IEND', b''))
-
+def force(path, img, **kw):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if os.path.exists(path):
-        os.remove(path)                      # ★ 本机覆盖写会 PermissionError
-    with open(path, 'wb') as f:
-        f.write(png)
+        os.remove(path)                # ★ 本机覆盖写会 PermissionError
+    img.save(path, **kw)
 
 
-# ══════════════════════════════════════════════════════════
-#  几何：心形 + 波形
-# ══════════════════════════════════════════════════════════
+# ── 1) 传统图标（量化 256 色：渐变图 PNG 无损压缩不划算，省掉 ~2/3 体积） ──
+for name, sz in [('mdpi', 48), ('hdpi', 72), ('xhdpi', 96),
+                 ('xxhdpi', 144), ('xxxhdpi', 192)]:
+    small = flat.resize((sz, sz), Image.LANCZOS).convert('RGB')
+    force(os.path.join(RES, 'mipmap-' + name, 'ic_launcher.png'),
+          small.quantize(colors=256, method=Image.MEDIANCUT, dither=Image.FLOYDSTEINBERG),
+          optimize=True)
+    print('  mipmap-%s/ic_launcher.png  %dx%d' % (name, sz, sz))
 
-def heart_inside(x: float, y: float) -> bool:
-    """标准心形隐函数（y 向下为正，故点乘 -1）
-    心形实际范围：|x| ≤ 1.14，y ∈ [-1.26, 1.02]，先归一化到单位圆内。"""
-    x /= 1.14
-    y /= 1.18
-    return (x * x + y * y - 1) ** 3 - x * x * y * y * y <= 0
-
-
-def heart_point(t: float):
-    """心形参数方程（用于描边/波形定位）"""
-    x = 16 * math.sin(t) ** 3
-    y = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
-    return x / 17.0, -y / 17.0
-
-
-def render(size, bg, fg, with_bg=True, scale_heart=1.0):
-    """渲染一张图标。返回像素矩阵。"""
-    S = size
-    cx = cy = S / 2.0
-    R = S * 0.46 * scale_heart          # 心形半径
-    px = [[(0, 0, 0, 0)] * S for _ in range(S)]
-
-    # 抗锯齿：每像素 3×3 超采样
-    SS = 3
-    inv = 1.0 / SS
-
-    for yy in range(S):
-        for xx in range(S):
-            hits_bg = 0
-            hits_fg = 0
-            for sy in range(SS):
-                for sx in range(SS):
-                    fx = (xx + (sx + 0.5) * inv - cx) / R
-                    fy = (yy + (sy + 0.5) * inv - cy) / R
-
-                    # 背景圆
-                    if with_bg:
-                        if fx * fx + fy * fy <= 1.0:
-                            hits_bg += 1
-                    else:
-                        hits_bg += 1
-
-                    # 心形（1.32 ≈ 缩到圆的 ~75%，居中留出蓝底边）
-                    k = 1.32 / max(scale_heart / 0.80, 1e-6) * 0.80
-                    if heart_inside(fx * k, fy * k):
-                        hits_fg += 1
-
-            n = SS * SS
-            a_bg = hits_bg / n
-            a_fg = hits_fg / n
-
-            # 在心形内部画一条超声波形，让图标更像"超声"
-            base = bg if with_bg else (0, 0, 0, 0)
-            r = g = b = 0
+# ── 2) 自适应图标：fg = 抠底色后的图形（透明），bg = 纯底色 ──
+cut = flat.convert('RGBA')
+cpx = cut.load()
+fp = flat.load()
+THR_LO, THR_HI = 10, 46
+mask = Image.new('L', (W, H), 0)
+ImageDraw.Draw(mask).rounded_rectangle(
+    [10, 10, W - 11, H - 11], radius=int(W * 0.185), fill=255)
+mk = mask.load()
+for y in range(H):
+    for x in range(W):
+        r, g, b = fp[x, y]
+        d = abs(r - BR[0]) + abs(g - BR[1]) + abs(b - BR[2])
+        if d <= THR_LO:
             a = 0
+        elif d < THR_HI:
+            a = int(255 * (d - THR_LO) / float(THR_HI - THR_LO))
+        else:
+            a = 255
+        cpx[x, y] = (r, g, b, a * mk[x, y] // 255)
 
-            if a_bg > 0:
-                r = int(base[0] * a_bg)
-                g = int(base[1] * a_bg)
-                b = int(base[2] * a_bg)
-                a = int(255 * a_bg)
+FG_RATIO = 0.72                        # 内容约 92% → 落在中心 66dp 安全区
+for name, base in [('mdpi', 108), ('hdpi', 162), ('xhdpi', 216),
+                   ('xxhdpi', 324), ('xxxhdpi', 432)]:
+    canvas = Image.new('RGBA', (base, base), (BR[0], BR[1], BR[2], 255))
+    inner = int(round(base * FG_RATIO))
+    fg = cut.resize((inner, inner), Image.LANCZOS)
+    off = (base - inner) // 2
+    canvas.paste(fg, (off, off), fg)
+    # RGBA 用 FASTOCTREE 量化（保留 alpha）：432px 从 ~74KB 降到 ~11KB
+    force(os.path.join(RES, 'drawable-' + name, 'ic_launcher_fg.png'),
+          canvas.quantize(colors=256, method=Image.FASTOCTREE), optimize=True)
+    print('  drawable-%s/ic_launcher_fg.png  %dx%d' % (name, base, base))
+print('  背景层用 @color/icon_bg（纯色不必存 PNG）')
 
-            if a_fg > 0:
-                # 前色叠加
-                r = int(r * (1 - a_fg) + fg[0] * a_fg)
-                g = int(g * (1 - a_fg) + fg[1] * a_fg)
-                b = int(b * (1 - a_fg) + fg[2] * a_fg)
-                a = max(a, int(255 * min(1.0, a_bg + a_fg)))
+# ── 3) 小程序头像 ──
+force(os.path.join(MP_DIR, 'app-icon.png'), flat.resize((144, 144), Image.LANCZOS), optimize=True)
+force(os.path.join(MP_DIR, 'app-icon-512.png'), flat.resize((512, 512), Image.LANCZOS), optimize=True)
+print('  miniprogram/images/app-icon.png（144）+ app-icon-512.png')
 
-            px[yy][xx] = (max(0, min(255, r)), max(0, min(255, g)),
-                          max(0, min(255, b)), max(0, min(255, a)))
-    return px
-
-
-def render_wave(size, color):
-    """仅波形层（自适应图标前景用）：心形轮廓内一条 ECG/超声线"""
-    S = size
-    cx = cy = S / 2.0
-    R = S * 0.44
-    px = [[(0, 0, 0, 0)] * S for _ in range(S)]
-    SS = 3
-    inv = 1.0 / SS
-    thick = max(1.6, S * 0.028)
-
-    for yy in range(S):
-        for xx in range(S):
-            hit = 0
-            for sy in range(SS):
-                for sx in range(SS):
-                    fx = (xx + (sx + 0.5) * inv - cx) / R
-                    fy = (yy + (sy + 0.5) * inv - cy) / R
-
-                    if not heart_inside(fx * 1.05, fy * 1.05):
-                        continue
-
-                    # 波形：以 fx 为横轴，模拟一段脉冲
-                    u = fx * 1.9                       # 横向范围
-                    if -0.85 <= u <= 0.85:
-                        # 基线 + 一个尖峰
-                        v = 0.0
-                        # 小的 P 波
-                        v += 0.10 * math.exp(-((u + 0.45) ** 2) / 0.012)
-                        # 尖锐 R 波
-                        v -= 0.42 * math.exp(-(u ** 2) / 0.0016)
-                        # S 波回升
-                        v += 0.16 * math.exp(-((u - 0.13) ** 2) / 0.004)
-                        # T 波
-                        v += 0.09 * math.exp(-((u - 0.45) ** 2) / 0.02)
-
-                        if abs(fy - v) <= thick / R:
-                            hit += 1
-            if hit:
-                px[yy][xx] = (color[0], color[1], color[2], int(255 * hit / (SS * SS)))
-    return px
-
-
-def overlay(base, top):
-    """把 top 叠到 base 上（top 为前景）"""
-    H = len(base)
-    W = len(base[0])
-    out = [[(0, 0, 0, 0)] * W for _ in range(H)]
-    for y in range(H):
-        for x in range(W):
-            br, bg_, bb, ba = base[y][x]
-            tr, tg, tb, ta = top[y][x]
-            af = ta / 255.0
-            out[y][x] = (
-                int(br * (1 - af) + tr * af),
-                int(bg_ * (1 - af) + tg * af),
-                int(bb * (1 - af) + tb * af),
-                max(ba, ta),
-            )
-    return out
-
-
-# ══════════════════════════════════════════════════════════
-#  主流程
-# ══════════════════════════════════════════════════════════
-
-DENSITIES = [
-    ('mdpi', 48),
-    ('hdpi', 72),
-    ('xhdpi', 96),
-    ('xxhdpi', 144),
-    ('xxxhdpi', 192),
-]
-
-print('生成应用图标...')
-
-# ── 传统方形图标（含圆底 + 心形 + 波形）──
-for name, sz in DENSITIES:
-    heart = render(sz, BRAND, WHITE, with_bg=True, scale_heart=0.80)
-    wave = render_wave(sz, BRAND)          # 波形用品牌蓝，压在心形白底上
-    icon = overlay(heart, wave)
-    p = os.path.join(RES, 'mipmap-' + name, 'ic_launcher.png')
-    write_png(p, sz, sz, icon)
-    print('  ✓ mipmap-%s/ic_launcher.png  (%d×%d)' % (name, sz, sz))
-
-# ── 自适应图标（Android 8+）：背景色层 + 前景层 ──
-for name, sz in DENSITIES:
-    # 前景需留安全边距，图形约 66%
-    fg = render(sz, BRAND, WHITE, with_bg=False, scale_heart=0.62)
-    wave = render_wave(sz, BRAND)
-    fg = overlay(fg, wave)
-    p = os.path.join(RES, 'drawable-' + name, 'ic_launcher_fg.png')
-    write_png(p, sz, sz, fg)
-    p2 = os.path.join(RES, 'drawable-' + name, 'ic_launcher_bg.png')
-    write_png(p2, sz, sz, [[(BRAND[0], BRAND[1], BRAND[2], 255)] * sz for _ in range(sz)])
-    print('  ✓ drawable-%s/ic_launcher_fg.png + bg (%d×%d)' % (name, sz, sz))
-
-# ── 自适应图标 XML ──
-adir = os.path.join(RES, 'mipmap-anydpi-v26')
-os.makedirs(adir, exist_ok=True)
-p = os.path.join(adir, 'ic_launcher.xml')
-if os.path.exists(p):
-    os.remove(p)
-with open(p, 'w', encoding='utf-8') as f:
-    f.write('<?xml version="1.0" encoding="utf-8"?>\n'
-            '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
-            '    <background android:drawable="@drawable/ic_launcher_bg"/>\n'
-            '    <foreground android:drawable="@drawable/ic_launcher_fg"/>\n'
-            '</adaptive-icon>\n')
-print('  ✓ mipmap-anydpi-v26/ic_launcher.xml')
-
-# ── colors.xml ──
-p = os.path.join(RES, 'values', 'colors.xml')
-if os.path.exists(p):
-    os.remove(p)
-with open(p, 'w', encoding='utf-8') as f:
-    f.write('<?xml version="1.0" encoding="utf-8"?>\n'
-            '<resources>\n'
-            '    <color name="brand">#FF2563EB</color>\n'
-            '    <color name="brand_soft">#FFEFF4FF</color>\n'
-            '    <color name="bg">#FFF5F6F8</color>\n'
-            '</resources>\n')
-print('  ✓ values/colors.xml')
-
-print('图标生成完毕。')
+# ── 4) favicon 用图（64px，128 色量化约 3KB） ──
+b = io.BytesIO()
+flat.resize((64, 64), Image.LANCZOS).quantize(
+    colors=128, method=Image.MEDIANCUT, dither=Image.FLOYDSTEINBERG).save(
+        b, format='PNG', optimize=True)
+b64 = base64.b64encode(b.getvalue()).decode('ascii')
+print('  favicon 64px = %d bytes' % len(b.getvalue()))
+with open(os.path.join(ROOT, '..', '_favicon_b64.txt'), 'w') as f:
+    f.write(b64)
+print('  已写出 _favicon_b64.txt（如需替换见 build-www.js 的 FAVICON_DATA）')
+print('done, bg = #%02X%02X%02X' % BR)

@@ -3,4 +3,6 @@
     <color name="brand">#FF2563EB</color>
     <color name="brand_soft">#FFEFF4FF</color>
     <color name="bg">#FFF5F6F8</color>
+    <!-- 应用图标底色（取自 icon-src.jpg，自适应图标背景层直接引用，免存 PNG） -->
+    <color name="icon_bg">#FF011749</color>
 </resources>
