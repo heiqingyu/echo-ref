@@ -1419,7 +1419,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.0.7</div>
+    <div class="verline">心脏超声参考值 · v1.0.8</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1462,7 +1462,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.0.7</div>
+      <div class="verline">心脏超声参考值 · v1.0.8</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -3166,6 +3166,119 @@ function cpRm(o) {
   return r;
 }
 
+/**
+ * HFA-PEFF 诊断算法·超声部分计分（2019 ESC HFA）
+ *
+ * 分「形态学」「生物标志物」「功能」三大类，每类内部各项取最高分（不累加），
+ * 三类分数相加得 0–6 分。负荷试验不在本函数内。
+ *   形态学：LAVi、LVMI（按性别）、RWT
+ *   生物标志物：NT-proBNP（窦性心律阈值；房颤阈值更高，见条目说明）
+ *   功能：  平均 E/e′、TR Vmax、静息左房储备应变 LASr、GLS 绝对值
+ *
+ * 判读：≥5 确诊 HFpEF；2–4 需进一步（负荷试验）；≤1 可排除。
+ *
+ * @param {object} o {lavi, lvmi, female, rwt, ntp, ee, trv, lasr, gls}
+ */
+function hfaPeff(o) {
+  const pick = (v, t1, t2, lowerIsBad) => {
+    if (!(v > 0)) return 0;
+    if (lowerIsBad) {
+      if (v < t2) return 2;
+      if (v < t1) return 1;
+      return 0;
+    }
+    if (v >= t2) return 2;
+    if (v >= t1) return 1;
+    return 0;
+  };
+
+  // 形态学（取最高一项）
+  const morCand = [];
+  if (o.lavi > 0) morCand.push(['LAVi', pick(o.lavi, 34, 40)]);
+  if (o.lvmi > 0) {
+    morCand.push(['LVMI', o.female ? pick(o.lvmi, 95, 122) : pick(o.lvmi, 115, 149)]);
+  }
+  if (o.rwt > 0) morCand.push(['RWT', pick(o.rwt, 0.42, 0.55)]);
+
+  // 功能（取最高一项）
+  const funCand = [];
+  if (o.ee > 0) funCand.push(['平均 E/e′', pick(o.ee, 9, 13)]);
+  if (o.trv > 0) funCand.push(['TR Vmax', pick(o.trv, 2.8, 3.4)]);
+  if (o.lasr > 0) funCand.push(['静息 LASr', pick(o.lasr, 29, 18, true)]);
+  if (o.gls !== undefined && o.gls !== null && o.gls < 0) {
+    funCand.push(['GLS', pick(Math.abs(o.gls), 16, 12, true)]);
+  }
+
+  // 生物标志物（NT-proBNP，窦性心律阈值）
+  const bioCand = [];
+  if (o.ntp > 0) bioCand.push(['NT-proBNP', pick(o.ntp, 125, 220)]);
+
+  const top = (arr) => {
+    let s = 0, n = '';
+    arr.forEach(function (x) { if (x[1] > s) { s = x[1]; n = x[0]; } });
+    return { score: s, name: n };
+  };
+  const m = top(morCand), b = top(bioCand), f = top(funCand);
+  const r = {
+    morph: m.score, bio: b.score, func: f.score,
+    total: m.score + b.score + f.score,
+    morphName: m.name, bioName: b.name, funcName: f.name,
+    n: morCand.length + bioCand.length + funCand.length,
+  };
+  if (r.n) {
+    r.text = r.total >= 5 ? '确诊 HFpEF'
+      : r.total >= 2 ? '需进一步：负荷试验 / 侵入性血流动力学'
+      : '可排除 HFpEF';
+  }
+  return r;
+}
+
+/**
+ * Duke 运动平板评分（与负荷超声配合使用）
+ *
+ * 评分 = 运动时间（min）− 5 × ST 段偏移（mm）− 4 × 心绞痛指数
+ * 心绞痛指数：0 无 / 1 非限制造胸痛 / 2 限制造胸痛
+ *
+ * 判读：≥5 低危；−10 至 4 中危；≤−11 高危。
+ *
+ * @param {object} o {time, stDev, angina}
+ */
+function dukeScore(o) {
+  if (!(o.time > 0)) return {};
+  const st = o.stDev > 0 ? o.stDev : 0;
+  const ai = (o.angina >= 0 && o.angina <= 2) ? o.angina : 0;
+  const score = o.time - 5 * st - 4 * ai;
+  let level, text;
+  if (score >= 5) { level = 'low'; text = '低危'; }
+  else if (score > -11) { level = 'mid'; text = '中危'; }
+  else { level = 'high'; text = '高危'; }
+  return { score: score, level: level, text: text };
+}
+
+/**
+ * 三尖瓣反流五级分级（Hahn / TVARC）
+ *
+ * 按 EROA 与 RVol 各自归档后取较重的一档：
+ *   轻度 <20 mm² / <30 mL；中度 20–29 / 30–44；重度 30–39 / 45–59；
+ *   极重（massive）40–59 / 60–89；瀑布型（torrential）≥60 / ≥90。
+ *
+ * @param {number} eroa 有效反流口面积，mm²
+ * @param {number} rvol 反流量，mL
+ */
+function trGrade(eroa, rvol) {
+  const band = (v, cuts) => {
+    if (!(v > 0)) return -1;
+    for (let i = 0; i < cuts.length; i += 1) if (v < cuts[i]) return i;
+    return cuts.length;
+  };
+  const a = band(eroa, [20, 30, 40, 60]);
+  const b = band(rvol, [30, 45, 60, 90]);
+  const g = Math.max(a, b);
+  if (g < 0) return {};
+  const names = ['轻度', '中度', '重度', '极重（massive）', '瀑布型（torrential）'];
+  return { grade: g, text: names[g], byEroa: a, byRvol: b };
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -3208,6 +3321,9 @@ function fmt(n, dec) {
     asLflg: asLflg,
     rvFuncScore: rvFuncScore,
     cpRm: cpRm,
+    hfaPeff: hfaPeff,
+    dukeScore: dukeScore,
+    trGrade: trGrade,
     round: round,
     fmt: fmt,
   };
@@ -4449,6 +4565,83 @@ const BRIEF_SECTIONS = [
         note: 'GLS 越接近 0（绝对值越小）提示纵向收缩越差；−18% 可作为多数成人的实用下限。',
       },
       {
+        id: 'la-strain',
+        title: '左房应变与 HFpEF 诊断路径',
+        sub: 'LASr 三时相 · HFA-PEFF 超声计分 · 负荷试验',
+        source: ['R27', 'R28'],
+        blocks: [
+          { kind: 'h', text: '一、左房应变看三个时相，不是只有一个数' },
+          { kind: 'text', text: '左房在心动周期里干三件事，各对应一段应变曲线（心尖四腔，取房间隔与侧壁平均）：' },
+          {
+            kind: 'table',
+            heads: ['时相', '指标', '正常参考', '反映什么'],
+            rows: [
+              ['收缩期（储备）', 'LASr', '≥29%（部分标准 ≥35%）', '左房顺应性与充盈能力，最早受损'],
+              ['舒张早期（通道）', 'LAScd', '约 −23%', '肺静脉回流经左房进入左室'],
+              ['舒张晚期（收缩泵）', 'LASct', '约 −14%', '左房主动收缩贡献'],
+            ],
+          },
+          { kind: 'text', text: '临床最常用 **LASr**：它同时受左室充盈压、左房纤维化与心房肌本身病变影响，因此在 HFpEF 里往往**早于 LAVi 与 E/e′ 出现异常**。LAVi 正常但 LASr 已 <29%，是典型的「左房肌病已启动、容积还没涨起来」阶段。' },
+          { kind: 'note', text: '房颤时 LASr 明显失真（无规律心房收缩），不可用于 HFpEF 计分；此时改用 LAVi + E/e′ + TR Vmax。', warn: true },
+
+          { kind: 'h', text: '二、为什么 HFpEF 不能只靠一个指标' },
+          { kind: 'text', text: 'EF 正常、也没有明显瓣膜病，但患者就是活动后气短——这类患者的左室充盈压在**静息时可能完全正常**，只有运动时才升高。所以 2019 ESC HFA 给出的是分步算法（HFA-PEFF），超声只负责其中的评分环节。' },
+          {
+            kind: 'table',
+            heads: ['步骤', '内容'],
+            rows: [
+              ['Step 1 前评估', '症状体征 + 利钠肽 + 静息心电图，排除非心源性气短'],
+              ['Step 2 超声 + 利钠肽评分', '形态学 + 功能两大类，见下（本计算器只做这一步）'],
+              ['Step 3 负荷试验', '静息评分 2–4 分者，做运动负荷或侵入性血流动力学'],
+              ['Step 4 病因', '查淀粉样变、肥厚型心肌病、缩窄等特异病因'],
+            ],
+          },
+
+          { kind: 'h', text: '三、HFA-PEFF 评分（三大类，每类内部取最高一项，三类相加）' },
+          {
+            kind: 'table',
+            heads: ['类别', '指标', '1 分', '2 分'],
+            rows: [
+              ['形态学', 'LAVi', '>34 mL/m²', '>40 mL/m²'],
+              ['', 'LVMI（男 / 女）', '>115 / >95', '>149 / >122 g/m²'],
+              ['', 'RWT', '>0.42', '>0.55'],
+              ['生物标志物', 'NT-proBNP（窦性）', '>125 pg/mL', '>220 pg/mL'],
+              ['', 'NT-proBNP（房颤）', '>365 pg/mL', '>660 pg/mL'],
+              ['功能', '平均 E/e′', '≥9', '≥13'],
+              ['', 'TR Vmax', '>2.8 m/s', '>3.4 m/s'],
+              ['', '静息 LASr', '<29%', '<18%'],
+              ['', '静息 GLS（绝对值）', '<16%', '<12%'],
+            ],
+          },
+          {
+            kind: 'table',
+            heads: ['总分', '判读', '下一步'],
+            rows: [
+              ['≥5 分', '确诊 HFpEF', '按 HFpEF 管理'],
+              ['2–4 分', '不确定', '加做负荷超声 / 侵入性运动血流动力学'],
+              ['≤1 分', '可排除', '查其他原因'],
+            ],
+          },
+          { kind: 'note', text: '同一类里**只取最高分**，不能把 LAVi 的 2 分和 LVMI 的 2 分相加——否则一个左房大、室壁稍厚的患者会被算成「确诊」。这是手工评分最常错的地方。', warn: true },
+
+          { kind: 'h', text: '四、H2FPEF 评分（临床 + 超声，做对照用）' },
+          { kind: 'text', text: '肥胖（BMI >30）2 分；房颤 3 分；年龄 >60 岁 1 分；≥2 种降压药 1 分；E/e′ >9 1 分；PASP >35 mmHg 1 分。总分 ≥6 确诊、≤1 排除、2–5 中间地带。' },
+          { kind: 'text', text: '两套算法结论不一致时，说明患者正处在灰区，此时**负荷试验的权重最大**——静息指标都正常、运动时 E/e′ 升高或 PASP 明显上升，才是最有说服力的证据。' },
+        ],
+        fields: [
+          { k: 'hplavi', n: 'LAVi', u: 'mL/m²' },
+          { k: 'hplvmi', n: 'LVMI', u: 'g/m²' },
+          { k: 'hprwt', n: 'RWT', u: '' },
+          { k: 'hpntp', n: 'NT-proBNP（可选）', u: 'pg/mL' },
+          { k: 'hpee', n: '平均 E/e′', u: '' },
+          { k: 'hptrv', n: 'TR Vmax', u: 'm/s' },
+          { k: 'hplasr', n: '静息 LASr', u: '%' },
+          { k: 'hpgls', n: 'GLS（负值）', u: '%' },
+        ],
+        calc: 'la-strain',
+        note: '三大类各自取最高分再相加（0–6 分）；LVMI 阈值按性别自动切换；NT-proBNP 按窦性心律阈值计算。',
+      },
+      {
         id: 'peri',
         title: '心包积液与心脏压塞',
         sub: '半定量 · 压塞征象 · 缩窄鉴别',
@@ -4810,6 +5003,194 @@ const BRIEF_SECTIONS = [
       },
     ],
   },
+  {
+    id: 'stress',
+    title: '负荷与功能试验',
+    items: [
+      {
+        id: 'stress-echo',
+        title: '运动负荷超声缺血判读',
+        sub: '室壁运动评分 · 阳性标准 · Duke 评分',
+        source: ['R29'],
+        blocks: [
+          { kind: 'h', text: '一、判读的基本语言：室壁运动评分（WMS）' },
+          {
+            kind: 'table',
+            heads: ['评分', '表现', '含义'],
+            rows: [
+              ['1', '正常增厚、向内运动', '—'],
+              ['2', '低动力（增厚减弱）', '轻度缺血'],
+              ['3', '无动力（不增厚、不内移）', '透壁缺血 / 梗死'],
+              ['4', '矛盾运动（收缩期向外）', '透壁梗死'],
+              ['5', '室壁瘤（舒张期变形）', '陈旧梗死'],
+            ],
+          },
+          { kind: 'formula', text: 'WMSI（室壁运动指数）= 各节段评分之和 ÷ 节段数，正常 = 1.0' },
+          { kind: 'text', text: 'WMSI 是半定量指标：1.0 正常，>1.0 异常，≥1.7 提示大面积缺血或预后不良。它的价值在于**可重复**——同一患者负荷前后、随访前后能比。但单看 WMSI 会漏掉「负荷后才出现的局灶异常」，所以必须逐段比对。' },
+
+          { kind: 'h', text: '二、阳性标准（这是最容易记混的地方）' },
+          { kind: 'text', text: '负荷超声阳性 = **负荷后新出现、或原有程度加重**的室壁运动异常，且累及 **≥2 个相邻节段**。' },
+          { kind: 'text', text: '三个附加条件常被忽略：① 必须在**负荷后 60–90 秒内**（心率尚未回落时）采集，晚了会漏；② 单个节段异常不足以诊断（可能是伪影、束支阻滞、术后改变）；③ 原有静息异常**改善**（如冬眠心肌的收缩储备）不算阳性，反而是存活心肌的证据。' },
+          { kind: 'note', text: '静息就有 WMA 的患者（陈旧心梗），判读改为「相邻节段是否进一步加重」——此时二级缺血（remote ischemia）比原梗死区更有意义。', warn: true },
+
+          { kind: 'h', text: '三、各冠脉供血区对应节段（定位依据）' },
+          {
+            kind: 'table',
+            heads: ['供血血管', '对应节段（16 段模型）'],
+            rows: [
+              ['LAD（前降支）', '前壁（1、7、13）、前间隔（2、8、14）、心尖（17）、侧壁心尖段（16）'],
+              ['LCX（回旋支）', '前侧壁（6）、下侧壁（12）、后侧壁（16）'],
+              ['RCA（右冠）', '下壁（4、10、15）、下间隔（3、9）'],
+            ],
+          },
+          { kind: 'text', text: '定位不是背表：一段异常要看它的**相邻段**是否也异常，相邻两段同属一支血管才有定位价值。多支病变时表现可互相抵消（等电位化），WMSI 可能被低估。' },
+
+          { kind: 'h', text: '四、Duke 运动平板评分（与负荷超声互补）' },
+          { kind: 'formula', text: 'Duke 评分 = 运动时间(min) − 5 × ST 段偏移(mm) − 4 × 心绞痛指数（0 无 / 1 非限制性 / 2 限制性）' },
+          {
+            kind: 'table',
+            heads: ['评分', '危险分层', '临床意义'],
+            rows: [
+              ['≥5', '低危', '年心血管死亡率 <1%，可药物治疗随访'],
+              ['−10 至 4', '中危', '进一步评估（负荷影像 / CTA）'],
+              ['≤−11', '高危', '年死亡率 >5%，考虑冠脉造影'],
+            ],
+          },
+          { kind: 'text', text: 'Duke 评分原本用于平板运动试验，配合负荷超声看意义更大：**超声有缺血 + Duke 高危** 比单看任一项都更可靠；两者矛盾时以影像证据为主。' },
+
+          { kind: 'h', text: '五、负荷时别只看室壁运动' },
+          { kind: 'text', text: '① **收缩储备**：负荷后 LVEF 较静息升高 ≥5% 为正常，升高不足提示多支病变或预后不良；② **肺动脉压**：负荷后 PASP 明显升高（>60 mmHg）提示左房压传导性升高，是 HFpEF 的重要线索；③ **E/e′**：负荷后 E/e′ 升高 >13–15 支持充盈压升高；④ **二尖瓣反流**：负荷后新发或加重的 MR 提示缺血性 MR。' },
+
+          { kind: 'h', text: '六、运动负荷还是药物负荷' },
+          {
+            kind: 'table',
+            heads: ['方式', '适用', '局限'],
+            rows: [
+              ['运动（踏车 / 平板）', '能运动的患者，可同时获得运动耐量、血压心率反应、诱因症状', '图像采集窗口短，呼吸干扰大'],
+              ['多巴酚丁胺', '不能运动者、需评估存活心肌', '心率上升快、易诱发心律失常'],
+              ['双嘧达莫 / 腺苷', '不能运动且需评估灌注', '主要看灌注而非室壁运动，支气管痉挛禁忌'],
+            ],
+          },
+          { kind: 'note', text: '负荷超声阴性不等于排除冠心病：单支轻中度狭窄、左主干或三支均衡病变都可能假阴性。临床验前概率高时，阴性结果也要结合 CTA 或造影判断。', warn: true },
+        ],
+        fields: [
+          { k: 'dktime', n: '运动时间', u: 'min' },
+          { k: 'dkst', n: 'ST 段偏移', u: 'mm' },
+          { k: 'dkang', n: '心绞痛指数 0/1/2', u: '' },
+          { k: 'dkefr', n: '静息 LVEF', u: '%' },
+          { k: 'dkefp', n: '负荷峰值 LVEF', u: '%' },
+        ],
+        calc: 'stress-echo',
+        note: '填运动时间即可算 Duke 评分；再填静息与峰值 EF 会给出收缩储备判读。',
+      },
+    ],
+  },
+  {
+    id: 'tee-interv',
+    title: '介入 TEE 评估',
+    items: [
+      {
+        id: 'tr-interv',
+        title: '三尖瓣反流机制分型与介入前评估',
+        sub: '机制五型 · 五级严重度 · TEE 测量清单',
+        source: ['R25', 'R14'],
+        blocks: [
+          { kind: 'h', text: '一、先分清「瓣叶本身有病」还是「被拉开的」' },
+          { kind: 'text', text: 'TR 的治疗决策取决于机制，不是取决于反流量。同样 4+ 的重度 TR，瓣叶结构正常的瓣环扩张用一台修复装置可能就够，瓣叶被起搏导线打穿或风湿性挛缩则完全不同的术式。' },
+          {
+            kind: 'table',
+            heads: ['机制分型', '瓣叶运动', '常见病因', '对介入的含义'],
+            rows: [
+              ['Ⅰ 型（正常运动）', '瓣叶活动正常，瓣环扩大', '右室扩大、房颤、肺动脉高压', '最适合作经导管缘对缘修复（TTVA）'],
+              ['Ⅱ 型（过度运动）', '脱垂 / 连枷', '黏液样变、外伤、心内膜炎后', '需评估瓣叶长度与脱垂范围'],
+              ['Ⅲa 型（限制型·风湿）', '瓣叶增厚挛缩、活动受限', '风湿性', '常需外科，介入效果差'],
+              ['Ⅲb 型（限制型·牵拉）', '瓣叶被牵拉、对合间隙大', '右室扩大、起搏导线、放射', '对合间隙大者介入难度高'],
+              ['Ⅳ 型（穿孔 / 赘生物）', '瓣叶连续性中断', '心内膜炎、医源性（导线）', '需外科修复或置换'],
+            ],
+          },
+
+          { kind: 'h', text: '二、功能性 TR 还要再分房性与室性' },
+          { kind: 'text', text: '**房性功能性 TR**：长期房颤 → 右房扩大 → 瓣环扩张 → 瓣叶对合不良，但右室大小与功能正常、瓣叶无牵拉。这类患者介入后获益较明确。' },
+          { kind: 'text', text: '**室性功能性 TR**：右室扩大 / 功能障碍 → 乳头肌移位 → 瓣叶被牵拉（tethering）→ 对合间隙增大。这类患者即使反流减轻，右室本身病变仍在，预后改善有限，需权衡。' },
+          { kind: 'note', text: '区别两者的关键不是反流量，而是**右室大小 + 瓣叶牵拉程度**。右室不大、瓣环大 = 房性；右室明显扩大、瓣叶被拉紧 = 室性。', warn: true },
+
+          { kind: 'h', text: '三、严重度五级（比「轻中重」更细，介入患者必须用）' },
+          {
+            kind: 'table',
+            heads: ['分级', 'EROA（mm²）', 'RVol（mL）'],
+            rows: [
+              ['轻度', '<20', '<30'],
+              ['中度', '20–29', '30–44'],
+              ['重度', '30–39', '45–59'],
+              ['极重（massive）', '40–59', '60–89'],
+              ['瀑布型（torrential）', '≥60', '≥90'],
+            ],
+          },
+          { kind: 'text', text: '两项不一致时取较重的一档。介入临床试验普遍以**极重与瀑布型**为主要人群——真正的重度 TR 往往被「轻中度」的旧标准低估。' },
+
+          { kind: 'h', text: '四、介入前 TEE 必须测量的七项' },
+          { kind: 'text', text: '① **瓣环前后径与周长**（3D，经食管中段四腔 / 右室流入流出切面）：瓣环扩张是 TTVA 的基础，前后径 >40 mm 提示明显扩张；② **瓣叶长度**（隔叶、前叶、后叶）：过短（<10 mm）不适合夹合；③ **对合间隙**（coaptation gap）：>7–8 mm 通常不适合缘对缘修复；④ **对合深度**（coaptation depth）：过浅（<5 mm）夹持困难；⑤ **牵拉距离 / 瓣叶栓系**；⑥ **起搏导线位置**（是否穿越瓣口、是否与瓣叶粘连）；⑦ **右室大小与功能 + PASP**。' },
+          { kind: 'note', text: '3D TEE 的瓣环测量必须在**舒张末期**、以主动脉瓣中心为方位参考重建，否则前后径会被系统性低估。', warn: true },
+
+          { kind: 'h', text: '五、术后即刻评估要点' },
+          { kind: 'text', text: '① 残余 TR 分级（目标 ≤轻度）；② **跨瓣平均压差**——TTVA 后压差 >5 mmHg 提示功能性狭窄风险，需警惕；③ 夹合器位置与稳定性（有无单侧脱开）；④ 有无瓣叶穿孔、心包积液、右室功能变化。' },
+          { kind: 'text', text: '术后 TR 减轻但右室功能未改善、甚至恶化，常见于室性功能性 TR 的晚期患者——这提示右室病变已不可逆，术前评估时应把右室功能作为独立的决策变量。' },
+        ],
+        fields: [
+          { k: 'treroa', n: 'EROA', u: 'mm²' },
+          { k: 'trrvol', n: 'RVol', u: 'mL' },
+        ],
+        calc: 'tr-interv',
+        note: '填 EROA 与 RVol 可自动给出五级严重度（取较重一档）；解剖测量项需人工对照上述清单。',
+      },
+      {
+        id: 'mv-interv',
+        title: '二尖瓣介入（TEER）术前评估',
+        sub: 'Carpentier 分型 · 解剖适配 · 术后压差',
+        source: ['R26', 'R9'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '一、Carpentier 分型：决定能不能夹' },
+          {
+            kind: 'table',
+            heads: ['分型', '瓣叶运动', '典型病因', 'TEER 适配'],
+            rows: [
+              ['Ⅰ 型', '正常运动，瓣环扩张 / 瓣叶穿孔', '房性 MR、心内膜炎穿孔', '穿孔不适合，瓣环扩张可考虑'],
+              ['Ⅱ 型', '过度运动（脱垂 / 连枷）', '黏液样变、腱索断裂', '**最佳适应证**（A2/P2 区脱垂）'],
+              ['Ⅲa 型', '舒张受限（瓣叶增厚挛缩）', '风湿性', '不适合'],
+              ['Ⅲb 型', '收缩受限（瓣叶被牵拉）', '缺血性、扩张型心肌病', '可做，但需评估对合间隙与存活心肌'],
+            ],
+          },
+
+          { kind: 'h', text: '二、解剖适配的关键测量（TEE 3D + 2D 联合）' },
+          {
+            kind: 'table',
+            heads: ['参数', '适配范围', '不适配提示'],
+            rows: [
+              ['瓣叶长度', '≥10 mm（前叶与后叶均需）', '<10 mm 夹持空间不足'],
+              ['对合间隙', '<10 mm', '>10 mm 难以夹合'],
+              ['对合深度', '≥5 mm', '<5 mm 抓取困难'],
+              ['瓣叶活动度', '良好', '严重受限（Ⅲa）'],
+              ['瓣叶钙化 / 裂隙', '无或轻', '重度钙化、裂隙'],
+              ['瓣口面积 MVA', '>4.0 cm²', '<3.0 cm² 术后狭窄风险高'],
+              ['脱垂 / 连枷范围', '局限（A2 或 P2）', '广泛（>1 个区）或多区受累'],
+            ],
+          },
+          { kind: 'text', text: '脱垂位置决定夹合策略：A2/P2 是「黄金区」，器械最容易到位、效果最稳；A1/P1 靠近交界、A3/P3 靠近瓣环，抓捕难度与残余反流率都更高。' },
+
+          { kind: 'h', text: '三、术前 TEE 测量清单（按顺序做，别漏）' },
+          { kind: 'text', text: '① MR 机制与 Carpentier 分型（多切面确认）；② 反流束起源与方向（3D vena contracta 定位）；③ 瓣叶长度与厚度；④ 对合间隙与深度；⑤ 瓣环 3D 面积与前后径；⑥ MVA（3D 平面法）；⑦ 左室大小与 EF；⑧ 有无 SAM 风险（室间隔厚度、二尖瓣前叶长度）；⑨ 合并 TR 与右心功能；⑩ 房间隔穿刺条件（房间隔长度、有无卵圆孔未闭 / 封堵器）。' },
+          { kind: 'note', text: '左室 EF <30%、重度左室扩大、或左室收缩末径 >55 mm 的患者，即使 MR 减轻也可能不改善预后——TEER 在这些人群里主要是改善症状，术前要说清楚预期。', warn: true },
+
+          { kind: 'h', text: '四、术后即刻与随访判读' },
+          { kind: 'text', text: '**跨瓣平均压差**是术后最关键的数值：≤5 mmHg 为可接受，>5 mmHg 提示功能性二尖瓣狭窄风险，需结合 MVA（<1.5 cm² 为明显狭窄）。夹合器单侧脱开表现为新发或加重的偏心性反流，需立即复查 3D。' },
+          { kind: 'text', text: '残余 MR 分级用与术前相同的定量方法（PISA / 3D vena contracta），不要只凭彩色面积目测——术后多束反流很常见，目测会低估。' },
+          { kind: 'note', text: 'TEER 后需长期抗凝 / 抗血小板，并监测夹合器血栓（术后 1 个月 TEE 复查）。随访中压差进行性升高要警惕瓣叶增厚或夹合器内皮化异常。', warn: true },
+        ],
+        note: 'TEER 的核心不是「能不能夹」，而是「夹完会不会狭窄、残余反流能不能接受」——四项测量（瓣叶长度、间隙、深度、MVA）缺一不可。',
+      },
+    ],
+  },
 ];
 
 /**
@@ -5081,6 +5462,41 @@ const REFS = [
     en: 'Adler Y, et al. 2015 ESC Guidelines for the Diagnosis and Management of Pericardial Diseases',
     where: 'Eur Heart J, 2015, 36(42): 2921–2964',
     use: '缩窄性心包炎的呼吸变异、瓣环反转与鉴别路径',
+  },
+  {
+    id: 'R25',
+    zh: '三尖瓣反流学术研究联盟（TVARC）定义与分级',
+    en: 'Hahn RT, Lawlor MK, Davidson CJ, et al. Tricuspid Valve Academic Research Consortium Definitions for Tricuspid Regurgitation and Study Design Principles',
+    where: 'Eur Heart J, 2023, 44(43): 4509–4532',
+    use: 'TR 五级严重度、机制分型与经导管介入终点定义',
+  },
+  {
+    id: 'R26',
+    zh: '瓣膜性心脏病管理指南（2021 ESC/EACTS）',
+    en: 'Vahanian A, et al. 2021 ESC/EACTS Guidelines for the management of valvular heart disease',
+    where: 'Eur Heart J, 2022, 43(7): 561–632',
+    use: '二尖瓣 TEER 适应证、解剖适配与介入时机',
+  },
+  {
+    id: 'R27',
+    zh: '左房与右心应变成像标准化（2018 ASE/EACVI）',
+    en: 'Badano LP, et al. Standardization of left atrial, right ventricular, and right atrial deformation imaging using two-dimensional speckle tracking echocardiography',
+    where: 'Eur Heart J Cardiovasc Imaging, 2018, 19(6): 591–600',
+    use: '左房应变三时相（LASr / LAScd / LASct）的正常值与测量规范',
+  },
+  {
+    id: 'R28',
+    zh: 'HFpEF 诊断算法 HFA-PEFF（2019 ESC HFA）',
+    en: 'Pieske B, et al. How to diagnose heart failure with preserved ejection fraction: the HFA-PEFF diagnostic algorithm',
+    where: 'Eur Heart J, 2019, 40(40): 3297–3317',
+    use: '形态学 + 功能两大类计分、总分判读与负荷试验指征',
+  },
+  {
+    id: 'R29',
+    zh: '负荷超声心动图应用指南（2020 ASE）',
+    en: 'Pellikka PA, et al. Guidelines for Performance, Interpretation, and Application of Stress Echocardiography in Ischemic Heart Disease',
+    where: 'J Am Soc Echocardiogr, 2020, 33(1): 1–41',
+    use: '室壁运动评分、阳性标准、WMSI 与负荷方式选择',
   },
 ];
 
@@ -6016,6 +6432,48 @@ const REFS = [
       if (r.feats.length) parts.push(r.feats.join('、'));
       if (r.text) parts.push('→ ' + r.text);
       put('cp-rm', partsOf(parts));
+    }
+
+    // 左房应变与 HFA-PEFF 三大类计分
+    {
+      const r = Calc.hfaPeff({
+        lavi: v.hplavi, lvmi: v.hplvmi, female: state.sex === 'female', rwt: v.hprwt,
+        ntp: v.hpntp, ee: v.hpee, trv: v.hptrv, lasr: v.hplasr, gls: v.hpgls,
+      });
+      const parts = [];
+      if (r.n) {
+        parts.push('形态学 ' + r.morph + ' 分' + (r.morphName ? '（' + r.morphName + '）' : ''));
+        parts.push('标志物 ' + r.bio + ' 分' + (r.bioName ? '（' + r.bioName + '）' : ''));
+        parts.push('功能 ' + r.func + ' 分' + (r.funcName ? '（' + r.funcName + '）' : ''));
+        parts.push('合计 ' + r.total + '/6 → ' + r.text);
+      }
+      put('la-strain', partsOf(parts));
+    }
+
+    // Duke 评分 + 收缩储备
+    {
+      const parts = [];
+      const dk = Calc.dukeScore({ time: v.dktime, stDev: v.dkst, angina: v.dkang });
+      if (dk.score !== undefined) {
+        parts.push('Duke ' + Calc.fmt(dk.score, 1) + ' 分 · ' + dk.text);
+      }
+      if (has('dkefr', 'dkefp')) {
+        const d = v.dkefp - v.dkefr;
+        parts.push('EF 变化 ' + (d >= 0 ? '+' : '') + Calc.fmt(d, 1) + '% · ' +
+          (d >= 5 ? '收缩储备正常' : '收缩储备不足（提示多支病变 / 预后不良）'));
+      }
+      put('stress-echo', partsOf(parts));
+    }
+
+    // 三尖瓣反流五级严重度
+    {
+      const g = Calc.trGrade(v.treroa, v.trrvol);
+      const parts = [];
+      if (g.text) {
+        parts.push('TR ' + g.text);
+        if (g.byEroa !== g.byRvol) parts.push('EROA 与 RVol 不一致，取较重档');
+      }
+      put('tr-interv', partsOf(parts));
     }
 
     // 心肌应变判读

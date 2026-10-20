@@ -369,6 +369,119 @@ function cpRm(o) {
   return r;
 }
 
+/**
+ * HFA-PEFF 诊断算法·超声部分计分（2019 ESC HFA）
+ *
+ * 分「形态学」「生物标志物」「功能」三大类，每类内部各项取最高分（不累加），
+ * 三类分数相加得 0–6 分。负荷试验不在本函数内。
+ *   形态学：LAVi、LVMI（按性别）、RWT
+ *   生物标志物：NT-proBNP（窦性心律阈值；房颤阈值更高，见条目说明）
+ *   功能：  平均 E/e′、TR Vmax、静息左房储备应变 LASr、GLS 绝对值
+ *
+ * 判读：≥5 确诊 HFpEF；2–4 需进一步（负荷试验）；≤1 可排除。
+ *
+ * @param {object} o {lavi, lvmi, female, rwt, ntp, ee, trv, lasr, gls}
+ */
+function hfaPeff(o) {
+  const pick = (v, t1, t2, lowerIsBad) => {
+    if (!(v > 0)) return 0;
+    if (lowerIsBad) {
+      if (v < t2) return 2;
+      if (v < t1) return 1;
+      return 0;
+    }
+    if (v >= t2) return 2;
+    if (v >= t1) return 1;
+    return 0;
+  };
+
+  // 形态学（取最高一项）
+  const morCand = [];
+  if (o.lavi > 0) morCand.push(['LAVi', pick(o.lavi, 34, 40)]);
+  if (o.lvmi > 0) {
+    morCand.push(['LVMI', o.female ? pick(o.lvmi, 95, 122) : pick(o.lvmi, 115, 149)]);
+  }
+  if (o.rwt > 0) morCand.push(['RWT', pick(o.rwt, 0.42, 0.55)]);
+
+  // 功能（取最高一项）
+  const funCand = [];
+  if (o.ee > 0) funCand.push(['平均 E/e′', pick(o.ee, 9, 13)]);
+  if (o.trv > 0) funCand.push(['TR Vmax', pick(o.trv, 2.8, 3.4)]);
+  if (o.lasr > 0) funCand.push(['静息 LASr', pick(o.lasr, 29, 18, true)]);
+  if (o.gls !== undefined && o.gls !== null && o.gls < 0) {
+    funCand.push(['GLS', pick(Math.abs(o.gls), 16, 12, true)]);
+  }
+
+  // 生物标志物（NT-proBNP，窦性心律阈值）
+  const bioCand = [];
+  if (o.ntp > 0) bioCand.push(['NT-proBNP', pick(o.ntp, 125, 220)]);
+
+  const top = (arr) => {
+    let s = 0, n = '';
+    arr.forEach(function (x) { if (x[1] > s) { s = x[1]; n = x[0]; } });
+    return { score: s, name: n };
+  };
+  const m = top(morCand), b = top(bioCand), f = top(funCand);
+  const r = {
+    morph: m.score, bio: b.score, func: f.score,
+    total: m.score + b.score + f.score,
+    morphName: m.name, bioName: b.name, funcName: f.name,
+    n: morCand.length + bioCand.length + funCand.length,
+  };
+  if (r.n) {
+    r.text = r.total >= 5 ? '确诊 HFpEF'
+      : r.total >= 2 ? '需进一步：负荷试验 / 侵入性血流动力学'
+      : '可排除 HFpEF';
+  }
+  return r;
+}
+
+/**
+ * Duke 运动平板评分（与负荷超声配合使用）
+ *
+ * 评分 = 运动时间（min）− 5 × ST 段偏移（mm）− 4 × 心绞痛指数
+ * 心绞痛指数：0 无 / 1 非限制造胸痛 / 2 限制造胸痛
+ *
+ * 判读：≥5 低危；−10 至 4 中危；≤−11 高危。
+ *
+ * @param {object} o {time, stDev, angina}
+ */
+function dukeScore(o) {
+  if (!(o.time > 0)) return {};
+  const st = o.stDev > 0 ? o.stDev : 0;
+  const ai = (o.angina >= 0 && o.angina <= 2) ? o.angina : 0;
+  const score = o.time - 5 * st - 4 * ai;
+  let level, text;
+  if (score >= 5) { level = 'low'; text = '低危'; }
+  else if (score > -11) { level = 'mid'; text = '中危'; }
+  else { level = 'high'; text = '高危'; }
+  return { score: score, level: level, text: text };
+}
+
+/**
+ * 三尖瓣反流五级分级（Hahn / TVARC）
+ *
+ * 按 EROA 与 RVol 各自归档后取较重的一档：
+ *   轻度 <20 mm² / <30 mL；中度 20–29 / 30–44；重度 30–39 / 45–59；
+ *   极重（massive）40–59 / 60–89；瀑布型（torrential）≥60 / ≥90。
+ *
+ * @param {number} eroa 有效反流口面积，mm²
+ * @param {number} rvol 反流量，mL
+ */
+function trGrade(eroa, rvol) {
+  const band = (v, cuts) => {
+    if (!(v > 0)) return -1;
+    for (let i = 0; i < cuts.length; i += 1) if (v < cuts[i]) return i;
+    return cuts.length;
+  };
+  const a = band(eroa, [20, 30, 40, 60]);
+  const b = band(rvol, [30, 45, 60, 90]);
+  const g = Math.max(a, b);
+  if (g < 0) return {};
+  const names = ['轻度', '中度', '重度', '极重（massive）', '瀑布型（torrential）'];
+  return { grade: g, text: names[g], byEroa: a, byRvol: b };
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -411,6 +524,9 @@ module.exports = {
   asLflg,
   rvFuncScore,
   cpRm,
+  hfaPeff,
+  dukeScore,
+  trGrade,
   round,
   fmt,
 };

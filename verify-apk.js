@@ -16,6 +16,7 @@ const vm = require('vm');
 
 const ROOT = __dirname;
 const WWW = path.join(ROOT, 'www', 'index.html');
+const DOCS = path.join(ROOT, 'docs', 'index.html');
 
 let pass = 0, fail = 0;
 const problems = [];
@@ -50,7 +51,13 @@ section('1. 构建产物完整性');
 check('www/index.html 存在', fs.existsSync(WWW), true);
 
 const html = fs.readFileSync(WWW, 'utf8');
-check('单文件体积 < 300 KB', Buffer.byteLength(html, 'utf8') < 300 * 1024, true);
+// 完整版（含瓣膜页）体积上限；真正打包进 APK 的是发布版 docs，另有更严的约束
+check('www 完整版体积 < 400 KB', Buffer.byteLength(html, 'utf8') < 400 * 1024, true);
+check('docs 发布版存在（APK 实际打包源）', fs.existsSync(DOCS), true);
+if (fs.existsSync(DOCS)) {
+  const dh = fs.readFileSync(DOCS, 'utf8');
+  check('docs 发布版体积 < 300 KB（APK 内存约束）', Buffer.byteLength(dh, 'utf8') < 300 * 1024, true);
+}
 
 // 抽取 <script> 里两个 IIFE 引擎块
 const coreMatch = html.match(/\/\* ── 引擎：echo-core\.js[\s\S]*?\n\}\)\(\);/);
