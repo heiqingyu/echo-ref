@@ -481,15 +481,17 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirs.map(d => d.title).join('|') ===
       '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|实用超声规范化检查与操作（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 89 条（11 计算 + 9 瓣膜 + 32 评估 + 37 外链）', nItems, 89, 0);
+  check('目录共 65 条（11 计算 + 9 瓣膜 + 32 评估 + 13 外链）', nItems, 65, 0);
   check('切面学习 5 条', dirs[10].items.length, 5, 0);
-  check('书籍视频 25 条（第三章心血管系统 1–25）', dirs[11].items.length, 25, 0);
+  check('书籍视频收成 1 条专辑入口', dirs[11].items.length, 1, 0);
   check('切面指南 4 条', dirs[12].items.length, 4, 0);
   check('TEE 模拟器 3 条', dirs[13].items.length, 3, 0);
   check('外链条目为 link 类型',
     dirs[10].items.every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
-  check('书籍视频均为 mp4 且标记为 video',
-    dirs[11].items.every(i => i.kind === 'link' && /\.mp4$/.test(i.url) && i.video === true) ? 1 : 0, 1, 0);
+  check('书籍视频条目为 album 且标注 25 段',
+    dirs[11].items[0] && dirs[11].items[0].kind === 'album' && dirs[11].items[0].count === 25 ? 1 : 0, 1, 0);
+  check('专辑条目不把 children 塞进目录数据（省 setData）',
+    dirs[11].items[0] && dirs[11].items[0].children === undefined ? 1 : 0, 1, 0);
   check('书籍视频分组带书籍出处说明',
     /王辉/.test(dirs[11].note || '') && /978-7-5189-8028-4/.test(dirs[11].note || '') ? 1 : 0, 1, 0);
   check('TTE 经胸切面为直达交互链接',

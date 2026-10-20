@@ -1,0 +1,63 @@
+/* 专辑二级页
+ * .fx-list / .fx-item 定义在 calculators 页的 wxss 里（页面级隔离），
+ * 这里需要复制一份，否则列表会没有卡片和分隔线样式。
+ */
+.fx-list {
+  background: #fff;
+  border-radius: 18rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 10rpx rgba(16, 32, 64, 0.04);
+}
+
+.fx-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 26rpx 24rpx;
+  border-bottom: 1rpx solid #f0f1f3;
+}
+
+.fx-item:last-child {
+  border-bottom: none;
+}
+
+.fx-item--tap {
+  background: #f2f7ff;
+}
+
+.fx-item__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.fx-item__n {
+  font-size: 29rpx;
+  font-weight: 600;
+  color: #1f2329;
+  line-height: 1.45;
+}
+
+.fx-item__d {
+  font-size: 23rpx;
+  color: #8a9099;
+  margin-top: 4rpx;
+  line-height: 1.5;
+}
+
+.fx-item__a {
+  flex: none;
+  font-size: 26rpx;
+  color: #c4c9d1;
+  line-height: 1;
+}
+
+/* 书籍出处 */
+.album__note {
+  margin-top: 14rpx;
+  padding: 12rpx 16rpx;
+  border-radius: 10rpx;
+  background: #eef2f9;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #5b6472;
+}

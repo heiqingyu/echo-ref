@@ -103,6 +103,12 @@ if (appJson.pages.includes('pages/formula/formula')) ok('formula 详情页已注
 else bad('formula 详情页未注册');
 if (appJson.pages.includes('pages/video/video')) ok('video 站内播放页已注册');
 else bad('video 播放页未注册');
+if (appJson.pages.includes('pages/album/album')) ok('album 专辑二级页已注册');
+else bad('album 专辑页未注册');
+const albJs = fs.readFileSync(path.join(MP, 'pages/album/album.js'), 'utf8');
+if (albJs.indexOf("'/pages/video/video?url='") !== -1 && albJs.indexOf('children') !== -1)
+  ok('专辑页按 children 列出切面并跳播放页');
+else bad('专辑页未接入视频列表');
 const vidJs = fs.readFileSync(path.join(MP, 'pages/video/video.js'), 'utf8');
 if (vidJs.indexOf('.mp4') !== -1 && vidJs.indexOf('https:') !== -1) ok('video 页仅接受 https 的 mp4 地址');
 else bad('video 页未校验视频地址');
@@ -164,11 +170,14 @@ console.log('\n=== 4f. 切面学习 / 书籍视频 / 切面指南 / TEE 模拟�
 if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 4) ok('外链分组 4 个（切面学习 / 书籍视频 / 切面指南 / TEE 模拟器）');
 else bad('外链分组数异常: ' + (EX.LINK_SECTIONS || []).length);
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
-if (linkIds.length === 37) ok('外链条目 37 条（12 + 书籍视频 25）');
+if (linkIds.length === 13) ok('外链条目 13 条（12 条单条外链 + 书籍视频专辑 1 条）');
 else bad('外链条目数异常: ' + linkIds.length);
-const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it =>
-  !it.id || !it.title || !it.sub || String(it.url).indexOf('https://') !== 0));
-if (!linkBad) ok('每条外链含 id/标题/说明/https 地址');
+const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it => {
+  if (!it.id || !it.title || !it.sub) return true;
+  if (it.album) return !(it.children && it.children.length);
+  return String(it.url).indexOf('https://') !== 0;
+}));
+if (!linkBad) ok('每条外链含 id/标题/说明/https 地址（专辑须含子条目）');
 else bad('外链条目定义不完整');
 ['tee-sv', 'tte-sv', 'tee-cheat', 'guide-tte-cn', 'guide-tee-28', 'sim-toronto', 'sim-ct2tee', 'sim-atlas'].forEach(function (id) {
   if (linkIds.indexOf(id) !== -1) ok('外链条目存在: ' + id);
@@ -179,17 +188,27 @@ if (tteItem && /TTE-HTML5-SV\/index\.html$/.test(tteItem.url)) ok('TTE 经胸切
 else bad('TTE 经胸切面链接未直达交互应用');
 if (EX.LINK_SECTIONS[3].items.length === 3) ok('TEE 模拟器仅 3 条');
 else bad('TEE 模拟器条目数异常: ' + EX.LINK_SECTIONS[3].items.length);
-// 书籍视频：25 条 mp4 直链 + 书籍出处
+// 书籍视频：整本书收成 1 个专辑条目，子条目 25 段 mp4 直链 + 书籍出处
 const bv = EX.LINK_SECTIONS.filter(function (s3) { return s3.id === 'bookvid'; })[0];
-if (bv && bv.items.length === 25) ok('书籍视频 25 条（第三章心血管系统 1–25）');
+const bvAlb = bv ? bv.items.filter(function (it) { return it.album; })[0] : null;
+if (bv && bv.items.length === 1 && bvAlb) ok('书籍视频收成 1 个专辑条目（首页不再被 25 行占满）');
 else bad('书籍视频条目数异常: ' + (bv ? bv.items.length : 'missing'));
-if (bv && bv.items.every(function (it) { return /\.mp4$/.test(it.url); })) ok('书籍视频均为 mp4 直链');
-else bad('书籍视频存在非 mp4 链接');
+if (bvAlb && bvAlb.children.length === 25) ok('专辑内 25 段（第三章心血管系统 1–25）');
+else bad('专辑子条目数异常: ' + (bvAlb ? bvAlb.children.length : 'missing'));
+if (bvAlb && bvAlb.children.every(function (it) { return /\.mp4$/.test(it.url) && it.title && it.id; }))
+  ok('25 段均为 mp4 直链且含 id / 标题');
+else bad('专辑内存在非 mp4 或缺字段的条目');
 if (bv && /王辉/.test(bv.note || '') && /978-7-5189-8028-4/.test(bv.note || '')) ok('书籍视频标注编者与 ISBN');
 else bad('书籍视频缺少书籍出处');
 const extSrc = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
 if (extSrc.indexOf('EX.LINK_SECTIONS') !== -1) ok('目录页已接入 LINK_SECTIONS');
 else bad('目录页未接入 LINK_SECTIONS');
+if (extSrc.indexOf("kind: 'album'") !== -1) ok('目录把专辑渲染为单条入口（kind: album）');
+else bad('目录未把专辑收成单条入口');
+if (/onSearch\s*\(/.test(extSrc) && /bindinput="onSearch"/.test(
+  fs.readFileSync(path.join(MP, 'pages/calculators/calculators.wxml'), 'utf8')))
+  ok('公式集目录带搜索框（输入即筛）');
+else bad('公式集目录缺少搜索框');
 const calcWxml3 = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.wxml'), 'utf8');
 if (calcWxml3.indexOf('data-url="{{it.url}}"') !== -1) ok('目录条目透传 url（小程序内复制链接）');
 else bad('目录条目未透传 url');

@@ -474,20 +474,25 @@
     return h + '<div class="fx-list">';
   }
 
-  /** 目录条目：kind = calc / brief / valve / link
+  /** 目录条目：kind = calc / brief / valve / link / album
    *  link 为纯外链条目：渲染成 <a target="_blank">，不加载任何图片或 iframe
-   *  url 为 .mp4 时用 ▶ 标识，点击由浏览器直接播放 */
-  function fxItemHtml(kind, id, title, sub, url) {
+   *  url 为 .mp4 时用 ▶ 标识，点击由浏览器直接播放
+   *  album 为专辑（整本书的视频）：右侧显示段数，点击进入二级列表 */
+  function fxItemHtml(kind, id, title, sub, url, count, secId) {
     const isVid = /\.mp4(\?|$)/i.test(url || '');
+    let arrow = '›';
+    if (kind === 'album') arrow = (count || 0) + ' ›';
+    else if (isVid) arrow = '▶';
     const inner = '<span class="fx-item__main">' +
       '<span class="fx-item__n">' + esc(title) + '</span>' +
       '<span class="fx-item__d">' + esc(sub) + '</span>' +
-      '</span><span class="fx-item__a">' + (isVid ? '▶' : '›') + '</span>';
+      '</span><span class="fx-item__a">' + arrow + '</span>';
     if (kind === 'link') {
       return '<a class="fx-item" href="' + esc(url || '#') +
         '" target="_blank" rel="noopener noreferrer">' + inner + '</a>';
     }
-    return '<button class="fx-item" data-kind="' + kind + '" data-id="' + id + '">' +
+    return '<button class="fx-item" data-kind="' + kind + '" data-id="' + id + '"' +
+      (secId ? ' data-sec="' + secId + '"' : '') + '>' +
       inner + '</button>';
   }
 
@@ -574,10 +579,12 @@
    *   miniprogram/utils/extra-data.js 的 BRIEF_SECTIONS 加一条即可，
    *   目录会自动出现，不必改别处。
    */
-  function buildCalcInputs() {
-    if (!$('calcList')) return;
-
-    // ── 目录 ──
+  /** 目录数据（结构化）：血流动力学 / 瓣膜评估 / 各评估分组 / 外链分组
+   *
+   *  与小程序 calculators.js 的 buildSections() 同源同序。
+   *  album 条目（整本书的视频）只占 1 行，children 不进目录，点进去才列切面。
+   */
+  function buildCalcSections() {
     const hasValvePage = !!$('page-valves');
     // mergeInto：并入同名组，避免「瓣膜评估」与「瓣膜疾病评估」两个相似组并存
     const MERGED = {};
@@ -585,55 +592,212 @@
       if (!sec.mergeInto) return;
       (MERGED[sec.mergeInto] = MERGED[sec.mergeInto] || []).push(sec);
     });
-    let list = fxGroupHtml('血流动力学与心功能');
-    CALC_GROUPS.forEach(function (g) {
-      list += fxItemHtml('calc', g.id, g.title, CALC_SUB[g.id] || '');
+
+    const secs = [];
+    secs.push({
+      id: 'hemo',
+      title: '血流动力学与心功能',
+      items: CALC_GROUPS.map(function (g) {
+        return { kind: 'calc', id: g.id, title: g.title, sub: CALC_SUB[g.id] || '' };
+      }),
     });
-    list += '</div>';
-    // 瓣膜评估组：完整版含 5 个瓣膜计算器，发布版只有判读条目；
-    // 两种构建里组的位置一致（紧跟血流动力学），不再出现「瓣膜疾病评估」重复组
-    list += fxGroupHtml('瓣膜评估');
+
+    // 瓣膜评估组：完整版含 5 个瓣膜计算器，发布版只有判读条目
+    const valveItems = [];
     if (hasValvePage) {
       VALVE_INDEX.forEach(function (v) {
-        list += fxItemHtml('valve', v.id, v.title, v.sub);
+        valveItems.push({ kind: 'valve', id: v.id, title: v.title, sub: v.sub });
       });
     }
     (MERGED.valve || []).forEach(function (sec) {
       sec.items.forEach(function (it) {
-        list += fxItemHtml('brief', it.id, it.title, it.sub || '');
+        valveItems.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
       });
     });
-    list += '</div>';
+    secs.push({ id: 'valve', title: '瓣膜评估', items: valveItems });
+
     BRIEF.forEach(function (sec) {
       if (sec.mergeInto) return;
-      list += fxGroupHtml(sec.title);
-      sec.items.forEach(function (it) {
-        list += fxItemHtml('brief', it.id, it.title, it.sub || '');
+      secs.push({
+        id: sec.id,
+        title: sec.title,
+        items: sec.items.map(function (it) {
+          return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };
+        }),
       });
-      list += '</div>';
     });
-    LINKS.forEach(function (sec) {
-      list += fxGroupHtml(sec.title, sec.note);
-      sec.items.forEach(function (it) {
-        list += fxItemHtml('link', it.id, it.title, it.sub || '', it.url);
-      });
-      list += '</div>';
-    });
-    $('calcList').innerHTML = list;
 
-    $('calcList').querySelectorAll('.fx-item').forEach(function (el) {
-      el.addEventListener('click', function () {
-        const kind = el.dataset.kind;
-        // 外链条目渲染为 <a>，没有 data-kind：交给浏览器默认跳转（新窗口播放 / 打开原站）
-        if (!kind) return;
-        if (kind === 'valve') {
-          switchTab('valves');
-          switchValve(el.dataset.id);
-        } else {
-          openCalcGroup(el.dataset.id);
-        }
+    LINKS.forEach(function (sec) {
+      secs.push({
+        id: sec.id,
+        title: sec.title,
+        note: sec.note || '',
+        items: sec.items.map(function (it) {
+          if (it.album) {
+            return {
+              kind: 'album', id: it.id, sec: sec.id, title: it.title,
+              sub: it.sub || '', count: (it.children || []).length,
+            };
+          }
+          return {
+            kind: 'link', id: it.id, title: it.title, sub: it.sub || '', url: it.url,
+          };
+        }),
       });
     });
+
+    return secs;
+  }
+
+  /** 条目是否命中关键词（标题 + 说明，忽略大小写） */
+  function hitKw(it, q) {
+    return ((it.title || '') + ' ' + (it.sub || '')).toLowerCase().indexOf(q) !== -1;
+  }
+
+  /** 按 id 取专辑条目（含 children） */
+  function albumOf(secId, itemId) {
+    const sec = LINKS.filter(function (s) { return s.id === secId; })[0];
+    if (!sec) return null;
+    return sec.items.filter(function (it) {
+      return it.id === itemId && it.album;
+    })[0] || null;
+  }
+
+  /**
+   * 渲染公式集目录（kw 为空即全量）
+   *
+   * 专辑的子条目也参与匹配：搜「房间隔」会把命中视频直接平铺出来，
+   * 不必先点进专辑再翻；而专辑标题本身命中时仍只显示一条入口。
+   */
+  function renderCalcList(kw) {
+    const box = $('calcList');
+    if (!box) return;
+    const q = (kw || '').trim().toLowerCase();
+    const secs = buildCalcSections();
+    let list = '';
+
+    secs.forEach(function (sec) {
+      const items = [];
+      sec.items.forEach(function (it) {
+        if (it.kind !== 'album') {
+          if (!q || hitKw(it, q)) items.push(it);
+          return;
+        }
+        if (!q || hitKw(it, q)) { items.push(it); return; }
+        const alb = albumOf(it.sec, it.id);
+        ((alb && alb.children) || []).forEach(function (c) {
+          if (!hitKw(c, q)) return;
+          items.push({ kind: 'link', id: c.id, title: c.title, sub: c.sub || '', url: c.url });
+        });
+      });
+      if (!items.length) return;
+      list += fxGroupHtml(sec.title, sec.note);
+      items.forEach(function (it) {
+        list += fxItemHtml(it.kind, it.id, it.title, it.sub, it.url, it.count, it.sec);
+      });
+      list += '</div>';
+    });
+
+    if (!list) {
+      list = '<div class="fx-empty">没有匹配「' + esc((kw || '').trim()) + '」的条目</div>';
+    }
+    box.innerHTML = list;
+  }
+
+  /** 目录的事件绑定：搜索框 + 条目点击（都用委托 / 只绑一次，重渲染无需重绑） */
+  let calcBound = false;
+  function bindCalcListEvents() {
+    if (calcBound) return;
+    calcBound = true;
+
+    const box = $('calcList');
+    box.addEventListener('click', function (ev) {
+      const el = ev.target.closest ? ev.target.closest('.fx-item') : null;
+      if (!el) return;
+      const kind = el.dataset.kind;
+      // 外链条目渲染为 <a>，没有 data-kind：交给浏览器默认跳转（新窗口播放 / 打开原站）
+      if (!kind) return;
+      if (kind === 'valve') {
+        switchTab('valves');
+        switchValve(el.dataset.id);
+      } else if (kind === 'album') {
+        openAlbum(el.dataset.sec, el.dataset.id);
+      } else {
+        openCalcGroup(el.dataset.id);
+      }
+    });
+
+    const sIn = $('fxSearch');
+    const sClr = $('fxSearchClear');
+    if (sIn) {
+      sIn.addEventListener('input', function () {
+        renderCalcList(sIn.value);
+        if (sClr) sClr.hidden = !sIn.value;
+      });
+      // 回车只用于收起键盘，过滤是实时的
+      sIn.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') sIn.blur();
+      });
+    }
+    if (sClr) {
+      sClr.addEventListener('click', function () {
+        if (sIn) { sIn.value = ''; renderCalcList(''); sIn.focus(); }
+        sClr.hidden = true;
+      });
+    }
+  }
+
+  /** 打开专辑：在公式集 Tab 内的第三个视图列出全部切面 */
+  function openAlbum(secId, itemId) {
+    const alb = albumOf(secId, itemId);
+    if (!alb) return;
+    const sec = LINKS.filter(function (s) { return s.id === secId; })[0];
+    const kids = alb.children || [];
+
+    if ($('albumTitle')) $('albumTitle').textContent = alb.title;
+    if ($('albumDesc')) {
+      $('albumDesc').textContent = '共 ' + kids.length + ' 段 · 点击条目在新窗口播放';
+    }
+    const nt = $('albumNote');
+    if (nt) {
+      if (sec && sec.note) { nt.textContent = sec.note; nt.hidden = false; }
+      else { nt.textContent = ''; nt.hidden = true; }
+    }
+
+    if ($('albumList')) {
+      let h = '<div class="fx-list">';
+      kids.forEach(function (c) {
+        h += '<a class="fx-item" href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer">' +
+          '<span class="fx-item__main">' +
+          '<span class="fx-item__n">' + esc(c.title) + '</span>' +
+          '<span class="fx-item__d">' + esc(c.sub || '') + '</span>' +
+          '</span><span class="fx-item__a">▶</span></a>';
+      });
+      h += '</div>';
+      $('albumList').innerHTML = h;
+    }
+
+    if ($('calcIndex')) $('calcIndex').hidden = true;
+    if ($('calcDetail')) $('calcDetail').hidden = true;
+    if ($('calcAlbum')) $('calcAlbum').hidden = false;
+    if ($('appbarTitle')) $('appbarTitle').textContent = alb.title;
+    window.scrollTo(0, 0);
+  }
+
+  /** 从专辑回到目录 */
+  function closeAlbum() {
+    if ($('calcAlbum')) $('calcAlbum').hidden = true;
+    if ($('calcIndex')) $('calcIndex').hidden = false;
+    if ($('appbarTitle')) $('appbarTitle').textContent = TAB_TITLE.calc;
+    window.scrollTo(0, 0);
+  }
+
+  function buildCalcInputs() {
+    if (!$('calcList')) return;
+
+    // ── 目录 ──
+    bindCalcListEvents();
+    renderCalcList($('fxSearch') ? $('fxSearch').value : '');
 
     renderRefs();
 
@@ -717,11 +881,13 @@
   function closeCalcGroup() {
     if ($('calcIndex')) $('calcIndex').hidden = false;
     if ($('calcDetail')) $('calcDetail').hidden = true;
+    if ($('calcAlbum')) $('calcAlbum').hidden = true;
     $('appbarTitle').textContent = TAB_TITLE.calc;
     window.scrollTo(0, 0);
   }
 
   if ($('calcBack')) $('calcBack').addEventListener('click', closeCalcGroup);
+  if ($('albumBack')) $('albumBack').addEventListener('click', closeAlbum);
 
   function segHtml(group, opts, cur) {
     let h = '<div class="field"><label class="field__l">' +

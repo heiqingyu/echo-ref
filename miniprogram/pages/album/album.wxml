@@ -1,0 +1,28 @@
+<view class="page-wrap">
+
+  <view wx:if="{{errText}}" class="card">
+    <view class="card__title">{{errText}}</view>
+    <view class="card__desc">请返回公式集重新进入。</view>
+  </view>
+
+  <block wx:else>
+    <view class="card">
+      <view class="card__title">{{title}}</view>
+      <view class="card__desc">共 {{count}} 段 · 点击条目播放</view>
+      <view wx:if="{{note}}" class="album__note">{{note}}</view>
+    </view>
+
+    <view class="fx-list">
+      <view wx:for="{{items}}" wx:key="id" wx:for-item="it"
+            class="fx-item" hover-class="fx-item--tap"
+            data-url="{{it.url}}" data-title="{{it.title}}" bindtap="onOpen">
+        <view class="fx-item__main">
+          <view class="fx-item__n">{{it.title}}</view>
+          <view class="fx-item__d">{{it.sub}}</view>
+        </view>
+        <view class="fx-item__a">▶</view>
+      </view>
+    </view>
+  </block>
+
+</view>

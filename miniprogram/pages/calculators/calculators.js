@@ -25,7 +25,17 @@ const EXTRA = [
   },
 ];
 
-/** 组装目录：血流动力学（自动） + 瓣膜 + 器械支持 + 心腔与应变（来自 extra-data） */
+/** 该条目是否是视频直链（站内播放页可播） */
+function isVideo(url) {
+  return /\.mp4(\?|$)/i.test(url || '');
+}
+
+/**
+ * 组装目录：血流动力学（自动） + 瓣膜 + 各评估分组 + 外链分组
+ *
+ * ★ album 条目（如整本书的视频）在目录里只占 1 条，children 不塞进 data，
+ *   点进去再按 sec/item 到 extra-data 里取，避免 setData 传输整份子列表。
+ */
 function buildSections() {
   const sections = [{
     id: 'hemo',
@@ -62,9 +72,16 @@ function buildSections() {
       title: s.title,
       note: s.note || '',
       items: s.items.map(function (it) {
+        // 整本书 / 整套视频：目录只留一条入口，二级页里再列具体切面
+        if (it.album) {
+          return {
+            kind: 'album', id: it.id, sec: s.id, title: it.title,
+            sub: it.sub || '', count: (it.children || []).length,
+          };
+        }
         return {
           kind: 'link', id: it.id, title: it.title, sub: it.sub || '', url: it.url,
-          video: /\.mp4(\?|$)/i.test(it.url || ''),
+          video: isVideo(it.url),
         };
       }),
     });
@@ -73,9 +90,58 @@ function buildSections() {
   return sections;
 }
 
+/** 取某个专辑条目的子条目（原始数据） */
+function albumChildren(secId, itemId) {
+  const sec = (EX.LINK_SECTIONS || []).filter(function (s) { return s.id === secId; })[0];
+  if (!sec) return [];
+  const alb = sec.items.filter(function (it) { return it.id === itemId && it.album; })[0];
+  return (alb && alb.children) || [];
+}
+
+/** 条目是否命中关键词（标题 + 说明） */
+function hit(it, q) {
+  return ((it.title || '') + ' ' + (it.sub || '')).toLowerCase().indexOf(q) !== -1;
+}
+
+/**
+ * 搜索：按关键词过滤
+ *
+ * 专辑条目的子条目也参与匹配——搜「房间隔」时会把命中的视频直接平铺出来，
+ * 免得用户还要先点进专辑再找；而专辑标题本身命中时，仍只显示一条入口。
+ */
+function searchSections(all, kw) {
+  const q = kw.toLowerCase();
+  const out = [];
+  all.forEach(function (sec) {
+    const items = [];
+    sec.items.forEach(function (it) {
+      if (it.kind !== 'album') {
+        if (hit(it, q)) items.push(it);
+        return;
+      }
+      if (hit(it, q)) {
+        items.push(it);
+        return;
+      }
+      albumChildren(it.sec, it.id).forEach(function (c) {
+        if (!hit(c, q)) return;
+        items.push({
+          kind: 'link', id: c.id, title: c.title, sub: c.sub || '', url: c.url, video: true,
+        });
+      });
+    });
+    if (items.length) {
+      out.push({ id: sec.id, title: sec.title, note: sec.note || '', items: items });
+    }
+  });
+  return out;
+}
+
 Page({
   data: {
     sections: buildSections(),
+    kw: '',
+    searching: false,
     bsaText: '—',
     countText: '',
     refs: EX.REFS,
@@ -87,9 +153,9 @@ Page({
   },
 
   onLoad() {
-    let n = 0;
-    this.data.sections.forEach(function (s) { n += s.items.length; });
-    this.setData({ countText: '共 ' + n + ' 项' });
+    // 原始目录留在实例上，搜索时不必反复重建
+    this.allSections = this.data.sections;
+    this.setData({ countText: this.countTextOf(this.allSections) });
   },
 
   onShow() {
@@ -97,17 +163,58 @@ Page({
     this.setData({ bsaText: p && p.bsa ? p.bsa.toFixed(2) : '—' });
   },
 
+  /** 「共 N 项」/「找到 N 项」（hasKw 由调用方传入，避免读到还没刷新的 this.data.kw） */
+  countTextOf(list, hasKw) {
+    let n = 0;
+    list.forEach(function (s) { n += s.items.length; });
+    return (hasKw ? '找到 ' + n + ' 项' : '共 ' + n + ' 项');
+  },
+
+  /** 搜索框输入：实时过滤（条目总量不大，直接过滤，无需防抖） */
+  onSearch(e) {
+    const kw = ((e.detail && e.detail.value) || '').trim();
+    if (!kw) {
+      this.setData({
+        kw: '', searching: false, sections: this.allSections,
+        countText: this.countTextOf(this.allSections),
+      });
+      return;
+    }
+    const secs = searchSections(this.allSections, kw);
+    this.setData({
+      kw: kw,
+      searching: true,
+      sections: secs,
+      countText: secs.length ? '找到 ' + kw : '没有匹配「' + kw + '」',
+    });
+  },
+
+  /** 清空搜索 */
+  onClearSearch() {
+    this.setData({
+      kw: '', searching: false, sections: this.allSections,
+      countText: this.countTextOf(this.allSections),
+    });
+  },
+
   /**
    * 点击条目：
-   *   link  → 复制外链（小程序内无法打开外部网页）
+   *   album → 视频目录页（列出该专辑下的具体切面）
+   *   link  → mp4 走站内播放页，其余复制外链
    *   valve → 瓣膜评估页并预选该瓣膜
    *   其余  → 公式 / 评估内容详情页
    */
   onOpen(e) {
     const d = e.currentTarget.dataset;
+    if (d.kind === 'album') {
+      wx.navigateTo({
+        url: '/pages/album/album?sec=' + d.sec + '&item=' + d.id,
+      });
+      return;
+    }
     if (d.kind === 'link') {
       // 视频直链（.mp4）在站内播放页打开，不必让用户复制到浏览器
-      if (/\.mp4(\?|$)/i.test(d.url || '')) {
+      if (isVideo(d.url)) {
         wx.navigateTo({
           url: '/pages/video/video?url=' + encodeURIComponent(d.url) +
             '&title=' + encodeURIComponent(d.title || ''),
