@@ -17,6 +17,16 @@ set HERE=%~dp0
 set BUILD=%HERE%build
 set DIST=%HERE%dist
 
+REM Version: single source of truth = android-app\VERSION
+REM   line 1 = versionName (shown to users)
+REM   line 2 = versionCode (must increase to allow upgrade)
+REM Bump BOTH on every feature change.
+set VNAME=
+if exist "%HERE%VERSION" set /p VNAME=<"%HERE%VERSION"
+if not defined VNAME set "VNAME=0.0.0"
+echo.
+echo [v] version %VNAME% (see android-app\VERSION)
+
 echo.
 echo [0/7] build www/index.html and sync to assets...
 pushd "%HERE%.."
@@ -34,12 +44,16 @@ mkdir "%BUILD%\apk" 2>nul
 if exist "%DIST%" rmdir /s /q "%DIST%"
 mkdir "%DIST%" 2>nul
 
+echo [1b/7] generate AndroidManifest with version...
+node "%HERE%gen-manifest.js"
+if errorlevel 1 goto :fail
+
 echo [2/7] aapt2 compile resources...
 call "%BT%\aapt2.exe" compile --dir "%HERE%res" -o "%BUILD%\res.zip"
 if errorlevel 1 goto :fail
 
 echo [3/7] aapt2 link (R.java + base apk)...
-call "%BT%\aapt2.exe" link -o "%BUILD%\base.apk" -I "%PLAT%" --manifest "%HERE%AndroidManifest.xml" --java "%BUILD%\gen" --auto-add-overlay "%BUILD%\res.zip"
+call "%BT%\aapt2.exe" link -o "%BUILD%\base.apk" -I "%PLAT%" --manifest "%BUILD%\AndroidManifest.gen.xml" --java "%BUILD%\gen" --auto-add-overlay "%BUILD%\res.zip"
 if errorlevel 1 goto :fail
 
 echo [4/7] javac compile java...
@@ -87,7 +101,7 @@ if errorlevel 1 goto :fail
 
 echo.
 echo ============================================
-echo  BUILD OK: %DIST%EchoRef.apk
+echo  BUILD OK: %DIST%EchoRef.apk  (v%VNAME%)
 echo ============================================
 exit /b 0
 

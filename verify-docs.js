@@ -219,28 +219,21 @@ function check(name, ok, detail) {
   const pdBsa = await c.evalJs('document.getElementById("pdBsa").textContent');
   check('儿童 BSA 已算出', pdBsa && /\d\.\d+/.test(pdBsa), pdBsa);
 
-  console.log('\n【三·五】延展阅读（首页底部外链卡片）');
+  console.log('\n【三·五】延展阅读与参考文献（已随公式集页移出发布版）');
   await c.evalJs('document.querySelector(\'.tab[data-tab="index"]\').click()');
-  await new Promise((r) => setTimeout(r, 400));
-  const extCard = await c.evalJs(
-    '(function(){var el=document.getElementById("extLinks");' +
-    'return el?JSON.stringify({links:el.querySelectorAll("a.extlink").length,' +
-    'hrefs:[...el.querySelectorAll("a.extlink")].map(function(a){return a.getAttribute("href");}),' +
-    'disp:getComputedStyle(el.querySelector("a.extlink")).display,' +
-    'blank:el.querySelectorAll(\'a[target="_blank"][rel~="noopener"]\').length,' +
-    'title:el.querySelector(".card__t").textContent}):"MISSING";})()');
-  if (extCard === 'MISSING') {
-    check('延展阅读卡片存在', false, '未找到 #extLinks');
-  } else {
-    const e = JSON.parse(extCard);
-    check('延展阅读卡片存在', true, e.title);
-    check('外链条目 2 条', e.links === 2, String(e.links));
-    check('条目 1 → zs-echo.com', e.hrefs[0] === 'https://zs-echo.com', e.hrefs[0]);
-    check('条目 2 → tte-quickref',
-      e.hrefs[1] === 'https://bdrwss.github.io/tte-quickref/dist/', e.hrefs[1]);
-    check('外链样式生效（flex 布局）', e.disp === 'flex', e.disp);
-    check('新窗口 + noopener 属性', e.blank === 2, String(e.blank));
-  }
+  await new Promise((r) => setTimeout(r, 300));
+  // 延展阅读与参考文献现在位于「公式集」页，而公式集属于转载/扩展内容，
+  // 发布版（GitHub Pages）在构建阶段已整页剥离，这里验证剥离干净即可。
+  const extGone = await c.evalJs('document.getElementById("extLinks") === null');
+  check('发布版已无延展阅读卡片（随公式集页剥离）', extGone, true);
+  const refGone = await c.evalJs('document.getElementById("calcRefs") === null');
+  check('发布版已无参考文献区（随公式集页剥离）', refGone, true);
+  const noExtra = await c.evalJs('typeof window.ExtraData === "undefined"');
+  check('发布版已剔除评估内容数据 ExtraData', noExtra, true);
+  const homeVer = await c.evalJs('document.querySelector("#page-index .verline") ? 1 : 0');
+  check('首页显示版本行', homeVer === 1, homeVer);
+  const verText = await c.evalJs('(document.querySelector("#page-index .verline") || {}).textContent || ""');
+  check('版本号已递增（非 1.0.0）', /v1\.0\.[1-9]/.test(verText), verText);
 
   console.log('\n【四】控制台');
   const errs = c.logs.filter((l) => l.indexOf('EXCEPTION') === 0 ||

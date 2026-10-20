@@ -24,6 +24,19 @@ const OUT = path.join(ROOT, 'www', 'index.html');
 /** 发布版（GitHub Pages）保留的页签：只留自有内容，转载内容不上线 */
 const PUBLIC_TABS = ['index', 'peds'];
 
+/**
+ * 版本号单一来源：android-app/VERSION 第一行
+ * （第二行 versionCode 只给 APK 用；改功能时两个都要 +1）
+ */
+const APP_VERSION = (function () {
+  try {
+    return fs.readFileSync(path.join(ROOT, 'android-app', 'VERSION'), 'utf8')
+      .split('\n')[0].trim() || '0.0.0';
+  } catch (e) {
+    return '0.0.0';
+  }
+})();
+
 /* ---------- 1. 抽取引擎源码 ---------- */
 
 /** 把 CommonJS 模块转成浏览器可用的 IIFE，挂到 window[globalName] */
@@ -72,6 +85,8 @@ const pedsSrc = wrapEngine(path.join(MP, 'utils', 'peds-zscore.js'), 'Peds');
 const calcSrc = wrapEngine(path.join(MP, 'utils', 'echo-calc.js'), 'Calc');
 const segSrc = wrapEngine(path.join(MP, 'utils', 'segment-svg.js'), 'SegSvg');
 const valveSrc = wrapEngine(path.join(MP, 'utils', 'valve-calc.js'), 'ValveCalc');
+// 公式集「评估类内容 + 参考文献」数据（纯数据，与小程序同源）
+const extraSrc = wrapEngine(path.join(MP, 'utils', 'extra-data.js'), 'ExtraData');
 
 /* ---------- 1b. 节段划分页（构建时生成骨架，示意图由 SegSvg 运行时渲染） ---------- */
 
@@ -404,28 +419,7 @@ const html = `<!DOCTYPE html>
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-
-    <!-- ══ 延展阅读（第三方工具，点击由系统浏览器打开） ══ -->
-    <div class="card" id="extLinks">
-      <div class="card__t">延展阅读</div>
-      <div class="card__d">同类心超速查工具，内容更全。点击条目由系统浏览器打开。</div>
-      <a class="extlink" href="https://zs-echo.com" target="_blank" rel="noopener noreferrer">
-        <span class="extlink__main">
-          <span class="extlink__name">心超速查 ZS-Echo Copilot</span>
-          <span class="extlink__desc">86 个计算器 · 19 类参考值 · 瓣膜与决策流程</span>
-          <span class="extlink__url">zs-echo.com</span>
-        </span>
-        <span class="extlink__act">打开</span>
-      </a>
-      <a class="extlink" href="https://bdrwss.github.io/tte-quickref/dist/" target="_blank" rel="noopener noreferrer">
-        <span class="extlink__main">
-          <span class="extlink__name">TTE 心超速查 · 中文版</span>
-          <span class="extlink__desc">床旁速查卡片 · 测量与切面要点</span>
-          <span class="extlink__url">bdrwss.github.io/tte-quickref</span>
-        </span>
-        <span class="extlink__act">打开</span>
-      </a>
-    </div>
+    <div class="verline">心脏超声参考值 · v${APP_VERSION}</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -438,6 +432,37 @@ const html = `<!DOCTYPE html>
         <div class="card__d" id="calcBsaNote">按主题分组，点击条目进入对应公式 · BSA — m²（来自「EF·参考值」页上方）</div>
       </div>
       <div id="calcList"></div>
+
+      <!-- 参考文献（列表由 app.js 渲染） -->
+      <div class="card" id="calcRefs">
+        <div class="card__t">参考文献</div>
+        <div class="card__d">本工具全部数据与分级标准的来源，详情页会标注该条目使用的文献编号。</div>
+        <div id="calcRefList"></div>
+      </div>
+
+      <!-- ══ 延展阅读（第三方工具，点击由系统浏览器打开） ══ -->
+      <div class="card" id="extLinks">
+        <div class="card__t">延展阅读</div>
+        <div class="card__d">同类心超速查工具，内容更全。点击条目由系统浏览器打开。</div>
+        <a class="extlink" href="https://zs-echo.com" target="_blank" rel="noopener noreferrer">
+          <span class="extlink__main">
+            <span class="extlink__name">心超速查 ZS-Echo Copilot</span>
+            <span class="extlink__desc">86 个计算器 · 19 类参考值 · 瓣膜与决策流程</span>
+            <span class="extlink__url">zs-echo.com</span>
+          </span>
+          <span class="extlink__act">打开</span>
+        </a>
+        <a class="extlink" href="https://bdrwss.github.io/tte-quickref/dist/" target="_blank" rel="noopener noreferrer">
+          <span class="extlink__main">
+            <span class="extlink__name">TTE 心超速查 · 中文版</span>
+            <span class="extlink__desc">床旁速查卡片 · 测量与切面要点</span>
+            <span class="extlink__url">bdrwss.github.io/tte-quickref</span>
+          </span>
+          <span class="extlink__act">打开</span>
+        </a>
+      </div>
+
+      <div class="verline">心脏超声参考值 · v${APP_VERSION}</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -583,9 +608,6 @@ ${SEG_HTML}
   <div class="tab tab--on" data-tab="index">
     <span class="tab__i">◧</span><span class="tab__t">EF·参考值</span>
   </div>
-  <div class="tab" data-tab="calc">
-    <span class="tab__i">∑</span><span class="tab__t">公式集</span>
-  </div>
   <div class="tab" data-tab="valves">
     <span class="tab__i">◇</span><span class="tab__t">瓣膜评估</span>
   </div>
@@ -594,6 +616,10 @@ ${SEG_HTML}
   </div>
   <div class="tab" data-tab="peds">
     <span class="tab__i">◎</span><span class="tab__t">儿童 Z 值</span>
+  </div>
+
+  <div class="tab" data-tab="calc">
+    <span class="tab__i">∑</span><span class="tab__t">公式集</span>
   </div>
 </nav>
 
@@ -607,6 +633,10 @@ ${calcSrc}
 ${segSrc}
 
 ${valveSrc}
+
+/*<<<PUBLIC-CUT:extra>>>*/
+${extraSrc}
+/*<<<END-CUT:extra>>>*/
 
 ${js}
 </script>
@@ -684,7 +714,7 @@ function buildPublicHtml() {
   });
 
   // 3b) 删掉 app.js 里被标记为 PUBlic-CUT 的整块逻辑（其他计算 / 瓣膜 / 节段）
-  ['calc', 'valve', 'seg', 'segclick', 'visimport'].forEach((tag) => {
+  ['calc', 'valve', 'seg', 'segclick', 'visimport', 'extra'].forEach((tag) => {
     const re = new RegExp('/\\*<<<PUBLIC-CUT:' + tag + '>>>\\*/[\\s\\S]*?/\\*<<<END-CUT:' + tag + '>>>\\*/\\n?');
     if (!re.test(out)) throw new Error('发布版：未找到切块标记 ' + tag);
     out = out.replace(re, '');
@@ -770,7 +800,8 @@ function buildPublicHtml() {
    'PUBLIC-CUT', 'END-CUT',
    '节段划分页', '瓣膜评估页', '.vswitch', '.vchip', '.bull-wrap', '.lvl--severe', '.vsum',
    '肝静脉', 'Wilkins', 'PISA', 'EROA',
-   'window.Calc', 'window.ValveCalc', 'renderCalc', 'renderValves', 'clearValves', '__HAS_']
+   'window.Calc', 'window.ValveCalc', 'window.ExtraData', 'ExtraData', 'BRIEF_SECTIONS', 'REFS',
+   'renderCalc', 'renderValves', 'clearValves', '__HAS_']
     .forEach((s) => {
       if (out.indexOf(s) !== -1) throw new Error('发布版：仍残留 ' + s);
     });

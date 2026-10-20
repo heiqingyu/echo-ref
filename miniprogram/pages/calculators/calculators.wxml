@@ -23,6 +23,45 @@
     </view>
   </block>
 
+  <!-- ══════ 参考文献 ══════ -->
+  <view class="card">
+    <view class="card__title">参考文献</view>
+    <view class="card__desc">
+      本工具全部数据与分级标准的来源。详情页底部会标注该条目使用的文献编号。
+    </view>
+
+    <view wx:for="{{refs}}" wx:key="id" class="ref-item">
+      <view class="ref-item__id">{{item.id}}</view>
+      <view class="ref-item__body">
+        <view class="ref-item__zh">{{item.zh}}</view>
+        <view class="ref-item__en">{{item.en}}</view>
+        <view class="ref-item__where">{{item.where}}</view>
+        <view class="ref-item__use">用于：{{item.use}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ══════ 延展阅读（外部工具，复制链接到浏览器打开） ══════ -->
+  <view class="card">
+    <view class="card__title">延展阅读</view>
+    <view class="card__desc">
+      同类心超速查工具，内容更全。小程序内无法直接打开外部网页，点击条目复制链接，
+      粘贴到手机浏览器即可访问。
+    </view>
+
+    <view wx:for="{{extLinks}}" wx:key="url" wx:for-item="it"
+          class="extlink" hover-class="extlink--tap"
+          data-url="{{it.url}}" bindtap="onCopyLink">
+      <view class="extlink__main">
+        <view class="extlink__name">{{it.name}}</view>
+        <view class="extlink__desc">{{it.desc}}</view>
+      </view>
+      <view class="extlink__act">复制</view>
+    </view>
+  </view>
+
+  <view class="verline">心脏超声参考值 · v{{appVersion}}</view>
+
   <view class="note note--strong">
     公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA=220/PHT）、
     Abbas（PVR 经验公式）。本工具仅供速查与学习，不构成诊断依据。

@@ -545,6 +545,15 @@ html, body {
   .kv__v { font-size: 19px; }
 }
 
+/* ────────── 版本行 ────────── */
+
+.verline {
+  text-align: center;
+  font-size: 11px;
+  color: #b6bcc6;
+  padding: 16px 0 6px;
+}
+
 /* ────────── 延展阅读：外链条目 ────────── */
 
 .extlink {
@@ -792,28 +801,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-
-    <!-- ══ 延展阅读（第三方工具，点击由系统浏览器打开） ══ -->
-    <div class="card" id="extLinks">
-      <div class="card__t">延展阅读</div>
-      <div class="card__d">同类心超速查工具，内容更全。点击条目由系统浏览器打开。</div>
-      <a class="extlink" href="https://zs-echo.com" target="_blank" rel="noopener noreferrer">
-        <span class="extlink__main">
-          <span class="extlink__name">心超速查 ZS-Echo Copilot</span>
-          <span class="extlink__desc">86 个计算器 · 19 类参考值 · 瓣膜与决策流程</span>
-          <span class="extlink__url">zs-echo.com</span>
-        </span>
-        <span class="extlink__act">打开</span>
-      </a>
-      <a class="extlink" href="https://bdrwss.github.io/tte-quickref/dist/" target="_blank" rel="noopener noreferrer">
-        <span class="extlink__main">
-          <span class="extlink__name">TTE 心超速查 · 中文版</span>
-          <span class="extlink__desc">床旁速查卡片 · 测量与切面要点</span>
-          <span class="extlink__url">bdrwss.github.io/tte-quickref</span>
-        </span>
-        <span class="extlink__act">打开</span>
-      </a>
-    </div>
+    <div class="verline">心脏超声参考值 · v1.0.1</div>
   </section>
 
 
@@ -949,6 +937,7 @@ html, body {
   <div class="tab" data-tab="peds">
     <span class="tab__i">◎</span><span class="tab__t">儿童 Z 值</span>
   </div>
+
 </nav>
 
 <script>
@@ -2039,6 +2028,7 @@ function describeZ(z) {
     describeZ: describeZ,
   };
 })();
+
 
 
 

@@ -262,35 +262,7 @@
     </view>
   </view>
 
-  <!-- ══════ 延展阅读（第三方工具，小程序内复制链接后到浏览器打开） ══════ -->
-  <view class="card">
-    <view class="card__title">延展阅读</view>
-    <view class="card__desc">
-      同类心超速查工具，内容更全。小程序内无法直接打开外部网页，点击条目复制链接，
-      粘贴到手机浏览器即可访问。
-    </view>
-
-    <view class="extlink" bindtap="onCopyLink" data-url="https://zs-echo.com"
-          hover-class="extlink--tap">
-      <view class="extlink__main">
-        <view class="extlink__name">心超速查 ZS-Echo Copilot</view>
-        <view class="extlink__desc">86 个计算器 · 19 类参考值 · 瓣膜与决策流程</view>
-        <view class="extlink__url">zs-echo.com</view>
-      </view>
-      <view class="extlink__act">复制</view>
-    </view>
-
-    <view class="extlink" bindtap="onCopyLink"
-          data-url="https://bdrwss.github.io/tte-quickref/dist/"
-          hover-class="extlink--tap">
-      <view class="extlink__main">
-        <view class="extlink__name">TTE 心超速查 · 中文版</view>
-        <view class="extlink__desc">床旁速查卡片 · 测量与切面要点</view>
-        <view class="extlink__url">bdrwss.github.io/tte-quickref</view>
-      </view>
-      <view class="extlink__act">复制</view>
-    </view>
-  </view>
+  <view class="verline">心脏超声参考值 · v{{appVersion}}</view>
 
   <view class="note note--strong">
     本工具为数值计算与参考值查询工具，所有结果仅供专业参考，不作为诊断依据。

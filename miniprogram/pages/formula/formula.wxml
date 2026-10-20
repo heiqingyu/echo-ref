@@ -2,7 +2,30 @@
 
   <view class="card">
     <view class="card__title">{{title}}</view>
-    <view class="card__desc">BSA {{bsaText}} m²（来自「EF·参考值」页）· 留空跳过，只填一项也会给出对应结果</view>
+    <view class="card__desc">
+      BSA {{bsaText}} m²（来自「EF·参考值」页）· 按{{sexLabel}}参考区间判读 · 留空跳过
+    </view>
+
+    <!-- 评估类内容（来自 utils/extra-data.js） -->
+    <block wx:if="{{mode === 'brief'}}">
+      <block wx:for="{{blocks}}" wx:key="index" wx:for-item="b">
+
+        <view wx:if="{{b.kind === 'h'}}" class="fx-h">{{b.text}}</view>
+
+        <view wx:elif="{{b.kind === 'table'}}" class="vtbl vtbl--{{b.cols}}">
+          <view class="vtbl__r vtbl__r--h">
+            <text class="vtbl__c" wx:for="{{b.heads}}" wx:for-item="h" wx:key="index">{{h}}</text>
+          </view>
+          <view class="vtbl__r" wx:for="{{b.rows}}" wx:for-item="r" wx:key="index">
+            <text class="vtbl__c" wx:for="{{r}}" wx:for-item="c" wx:key="index">{{c}}</text>
+          </view>
+        </view>
+
+        <view wx:elif="{{b.kind === 'note'}}" class="fx-note">{{b.text}}</view>
+        <view wx:elif="{{b.kind === 'formula'}}" class="fx-formula">{{b.text}}</view>
+        <view wx:else class="fx-text">{{b.text}}</view>
+      </block>
+    </block>
 
     <view wx:for="{{inputs}}" wx:key="key" class="field">
       <text class="field__label">{{item.name}} / {{item.unit}}</text>
@@ -43,5 +66,16 @@
   </view>
 
   <button class="clear-btn" bindtap="onClear">清空本组输入</button>
+
+  <view class="card" wx:if="{{refs.length}}">
+    <view class="card__title">本条目引用</view>
+    <view wx:for="{{refs}}" wx:key="id" class="ref-item">
+      <view class="ref-item__id">{{item.id}}</view>
+      <view class="ref-item__body">
+        <view class="ref-item__zh">{{item.zh}}</view>
+        <view class="ref-item__where">{{item.where}}</view>
+      </view>
+    </view>
+  </view>
 
 </view>

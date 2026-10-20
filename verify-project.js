@@ -127,6 +127,48 @@ else bad('目录条目未绑定 onOpen');
 const valvesJs2 = fs.readFileSync(path.join(MP, 'pages/valves/valves.js'), 'utf8');
 if (/query && query\.tab/.test(valvesJs2)) ok('瓣膜页支持 ?tab= 预选参数');
 else bad('瓣膜页未支持 ?tab= 预选参数');
+console.log('\n=== 4e. 公式集扩展：评估类内容 / 参考文献 / 版本号 ===');
+const exPath = path.join(MP, 'utils', 'extra-data.js');
+if (fs.existsSync(exPath)) ok('extra-data.js 存在');
+else bad('extra-data.js 缺失');
+const EX = require(exPath);
+if (EX.BRIEF_SECTIONS.length === 2) ok('评估内容 2 个分组（器械支持 / 心腔与应变）');
+else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
+const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
+if (briefIds.join(',') === 'crt,la,lv,rv,strain') ok('评估条目 = crt/la/lv/rv/strain');
+else bad('评估条目异常: ' + briefIds.join(','));
+const briefBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
+  !it.title || !it.sub || !it.blocks || !it.blocks.length || !it.source));
+if (!briefBad) ok('每条评估内容含标题/说明/内容块/引用编号');
+else bad('评估内容定义不完整');
+const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
+  it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
+if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
+else bad('存在悬空的引用编号');
+if (EX.REFS.length === 10) ok('参考文献 10 条');
+else bad('参考文献条数异常: ' + EX.REFS.length);
+
+const idxWxml2 = fs.readFileSync(path.join(MP, 'pages/index/index.wxml'), 'utf8');
+const idxWxss2 = fs.readFileSync(path.join(MP, 'pages/index/index.wxss'), 'utf8');
+if (idxWxml2.indexOf('延展阅读') === -1 && idxWxss2.indexOf('.extlink') === -1) ok('首页已移除延展阅读（已搬至公式集页）');
+else bad('首页仍含延展阅读');
+
+const tabList2 = appJson.tabBar.list;
+if (tabList2[tabList2.length - 1].pagePath === 'pages/calculators/calculators') ok('公式集排在 tabBar 最后');
+else bad('公式集未排在最后: ' + tabList2[tabList2.length - 1].text);
+
+// 版本号三处一致
+const VD = require(path.join(MP, 'utils/version.js'));
+const vfRaw = fs.readFileSync(path.join(ROOT, 'android-app', 'VERSION'), 'utf8');
+const vName = vfRaw.split('\n')[0].trim();
+const vCode = parseInt(vfRaw.split('\n')[1].trim(), 10);
+if (VD.APP_VERSION === vName) ok('版本号一致: ' + vName);
+else bad('版本号不一致: 小程序 ' + VD.APP_VERSION + ' / APK ' + vName);
+if (vCode > 1) ok('APK versionCode 已递增: ' + vCode);
+else bad('APK versionCode 未递增');
+if (/versionCode=/.test(fs.readFileSync(path.join(ROOT, 'android-app/AndroidManifest.xml'), 'utf8'))) ok('AndroidManifest 含 versionCode');
+else bad('AndroidManifest 缺 versionCode');
+
 const formulaJs = fs.readFileSync(path.join(MP, 'pages/formula/formula.js'), 'utf8');
 ['flow', 'shunt', 'bernoulli', 'atrial', 'pressure', 'rvcalc', 'dias'].forEach(id => {
   if (formulaJs.indexOf("gid === '" + id + "'") !== -1) ok('formula 页含计算分支: ' + id);

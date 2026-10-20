@@ -376,62 +376,77 @@ console.log('\n=== 21. 合并后首页（EF 计算 + 参考值同页）===');
   check('参考值列表恢复实测对照', pg.data.hasMeasurements ? 1 : 0, 1, 0);
 }
 
-console.log('\n=== 22. 延展阅读（首页底部外链，复制链接交互）===');
+console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
 {
-  // wxml / js / wxss 源码检查
-  check('index.wxml 延展阅读卡片存在',
-    wxmlIndex.indexOf('card__title">延展阅读') !== -1 ? 1 : 0, 1, 0);
-  check('index.wxml 外链条目 2 条（bindtap onCopyLink）',
-    (wxmlIndex.match(/bindtap="onCopyLink"/g) || []).length, 2, 0);
-  check('index.wxml 条目 1 链接 zs-echo.com',
-    wxmlIndex.indexOf('data-url="https://zs-echo.com"') !== -1 ? 1 : 0, 1, 0);
-  check('index.wxml 条目 2 链接 tte-quickref',
-    wxmlIndex.indexOf('data-url="https://bdrwss.github.io/tte-quickref/dist/"') !== -1 ? 1 : 0, 1, 0);
-  const jsIndex = fsW.readFileSync(
-    pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.js'), 'utf8');
-  check('index.js 实现 onCopyLink（setClipboardData）',
-    /onCopyLink[\s\S]*setClipboardData/.test(jsIndex) ? 1 : 0, 1, 0);
-  const wxssIndex = fsW.readFileSync(
-    pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.wxss'), 'utf8');
-  check('index.wxss 含 .extlink 样式',
-    wxssIndex.indexOf('.extlink {') !== -1 ? 1 : 0, 1, 0);
+  const calcWxml = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'calculators', 'calculators.wxml'), 'utf8');
+  const calcWxss = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'calculators', 'calculators.wxss'), 'utf8');
+  const idxWxml = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.wxml'), 'utf8');
 
-  // mock 交互：点击条目 → 链接进剪贴板 + toast 提示
-  let clip = null, toast = null;
-  global.wx = {
-    setClipboardData(o) { clip = o.data; if (o.success) o.success(); },
-    showToast(o) { toast = o.title; },
-  };
-  const gData22 = {
-    profile: { sex: 'male', height: 170, weight: 65, bsa: 1.75 },
-    measurements: null,
-    standard: 'CN',
-  };
-  global.getApp = () => ({ globalData: gData22 });
-  let pgCfg22 = null;
-  global.Page = (c) => { pgCfg22 = c; };
-  delete require.cache[require.resolve(
-    pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.js'))];
-  require(pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.js'));
-  const pg22 = Object.assign({}, pgCfg22);
-  pg22.setData = function (patch) { Object.assign(this.data, patch); };
-  pg22.onLoad();
-  pg22.onCopyLink({ currentTarget: { dataset: { url: 'https://zs-echo.com' } } });
-  check('点击条目 1 → 剪贴板为 zs-echo.com 链接',
-    clip === 'https://zs-echo.com' ? 1 : 0, 1, 0);
-  check('复制后有 toast 提示', !!toast ? 1 : 0, 1, 0);
-  pg22.onCopyLink({ currentTarget: { dataset: { url: 'https://bdrwss.github.io/tte-quickref/dist/' } } });
-  check('点击条目 2 → 剪贴板为 tte-quickref 链接',
-    clip === 'https://bdrwss.github.io/tte-quickref/dist/' ? 1 : 0, 1, 0);
+  // 延展阅读已从首页搬到公式集页
+  check('首页不再含延展阅读卡片', idxWxml.indexOf('延展阅读') === -1 ? 1 : 0, 1, 0);
+  check('公式集页含延展阅读卡片',
+    calcWxml.indexOf('card__title">延展阅读') !== -1 ? 1 : 0, 1, 0);
+  check('外链条目 2 条（bindtap onCopyLink）',
+    (calcWxml.match(/bindtap="onCopyLink"/g) || []).length, 1, 0);
+  const calcJsSrc = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'calculators', 'calculators.js'), 'utf8');
+  check('条目 1 链接 zs-echo.com',
+    calcJsSrc.indexOf('https://zs-echo.com') !== -1 ? 1 : 0, 1, 0);
+  check('条目 2 链接 tte-quickref',
+    calcJsSrc.indexOf('https://bdrwss.github.io/tte-quickref/dist/') !== -1 ? 1 : 0, 1, 0);
+  check('calculators.wxss 含 .extlink 样式',
+    calcWxss.indexOf('.extlink {') !== -1 ? 1 : 0, 1, 0);
+
+  // 参考文献区
+  check('公式集页含参考文献区',
+    calcWxml.indexOf('card__title">参考文献') !== -1 ? 1 : 0, 1, 0);
+  check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
+  const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
+  check('参考文献 10 条', EXD.REFS.length, 10, 0);
+  const refIds = EXD.REFS.map(r => r.id).join(',');
+  check('文献编号连续 R1–R10',
+    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10' ? 1 : 0, 1, 0);
+  const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
+  check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
+
+  // 目录顺序：延展阅读与参考文献都在分组之后
+  const lastGroupEnd = calcWxml.lastIndexOf('fx-item__a');
+  check('延展阅读位于所有条目之后',
+    calcWxml.indexOf('card__title">延展阅读') > lastGroupEnd ? 1 : 0, 1, 0);
+  check('参考文献位于延展阅读之前或紧邻上方',
+    calcWxml.indexOf('card__title">参考文献') < calcWxml.indexOf('card__title">延展阅读') ? 1 : 0, 1, 0);
+
+  // 版本号：三处一致
+  const VD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'version.js'));
+  const vfRaw = fsW.readFileSync(pathW.join(__dirname, 'android-app', 'VERSION'), 'utf8');
+  const vApk = vfRaw.split('\n')[0].trim();
+  const vCode = vfRaw.split('\n')[1].trim();
+  check('小程序版本 = APK versionName', VD.APP_VERSION === vApk ? 1 : 0, 1, 0);
+  check('APK versionCode 已递增（>1）', parseInt(vCode, 10) > 1 ? 1 : 0, 1, 0);
+  check('首页显示版本行', idxWxml.indexOf('appVersion') !== -1 ? 1 : 0, 1, 0);
+  check('公式集页显示版本行', calcWxml.indexOf('appVersion') !== -1 ? 1 : 0, 1, 0);
+
+  // tabBar 顺序：公式集在最后
+  const appJson = JSON.parse(fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'app.json'), 'utf8'));
+  const tabList = appJson.tabBar.list;
+  check('tabBar 共 4 个', tabList.length, 4, 0);
+  check('公式集排在最后一位',
+    tabList[tabList.length - 1].pagePath === 'pages/calculators/calculators' ? 1 : 0, 1, 0);
+  check('首页仍是 EF·参考值', tabList[0].text === 'EF·参考值' ? 1 : 0, 1, 0);
 }
 
-console.log('\n=== 23. 公式集（目录 + 公式详情页）===');
+console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）===');
 {
-  let navTo = null, navBarTitle = null;
+  let navTo = null, navBarTitle = null, clip = null;
   global.wx = {
     navigateTo(o) { navTo = o.url; },
     setNavigationBarTitle(o) { navBarTitle = o.title; },
-    showToast() {}, setClipboardData() {},
+    setClipboardData(o) { clip = o.data; if (o.success) o.success(); },
+    showToast() {},
   };
   const gData23 = {
     profile: { sex: 'male', height: 170, weight: 65, bsa: 1.75 },
@@ -445,7 +460,6 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页）===');
   require(pathW.join(__dirname, 'miniprogram', 'pages', 'calculators', 'calculators.js'));
   require(pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.js'));
 
-  // 补 setData（真机由框架提供）
   [pgA, pgF].forEach(function (pg) {
     pg.setData = function (patch) {
       const self = this;
@@ -462,21 +476,38 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页）===');
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 2 个大组', dirs.length, 2, 0);
+  check('公式集分 4 个大组', dirs.length, 4, 0);
+  check('组标题顺序',
+    dirs.map(d => d.title).join('|') ===
+      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 12 条（7 公式 + 5 瓣膜）', nItems, 12, 0);
-  check('第 2 组为瓣膜评估', dirs[1].title === '瓣膜评估' ? 1 : 0, 1, 0);
-  check('瓣膜条目含 AS', dirs[1].items.some(i => i.id === 'as') ? 1 : 0, 1, 0);
-  check('公式条目含一句话说明', dirs[0].items.every(i => i.sub) ? 1 : 0, 1, 0);
+  check('目录共 17 条', nItems, 17, 0);
+  check('器械支持 2 条（CRT / LAD）', dirs[2].items.length, 2, 0);
+  check('器械支持含 CRT 同步化',
+    dirs[2].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
+  check('器械支持含 LAD 参数',
+    dirs[2].items.some(i => i.id === 'la') ? 1 : 0, 1, 0);
+  check('心腔与应变 3 条', dirs[3].items.length, 3, 0);
+  ['lv', 'rv', 'strain'].forEach(id => {
+    check('心腔与应变含 ' + id,
+      dirs[3].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+  });
+  check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
 
+  // 跳转
   pgA.onOpen({ currentTarget: { dataset: { kind: 'calc', id: 'bernoulli' } } });
   check('点击公式条目 → navigateTo formula?id=…',
     navTo === '/pages/formula/formula?id=bernoulli' ? 1 : 0, 1, 0);
   pgA.onOpen({ currentTarget: { dataset: { kind: 'valve', id: 'ms' } } });
   check('点击瓣膜条目 → navigateTo valves?tab=ms',
     navTo === '/pages/valves/valves?tab=ms' ? 1 : 0, 1, 0);
+  pgA.onOpen({ currentTarget: { dataset: { kind: 'brief', id: 'crt' } } });
+  check('点击评估条目 → navigateTo formula?id=crt',
+    navTo === '/pages/formula/formula?id=crt' ? 1 : 0, 1, 0);
+  pgA.onCopyLink({ currentTarget: { dataset: { url: 'https://zs-echo.com' } } });
+  check('延展阅读点击 → 复制链接', clip === 'https://zs-echo.com' ? 1 : 0, 1, 0);
 
-  // —— 详情页：flow ——
+  // —— 计算公式详情：flow ——
   pgF.onLoad({ id: 'flow' });
   check('详情页标题 = LVOT · 每搏量与心排量',
     pgF.data.title === 'LVOT · 每搏量与心排量' ? 1 : 0, 1, 0);
@@ -484,21 +515,21 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页）===');
   check('flow 输入项 3 个', pgF.data.inputs.length, 3, 0);
   pgF.onShow();
   check('未填写时等待输入', pgF.data.hasOut ? 0 : 1, 1, 0);
-  pgF.data.inputs[0].value = '2';   // LVOT 直径
-  pgF.data.inputs[1].value = '20';  // LVOT VTI
-  pgF.data.inputs[2].value = '70';  // 心率
+  pgF.data.inputs[0].value = '2';
+  pgF.data.inputs[1].value = '20';
+  pgF.data.inputs[2].value = '70';
   pgF.refresh();
   check('flow 结果含 SV 与 CO',
     /SV/.test(pgF.data.out) && /CO/.test(pgF.data.out) ? 1 : 0, 1, 0);
   check('结果写入输入缓存',
     gData23.calcCache.flow && gData23.calcCache.flow.ld === '2' ? 1 : 0, 1, 0);
 
-  // —— 详情页：pressure（附加选项）——
+  // —— 计算公式详情：pressure ——
   pgF.onLoad({ id: 'pressure' });
   check('pressure 输入项 4 个', pgF.data.inputs.length, 4, 0);
   check('pressure 含 IVC 塌陷选项', pgF.data.collapse.length, 3, 0);
-  pgF.data.inputs[0].value = '2.8';  // TR 峰速
-  pgF.data.inputs[1].value = '20';   // IVC 内径
+  pgF.data.inputs[0].value = '2.8';
+  pgF.data.inputs[1].value = '20';
   pgF.onShow();
   check('右心压力结果含 RAP 与 PASP',
     /RAP/.test(pgF.data.out) && /PASP/.test(pgF.data.out) ? 1 : 0, 1, 0);
@@ -506,6 +537,52 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页）===');
   // —— 未知 id 回退 ——
   pgF.onLoad({ id: 'nope' });
   check('未知 id 回退到第一组', pgF.data.gid === 'flow' ? 1 : 0, 1, 0);
+
+  // —— 评估类内容（brief 模式）——
+  pgF.onLoad({ id: 'crt' });
+  pgF.onShow();
+  check('CRT 条目为 brief 模式', pgF.data.mode === 'brief' ? 1 : 0, 1, 0);
+  check('CRT 有内容块', pgF.data.blocks.length >= 8 ? 1 : 0, 1, 0);
+  check('CRT 含表格块', pgF.data.blocks.some(b => b.kind === 'table') ? 1 : 0, 1, 0);
+  check('CRT 标注引用文献', pgF.data.refs.length >= 1 ? 1 : 0, 1, 0);
+  check('CRT 导航栏标题同步', navBarTitle === 'CRT 同步化' ? 1 : 0, 1, 0);
+  pgF.data.inputs[0].value = '2';    // LVOT d
+  pgF.data.inputs[1].value = '20';   // VTI
+  pgF.data.inputs[3].value = '160';  // QRS
+  pgF.refresh();
+  check('CRT 结果含 SVi 与 QRS 提示',
+    /SVi/.test(pgF.data.out) && /QRS/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'la' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '70';   // 左房容积
+  pgF.refresh();
+  check('LAVi 计算与判读', /LAVi 40/.test(pgF.data.out) && /增大/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'lv' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '120';  // LVMI 男
+  pgF.data.inputs[1].value = '0.45'; // RWT
+  pgF.refresh();
+  check('LVMI 男性分级 = 中度增高',
+    /中度增高/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('RWT > 0.42 判为向心性肥厚',
+    /向心性肥厚/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  gData23.profile.sex = 'female';
+  pgF.data.inputs[0].value = '110';
+  pgF.onShow();
+  check('LVMI 女性分级 = 中度增高（同一数值不同分级）',
+    /中度增高/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  gData23.profile.sex = 'male';
+
+  pgF.onLoad({ id: 'strain' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '-16';
+  pgF.refresh();
+  check('GLS -16% 判为异常', /异常/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  pgF.data.inputs[0].value = '-22';
+  pgF.refresh();
+  check('GLS -22% 判为正常', /正常/.test(pgF.data.out) ? 1 : 0, 1, 0);
 }
 
 console.log(`\n${'='.repeat(46)}`);
