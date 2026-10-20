@@ -153,6 +153,7 @@ Page({
     countText: '',
     refs: EX.REFS,
     refsCount: EX.REFS.length,
+    refsPdf: EX.REFS.filter(function (r) { return r.dl && r.dl.length; }).length,
     refsOpen: false,
     extLinks: [
       { url: 'https://zs-echo.com', name: '心超速查 ZS-Echo Copilot', desc: '86 个计算器 · 19 类参考值 · 瓣膜与决策流程' },

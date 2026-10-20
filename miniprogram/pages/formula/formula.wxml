@@ -6,8 +6,8 @@
       BSA {{bsaText}} m²（来自「EF·参考值」页）· 按{{sexLabel}}参考区间判读 · 留空跳过
     </view>
 
-    <!-- 评估类内容（来自 utils/extra-data.js） -->
-    <block wx:if="{{mode === 'brief'}}">
+    <!-- 评估类内容（extra-data）或计算条目的评分细则表（calc-groups 的 blocks） -->
+    <block wx:if="{{blocks.length > 0}}">
       <block wx:for="{{blocks}}" wx:key="index" wx:for-item="b">
 
         <view wx:if="{{b.kind === 'h'}}" class="fx-h">{{b.text}}</view>
@@ -21,7 +21,14 @@
           </view>
         </view>
 
-        <view wx:elif="{{b.kind === 'note'}}" class="fx-note">{{b.text}}</view>
+        <block wx:elif="{{b.kind === 'note'}}">
+          <view class="fx-note">{{b.text}}</view>
+          <!-- 相关计算：点了直接进对应计算器，性别与 BSA 由 profile 自带 -->
+          <view wx:if="{{b.links.length}}" class="chiprow">
+            <view wx:for="{{b.links}}" wx:key="id" class="chip"
+                  data-id="{{item.id}}" bindtap="onJump">{{item.n}} ›</view>
+          </view>
+        </block>
         <view wx:elif="{{b.kind === 'formula'}}" class="fx-formula">{{b.text}}</view>
         <view wx:else class="fx-text">{{b.text}}</view>
       </block>

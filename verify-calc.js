@@ -441,5 +441,68 @@ check('小于下限 Z ≤ -2 单独提示',
 check('全空报错', C.aorticZscore([]).error ? 'ok' : 'bad', 'ok');
 check('缺 BSA 时不给指数', C.aorticZscore([26, 34, 29, 31], false).ascIndex === undefined ? 'ok' : 'bad', 'ok');
 
+console.log('=== 47. 跨指标派生量（v1.3.2）===');
+check('E/Vp 80/40 = 2.00', C.round(C.evpRatio(80, 40).ratio, 2), 2.0, 0.01);
+check('E/Vp 2.0 提示左房压升高', C.evpRatio(80, 40).level, 2);
+check('E/Vp 2.0 且 Vp 40 → 同时报松弛受损',
+  C.evpRatio(80, 40).vpText.indexOf('松弛受损') !== -1 ? 'ok' : 'bad', 'ok');
+check('E/Vp 1.33 正常', C.evpRatio(80, 60).level, 1);
+check('Vp 正常而 E/Vp 升高 → 提示负荷因素',
+  C.evpRatio(100, 60).note.indexOf('容量负荷') !== -1 ? 'ok' : 'bad', 'ok');
+check('E/Vp 缺 Vp 报错', C.evpRatio(80, 0).error ? 'ok' : 'bad', 'ok');
+
+check('LA stiffness 20/30 = 0.67', C.round(C.laStiffness(20, 30).stiffness, 2), 0.67, 0.01);
+check('0.67 判明显僵硬', C.laStiffness(20, 30).level, 3);
+check('14/30 = 0.47 判正常（边界）', C.laStiffness(14, 30).level, 1);
+check('0.55 判支持 HFpEF', C.laStiffness(16, 29).level, 2);
+check('LARS <18 时提示比值失真',
+  C.laStiffness(14, 15).note.indexOf('分母') !== -1 ? 'ok' : 'bad', 'ok');
+
+check('VTI 比 22/18 = 1.22', C.round(C.vtiRatio(22, 18).ratio, 2), 1.22, 0.01);
+check('1.22 判左向右分流', C.vtiRatio(22, 18).level, 3);
+check('14/18 = 0.78 正常', C.vtiRatio(14, 18).level, 1);
+check('10/18 = 0.56 判肺血流减少', C.vtiRatio(10, 18).level, 2);
+check('VTI 比缺一项报错', C.vtiRatio(14, 0).error ? 'ok' : 'bad', 'ok');
+
+check('NC/C 18/7 = 2.57', C.round(C.lvncRatio(18, 7).ratio, 2), 2.57, 0.01);
+check('2.57 同时满足 Jenni 与 Petersen', C.lvncRatio(18, 7).level, 3);
+check('15/7 = 2.14 只达超声阈值', C.lvncRatio(15, 7).level, 2);
+check('10/7 = 1.43 未达阈值', C.lvncRatio(10, 7).level, 1);
+check('NC/C 常驻假阳性提示',
+  C.lvncRatio(10, 7).note.indexOf('乳头肌') !== -1 ? 'ok' : 'bad', 'ok');
+
+check('PH 概率 TR 3.6 → 高', C.phLikelihood(3.6, false).prob, '高');
+check('PH 概率 TR 3.2 无征象 → 中', C.phLikelihood(3.2, false).prob, '中');
+check('PH 概率 TR 3.2 有征象 → 高', C.phLikelihood(3.2, true).prob, '高');
+check('PH 概率 TR 2.5 无征象 → 低', C.phLikelihood(2.5, false).prob, '低');
+check('PH 概率 TR 2.5 伴 AT 95ms → 中', C.phLikelihood(2.5, false, 95).prob, '中');
+check('AT 95ms 输出加速时间提示',
+  C.phLikelihood(2.5, false, 95).atText.indexOf('95 ms') !== -1 ? 'ok' : 'bad', 'ok');
+check('无 TR 但有征象 → 中（提示补测）',
+  C.phLikelihood(0, true).prob, '中');
+check('无 TR 无征象 → 低', C.phLikelihood(0, false).prob, '低');
+check('旧 phProbability 未被新函数覆盖', C.phProbability(3.5, null), '高');
+
+console.log('=== 48. Wilkins 分项（v1.3.2）===');
+check('WILKINS_ITEMS 4 项', C.WILKINS_ITEMS.length, 4);
+check('每项 4 档', C.WILKINS_ITEMS.every(function (it) { return it.levels.length === 4; }) ? 'ok' : 'bad', 'ok');
+check('顺序：活动度/增厚/钙化/瓣下',
+  C.WILKINS_ITEMS.map(function (it) { return it.n; }).join('/'),
+  '瓣叶活动度/瓣叶增厚/瓣叶钙化/瓣下增厚');
+const w8 = C.wilkinsScore(2, 2, 2, 2);
+check('2/2/2/2 = 8', w8.total, 8);
+check('输出 4 个分项', w8.items.length, 4);
+check('分项带当档描述', w8.items[0].desc, '瓣叶中部与基底部活动正常，瓣尖及部分中部受限');
+check('8 分 level 1', w8.level, 1);
+const w10 = C.wilkinsScore(3, 3, 2, 2);
+check('3+3+2+2 = 10 落边缘区', w10.level, 2);
+check('边缘区文案提个体化', w10.text.indexOf('个体化') !== -1 ? 'ok' : 'bad', 'ok');
+const w13 = C.wilkinsScore(4, 3, 3, 3);
+check('4+3+3+3 = 13 优先外科', w13.level, 3);
+check('指出扣分最重项为活动度', w13.worst, '瓣叶活动度');
+check('最重项带 4 分描述',
+  w13.worstText.indexOf('瓣叶无活动') !== -1 ? 'ok' : 'bad', 'ok');
+check('并列最高时取第一项', C.wilkinsScore(3, 3, 1, 1).worst, '瓣叶活动度');
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);
