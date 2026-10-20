@@ -40,7 +40,8 @@ Page({
     const kids = alb.children || [];
     this.setData({
       title: alb.title,
-      note: sec.note || '',
+      // 书籍出处优先取专辑条目自带的 note，其次取分组 note
+      note: alb.note || sec.note || '',
       count: kids.length,
       items: kids.map(function (c) {
         return {

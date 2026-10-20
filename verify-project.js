@@ -166,11 +166,11 @@ else bad('存在悬空的引用编号');
 if (EX.REFS.length === 40) ok('参考文献 40 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 
-console.log('\n=== 4f. 切面学习 / 书籍视频 / 切面指南 / TEE 模拟器（纯外链） ===');
-if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 4) ok('外链分组 4 个（切面学习 / 书籍视频 / 切面指南 / TEE 模拟器）');
+console.log('\n=== 4f. 切面学习（含操作规范专辑）/ 切面指南 / TEE 模拟器（纯外链） ===');
+if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 3) ok('外链分组 3 个（切面学习 / 切面指南 / TEE 模拟器）');
 else bad('外链分组数异常: ' + (EX.LINK_SECTIONS || []).length);
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
-if (linkIds.length === 13) ok('外链条目 13 条（12 条单条外链 + 书籍视频专辑 1 条）');
+if (linkIds.length === 13) ok('外链条目 13 条（12 条单条外链 + 操作规范专辑 1 条）');
 else bad('外链条目数异常: ' + linkIds.length);
 const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it => {
   if (!it.id || !it.title || !it.sub) return true;
@@ -186,20 +186,22 @@ else bad('外链条目定义不完整');
 const tteItem = EX.LINK_SECTIONS[0].items.filter(function (i) { return i.id === 'tte-sv'; })[0];
 if (tteItem && /TTE-HTML5-SV\/index\.html$/.test(tteItem.url)) ok('TTE 经胸切面为直达交互应用链接');
 else bad('TTE 经胸切面链接未直达交互应用');
-if (EX.LINK_SECTIONS[3].items.length === 3) ok('TEE 模拟器仅 3 条');
-else bad('TEE 模拟器条目数异常: ' + EX.LINK_SECTIONS[3].items.length);
-// 书籍视频：整本书收成 1 个专辑条目，子条目 25 段 mp4 直链 + 书籍出处
-const bv = EX.LINK_SECTIONS.filter(function (s3) { return s3.id === 'bookvid'; })[0];
-const bvAlb = bv ? bv.items.filter(function (it) { return it.album; })[0] : null;
-if (bv && bv.items.length === 1 && bvAlb) ok('书籍视频收成 1 个专辑条目（首页不再被 25 行占满）');
-else bad('书籍视频条目数异常: ' + (bv ? bv.items.length : 'missing'));
+if (EX.LINK_SECTIONS[2].items.length === 3) ok('TEE 模拟器仅 3 条');
+else bad('TEE 模拟器条目数异常: ' + (EX.LINK_SECTIONS[2] ? EX.LINK_SECTIONS[2].items.length : 'missing'));
+// 操作规范：整本书收成 1 个专辑，且排在「切面学习（视频）」第一条
+const views = EX.LINK_SECTIONS.filter(function (s3) { return s3.id === 'views'; })[0];
+const bvAlb = views ? views.items.filter(function (it) { return it.album; })[0] : null;
+if (views && bvAlb && views.items[0] === bvAlb) ok('操作规范专辑排在切面学习第一条');
+else bad('操作规范专辑不在切面学习第一条');
+if (bvAlb && bvAlb.title === '实用超声规范化检查与操作（视频）') ok('专辑标题为「实用超声规范化检查与操作（视频）」');
+else bad('专辑标题异常: ' + (bvAlb ? bvAlb.title : 'missing'));
 if (bvAlb && bvAlb.children.length === 25) ok('专辑内 25 段（第三章心血管系统 1–25）');
 else bad('专辑子条目数异常: ' + (bvAlb ? bvAlb.children.length : 'missing'));
 if (bvAlb && bvAlb.children.every(function (it) { return /\.mp4$/.test(it.url) && it.title && it.id; }))
   ok('25 段均为 mp4 直链且含 id / 标题');
 else bad('专辑内存在非 mp4 或缺字段的条目');
-if (bv && /王辉/.test(bv.note || '') && /978-7-5189-8028-4/.test(bv.note || '')) ok('书籍视频标注编者与 ISBN');
-else bad('书籍视频缺少书籍出处');
+if (bvAlb && /王辉/.test(bvAlb.note || '') && /978-7-5189-8028-4/.test(bvAlb.note || '')) ok('专辑标注编者与 ISBN');
+else bad('专辑缺少书籍出处');
 const extSrc = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
 if (extSrc.indexOf('EX.LINK_SECTIONS') !== -1) ok('目录页已接入 LINK_SECTIONS');
 else bad('目录页未接入 LINK_SECTIONS');

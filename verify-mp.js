@@ -476,33 +476,40 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 14 个大组', dirs.length, 14, 0);
+  check('公式集分 13 个大组', dirs.length, 13, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|实用超声规范化检查与操作（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
   check('目录共 65 条（11 计算 + 9 瓣膜 + 32 评估 + 13 外链）', nItems, 65, 0);
-  check('切面学习 5 条', dirs[10].items.length, 5, 0);
-  check('书籍视频收成 1 条专辑入口', dirs[11].items.length, 1, 0);
-  check('切面指南 4 条', dirs[12].items.length, 4, 0);
-  check('TEE 模拟器 3 条', dirs[13].items.length, 3, 0);
-  check('外链条目为 link 类型',
-    dirs[10].items.every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+  check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[10].items.length, 6, 0);
+  check('切面指南 4 条', dirs[11].items.length, 4, 0);
+  check('TEE 模拟器 3 条', dirs[12].items.length, 3, 0);
+  check('操作规范专辑排在切面学习第一条',
+    dirs[10].items[0] && dirs[10].items[0].kind === 'album' && dirs[10].items[0].id === 'bookvid' ? 1 : 0, 1, 0);
+  check('专辑标题为「实用超声规范化检查与操作（视频）」',
+    dirs[10].items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
+  check('外链条目为 link 类型（专辑除外）',
+    dirs[10].items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
-    dirs[11].items[0] && dirs[11].items[0].kind === 'album' && dirs[11].items[0].count === 25 ? 1 : 0, 1, 0);
+    dirs[10].items[0] && dirs[10].items[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进目录数据（省 setData）',
-    dirs[11].items[0] && dirs[11].items[0].children === undefined ? 1 : 0, 1, 0);
-  check('书籍视频分组带书籍出处说明',
-    /王辉/.test(dirs[11].note || '') && /978-7-5189-8028-4/.test(dirs[11].note || '') ? 1 : 0, 1, 0);
+    dirs[10].items[0] && dirs[10].items[0].children === undefined ? 1 : 0, 1, 0);
+  check('专辑条目带书籍出处说明',
+    (function () {
+      const EXv = require('./miniprogram/utils/extra-data.js');
+      const it = EXv.LINK_SECTIONS.filter(s => s.id === 'views')[0].items[0];
+      return /王辉/.test(it.note || '') && /978-7-5189-8028-4/.test(it.note || '') ? 1 : 0;
+    })(), 1, 0);
   check('TTE 经胸切面为直达交互链接',
     dirs[10].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含速查表 / 指南条目',
     dirs[10].items.some(i => i.id === 'tee-cheat') &&
-    dirs[12].items.some(i => i.id === 'guide-tte-cn') &&
-    dirs[12].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
+    dirs[11].items.some(i => i.id === 'guide-tte-cn') &&
+    dirs[11].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
   check('模拟器含 CT2TEE / TEE Simulator 图谱',
-    dirs[13].items.some(i => /ct2tee/.test(i.url)) &&
-    dirs[13].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[12].items.some(i => /ct2tee/.test(i.url)) &&
+    dirs[12].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   check('器械支持 3 条（CRT / LAD / LVAD）', dirs[2].items.length, 3, 0);
   check('器械支持含 CRT 同步化',
     dirs[2].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);

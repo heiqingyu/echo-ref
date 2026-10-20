@@ -760,7 +760,9 @@
     }
     const nt = $('albumNote');
     if (nt) {
-      if (sec && sec.note) { nt.textContent = sec.note; nt.hidden = false; }
+      // 书籍出处优先取专辑条目自带的 note（专辑已并入「切面学习」分组），其次取分组 note
+      const noteTxt = alb.note || (sec && sec.note) || '';
+      if (noteTxt) { nt.textContent = noteTxt; nt.hidden = false; }
       else { nt.textContent = ''; nt.hidden = true; }
     }
 

@@ -1951,11 +1951,51 @@ const BRIEF_SECTIONS = [
  */
 const BV_BASE = 'https://image.medonhand.com/E03DACD18D37A094/';
 
+/**
+ * 第三章 25 段切面视频。作为「实用超声规范化检查与操作（视频）」专辑的子条目：
+ * 只在专辑页展开，不进目录 setData（体积大、目录页用不到）。
+ */
+const BOOK_CH3_VIDEOS = [
+          { id: 'bv-3-1-8', title: '胸骨旁长轴系列切面', sub: '动图 3-1-8 · 常规切面', url: BV_BASE + '3-1-8.mp4' },
+          { id: 'bv-3-1-16', title: '左心室短轴系列切面', sub: '动图 3-1-16 · 常规切面', url: BV_BASE + '3-1-16.mp4' },
+          { id: 'bv-3-1-24', title: '心尖系列切面', sub: '动图 3-1-24 · 常规切面', url: BV_BASE + '3-1-24.mp4' },
+          { id: 'bv-3-1-28', title: '剑下系列切面', sub: '动图 3-1-28 · 常规切面', url: BV_BASE + '3-1-28.mp4' },
+          { id: 'bv-3-1-31', title: '胸骨上窝系列切面', sub: '动图 3-1-31 · 常规切面', url: BV_BASE + '3-1-31.mp4' },
+          { id: 'bv-3-1-35', title: 'M 型超声心动图', sub: '动图 3-1-35 · 常规切面', url: BV_BASE + '3-1-35.mp4' },
+          { id: 'bv-3-1-41', title: '二尖瓣口彩色多普勒', sub: '动图 3-1-41 · 瓣口血流', url: BV_BASE + '3-1-41.mp4' },
+          { id: 'bv-3-1-43', title: '三尖瓣口血流', sub: '动图 3-1-43 · 瓣口血流', url: BV_BASE + '3-1-43.mp4' },
+          { id: 'bv-3-1-45', title: '主动脉瓣口血流', sub: '动图 3-1-45 · 瓣口血流', url: BV_BASE + '3-1-45.mp4' },
+          { id: 'bv-3-1-47', title: '肺动脉瓣口彩色多普勒', sub: '动图 3-1-47 · 瓣口血流', url: BV_BASE + '3-1-47.mp4' },
+          { id: 'bv-3-1-48', title: '心尖四腔心切面组织多普勒', sub: '动图 3-1-48 · 组织多普勒', url: BV_BASE + '3-1-48.mp4' },
+          { id: 'bv-3-1-66a', title: '房间隔缺损 A：胸骨旁四腔心', sub: '动图 3-1-66A · 先心病', url: BV_BASE + '3-1-66A.mp4' },
+          { id: 'bv-3-1-66b', title: '房间隔缺损 B：胸骨旁四腔心', sub: '动图 3-1-66B · 先心病', url: BV_BASE + '3-1-66B.mp4' },
+          { id: 'bv-3-1-68a', title: '典型病例：风湿性心脏病（一）', sub: '动图 3-1-68A · 典型病例', url: BV_BASE + '3-1-68A.mp4' },
+          { id: 'bv-3-1-68b', title: '典型病例：风湿性心脏病（二）', sub: '动图 3-1-68B · 典型病例', url: BV_BASE + '3-1-68B.mp4' },
+          { id: 'bv-3-1-68c', title: '典型病例：风湿性心脏病（三）', sub: '动图 3-1-68C · 典型病例', url: BV_BASE + '3-1-68C.mp4' },
+          { id: 'bv-3-1-68d', title: '典型病例：风湿性心脏病（四）', sub: '动图 3-1-68D · 典型病例', url: BV_BASE + '3-1-68D.mp4' },
+          { id: 'bv-3-1-70a', title: '典型病例：冠心病（一）', sub: '动图 3-1-70A · 典型病例', url: BV_BASE + '3-1-70A.mp4' },
+          { id: 'bv-3-1-70b', title: '典型病例：冠心病（二）', sub: '动图 3-1-70B · 典型病例', url: BV_BASE + '3-1-70B.mp4' },
+          { id: 'bv-3-1-70c', title: '典型病例：冠心病（三）', sub: '动图 3-1-70C · 典型病例', url: BV_BASE + '3-1-70C.mp4' },
+          { id: 'bv-3-1-70d', title: '典型病例：冠心病（四）', sub: '动图 3-1-70D · 典型病例', url: BV_BASE + '3-1-70D.mp4' },
+          { id: 'bv-3-1-72a', title: '典型病例：致心律失常性右室心肌病（一）', sub: '动图 3-1-72A · 典型病例', url: BV_BASE + '3-1-72A.mp4' },
+          { id: 'bv-3-1-72b', title: '典型病例：致心律失常性右室心肌病（二）', sub: '动图 3-1-72B · 典型病例', url: BV_BASE + '3-1-72B.mp4' },
+          { id: 'bv-3-1-72c', title: '典型病例：致心律失常性右室心肌病（三）', sub: '动图 3-1-72C · 典型病例', url: BV_BASE + '3-1-72C.mp4' },
+          { id: 'bv-3-1-72d', title: '典型病例：致心律失常性右室心肌病（四）', sub: '动图 3-1-72D · 典型病例', url: BV_BASE + '3-1-72D.mp4' },
+];
+
 const LINK_SECTIONS = [
   {
     id: 'views',
     title: '切面学习（视频）',
     items: [
+      {
+        id: 'bookvid',
+        title: '实用超声规范化检查与操作（视频）',
+        sub: '王辉、王小丛 主编 · 第 3 章心血管系统 25 段 · 点开选切面',
+        album: true,
+        note: '王辉、王小丛 主编 · 科学技术文献出版社 2021 年 9 月北京 · ISBN 978-7-5189-8028-4',
+        children: BOOK_CH3_VIDEOS,
+      },
       {
         id: 'tee-sv',
         title: 'TEE 标准 20 视图（中文）',
@@ -1985,46 +2025,6 @@ const LINK_SECTIONS = [
         title: 'TEE 标准视图速查表',
         sub: '探头角度 · 平面 · 对应结构 · 可打印（360 极速浏览器打开）',
         url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/TEE-cheat-sheet/index.htm',
-      },
-    ],
-  },
-  {
-    id: 'bookvid',
-    title: '实用超声规范化检查与操作（视频）',
-    note: '王辉、王小丛 主编 · 科学技术文献出版社 2021 年 9 月北京 · ISBN 978-7-5189-8028-4',
-    items: [
-      {
-        id: 'book-ch3',
-        title: '第三章 心血管系统（25 段）',
-        sub: '切面扫查 · 瓣口血流 · 组织多普勒 · 先心病 · 典型病例',
-        album: true,
-        children: [
-          { id: 'bv-3-1-8', title: '胸骨旁长轴系列切面', sub: '动图 3-1-8 · 常规切面', url: BV_BASE + '3-1-8.mp4' },
-          { id: 'bv-3-1-16', title: '左心室短轴系列切面', sub: '动图 3-1-16 · 常规切面', url: BV_BASE + '3-1-16.mp4' },
-          { id: 'bv-3-1-24', title: '心尖系列切面', sub: '动图 3-1-24 · 常规切面', url: BV_BASE + '3-1-24.mp4' },
-          { id: 'bv-3-1-28', title: '剑下系列切面', sub: '动图 3-1-28 · 常规切面', url: BV_BASE + '3-1-28.mp4' },
-          { id: 'bv-3-1-31', title: '胸骨上窝系列切面', sub: '动图 3-1-31 · 常规切面', url: BV_BASE + '3-1-31.mp4' },
-          { id: 'bv-3-1-35', title: 'M 型超声心动图', sub: '动图 3-1-35 · 常规切面', url: BV_BASE + '3-1-35.mp4' },
-          { id: 'bv-3-1-41', title: '二尖瓣口彩色多普勒', sub: '动图 3-1-41 · 瓣口血流', url: BV_BASE + '3-1-41.mp4' },
-          { id: 'bv-3-1-43', title: '三尖瓣口血流', sub: '动图 3-1-43 · 瓣口血流', url: BV_BASE + '3-1-43.mp4' },
-          { id: 'bv-3-1-45', title: '主动脉瓣口血流', sub: '动图 3-1-45 · 瓣口血流', url: BV_BASE + '3-1-45.mp4' },
-          { id: 'bv-3-1-47', title: '肺动脉瓣口彩色多普勒', sub: '动图 3-1-47 · 瓣口血流', url: BV_BASE + '3-1-47.mp4' },
-          { id: 'bv-3-1-48', title: '心尖四腔心切面组织多普勒', sub: '动图 3-1-48 · 组织多普勒', url: BV_BASE + '3-1-48.mp4' },
-          { id: 'bv-3-1-66a', title: '房间隔缺损 A：胸骨旁四腔心', sub: '动图 3-1-66A · 先心病', url: BV_BASE + '3-1-66A.mp4' },
-          { id: 'bv-3-1-66b', title: '房间隔缺损 B：胸骨旁四腔心', sub: '动图 3-1-66B · 先心病', url: BV_BASE + '3-1-66B.mp4' },
-          { id: 'bv-3-1-68a', title: '典型病例：风湿性心脏病（一）', sub: '动图 3-1-68A · 典型病例', url: BV_BASE + '3-1-68A.mp4' },
-          { id: 'bv-3-1-68b', title: '典型病例：风湿性心脏病（二）', sub: '动图 3-1-68B · 典型病例', url: BV_BASE + '3-1-68B.mp4' },
-          { id: 'bv-3-1-68c', title: '典型病例：风湿性心脏病（三）', sub: '动图 3-1-68C · 典型病例', url: BV_BASE + '3-1-68C.mp4' },
-          { id: 'bv-3-1-68d', title: '典型病例：风湿性心脏病（四）', sub: '动图 3-1-68D · 典型病例', url: BV_BASE + '3-1-68D.mp4' },
-          { id: 'bv-3-1-70a', title: '典型病例：冠心病（一）', sub: '动图 3-1-70A · 典型病例', url: BV_BASE + '3-1-70A.mp4' },
-          { id: 'bv-3-1-70b', title: '典型病例：冠心病（二）', sub: '动图 3-1-70B · 典型病例', url: BV_BASE + '3-1-70B.mp4' },
-          { id: 'bv-3-1-70c', title: '典型病例：冠心病（三）', sub: '动图 3-1-70C · 典型病例', url: BV_BASE + '3-1-70C.mp4' },
-          { id: 'bv-3-1-70d', title: '典型病例：冠心病（四）', sub: '动图 3-1-70D · 典型病例', url: BV_BASE + '3-1-70D.mp4' },
-          { id: 'bv-3-1-72a', title: '典型病例：致心律失常性右室心肌病（一）', sub: '动图 3-1-72A · 典型病例', url: BV_BASE + '3-1-72A.mp4' },
-          { id: 'bv-3-1-72b', title: '典型病例：致心律失常性右室心肌病（二）', sub: '动图 3-1-72B · 典型病例', url: BV_BASE + '3-1-72B.mp4' },
-          { id: 'bv-3-1-72c', title: '典型病例：致心律失常性右室心肌病（三）', sub: '动图 3-1-72C · 典型病例', url: BV_BASE + '3-1-72C.mp4' },
-          { id: 'bv-3-1-72d', title: '典型病例：致心律失常性右室心肌病（四）', sub: '动图 3-1-72D · 典型病例', url: BV_BASE + '3-1-72D.mp4' },
-        ],
       },
     ],
   },
