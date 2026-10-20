@@ -39,7 +39,7 @@
 
   const TAB_TITLE = {
     index: 'EF·参考值',
-    calc: '其他计算',
+    calc: '公式集',
     valves: '瓣膜评估',
     segments: '节段划分',
     peds: '儿童 Z 值',
@@ -61,7 +61,7 @@
 
     // 切页时刷新数据
     if (name === 'peds') renderPeds();
-    if (name === 'calc') renderCalc();
+    if (name === 'calc') { closeCalcGroup(); renderCalc(); }
     if (name === 'valves') renderValves();
     if (name === 'index') renderIndex();
 
@@ -153,7 +153,7 @@
           ? '请输入有效的身高（50–250 cm）与体重（2–300 kg）'
           : '';
       state.bsa = 0;
-      setText('calcBsaNote', 'BSA —（请先在上方填写有效身高体重）');
+      setText('calcBsaNote', '按主题分组，点击条目进入公式 · BSA —（请先在上方填写有效身高体重）');
       // renderEF 内部会刷新参考值列表；EF 结果的 LVM/BSA 也随 BSA 变化
       renderEF();
       renderValves();
@@ -177,7 +177,7 @@
 
     $('bsaHint').textContent = '';
     setText('calcBsaNote',
-      'BSA ' + state.bsa.toFixed(2) + ' m²（来自本页上方）· 各组结果独立计算，留空跳过');
+      '按主题分组，点击条目进入公式 · BSA ' + state.bsa.toFixed(2) + ' m²（来自本页上方）');
 
     // 参考值列表、EF 结果（LVM/BSA）与计算页都依赖 BSA，一并刷新
     renderEF();
@@ -372,7 +372,7 @@
 
 /*<<<PUBLIC-CUT:calc>>>*/
   /* ══════════════════════════════════════════════════════════
-     五B、Tab3 其他计算（血流动力学与瓣膜）
+     五B、Tab3 公式集（目录 + 单个公式详情）
      ══════════════════════════════════════════════════════════ */
 
   const CALC_GROUPS = [
@@ -406,12 +406,82 @@
   let calcCollapse = '';
   let calcSigns = '';
 
-  /** 生成计算页的分组卡片与输入框（发布版无此页，直接跳过） */
+  /** 公式集目录里的瓣膜条目：点击跳到瓣膜评估页并选中该瓣膜 */
+  const VALVE_INDEX = [
+    { id: 'as', title: 'AS 主动脉瓣狭窄', sub: 'AVA · 峰值流速 · 压差分级' },
+    { id: 'ar', title: 'AR 主动脉瓣反流', sub: '反流束 · PHT · 压力减半时间' },
+    { id: 'ms', title: 'MS 二尖瓣狭窄', sub: 'MVA · PHT · 平均压差' },
+    { id: 'mr', title: 'MR 二尖瓣反流', sub: 'EROA · RVol · 反流分级' },
+    { id: 'tr', title: 'TR 三尖瓣反流', sub: 'EROA · RVol · PASP' },
+  ];
+
+  /** 目录里每条公式的一句话说明 */
+  const CALC_SUB = {
+    flow: 'SV · CO · SVi · CI',
+    shunt: '分流方向与分流量',
+    bernoulli: 'ΔP = 4(V₂² − V₁²)',
+    atrial: 'LAVI · RAVI',
+    pressure: 'RAP · PASP · PVR · PADP',
+    rvcalc: 'FAC · 右室 S′',
+    dias: 'E/A · 平均 E/e′',
+  };
+
+  /** 当前打开的公式组（详情视图） */
+  let curCalcGroup = 'flow';
+
+  function calcGroupOf(id) {
+    for (let i = 0; i < CALC_GROUPS.length; i += 1) {
+      if (CALC_GROUPS[i].id === id) return CALC_GROUPS[i];
+    }
+    return null;
+  }
+
+  /** 目录条目 HTML：kind = calc（本页详情） / valve（跳瓣膜页） */
+  function fxItemHtml(kind, id, title, sub) {
+    return '<button class="fx-item" data-' + (kind === 'valve' ? 'valve' : 'calc') +
+      '="' + id + '"><span class="fx-item__main">' +
+      '<span class="fx-item__n">' + esc(title) + '</span>' +
+      '<span class="fx-item__d">' + esc(sub) + '</span>' +
+      '</span><span class="fx-item__a">›</span></button>';
+  }
+
+  /**
+   * 生成公式集目录 + 各公式的详情卡
+   *
+   * ★ 新增公式：在 CALC_GROUPS 加一条 + CALC_SUB 补一句说明，
+   *   目录会自动出现，点击即进详情，不必改别处。
+   */
   function buildCalcInputs() {
-    if (!$('calcGroups')) return;
+    if (!$('calcList')) return;
+
+    // ── 目录 ──
+    let list = '<div class="fx-group">血流动力学与心功能</div><div class="fx-list">';
+    CALC_GROUPS.forEach(function (g) {
+      list += fxItemHtml('calc', g.id, g.title, CALC_SUB[g.id] || '');
+    });
+    list += '</div><div class="fx-group">瓣膜评估</div><div class="fx-list">';
+    VALVE_INDEX.forEach(function (v) {
+      list += fxItemHtml('valve', v.id, v.title, v.sub);
+    });
+    list += '</div>';
+    $('calcList').innerHTML = list;
+
+    $('calcList').querySelectorAll('.fx-item').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (el.dataset.valve) {
+          switchTab('valves');
+          switchValve(el.dataset.valve);
+        } else {
+          openCalcGroup(el.dataset.calc);
+        }
+      });
+    });
+
+    // ── 详情：一次性渲染全部公式卡，按组切换显示（输入值随 DOM 保留） ──
     let html = '';
     CALC_GROUPS.forEach(function (g) {
-      html += '<div class="card"><div class="card__t">' + esc(g.title) + '</div>';
+      html += '<div class="card" data-g="' + g.id + '" hidden>' +
+        '<div class="card__t">' + esc(g.title) + '</div>';
       for (let i = 0; i < g.fields.length; i += 2) {
         html += '<div class="row">';
         for (let j = i; j < i + 2 && j < g.fields.length; j++) {
@@ -455,6 +525,31 @@
       });
     });
   }
+
+  /** 打开某条公式的详情页 */
+  function openCalcGroup(id) {
+    const g = calcGroupOf(id);
+    if (!g) return;
+    curCalcGroup = id;
+    if ($('calcIndex')) $('calcIndex').hidden = true;
+    if ($('calcDetail')) $('calcDetail').hidden = false;
+    document.querySelectorAll('#calcGroups > .card').forEach(function (c) {
+      c.hidden = c.dataset.g !== id;
+    });
+    $('appbarTitle').textContent = g.title;
+    renderCalc();
+    window.scrollTo(0, 0);
+  }
+
+  /** 回到公式集目录 */
+  function closeCalcGroup() {
+    if ($('calcIndex')) $('calcIndex').hidden = false;
+    if ($('calcDetail')) $('calcDetail').hidden = true;
+    $('appbarTitle').textContent = TAB_TITLE.calc;
+    window.scrollTo(0, 0);
+  }
+
+  if ($('calcBack')) $('calcBack').addEventListener('click', closeCalcGroup);
 
   function segHtml(group, opts, cur) {
     let h = '<div class="field"><label class="field__l">' +
@@ -570,10 +665,19 @@
   }
 
   if ($('calcClear')) $('calcClear').addEventListener('click', function () {
-    Object.keys(calcVal).forEach(function (k) { delete calcVal[k]; });
-    calcCollapse = '';
-    calcSigns = '';
-    buildCalcInputs();
+    const g = calcGroupOf(curCalcGroup);
+    if (!g) return;
+    g.fields.forEach(function (f) {
+      delete calcVal[f[0]];
+      const inp = document.querySelector('#calcGroups input[data-ck="' + f[0] + '"]');
+      if (inp) inp.value = '';
+    });
+    if (curCalcGroup === 'pressure') {
+      calcCollapse = '';
+      calcSigns = '';
+      setSeg('calccollapse', '');
+      setSeg('calcsigns', '');
+    }
     renderCalc();
   });
 

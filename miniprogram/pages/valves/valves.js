@@ -43,11 +43,13 @@ Page({
     bsaText: '—',
   },
 
-  onLoad() {
+  onLoad(query) {
     // 各瓣膜的输入值分瓣膜缓存，切换回来不丢
     this.values = {};
     DATA.VALVE_SECTIONS.forEach(function (s) { this.values[s.id] = {}; }, this);
-    this.select('as');
+    // 从「公式集」直接点 AS / MS 进来时，用 tab 参数预选该瓣膜
+    const want = query && query.tab ? String(query.tab).toLowerCase() : '';
+    this.select(findSec(want) ? want : 'as');
   },
 
   onShow() {

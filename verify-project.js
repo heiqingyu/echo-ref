@@ -94,8 +94,43 @@ if (emptyBlocks.length === 0) ok('五节均含分级内容与计算字段');
 else bad('以下瓣膜缺少内容: ' + emptyBlocks.map(s => s.id).join(','));
 const calcJs = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
 ['主动脉瓣口面积 AVA', '二尖瓣口面积 MVA', 'PISA · EROA'].forEach(t => {
-  if (calcJs.indexOf(t) === -1) ok('瓣膜计算已从其他计算页移出：「' + t + '」');
-  else bad('瓣膜计算仍在其他计算页重复：' + t);
+  if (calcJs.indexOf(t) === -1) ok('瓣膜计算已从公式集目录页移出：「' + t + '」');
+  else bad('瓣膜计算仍在公式集目录页重复：' + t);
+});
+
+console.log('\n=== 4d. 公式集（目录 + 详情页） ===');
+if (appJson.pages.includes('pages/formula/formula')) ok('formula 详情页已注册');
+else bad('formula 详情页未注册');
+const tabCalc = appJson.tabBar.list.find(t => t.pagePath === 'pages/calculators/calculators');
+if (tabCalc && tabCalc.text === '公式集') ok('tabBar 页签名 = 公式集');
+else bad('tabBar 公式集页签名异常: ' + (tabCalc && tabCalc.text));
+const cgPath = path.join(MP, 'utils', 'calc-groups.js');
+if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
+else bad('calc-groups.js 缺失');
+const CG = require(cgPath);
+if (CG.GROUPS.length === 7) ok('公式集定义 7 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+else bad('公式集分组数异常: ' + CG.GROUPS.length);
+const badGroups = CG.GROUPS.filter(g => !g.id || !g.title || !g.fields.length || !g.note);
+if (badGroups.length === 0) ok('各组均含 id/标题/字段/备注');
+else bad('以下组定义不完整: ' + badGroups.map(g => g.id || '?').join(','));
+const dupIds = CG.GROUPS.map(g => g.id).filter((v, i, a) => a.indexOf(v) !== i);
+if (dupIds.length === 0) ok('组 id 无重复');
+else bad('组 id 重复: ' + dupIds.join(','));
+const calcWxml = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.wxml'), 'utf8');
+if (calcWxml.indexOf('bindtap="onOpen"') !== -1) ok('目录条目已绑定 onOpen 跳转');
+else bad('目录条目未绑定 onOpen');
+['AS 主动脉瓣狭窄', 'MS 二尖瓣狭窄', 'TR 三尖瓣反流'].forEach(t => {
+  if (calcWxml.indexOf(t) === -1 && calcJs.indexOf(t) !== -1) ok('瓣膜条目在目录数据中：「' + t + '」');
+  else if (calcJs.indexOf(t) !== -1) ok('瓣膜条目在目录数据中：「' + t + '」');
+  else bad('目录缺少瓣膜条目：' + t);
+});
+const valvesJs2 = fs.readFileSync(path.join(MP, 'pages/valves/valves.js'), 'utf8');
+if (/query && query\.tab/.test(valvesJs2)) ok('瓣膜页支持 ?tab= 预选参数');
+else bad('瓣膜页未支持 ?tab= 预选参数');
+const formulaJs = fs.readFileSync(path.join(MP, 'pages/formula/formula.js'), 'utf8');
+['flow', 'shunt', 'bernoulli', 'atrial', 'pressure', 'rvcalc', 'dias'].forEach(id => {
+  if (formulaJs.indexOf("gid === '" + id + "'") !== -1) ok('formula 页含计算分支: ' + id);
+  else bad('formula 页缺少计算分支: ' + id);
 });
 
 console.log('\n=== 5. WXML 中引用的方法在 JS 中已定义 ===');

@@ -1,0 +1,47 @@
+/* 公式详情页：结果行与清空按钮（自原「其他计算」页迁入） */
+
+.calc-out {
+  display: flex;
+  align-items: flex-start;
+  background: #eff4ff;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  margin-top: 16rpx;
+}
+
+.calc-out--idle {
+  background: #f3f4f6;
+}
+
+.calc-out__lbl {
+  font-size: 22rpx;
+  color: #6b7280;
+  margin-right: 16rpx;
+  line-height: 1.7;
+  flex-shrink: 0;
+}
+
+.calc-out__v {
+  font-size: 26rpx;
+  color: #1d4ed8;
+  font-weight: 600;
+  line-height: 1.7;
+  word-break: break-all;
+}
+
+.calc-out--idle .calc-out__v {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.clear-btn {
+  margin: 24rpx 0;
+  background: #ffffff;
+  color: #6b7280;
+  font-size: 28rpx;
+  border-radius: 14rpx;
+}
+
+.clear-btn::after {
+  border: 1rpx solid #e3e6ea;
+}

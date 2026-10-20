@@ -425,6 +425,89 @@ console.log('\n=== 22. 延展阅读（首页底部外链，复制链接交互）
     clip === 'https://bdrwss.github.io/tte-quickref/dist/' ? 1 : 0, 1, 0);
 }
 
+console.log('\n=== 23. 公式集（目录 + 公式详情页）===');
+{
+  let navTo = null, navBarTitle = null;
+  global.wx = {
+    navigateTo(o) { navTo = o.url; },
+    setNavigationBarTitle(o) { navBarTitle = o.title; },
+    showToast() {}, setClipboardData() {},
+  };
+  const gData23 = {
+    profile: { sex: 'male', height: 170, weight: 65, bsa: 1.75 },
+    measurements: null,
+    standard: 'CN',
+    calcCache: {},
+  };
+  global.getApp = () => ({ globalData: gData23 });
+  let pgA = null, pgF = null;
+  global.Page = (c) => { if (!pgA) pgA = c; else pgF = c; };
+  require(pathW.join(__dirname, 'miniprogram', 'pages', 'calculators', 'calculators.js'));
+  require(pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.js'));
+
+  // 补 setData（真机由框架提供）
+  [pgA, pgF].forEach(function (pg) {
+    pg.setData = function (patch) {
+      const self = this;
+      Object.keys(patch).forEach(function (k) {
+        const m = k.match(/^(\w+)\[(\d+)\]\.?(.*)$/);
+        if (m) {
+          const arr = self.data[m[1]] || (self.data[m[1]] = []);
+          if (m[3]) arr[+m[2]][m[3]] = patch[k];
+          else arr[+m[2]] = patch[k];
+        } else self.data[k] = patch[k];
+      });
+    };
+  });
+
+  // —— 目录页 ——
+  const dirs = pgA.data.sections;
+  check('公式集分 2 个大组', dirs.length, 2, 0);
+  const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
+  check('目录共 12 条（7 公式 + 5 瓣膜）', nItems, 12, 0);
+  check('第 2 组为瓣膜评估', dirs[1].title === '瓣膜评估' ? 1 : 0, 1, 0);
+  check('瓣膜条目含 AS', dirs[1].items.some(i => i.id === 'as') ? 1 : 0, 1, 0);
+  check('公式条目含一句话说明', dirs[0].items.every(i => i.sub) ? 1 : 0, 1, 0);
+
+  pgA.onOpen({ currentTarget: { dataset: { kind: 'calc', id: 'bernoulli' } } });
+  check('点击公式条目 → navigateTo formula?id=…',
+    navTo === '/pages/formula/formula?id=bernoulli' ? 1 : 0, 1, 0);
+  pgA.onOpen({ currentTarget: { dataset: { kind: 'valve', id: 'ms' } } });
+  check('点击瓣膜条目 → navigateTo valves?tab=ms',
+    navTo === '/pages/valves/valves?tab=ms' ? 1 : 0, 1, 0);
+
+  // —— 详情页：flow ——
+  pgF.onLoad({ id: 'flow' });
+  check('详情页标题 = LVOT · 每搏量与心排量',
+    pgF.data.title === 'LVOT · 每搏量与心排量' ? 1 : 0, 1, 0);
+  check('导航栏标题已同步', navBarTitle === 'LVOT · 每搏量与心排量' ? 1 : 0, 1, 0);
+  check('flow 输入项 3 个', pgF.data.inputs.length, 3, 0);
+  pgF.onShow();
+  check('未填写时等待输入', pgF.data.hasOut ? 0 : 1, 1, 0);
+  pgF.data.inputs[0].value = '2';   // LVOT 直径
+  pgF.data.inputs[1].value = '20';  // LVOT VTI
+  pgF.data.inputs[2].value = '70';  // 心率
+  pgF.refresh();
+  check('flow 结果含 SV 与 CO',
+    /SV/.test(pgF.data.out) && /CO/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('结果写入输入缓存',
+    gData23.calcCache.flow && gData23.calcCache.flow.ld === '2' ? 1 : 0, 1, 0);
+
+  // —— 详情页：pressure（附加选项）——
+  pgF.onLoad({ id: 'pressure' });
+  check('pressure 输入项 4 个', pgF.data.inputs.length, 4, 0);
+  check('pressure 含 IVC 塌陷选项', pgF.data.collapse.length, 3, 0);
+  pgF.data.inputs[0].value = '2.8';  // TR 峰速
+  pgF.data.inputs[1].value = '20';   // IVC 内径
+  pgF.onShow();
+  check('右心压力结果含 RAP 与 PASP',
+    /RAP/.test(pgF.data.out) && /PASP/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  // —— 未知 id 回退 ——
+  pgF.onLoad({ id: 'nope' });
+  check('未知 id 回退到第一组', pgF.data.gid === 'flow' ? 1 : 0, 1, 0);
+}
+
 console.log(`\n${'='.repeat(46)}`);
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 console.log('='.repeat(46) + '\n');
