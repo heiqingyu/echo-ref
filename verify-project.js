@@ -145,23 +145,28 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 10) ok('参考文献 10 条');
+if (EX.REFS.length === 12) ok('参考文献 12 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 
-console.log('\n=== 4f. 切面学习 / TEE 模拟器（纯外链） ===');
-if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 模拟器）');
+console.log('\n=== 4f. 切面学习 / 切面指南 / TEE 模拟器（纯外链） ===');
+if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 3) ok('外链分组 3 个（切面学习 / 切面指南 / TEE 模拟器）');
 else bad('外链分组数异常');
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
-if (linkIds.length === 18) ok('外链条目 18 条');
+if (linkIds.length === 12) ok('外链条目 12 条');
 else bad('外链条目数异常: ' + linkIds.length);
 const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it =>
   !it.id || !it.title || !it.sub || String(it.url).indexOf('https://') !== 0));
 if (!linkBad) ok('每条外链含 id/标题/说明/https 地址');
 else bad('外链条目定义不完整');
-['tee-sv', 'tte-sv', 'm-teer', 't-teer', 'sim-ct2tee', 'sim-atlas'].forEach(function (id) {
+['tee-sv', 'tte-sv', 'tee-cheat', 'guide-tte-cn', 'guide-tee-28', 'sim-toronto', 'sim-ct2tee', 'sim-atlas'].forEach(function (id) {
   if (linkIds.indexOf(id) !== -1) ok('外链条目存在: ' + id);
   else bad('缺少外链条目: ' + id);
 });
+const tteItem = EX.LINK_SECTIONS[0].items.filter(function (i) { return i.id === 'tte-sv'; })[0];
+if (tteItem && /TTE-HTML5-SV\/index\.html$/.test(tteItem.url)) ok('TTE 经胸切面为直达交互应用链接');
+else bad('TTE 经胸切面链接未直达交互应用');
+if (EX.LINK_SECTIONS[2].items.length === 3) ok('TEE 模拟器仅 3 条');
+else bad('TEE 模拟器条目数异常: ' + EX.LINK_SECTIONS[2].items.length);
 const extSrc = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
 if (extSrc.indexOf('EX.LINK_SECTIONS') !== -1) ok('目录页已接入 LINK_SECTIONS');
 else bad('目录页未接入 LINK_SECTIONS');
