@@ -143,7 +143,7 @@ git commit -m "心脏超声参考值 · 网页版首次发布"
 
 创建后会看到一个空仓库页面，上面有一段 `git remote add origin ...` 的命令。
 
-> **提示**：APK 文件（`EchoRef-v1.0.1.apk`，约 266 KB）也在仓库里。
+> **提示**：APK 文件（`EchoRef-v<版本号>.apk`，当前约 340 KB）也在仓库里。
 > 版本号每次功能改动都会递增（`android-app/VERSION` 是唯一来源），
 > 同签名覆盖安装即可升级。
 > 这个不影响 Pages 发布（Pages 只读 `docs/` 目录），放着也没关系 ——
