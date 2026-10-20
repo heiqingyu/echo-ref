@@ -405,10 +405,10 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('card__title">参考文献') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 37 条', EXD.REFS.length, 37, 0);
+  check('参考文献 39 条', EXD.REFS.length, 39, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
-  check('文献编号连续 R1–R37',
-    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37' ? 1 : 0, 1, 0);
+  check('文献编号连续 R1–R39',
+    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37,R38,R39' ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
 
@@ -481,7 +481,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirs.map(d => d.title).join('|') ===
       '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 58 条（11 计算 + 9 瓣膜 + 26 评估 + 12 外链）', nItems, 58, 0);
+  check('目录共 59 条（11 计算 + 9 瓣膜 + 27 评估 + 12 外链）', nItems, 59, 0);
   check('切面学习 5 条', dirs[9].items.length, 5, 0);
   check('切面指南 4 条', dirs[10].items.length, 4, 0);
   check('TEE 模拟器 3 条', dirs[11].items.length, 3, 0);
@@ -528,8 +528,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('大血管与急症含 ' + id,
       dirs[5].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病 2 条（分流判读 / 可手术性）', dirs[6].items.length, 2, 0);
-  ['shd', 'pht-rev'].forEach(id => {
+  check('先天性心脏病 3 条（分流判读 / 可手术性 / TOF 术后 PR）', dirs[6].items.length, 3, 0);
+  ['shd', 'pht-rev', 'tof-pr'].forEach(id => {
     check('先天性心脏病含 ' + id,
       dirs[6].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
@@ -662,6 +662,18 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('RVFWS/PASP 比值 0.33 判临界',
     /0\.33/.test(pgF.data.out) && /临界/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
+  // —— v1.1.1 新增：右室收缩储备（多巴酚丁胺）/ TOF 术后 PR ——
+  check('右室应变条目含收缩储备输入项 10 个', pgF.data.inputs.length, 10, 0);
+  pgF.data.inputs[5].value = '-14';   // 负荷前 RVFWS
+  pgF.data.inputs[6].value = '-21';   // 峰值 RVFWS
+  pgF.refresh();
+  check('ΔRVFWS +7 → 收缩储备保留',
+    /Δ\+7\.0/.test(pgF.data.out) && /储备保留/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  pgF.data.inputs[6].value = '-13';
+  pgF.refresh();
+  check('ΔRVFWS +1 → 收缩储备耗竭',
+    /储备耗竭/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
   pgF.onLoad({ id: 'rcm-strain' });
   pgF.onShow();
   pgF.data.inputs[0].value = '-8';
@@ -713,6 +725,27 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     /抽吸高危/.test(pgF.data.out) ? 1 : 0, 1, 0);
   check('LVAD 主动脉瓣持续关闭 → 淤滞风险',
     /持续关闭/.test(pgF.data.out) && /血栓/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'tof-pr' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '0.75';  // PR 指数
+  pgF.data.inputs[1].value = '55';    // 反流束 / RVOT
+  pgF.data.inputs[2].value = '172';   // RVEDVi
+  pgF.data.inputs[3].value = '92';    // RVESVi
+  pgF.data.inputs[4].value = '46';    // RVEF
+  pgF.refresh();
+  check('PR 指数 0.75 + 宽度比 55% → 重度 PR',
+    /重度 PR/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('RVESVi 92 / RVEDVi 172 / RVEF 46 → 达 PVR 指征',
+    /已达 PVR 评估指征/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  pgF.data.inputs[0].value = '0.4';
+  pgF.data.inputs[1].value = '25';
+  pgF.data.inputs[2].value = '140';
+  pgF.data.inputs[3].value = '66';
+  pgF.data.inputs[4].value = '56';
+  pgF.refresh();
+  check('PR 轻度 + RVESVi 66 → 未达阈值',
+    /轻度 PR/.test(pgF.data.out) && /尚未达 PVR 容量阈值/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
   pgF.onLoad({ id: 'stress-echo' });
   pgF.onShow();

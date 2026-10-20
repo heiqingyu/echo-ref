@@ -1419,7 +1419,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.1.0</div>
+    <div class="verline">心脏超声参考值 · v1.1.1</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1462,7 +1462,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.1.0</div>
+      <div class="verline">心脏超声参考值 · v1.1.1</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -3661,6 +3661,135 @@ function lvadEcho(o) {
   return r;
 }
 
+/**
+ * 右室收缩储备（低剂量多巴酚丁胺负荷下的 RVFWS 反应）
+ *
+ * 方案：多巴酚丁胺 5 → 10 → 20 μg/kg/min，每级 3–5 min；低剂量方案不追求
+ * 目标心率，只要求心率较基线上升 10–20 次/分即可判读（不是缺血负荷试验）。
+ *
+ * 判读（RVFWS 取绝对值比较）：
+ *   ΔRVFWS ≥5 个百分点      → 收缩储备保留
+ *   ΔRVFWS 2–5 个百分点      → 储备边缘（灰区，结合 TAPSE 与 PASP 反应）
+ *   ΔRVFWS <2 或下降         → 收缩储备耗竭（右室已用尽收缩储备）
+ *
+ * 参考：低剂量多巴酚丁胺下 RVFWS 无改善的肺高压 / 右心衰患者预后显著更差；
+ * RVFWS 联合 PASP 的耦联比值变化比单看 RVFWS 更稳。
+ *
+ * 注意：负荷中 PASP 同步上升 >20 mmHg 时，RVFWS 不涨可能只是后负荷效应，
+ * 需看 RVFWS/PASP 比值是否同步改善（couplingDelta）。
+ *
+ * @param {object} o {rest, peak, tapse0, tapse1, pasp0, pasp1} 应变均为负值
+ */
+function rvReserve(o) {
+  // 应变必须是负值（纵向缩短）；正值多为符号习惯不同，不能直接算
+  if (!(o.rest < 0) || !(o.peak < 0)) return {};
+  const s0 = Math.abs(o.rest);
+  const s1 = Math.abs(o.peak);
+  const r = { rest: s0, peak: s1, delta: s1 - s0 };
+  r.relChange = s0 > 0 ? (r.delta / s0) * 100 : undefined;
+
+  if (r.delta >= 5) { r.level = 0; r.text = '收缩储备保留'; }
+  else if (r.delta >= 2) { r.level = 1; r.text = '收缩储备边缘（灰区）'; }
+  else { r.level = 2; r.text = '收缩储备耗竭'; }
+
+  // TAPSE 参照：增加 ≥5 mm 或 ≥20% 支持储备保留
+  if (o.tapse0 > 0 && o.tapse1 > 0) {
+    r.tapseDelta = o.tapse1 - o.tapse0;
+    r.tapseChange = (r.tapseDelta / o.tapse0) * 100;
+    r.tapseOk = r.tapseDelta >= 5 || r.tapseChange >= 20;
+  }
+
+  // PASP 反应与耦联比值变化
+  if (o.pasp0 > 0 && o.pasp1 > 0) {
+    r.dpasp = o.pasp1 - o.pasp0;
+    r.ratio0 = s0 / o.pasp0;
+    r.ratio1 = s1 / o.pasp1;
+    r.couplingDelta = r.ratio1 - r.ratio0;
+    // 后负荷上升明显而应变不涨 → 提示「纯后负荷效应」而非储备不足
+    if (r.dpasp > 20 && r.delta < 5) r.afterloadOnly = true;
+  }
+  return r;
+}
+
+/**
+ * 法洛四联症术后肺动脉瓣反流（PR）：严重度与肺动脉瓣置换（PVR）指征
+ *
+ * TOF 根治（尤其跨瓣环补片）后几乎都存在 PR。超声对 PR 只能半定量，
+ * 真正的容量与功能阈值来自 CMR——所以本函数要求的 RVEDVi / RVESVi / RVEF
+ * 应按 CMR 填报；仅有超声时只作筛查，不下「达到指征」的结论。
+ *
+ * PR 严重度（取两项中较重档）：
+ *   PR 指数（舒张期反流时限 ÷ 舒张期总时限）：≥0.7 重度 / 0.5–0.7 中度 / <0.5 轻度
+ *   反流束宽度 ÷ RVOT 径：≥50% 重度 / 30–50% 中度 / <30% 轻度
+ *
+ * PVR 参考指征（任一条成立）：
+ *   RVESVi >80 mL/m² / RVEDVi >160 mL/m² / RVEF <50%
+ *   + 症状或新发房性心律失常（临床条件，不在本函数内）
+ *
+ * @param {object} o {pridx, prw, rvedvi, rvesvi, rvef, rvotpg}
+ */
+function tofPr(o) {
+  const r = { notes: [] };
+
+  // —— PR 严重度 ——
+  let sev = -1;
+  if (o.pridx > 0) {
+    r.pridx = o.pridx;
+    if (o.pridx >= 0.7) { r.byIdx = 2; r.idxText = 'PR 指数 ≥0.7：重度'; }
+    else if (o.pridx >= 0.5) { r.byIdx = 1; r.idxText = 'PR 指数 0.5–0.7：中度'; }
+    else { r.byIdx = 0; r.idxText = 'PR 指数 <0.5：轻度'; }
+    sev = r.byIdx;
+  }
+  if (o.prw > 0) {
+    r.prw = o.prw;
+    if (o.prw >= 50) { r.byWidth = 2; r.widthText = '反流束/RVOT ≥50%：重度'; }
+    else if (o.prw >= 30) { r.byWidth = 1; r.widthText = '反流束/RVOT 30–50%：中度'; }
+    else { r.byWidth = 0; r.widthText = '反流束/RVOT <30%：轻度'; }
+    sev = sev > r.byWidth ? sev : r.byWidth;
+  }
+  if (sev >= 0) {
+    r.severity = sev;
+    r.severityText = ['轻度 PR', '中度 PR', '重度 PR'][sev];
+    if (r.byIdx !== undefined && r.byWidth !== undefined && r.byIdx !== r.byWidth) {
+      r.discordant = true;
+    }
+  }
+
+  // —— PVR 指征（CMR 阈值）——
+  let ind = 0;
+  if (o.rvesvi > 0) {
+    r.rvesvi = o.rvesvi;
+    if (o.rvesvi > 80) { ind += 1; r.notes.push('RVESVi ' + round(o.rvesvi, 0) + ' >80 mL/m²：达到 PVR 主要容量阈值'); }
+    else if (o.rvesvi >= 70) r.notes.push('RVESVi ' + round(o.rvesvi, 0) + ' mL/m²：接近阈值（70–80），3–6 个月复查');
+  }
+  if (o.rvedvi > 0) {
+    r.rvedvi = o.rvedvi;
+    if (o.rvedvi > 160) { ind += 1; r.notes.push('RVEDVi ' + round(o.rvedvi, 0) + ' >160 mL/m²：支持 PVR'); }
+    else if (o.rvedvi >= 150) r.notes.push('RVEDVi ' + round(o.rvedvi, 0) + ' mL/m²：接近阈值（150–160）');
+  }
+  if (o.rvef > 0) {
+    r.rvef = o.rvef;
+    if (o.rvef < 50) { ind += 1; r.notes.push('RVEF ' + round(o.rvef, 0) + '% <50%：右室收缩功能受损，支持 PVR 评估'); }
+    if (o.rvef < 45 && o.rvesvi > 80) {
+      r.notes.push('RVEF <45% 叠加 RVESVi >80：术后右室功能恢复可能有限，时机已偏晚，需与外科共同决策');
+    }
+  }
+  r.pvrIndication = ind > 0;
+
+  // —— 残余梗阻（补片 / 分支狭窄），跨瓣压差 >40 mmHg 有意义 ——
+  if (o.rvotpg > 0) {
+    r.rvotpg = o.rvotpg;
+    if (o.rvotpg >= 40) { r.notes.push('RVOT 压差 ≥40 mmHg：存在残余梗阻，PVR 前须先处理梗阻'); }
+    else if (o.rvotpg >= 25) r.notes.push('RVOT 压差 25–40 mmHg：轻度残余梗阻，随访');
+  }
+
+  // 重度 PR 但容量未达阈值 → 提示 CMR 随访而非立即干预
+  if (r.severity === 2 && ind === 0 && o.rvesvi > 0) {
+    r.notes.push('重度 PR 而 RV 容量尚未达阈值：可 CMR 每 12–24 个月随访，不必急于 PVR');
+  }
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -3718,6 +3847,8 @@ function fmt(n, dec) {
     paspStress: paspStress,
     shuntGrade: shuntGrade,
     lvadEcho: lvadEcho,
+    rvReserve: rvReserve,
+    tofPr: tofPr,
     round: round,
     fmt: fmt,
   };
@@ -4986,8 +5117,8 @@ const BRIEF_SECTIONS = [
       {
         id: 'rv-strain',
         title: '右室应变与 RVFWS 细化',
-        sub: '两种测法 · 基底-心尖梯度 · RVFWS/PASP 耦联',
-        source: ['R27', 'R23', 'R5'],
+        sub: '两种测法 · 基底-心尖梯度 · 储备与耦联',
+        source: ['R27', 'R23', 'R5', 'R39'],
         blocks: [
           { kind: 'h', text: '一、RVFWS 有两种测法，别混用' },
           {
@@ -5036,7 +5167,32 @@ const BRIEF_SECTIONS = [
           },
           { kind: 'note', text: '这个比值与 TAPSE/PASP（切点 0.55 / 0.36 mm/mmHg）量纲不同，阈值也不同，绝不能互相替代或混着记。', warn: true },
 
-          { kind: 'h', text: '六、测量最容易错的三处' },
+          { kind: 'h', text: '六、右室收缩储备：多巴酚丁胺负荷下的 RVFWS 变化' },
+          { kind: 'text', text: '静息 RVFWS 低，不能直接判定「右室收缩力差」——它可能只是后负荷太高，被压住了。要分清「真的没力气」和「被压住」，就得让右室在负荷下证明自己。低剂量多巴酚丁胺（5 → 10 → 20 μg/kg/min，每级 3–5 分钟）就是右室版的收缩储备试验。' },
+          { kind: 'formula', text: 'ΔRVFWS = |峰值 RVFWS| − |静息 RVFWS|（单位：个百分点，不是相对百分比）' },
+          {
+            kind: 'table',
+            heads: ['ΔRVFWS', '判读', '临床含义'],
+            rows: [
+              ['≥5 个百分点', '储备保留', '心肌尚有收缩储备，短期代偿能力可'],
+              ['2–5 个百分点', '边缘（灰区）', '结合 TAPSE 反应与 PASP 变化综合判断'],
+              ['<2 或反而下降', '储备耗竭', '右室已用尽代偿，预后差，需提前讨论长期支持方案'],
+            ],
+          },
+          { kind: 'text', text: '三条配套判读：① **TAPSE 反应**——增加 ≥5 mm 或 ≥20% 也支持储备保留，但 TAPSE 受前负荷影响大，只作辅证；② **耦联比值变化**——算负荷前后的 RVFWS/PASP，比值升高说明右室跑赢了后负荷，比单看 RVFWS 涨没涨更可靠；③ **PASP 上升的干扰**——若 PASP 同步升 >20 mmHg 而 RVFWS 不涨，这更像纯后负荷效应（负荷诱发肺高压），不等于心肌储备耗竭。' },
+          {
+            kind: 'table',
+            heads: ['场景', '为什么测储备', '结果怎么用'],
+            rows: [
+              ['CTEPH 拟行肺动脉内膜剥脱', '储备耗竭者围术期右心衰风险高', '决定是否先靶向治疗、是否需 ECMO 备台'],
+              ['重度 TR 拟介入 / 外科', '储备差者术后右心衰概率明显升高', '影响手术时机与术后监护级别'],
+              ['LVAD / 心脏移植术前', '右室储备是术后右心衰的核心预测项', '储备耗竭是 LVAD 的相对禁忌'],
+              ['肺高压靶向治疗随访', '储备改善早于静息指标改善', '作为疗效的早期指标'],
+            ],
+          },
+          { kind: 'note', text: '多巴酚丁胺负荷下心率上升快，极易出现帧率不足：必须用右室专用 ROI、把探测深度调浅、把帧率保持在 60 帧/s 以上，否则 RVFWS 会被系统性低估，把「有储备」误判成「耗竭」。另外负荷时的三个节段必须与静息同一软件、同一位置——右室扩大的患者三尖瓣环很容易移出 ROI。', warn: true },
+
+          { kind: 'h', text: '七、测量最容易错的三处' },
           { kind: 'text', text: '① ROI 宽度：软件默认值对右室偏窄，需手动加宽，但不要框进右房与调节束；② 三尖瓣环与心尖必须落在 ROI 内，心尖漏掉会系统性高估；③ 帧率低于 40 帧/s 会明显低估，房颤取 3–5 个周期平均并注明心律。' },
         ],
         fields: [
@@ -5045,9 +5201,14 @@ const BRIEF_SECTIONS = [
           { k: 'rvsa', n: '游离壁心尖段应变', u: '%（负值）' },
           { k: 'rvssep', n: '室间隔平均应变（可选）', u: '%（负值）' },
           { k: 'rvspasp', n: 'PASP（可选）', u: 'mmHg' },
+          { k: 'rvr0', n: '负荷前 RVFWS（可选）', u: '%（负值）' },
+          { k: 'rvr1', n: '负荷峰值 RVFWS（可选）', u: '%（负值）' },
+          { k: 'rvt0', n: '负荷前 TAPSE（可选）', u: 'mm' },
+          { k: 'rvt1', n: '峰值 TAPSE（可选）', u: 'mm' },
+          { k: 'rvp1', n: '峰值 PASP（可选）', u: 'mmHg' },
         ],
         calc: 'rv-strain',
-        note: '填三段即可得 RVFWS 平均与四级判读；再填室间隔得 RVGLS，填 PASP 得耦联比值。',
+        note: '填三段即可得 RVFWS 平均与四级判读；再填室间隔得 RVGLS，填 PASP 得耦联比值。填负荷前 / 峰值 RVFWS 可另算右室收缩储备。',
       },
       {
         id: 'strain',
@@ -5903,6 +6064,74 @@ const BRIEF_SECTIONS = [
         calc: 'pht-rev',
         note: '填 PVR 即可给出可手术性提示；同时填 Qp/Qs 与 PVRI 判读更完整。最终决策仍需右心导管与多学科评估。',
       },
+      {
+        id: 'tof-pr',
+        title: '法洛四联症术后肺动脉瓣反流评估',
+        sub: 'PR 半定量 · RV 容量阈值 · 肺动脉瓣置换时机',
+        source: ['R35', 'R38'],
+        blocks: [
+          { kind: 'h', text: '一、为什么 TOF 术后几乎都存在 PR' },
+          { kind: 'text', text: '根治手术中若使用了**跨瓣环补片**（transannular patch），肺动脉瓣环的完整性被切开，术后必然存在不同程度的 PR。补片越大、手术年龄越小，PR 越重。少数保留瓣环者（如双心室修补 + 瓣膜成形）可以没有明显 PR。' },
+          { kind: 'text', text: '残余 PR 是 TOF 远期最主要的病理生理驱动：**右室容量负荷 → 右室扩大 → 三尖瓣环扩张 → 继发重度 TR → 右室衰竭 / 房性心律失常 / 猝死**。所以随访的核心不是「PR 有几级」，而是「右室被这个 PR 撑大了多少」。' },
+
+          { kind: 'h', text: '二、三个超声指标，只有一个值得靠' },
+          {
+            kind: 'table',
+            heads: ['指标', '测法', '重度阈值', '可靠性'],
+            rows: [
+              ['PR 指数', '舒张期反流时限 ÷ 舒张期总时限', '≥0.7', '较稳；心率快时舒张期短，误差放大'],
+              ['反流束宽度比', '胸骨旁短轴 PR 束最宽处 ÷ RVOT 径', '≥50%', '可用；偏心束易低估'],
+              ['PR 频谱密度', '连续多普勒信号灰度', '仅作参考', '差：PR 属低阻力反流，信号常弱'],
+            ],
+          },
+          { kind: 'note', text: '**别把 AR 的 PHT 标准搬到 PR 上**。主动脉瓣反流的压力减半时间 <200 ms 提示重度，是因为主动脉舒张压高、反流阻力大；肺动脉舒张压低、右室顺应性好，PR 的 PHT 天然就短，用 AR 的切点去分级会几乎人人「重度」。PR 的 PHT 只能同患者纵向比较。', warn: true },
+
+          { kind: 'h', text: '三、RV 容量阈值才是肺动脉瓣置换（PVR）的扳机' },
+          {
+            kind: 'table',
+            heads: ['参数', '阈值', '权重'],
+            rows: [
+              ['RVESVi', '>80 mL/m²', '最强指征（收缩末容积反映残余容量负荷）'],
+              ['RVEDVi', '>160 mL/m²', '支持指征'],
+              ['RVEF', '<50%', '支持指征；<45% 叠加 RVESVi >80 提示时机已偏晚'],
+              ['临床条件', '症状、新发房扑 / 房颤、运动耐量下降', '与影像任一组合即可讨论 PVR'],
+            ],
+          },
+          { kind: 'note', text: '**这些阈值全部来自 CMR，不能直接用超声的 RVEDVi 去套**。超声估右室容积依赖几何假设，在扩大的右室里系统性地偏低且重复性差，同一个患者两次测量差 20 mL/m² 很常见。没有 CMR 时，报告应写「超声提示右室显著扩大，建议 CMR 定量」，而不是直接下「已达手术指征」。', warn: true },
+
+          { kind: 'h', text: '四、没有 CMR 时，超声能给到什么程度' },
+          { kind: 'text', text: '① **右室基底内径 >45 mm**、RV/LV 基底径比 >1；② **RV FAC <35%**；③ **TAPSE <17 mm**、三尖瓣环 S′ <9.5 cm/s；④ **RAVI >18 mL/m²** 提示右室充盈压升高；⑤ **RVFWS 绝对值 <20%**。五条中满足三条以上，就足以支持「右室已显著受累，应尽快做 CMR」的判断。' },
+          { kind: 'text', text: '一个 TOF 特有的陷阱：**跨瓣环补片段本身不收缩**，会把 RVFWS 与 RVGLS 系统性拉低。这类患者的 RVFWS 减低不等于心肌功能差，判读时优先看**游离壁中段与心尖段**，或者以 TAPSE / FAC 为主。' },
+
+          { kind: 'h', text: '五、决定 PVR 之前必须排掉的四件事' },
+          {
+            kind: 'table',
+            heads: ['合并问题', '筛查方法', '为什么必须先处理'],
+            rows: [
+              ['RVOT 残余梗阻', '连续多普勒测 RVOT 压差，≥40 mmHg 有意义', '梗阻 + PR 并存时，换瓣后压差可能更高'],
+              ['肺动脉分支狭窄', '左肺动脉最常见；CTA / MRA 确认', '分支狭窄会让 PVR 后右室压不降，术后症状不改善'],
+              ['主动脉根部扩张 / AR', '主动脉根部径、AR 反流束', 'TOF 术后发生率 15–30%，常需同期手术'],
+              ['残余 VSD / 冠脉异常', '彩色多普勒 + CTA', '影响体外循环方案与远期预后'],
+            ],
+          },
+
+          { kind: 'h', text: '六、换瓣之后的随访节奏' },
+          { kind: 'text', text: '① **逆转重塑需要时间**：PVR 后 PR 立刻消失，但 RVEDVi 通常 6–12 个月才回落；若 1 年后仍不下降，提示重构已不可逆，不要反复加药，应重新评估。② **生物瓣会衰败**：10–15 年寿命，每年测跨瓣压差与 PR；压差较基线升高 ≥10 mmHg 需警惕。③ **房性心律失常不会因换瓣消失**：术前已有房颤者术后仍需抗凝与节律管理。' },
+
+          { kind: 'h', text: '七、三个容易出错的地方' },
+          { kind: 'text', text: '① **把补片段运动障碍当心肌病变**（见第四节）；② **用 LVOT VTI 估心排量**——TOF 术后常合并 AR 与 RVOT 血流异常，LVOT 的 SV 不可靠，必要时用三维或 Fick 法；③ **只盯 PR 分级**——重度 PR 而右室不大者预后良好，可以随访；中度 PR 但 RVEDVi 已过阈值者反而更需要干预。**决定预后的是右室，不是反流级数。**' },
+        ],
+        fields: [
+          { k: 'pridx', n: 'PR 指数（0–1）', u: '' },
+          { k: 'prw', n: '反流束 / RVOT 宽度比', u: '%' },
+          { k: 'rvedvi', n: 'RVEDVi（CMR）', u: 'mL/m²' },
+          { k: 'rvesvi', n: 'RVESVi（CMR）', u: 'mL/m²' },
+          { k: 'rvef', n: 'RVEF（CMR）', u: '%' },
+          { k: 'rvotpg', n: 'RVOT 压差（可选）', u: 'mmHg' },
+        ],
+        calc: 'tof-pr',
+        note: '填 PR 指数或宽度比得严重度分级；RVEDVi / RVESVi / RVEF 请填 CMR 值，才可对照 PVR 阈值。仅有超声时只作筛查，不据此下手术结论。',
+      },
     ],
   },
   {
@@ -6506,6 +6735,20 @@ const REFS = [
     en: 'Stainback RF, Estep JD, Agler DA, et al. Echocardiography in the Management of Patients with Left Ventricular Assist Devices: Recommendations from the American Society of Echocardiography',
     where: 'J Am Soc Echocardiogr, 2015, 28(8): 853–909',
     use: '入血道 / 出血道评估、泵速优化与抽吸事件的超声识别',
+  },
+  {
+    id: 'R38',
+    zh: '法洛四联症根治术后的 CMR 评估与肺动脉瓣置换决策',
+    en: 'Geva T. Repaired tetralogy of Fallot: the roles of cardiovascular magnetic resonance in evaluating pathophysiology and for pulmonary valve replacement decision support',
+    where: 'J Cardiovasc Magn Reson, 2011, 13: 9',
+    use: 'RVEDVi >160 / RVESVi >80 mL/m² 等 PVR 容量阈值的来源',
+  },
+  {
+    id: 'R39',
+    zh: '多巴酚丁胺负荷评估肺动脉高压患者的右室收缩储备',
+    en: 'Sharma T, Lau EMT, Choudhary P, et al. Dobutamine stress for evaluation of right ventricular reserve in pulmonary arterial hypertension',
+    where: 'Eur Respir J, 2015, 45(3): 700–708',
+    use: '低剂量多巴酚丁胺下 RVFWS 变化与右室收缩储备的判读标准',
   },
 ];
 
@@ -7581,6 +7824,30 @@ const REFS = [
       if (r.ratio !== undefined) {
         parts.push('RVFWS/PASP ' + Calc.fmt(r.ratio, 2) + ' · ' + r.coupling);
       }
+      // 右室收缩储备（低剂量多巴酚丁胺负荷）
+      if (has('rvr0', 'rvr1')) {
+        const rs = Calc.rvReserve({
+          rest: v.rvr0, peak: v.rvr1,
+          tapse0: v.rvt0, tapse1: v.rvt1,
+          pasp0: v.rvspasp, pasp1: v.rvp1,
+        });
+        if (rs.text) {
+          parts.push('收缩储备：RVFWS ' + Calc.fmt(rs.rest, 1) + '%→' + Calc.fmt(rs.peak, 1) +
+            '%（Δ' + (rs.delta >= 0 ? '+' : '') + Calc.fmt(rs.delta, 1) + '）· ' + rs.text);
+        }
+        if (rs.tapseDelta !== undefined) {
+          parts.push('TAPSE ' + (rs.tapseDelta >= 0 ? '+' : '') + Calc.fmt(rs.tapseDelta, 1) + ' mm（' +
+            (rs.tapseChange >= 0 ? '+' : '') + Calc.fmt(rs.tapseChange, 0) + '%）' +
+            (rs.tapseOk ? ' · 支持储备保留' : ' · 未见明显增加'));
+        }
+        if (rs.couplingDelta !== undefined) {
+          parts.push('负荷后耦联 ' + Calc.fmt(rs.ratio0, 2) + '→' + Calc.fmt(rs.ratio1, 2) +
+            (rs.couplingDelta > 0 ? '（改善）' : rs.couplingDelta < 0 ? '（恶化）' : '（不变）'));
+        }
+        if (rs.afterloadOnly) {
+          parts.push('注意：PASP 升 ' + Calc.fmt(rs.dpasp, 0) + ' mmHg 而 RVFWS 未涨，更像后负荷效应而非储备耗竭');
+        }
+      }
       put('rv-strain', partsOf(parts));
     }
 
@@ -7624,6 +7891,25 @@ const REFS = [
           (v.pvrvi > 8 ? '显著升高' : v.pvrvi >= 6 ? '灰区' : '可接受'));
       }
       put('pht-rev', partsOf(parts));
+    }
+
+    // 法洛四联症术后 PR：严重度 + PVR 指征
+    {
+      const r = Calc.tofPr({
+        pridx: v.pridx, prw: v.prw,
+        rvedvi: v.rvedvi, rvesvi: v.rvesvi, rvef: v.rvef, rvotpg: v.rvotpg,
+      });
+      const parts = [];
+      if (r.severityText) {
+        parts.push(r.severityText + (r.discordant ? '（PR 指数与宽度比不一致，取较重档）' : ''));
+      }
+      if (r.pvrIndication) {
+        parts.push('已达 PVR 评估指征');
+      } else if (r.rvesvi !== undefined || r.rvedvi !== undefined || r.rvef !== undefined) {
+        parts.push('尚未达 PVR 容量阈值');
+      }
+      if (r.notes && r.notes.length) parts.push(r.notes.join('；'));
+      put('tof-pr', partsOf(parts));
     }
 
     // LVAD 超声要点

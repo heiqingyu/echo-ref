@@ -439,13 +439,17 @@ check('含 5 个评估条目（crt/la/lv/rv/strain）',
     return html.indexOf("id: '" + id + "'") !== -1;
   }), true);
 check('含参考文献数据 REFS', html.indexOf('REFS') !== -1, true);
+check('含 v1.1.1 新增条目 tof-pr 与右室收缩储备字段',
+  html.indexOf("id: 'tof-pr'") !== -1 &&
+  html.indexOf("k: 'pridx'") !== -1 &&
+  html.indexOf("k: 'rvr0'") !== -1, true);
 check('参考文献区容器 #calcRefs 存在', html.indexOf('id="calcRefs"') !== -1, true);
 check('参考文献列表容器 #calcRefList 存在', html.indexOf('id="calcRefList"') !== -1, true);
 check('首页已无延展阅读卡片', html.indexOf('page-index') < html.indexOf('id="extLinks"'), true);
 check('评估内容块样式已内联', html.indexOf('.fx-tbl__c {') !== -1, true);
 check('参考文献样式已内联', html.indexOf('.ref-item__zh {') !== -1, true);
 check('版本行样式已内联', html.indexOf('.verline {') !== -1, true);
-check('版本号已注入（非 1.0.0）', /v1\.0\.[1-9]/.test(html), true);
+check('版本号已注入（非 1.0.0）', /v1\.[01]\.[0-9]/.test(html), true);
 
 /* 切面学习 / TEE 模拟器：纯外链条目（不嵌图片与 iframe，省内存） */
 check('含 LINK_SECTIONS 外链数据', html.indexOf('LINK_SECTIONS') !== -1, true);
