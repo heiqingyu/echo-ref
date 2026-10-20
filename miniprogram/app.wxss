@@ -530,3 +530,11 @@ page {
   color: var(--sub);
   margin: 30rpx 0 18rpx;
 }
+
+/* 版本行（每次功能改动后由 utils/version.js 与 android-app/VERSION 同步） */
+.verline {
+  text-align: center;
+  font-size: 21rpx;
+  color: #b6bcc6;
+  padding: 28rpx 0 8rpx;
+}

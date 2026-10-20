@@ -1,57 +1,106 @@
 /**
- * 公式详情页：一页一个公式组
+ * 公式详情页：一页一个条目
  *
- * 路由：/pages/formula/formula?id=flow
- * 分组定义来自 utils/calc-groups.js（与公式集目录同源，新增公式只改那一处）
+ * 路由：/pages/formula/formula?id=flow（计算公式）| ?id=crt（评估类内容）
+ *   - 计算公式：utils/calc-groups.js 的 GROUPS
+ *   - 评估内容：utils/extra-data.js 的 BRIEF_SECTIONS（带 blocks / fields / calc）
  *
  * 输入值按组缓存在 app.globalData.calcCache，返回目录再进来不丢。
  */
 const CG = require('../../utils/calc-groups.js');
+const EX = require('../../utils/extra-data.js');
 const calc = require('../../utils/echo-calc.js');
 const app = getApp();
+
+/** 在评估类内容里按 id 找条目 */
+function findBrief(id) {
+  for (let i = 0; i < EX.BRIEF_SECTIONS.length; i += 1) {
+    const hit = EX.BRIEF_SECTIONS[i].items.filter(function (it) { return it.id === id; })[0];
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/** blocks → 视图模型（表格列数由表头决定） */
+function toBlocks(blocks) {
+  return (blocks || []).map(function (b) {
+    if (b.kind === 'table') {
+      return { kind: 'table', heads: b.heads, rows: b.rows, cols: b.heads.length, warn: !!b.warn };
+    }
+    return { kind: b.kind, text: b.text, warn: !!b.warn };
+  });
+}
 
 Page({
   data: {
     gid: '',
+    mode: 'calc',
     title: '',
     note: '',
+    blocks: [],
+    refs: [],
     collapse: CG.COLLAPSE,
     signs: CG.SIGNS,
     inputs: [],
     collapseV: '',
     signsV: '',
     bsaText: '—',
+    sexLabel: '男性',
     out: '',
     hasOut: false,
   },
 
   onLoad(query) {
     const id = (query && query.id) || (CG.GROUPS[0] && CG.GROUPS[0].id);
-    const g = CG.groupOf(id) || CG.GROUPS[0];
+    const brief = findBrief(id);
 
-    // 按组缓存输入值，返回目录再进来仍在
-    if (!app.globalData.calcCache) app.globalData.calcCache = {};
-    const cache = app.globalData.calcCache[g.id] || {};
+    if (brief) {
+      const cache = (app.globalData.calcCache || {})[brief.id] || {};
+      const inputs = (brief.fields || []).map(function (f) {
+        return { key: f.k, name: f.n, unit: f.u, value: cache[f.k] || '' };
+      });
+      this.setData({
+        gid: brief.id,
+        mode: 'brief',
+        title: brief.title,
+        note: brief.note || '',
+        blocks: toBlocks(brief.blocks),
+        refs: (brief.source || []).map(function (rid) {
+          const r = EX.REFS.filter(function (x) { return x.id === rid; })[0];
+          return r ? { id: r.id, zh: r.zh, where: r.where } : null;
+        }).filter(Boolean),
+        inputs: inputs,
+        collapseV: cache.__collapse || '',
+        signsV: cache.__signs || '',
+      });
+    } else {
+      const g = CG.groupOf(id) || CG.GROUPS[0];
+      const cache = (app.globalData.calcCache || {})[g.id] || {};
+      const inputs = g.fields.map(function (f) {
+        return { key: f.k, name: f.n, unit: f.u, value: cache[f.k] || '' };
+      });
+      this.setData({
+        gid: g.id,
+        mode: 'calc',
+        title: g.title,
+        note: g.note,
+        blocks: [],
+        refs: [],
+        inputs: inputs,
+        collapseV: cache.__collapse || '',
+        signsV: cache.__signs || '',
+      });
+    }
 
-    const inputs = g.fields.map(function (f) {
-      return { key: f.k, name: f.n, unit: f.u, value: cache[f.k] || '' };
-    });
-
-    this.setData({
-      gid: g.id,
-      title: g.title,
-      note: g.note,
-      inputs: inputs,
-      collapseV: cache.__collapse || '',
-      signsV: cache.__signs || '',
-    });
-
-    wx.setNavigationBarTitle({ title: g.title });
+    wx.setNavigationBarTitle({ title: this.data.title });
   },
 
   onShow() {
     const p = app.globalData.profile;
-    this.setData({ bsaText: p && p.bsa ? p.bsa.toFixed(2) : '—' });
+    this.setData({
+      bsaText: p && p.bsa ? p.bsa.toFixed(2) : '—',
+      sexLabel: (p && p.sex === 'female') ? '女性' : '男性',
+    });
     this.refresh();
   },
 
@@ -93,7 +142,7 @@ Page({
     app.globalData.calcCache[this.data.gid] = c;
   },
 
-  /** 计算当前组 */
+  /** 计算当前条目 */
   refresh() {
     this.saveCache();
 
@@ -103,7 +152,9 @@ Page({
       if (r.value !== '' && !isNaN(n)) v[r.key] = n;
     });
 
-    const bsa = (app.globalData.profile && app.globalData.profile.bsa) || 0;
+    const prof = app.globalData.profile || {};
+    const bsa = prof.bsa || 0;
+    const female = prof.sex === 'female';
     const valid = (...xs) => xs.every((x) => x !== undefined && isFinite(x));
 
     let out = '';
@@ -195,6 +246,78 @@ Page({
       const parts = [];
       if (r.ea !== undefined) parts.push('E/A = ' + calc.fmt(r.ea));
       if (r.avgEe !== undefined) parts.push('平均 E/e′ = ' + calc.fmt(r.avgEe) + '（' + calc.gradeEe(r.avgEe).text + '）');
+      out = parts.join('；');
+    } else if (gid === 'crt') {
+      // —— CRT：SV / SVi + QRS 时限提示 ——
+      const parts = [];
+      if (valid(v.ld, v.lvti)) {
+        const sv = calc.strokeVolume(v.ld, v.lvti);
+        parts.push('SV ' + calc.fmt(sv, 1) + ' mL');
+        if (bsa > 0) {
+          const svi = sv / bsa;
+          parts.push('SVi ' + calc.fmt(svi, 1) + ' mL/m²');
+          if (svi < 35) parts.push('（低流量）');
+        }
+      }
+      if (valid(v.qrs)) {
+        parts.push('QRS ' + calc.fmt(v.qrs, 0) + ' ms → ' +
+          (v.qrs >= 150 ? '≥150 ms，CRT 指征最强（LBBB 为 I 类、非 LBBB 为 IIa）'
+            : v.qrs >= 130 ? '130–149 ms，LBBB 为 IIa、非 LBBB 为 IIb'
+              : '＜130 ms，通常不满足 CRT 指征'));
+      }
+      out = parts.join('；');
+    } else if (gid === 'la') {
+      // —— 左心房容积指数 ——
+      if (valid(v.lav) && bsa > 0) {
+        const lavi = v.lav / bsa;
+        out = 'LAVi ' + calc.fmt(lavi) + ' mL/m² · ' +
+          (lavi > 34 ? '增大（>34 mL/m²，男女同阈值）' : '正常（≤34 mL/m²）');
+      } else if (valid(v.lav)) {
+        out = '需先在「EF·参考值」页填写身高体重（BSA 为 0 时无法计算指数）';
+      }
+    } else if (gid === 'lv') {
+      // —— 左室质量指数分级 + RWT ——
+      const parts = [];
+      if (valid(v.lvmi)) {
+        const bands = female
+          ? [[0, 89, '正常'], [90, 107, '轻度增高'], [108, 121, '中度增高'], [122, 137, '重度增高'], [138, Infinity, '极重度增高']]
+          : [[0, 95, '正常'], [96, 115, '轻度增高'], [116, 131, '中度增高'], [132, 149, '重度增高'], [150, Infinity, '极重度增高']];
+        let lvl = '';
+        for (let i = 0; i < bands.length; i += 1) {
+          if (v.lvmi >= bands[i][0] && v.lvmi <= bands[i][1]) lvl = bands[i][2];
+        }
+        parts.push('LVMI ' + calc.fmt(v.lvmi, 1) + ' g/m²（' +
+          (female ? '女性' : '男性') + '）→ ' + lvl);
+      }
+      if (valid(v.rwt)) {
+        parts.push('RWT ' + calc.fmt(v.rwt, 2) + ' · ' +
+          (v.rwt > 0.42 ? '升高：向心性肥厚' : '正常或偏低：离心性重构'));
+      }
+      out = parts.join('；');
+    } else if (gid === 'rv') {
+      // —— 右心：RAP + PASP ——
+      const parts = [];
+      let rap = null;
+      if (valid(v.ivc)) {
+        rap = calc.rapFromIvc(v.ivc, this.data.collapseV);
+        parts.push('RAP 估计 ' + rap + ' mmHg');
+      }
+      if (valid(v.tr) && rap !== null) {
+        parts.push('PASP ≈ ' + calc.fmt(calc.pasp(v.tr, rap), 1) + ' mmHg · ' +
+          (v.tr <= 2.8 ? '无肺高压' : v.tr < 3.4 ? '轻度升高' : '中重度升高'));
+      }
+      out = parts.join('；');
+    } else if (gid === 'strain') {
+      // —— 应变判读 ——
+      const parts = [];
+      if (valid(v.gls)) {
+        parts.push('GLS ' + calc.fmt(v.gls, 1) + '% · ' +
+          (v.gls <= -20 ? '正常' : v.gls < -18 ? '边缘（缩短减弱）' : '异常（缩短明显减低）'));
+      }
+      if (valid(v.rvstrain)) {
+        parts.push('右室游离壁应变 ' + calc.fmt(v.rvstrain, 1) + '% · ' +
+          (v.rvstrain <= -20 ? '正常' : '缩短减低'));
+      }
       out = parts.join('；');
     }
 

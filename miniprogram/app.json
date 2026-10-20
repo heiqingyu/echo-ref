@@ -21,9 +21,9 @@
     "borderStyle": "black",
     "list": [
       { "pagePath": "pages/index/index", "text": "EF·参考值" },
-      { "pagePath": "pages/calculators/calculators", "text": "公式集" },
       { "pagePath": "pages/segments/segments", "text": "节段划分" },
-      { "pagePath": "pages/pediatric/pediatric", "text": "儿童 Z 值" }
+      { "pagePath": "pages/pediatric/pediatric", "text": "儿童 Z 值" },
+      { "pagePath": "pages/calculators/calculators", "text": "公式集" }
     ]
   },
   "style": "v2",

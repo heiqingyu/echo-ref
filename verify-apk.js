@@ -314,6 +314,7 @@ const REQUIRED_IDS = [
   'inHeight', 'inWeight', 'outBsa', 'bsaHint', 'stdNote',
   'jumpRef', 'refBlock', 'refList', 'refDesc', 'refSource', 'aseUnitNote',
   'calcGroups', 'calcClear', 'calcBsaNote', 'calcIndex', 'calcList', 'calcDetail', 'calcBack',
+  'calcRefs', 'calcRefList', 'extLinks',
   'valveSwitch', 'valveClear', 'valveSecs',
   'efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd', 'efResult', 'efKv', 'efMark', 'efGrade',
   'pdHeight', 'pdWeight', 'pdAge', 'pdBsa', 'pdWarn', 'pdInputs', 'pdMore',
@@ -415,6 +416,29 @@ check('公式集目录样式已内联', html.indexOf('.fx-item {') !== -1, true)
 check('清空按钮改为「清空本组输入」', html.indexOf('清空本组输入') !== -1, true);
 
 /* ══════════════════════════════════════════════════════════ */
+
+/* 公式集扩展：评估类内容 / 参考文献 / 版本号 / 页签顺序 */
+check('页签顺序 = EF·参考值|瓣膜评估|节段划分|儿童 Z 值|公式集',
+  (html.match(/class="tab__t">([^<]+)</g) || []).map(function (x) {
+    return x.replace(/^class="tab__t">/, '').replace(/<$/, '');
+  }).join('|') === 'EF·参考值|瓣膜评估|节段划分|儿童 Z 值|公式集', true);
+check('含评估内容数据 ExtraData', html.indexOf('window.ExtraData') !== -1, true);
+check('含 2 个评估分组（器械支持 / 心腔与应变）',
+  (html.match(/id: '(device|chamber)',\s*\n\s*title: '[^']+'/g) || []).length >= 2 ||
+  (html.match(/title: '器械支持'/g) || []).length === 1 &&
+  (html.match(/title: '心腔与应变'/g) || []).length === 1, true);
+check('含 5 个评估条目（crt/la/lv/rv/strain）',
+  ['crt', 'la', 'lv', 'rv', 'strain'].every(function (id) {
+    return html.indexOf("id: '" + id + "'") !== -1;
+  }), true);
+check('含参考文献数据 REFS', html.indexOf('REFS') !== -1, true);
+check('参考文献区容器 #calcRefs 存在', html.indexOf('id="calcRefs"') !== -1, true);
+check('参考文献列表容器 #calcRefList 存在', html.indexOf('id="calcRefList"') !== -1, true);
+check('首页已无延展阅读卡片', html.indexOf('page-index') < html.indexOf('id="extLinks"'), true);
+check('评估内容块样式已内联', html.indexOf('.fx-tbl__c {') !== -1, true);
+check('参考文献样式已内联', html.indexOf('.ref-item__zh {') !== -1, true);
+check('版本行样式已内联', html.indexOf('.verline {') !== -1, true);
+check('版本号已注入（非 1.0.0）', /v1\.0\.[1-9]/.test(html), true);
 
 /* 延展阅读：外链卡片（APK 端点击链接由 MainActivity 交给系统浏览器） */
 check('APK 页面含延展阅读卡片', html.indexOf('延展阅读') !== -1 ? 1 : 0, 1, 0);

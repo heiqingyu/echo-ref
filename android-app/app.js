@@ -426,7 +426,11 @@
     dias: 'E/A · 平均 E/e′',
   };
 
-  /** 当前打开的公式组（详情视图） */
+  /** 评估类内容（器械支持 / 心腔与应变）与参考文献：来自 extra-data.js，与小程序同源 */
+  const BRIEF = (window.ExtraData && window.ExtraData.BRIEF_SECTIONS) || [];
+  const REFS = (window.ExtraData && window.ExtraData.REFS) || [];
+
+  /** 当前打开的条目（详情视图） */
   let curCalcGroup = 'flow';
 
   function calcGroupOf(id) {
@@ -436,62 +440,154 @@
     return null;
   }
 
-  /** 目录条目 HTML：kind = calc（本页详情） / valve（跳瓣膜页） */
+  /** 按 id 取评估类条目 */
+  function briefOf(id) {
+    for (let i = 0; i < BRIEF.length; i += 1) {
+      const hit = BRIEF[i].items.filter(function (b) { return b.id === id; })[0];
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  /** 目录：分组标题 + 列表开标签 */
+  function fxGroupHtml(title) {
+    return '<div class="fx-group">' + esc(title) + '</div><div class="fx-list">';
+  }
+
+  /** 目录条目：kind = calc / brief / valve */
   function fxItemHtml(kind, id, title, sub) {
-    return '<button class="fx-item" data-' + (kind === 'valve' ? 'valve' : 'calc') +
-      '="' + id + '"><span class="fx-item__main">' +
+    return '<button class="fx-item" data-kind="' + kind + '" data-id="' + id +
+      '"><span class="fx-item__main">' +
       '<span class="fx-item__n">' + esc(title) + '</span>' +
       '<span class="fx-item__d">' + esc(sub) + '</span>' +
       '</span><span class="fx-item__a">›</span></button>';
   }
 
+  /** 评估类内容块 → HTML（与小程序 formula 页渲染一致） */
+  function blocksHtml(blocks) {
+    let h = '';
+    (blocks || []).forEach(function (b) {
+      if (b.kind === 'h') { h += '<div class="fx-h">' + esc(b.text) + '</div>'; return; }
+      if (b.kind === 'note') { h += '<div class="fx-note">' + esc(b.text) + '</div>'; return; }
+      if (b.kind === 'formula') { h += '<div class="fx-formula">' + esc(b.text) + '</div>'; return; }
+      if (b.kind === 'table') {
+        h += '<div class="fx-tbl fx-tbl--' + b.heads.length + '">';
+        h += '<div class="fx-tbl__r fx-tbl__r--h">';
+        b.heads.forEach(function (c) { h += '<span class="fx-tbl__c">' + esc(c) + '</span>'; });
+        h += '</div>';
+        (b.rows || []).forEach(function (r) {
+          h += '<div class="fx-tbl__r">';
+          r.forEach(function (c) { h += '<span class="fx-tbl__c">' + esc(c) + '</span>'; });
+          h += '</div>';
+        });
+        h += '</div>';
+        return;
+      }
+      h += '<div class="fx-text">' + esc(b.text) + '</div>';
+    });
+    return h;
+  }
+
+  /** 详情页底部的本条目引用 */
+  function briefRefsHtml(ids) {
+    if (!ids || !ids.length || !REFS.length) return '';
+    let h = '<div class="fx-h">本条目引用</div>';
+    ids.forEach(function (rid) {
+      const r = REFS.filter(function (x) { return x.id === rid; })[0];
+      if (!r) return;
+      h += '<div class="ref-item"><div class="ref-item__id">' + esc(r.id) + '</div>' +
+        '<div class="ref-item__body">' +
+        '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
+        '<div class="ref-item__where">' + esc(r.where) + '</div>' +
+        '</div></div>';
+    });
+    return h;
+  }
+
+  /** 目录底部的参考文献总表 */
+  function renderRefs() {
+    const box = $('calcRefList');
+    if (!box) return;
+    let h = '';
+    REFS.forEach(function (r) {
+      h += '<div class="ref-item"><div class="ref-item__id">' + esc(r.id) + '</div>' +
+        '<div class="ref-item__body">' +
+        '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
+        '<div class="ref-item__en">' + esc(r.en) + '</div>' +
+        '<div class="ref-item__where">' + esc(r.where) + '</div>' +
+        '<div class="ref-item__use">用于：' + esc(r.use) + '</div>' +
+        '</div></div>';
+    });
+    box.innerHTML = h;
+  }
+
+  /** 一组输入框（两两一行） */
+  function fieldsHtml(fields) {
+    let h = '';
+    for (let i = 0; i < fields.length; i += 2) {
+      h += '<div class="row">';
+      for (let j = i; j < i + 2 && j < fields.length; j++) {
+        const f = fields[j];
+        h += '<div class="field"><label class="field__l">' + esc(f.n) +
+          (f.u ? ' / ' + esc(f.u) : '') + '</label>' +
+          '<input class="field__i" type="number" inputmode="decimal" step="any" ' +
+          'data-ck="' + f.k + '" placeholder="未填写" value="' +
+          (calcVal[f.k] !== undefined ? calcVal[f.k] : '') + '"></div>';
+      }
+      h += '</div>';
+    }
+    return h;
+  }
+
   /**
-   * 生成公式集目录 + 各公式的详情卡
+   * 生成公式集目录 + 各条目的详情卡
    *
-   * ★ 新增公式：在 CALC_GROUPS 加一条 + CALC_SUB 补一句说明，
-   *   目录会自动出现，点击即进详情，不必改别处。
+   * ★ 新增条目：在 CALC_GROUPS / VALVE_INDEX 加一条，或在
+   *   miniprogram/utils/extra-data.js 的 BRIEF_SECTIONS 加一条即可，
+   *   目录会自动出现，不必改别处。
    */
   function buildCalcInputs() {
     if (!$('calcList')) return;
 
     // ── 目录 ──
-    let list = '<div class="fx-group">血流动力学与心功能</div><div class="fx-list">';
+    let list = fxGroupHtml('血流动力学与心功能');
     CALC_GROUPS.forEach(function (g) {
       list += fxItemHtml('calc', g.id, g.title, CALC_SUB[g.id] || '');
     });
-    list += '</div><div class="fx-group">瓣膜评估</div><div class="fx-list">';
+    list += '</div>' + fxGroupHtml('瓣膜评估');
     VALVE_INDEX.forEach(function (v) {
       list += fxItemHtml('valve', v.id, v.title, v.sub);
     });
     list += '</div>';
+    BRIEF.forEach(function (sec) {
+      list += fxGroupHtml(sec.title);
+      sec.items.forEach(function (it) {
+        list += fxItemHtml('brief', it.id, it.title, it.sub || '');
+      });
+      list += '</div>';
+    });
     $('calcList').innerHTML = list;
 
     $('calcList').querySelectorAll('.fx-item').forEach(function (el) {
       el.addEventListener('click', function () {
-        if (el.dataset.valve) {
+        const kind = el.dataset.kind;
+        if (kind === 'valve') {
           switchTab('valves');
-          switchValve(el.dataset.valve);
+          switchValve(el.dataset.id);
         } else {
-          openCalcGroup(el.dataset.calc);
+          openCalcGroup(el.dataset.id);
         }
       });
     });
 
-    // ── 详情：一次性渲染全部公式卡，按组切换显示（输入值随 DOM 保留） ──
+    renderRefs();
+
+    // ── 详情：一次性渲染全部条目卡，按条目切换显示 ──
     let html = '';
     CALC_GROUPS.forEach(function (g) {
       html += '<div class="card" data-g="' + g.id + '" hidden>' +
-        '<div class="card__t">' + esc(g.title) + '</div>';
-      for (let i = 0; i < g.fields.length; i += 2) {
-        html += '<div class="row">';
-        for (let j = i; j < i + 2 && j < g.fields.length; j++) {
-          const f = g.fields[j];
-          html += '<div class="field"><label class="field__l">' + esc(f[1]) + ' / ' + esc(f[2]) + '</label>' +
-            '<input class="field__i" type="number" inputmode="decimal" step="any" ' +
-            'data-ck="' + f[0] + '" placeholder="未填写" value="' + (calcVal[f[0]] !== undefined ? calcVal[f[0]] : '') + '"></div>';
-        }
-        html += '</div>';
-      }
+        '<div class="card__t">' + esc(g.title) + '</div>' +
+        fieldsHtml(g.fields.map(function (f) { return { k: f[0], n: f[1], u: f[2] }; }));
       if (g.id === 'pressure') {
         html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse) +
           segHtml('calcsigns', CALC_SIGNS, calcSigns);
@@ -500,13 +596,34 @@
         '<div class="calc-out" id="calcOut-' + g.id + '">' +
         '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div></div>';
     });
+
+    BRIEF.forEach(function (sec) {
+      sec.items.forEach(function (it) {
+        html += '<div class="card" data-g="' + it.id + '" hidden>' +
+          '<div class="card__t">' + esc(it.title) + '</div>' +
+          blocksHtml(it.blocks);
+        if (it.fields && it.fields.length) {
+          html += fieldsHtml(it.fields);
+          if (it.id === 'pressure' || it.id === 'rv') {
+            html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse);
+          }
+        }
+        if (it.note) html += '<div class="note">' + esc(it.note) + '</div>';
+        html += '<div class="calc-out" id="calcOut-' + it.id + '">' +
+          '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div>' +
+          briefRefsHtml(it.source) + '</div>';
+      });
+    });
     $('calcGroups').innerHTML = html;
 
-    // 绑定输入
+    // 绑定输入（同 key 的多个输入框互相同步）
     $('calcGroups').querySelectorAll('input[data-ck]').forEach(function (inp) {
       inp.addEventListener('input', function () {
-        if (inp.value === '') delete calcVal[inp.dataset.ck];
-        else calcVal[inp.dataset.ck] = inp.value;
+        const key = inp.dataset.ck;
+        if (inp.value === '') delete calcVal[key];
+        else calcVal[key] = inp.value;
+        document.querySelectorAll('#calcGroups input[data-ck="' + key + '"]')
+          .forEach(function (o) { if (o !== inp) o.value = inp.value; });
         renderCalc();
       });
     });
@@ -526,17 +643,18 @@
     });
   }
 
-  /** 打开某条公式的详情页 */
+  /** 打开某条目（计算公式或评估内容） */
   function openCalcGroup(id) {
     const g = calcGroupOf(id);
-    if (!g) return;
+    const b = briefOf(id);
+    if (!g && !b) return;
     curCalcGroup = id;
     if ($('calcIndex')) $('calcIndex').hidden = true;
     if ($('calcDetail')) $('calcDetail').hidden = false;
     document.querySelectorAll('#calcGroups > .card').forEach(function (c) {
       c.hidden = c.dataset.g !== id;
     });
-    $('appbarTitle').textContent = g.title;
+    $('appbarTitle').textContent = g ? g.title : b.title;
     renderCalc();
     window.scrollTo(0, 0);
   }
@@ -662,15 +780,100 @@
       if (r.avgEe !== undefined) parts.push('平均 E/e′ = ' + Calc.fmt(r.avgEe) + '（' + Calc.gradeEe(r.avgEe).text + '）');
       put('dias', partsOf(parts));
     }
+
+    // ── 评估类条目（器械支持 / 心腔与应变）──
+
+    // CRT：SV / SVi（低流量）+ QRS 时限提示
+    {
+      const parts = [];
+      if (has('ld', 'lvti')) {
+        const sv = Calc.strokeVolume(v.ld, v.lvti);
+        parts.push('SV ' + Calc.fmt(sv, 1) + ' mL');
+        if (bsa > 0) {
+          const svi = sv / bsa;
+          parts.push('SVi ' + Calc.fmt(svi, 1) + ' mL/m²');
+          if (svi < 35) parts.push('（低流量）');
+        }
+      }
+      if (v.qrs !== undefined) {
+        parts.push('QRS ' + Calc.fmt(v.qrs, 0) + ' ms → ' + (
+          v.qrs >= 150 ? '≥150 ms，CRT 指征最强（LBBB 为 I 类、非 LBBB 为 IIa）'
+            : v.qrs >= 130 ? '130–149 ms，LBBB 为 IIa、非 LBBB 为 IIb'
+              : '＜130 ms，通常不满足 CRT 指征'));
+      }
+      put('crt', partsOf(parts));
+    }
+
+    // 左心房容积指数
+    if (has('lav') && bsa > 0) {
+      const lavi = v.lav / bsa;
+      put('la', 'LAVi ' + Calc.fmt(lavi) + ' mL/m² · ' +
+        (lavi > 34 ? '增大（>34 mL/m²，男女同阈值）' : '正常（≤34 mL/m²）'));
+    } else put('la');
+
+    // 左室质量指数分级 + 相对室壁厚度
+    {
+      const parts = [];
+      if (v.lvmi !== undefined) {
+        const female = state.sex === 'female';
+        const bands = female
+          ? [[0, 89, '正常'], [90, 107, '轻度增高'], [108, 121, '中度增高'], [122, 137, '重度增高'], [138, Infinity, '极重度增高']]
+          : [[0, 95, '正常'], [96, 115, '轻度增高'], [116, 131, '中度增高'], [132, 149, '重度增高'], [150, Infinity, '极重度增高']];
+        let lvl = '';
+        bands.forEach(function (bd) {
+          if (v.lvmi >= bd[0] && v.lvmi <= bd[1]) lvl = bd[2];
+        });
+        parts.push('LVMI ' + Calc.fmt(v.lvmi, 1) + ' g/m²（' +
+          (female ? '女性' : '男性') + '）→ ' + lvl);
+      }
+      if (v.rwt !== undefined) {
+        parts.push('RWT ' + Calc.fmt(v.rwt, 2) + ' · ' +
+          (v.rwt > 0.42 ? '升高：向心性肥厚' : '正常或偏低：离心性重构'));
+      }
+      put('lv', partsOf(parts));
+    }
+
+    // 右心：RAP + PASP（含分级）
+    {
+      const parts = [];
+      let rap = null;
+      if (v.ivc !== undefined) {
+        rap = Calc.rapFromIvc(v.ivc, calcCollapse);
+        parts.push('RAP 估计 ' + rap + ' mmHg');
+      }
+      if (v.tr !== undefined && rap !== null) {
+        parts.push('PASP ≈ ' + Calc.fmt(Calc.pasp(v.tr, rap), 1) + ' mmHg · ' +
+          (v.tr <= 2.8 ? '无肺高压' : v.tr < 3.4 ? '轻度升高' : '中重度升高'));
+      }
+      put('rv', partsOf(parts));
+    }
+
+    // 心肌应变判读
+    {
+      const parts = [];
+      if (v.gls !== undefined) {
+        parts.push('GLS ' + Calc.fmt(v.gls, 1) + '% · ' +
+          (v.gls <= -20 ? '正常' : v.gls < -18 ? '边缘（缩短减弱）' : '异常（缩短明显减低）'));
+      }
+      if (v.rvstrain !== undefined) {
+        parts.push('右室游离壁应变 ' + Calc.fmt(v.rvstrain, 1) + '% · ' +
+          (v.rvstrain <= -20 ? '正常' : '缩短减低'));
+      }
+      put('strain', partsOf(parts));
+    }
   }
 
   if ($('calcClear')) $('calcClear').addEventListener('click', function () {
     const g = calcGroupOf(curCalcGroup);
-    if (!g) return;
-    g.fields.forEach(function (f) {
-      delete calcVal[f[0]];
-      const inp = document.querySelector('#calcGroups input[data-ck="' + f[0] + '"]');
-      if (inp) inp.value = '';
+    const b = briefOf(curCalcGroup);
+    const fields = g
+      ? g.fields.map(function (f) { return f[0]; })
+      : (b && b.fields ? b.fields.map(function (f) { return f.k; }) : []);
+    if (!fields.length) return;
+    fields.forEach(function (k) {
+      delete calcVal[k];
+      document.querySelectorAll('#calcGroups input[data-ck="' + k + '"]')
+        .forEach(function (o) { o.value = ''; });
     });
     if (curCalcGroup === 'pressure') {
       calcCollapse = '';

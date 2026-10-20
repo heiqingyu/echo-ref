@@ -1,4 +1,5 @@
 const core = require('../../utils/echo-core.js');
+const V = require('../../utils/version.js');
 const app = getApp();
 
 /* EF 分级配色（ASE 2015 阈值） */
@@ -11,6 +12,7 @@ const EF_COLOR = {
 
 Page({
   data: {
+    appVersion: V.APP_VERSION,
     /* —— 受检者基本信息 —— */
     sex: 'male',
     height: '170',
