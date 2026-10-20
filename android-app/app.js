@@ -1157,6 +1157,45 @@
       put('tof-pr', partsOf(parts));
     }
 
+    // Ebstein：三尖瓣隔瓣下移指数
+    {
+      const r = Calc.ebsteinIndex(v.ebdisp, v.ebbsa);
+      put('ebstein', r.text
+        ? '下移指数 ' + Calc.fmt(r.index, 1) + ' mm/m²（' + Calc.fmt(r.disp, 1) + ' mm ÷ ' +
+          Calc.fmt(r.bsa, 2) + ' m²）· ' + r.text
+        : '');
+    }
+
+    // Mustard / Senning：两套挡板压差
+    {
+      const baffle = function (x) {
+        if (x > 8) return '狭窄明显，建议干预评估';
+        if (x > 4) return '有血流动力学意义的狭窄';
+        return '可接受';
+      };
+      const parts = [];
+      if (has('mvsvc')) parts.push('体静脉挡板 ' + Calc.fmt(v.mvsvc, 1) + ' mmHg · ' + baffle(v.mvsvc));
+      if (has('mvpv')) parts.push('肺静脉挡板 ' + Calc.fmt(v.mvpv, 1) + ' mmHg · ' + baffle(v.mvpv));
+      put('mustard', partsOf(parts));
+    }
+
+    // Fontan：管道压差 + 开窗宽度
+    {
+      const parts = [];
+      if (has('fnpg')) {
+        const g = v.fnpg;
+        parts.push('管道压差 ' + Calc.fmt(g, 1) + ' mmHg · ' +
+          (g > 4 ? '明显梗阻，需进一步评估' : g > 2 ? '轻度升高，密切随访' : '通畅'));
+      }
+      if (has('fnfen')) {
+        const w = v.fnfen;
+        parts.push('开窗 ' + Calc.fmt(w, 1) + ' mm' +
+          (w < 3 ? '（偏小，注意是否已闭合）'
+            : w > 6 ? '（偏大，注意右向左分流量）' : '（常规范围 3–6 mm）'));
+      }
+      put('fontan', partsOf(parts));
+    }
+
     // LVAD 超声要点
     {
       const r = Calc.lvadEcho({

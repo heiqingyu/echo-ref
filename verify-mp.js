@@ -476,31 +476,31 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 13 个大组', dirs.length, 13, 0);
+  check('公式集分 14 个大组', dirs.length, 14, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|负荷与功能试验|介入 TEE 评估|切面学习（视频）|实用超声规范化检查与操作（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|实用超声规范化检查与操作（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 84 条（11 计算 + 9 瓣膜 + 27 评估 + 37 外链）', nItems, 84, 0);
-  check('切面学习 5 条', dirs[9].items.length, 5, 0);
-  check('书籍视频 25 条（第三章心血管系统 1–25）', dirs[10].items.length, 25, 0);
-  check('切面指南 4 条', dirs[11].items.length, 4, 0);
-  check('TEE 模拟器 3 条', dirs[12].items.length, 3, 0);
+  check('目录共 89 条（11 计算 + 9 瓣膜 + 32 评估 + 37 外链）', nItems, 89, 0);
+  check('切面学习 5 条', dirs[10].items.length, 5, 0);
+  check('书籍视频 25 条（第三章心血管系统 1–25）', dirs[11].items.length, 25, 0);
+  check('切面指南 4 条', dirs[12].items.length, 4, 0);
+  check('TEE 模拟器 3 条', dirs[13].items.length, 3, 0);
   check('外链条目为 link 类型',
-    dirs[9].items.every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+    dirs[10].items.every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('书籍视频均为 mp4 且标记为 video',
-    dirs[10].items.every(i => i.kind === 'link' && /\.mp4$/.test(i.url) && i.video === true) ? 1 : 0, 1, 0);
+    dirs[11].items.every(i => i.kind === 'link' && /\.mp4$/.test(i.url) && i.video === true) ? 1 : 0, 1, 0);
   check('书籍视频分组带书籍出处说明',
-    /王辉/.test(dirs[10].note || '') && /978-7-5189-8028-4/.test(dirs[10].note || '') ? 1 : 0, 1, 0);
+    /王辉/.test(dirs[11].note || '') && /978-7-5189-8028-4/.test(dirs[11].note || '') ? 1 : 0, 1, 0);
   check('TTE 经胸切面为直达交互链接',
-    dirs[9].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[10].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含速查表 / 指南条目',
-    dirs[9].items.some(i => i.id === 'tee-cheat') &&
-    dirs[11].items.some(i => i.id === 'guide-tte-cn') &&
-    dirs[11].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
+    dirs[10].items.some(i => i.id === 'tee-cheat') &&
+    dirs[12].items.some(i => i.id === 'guide-tte-cn') &&
+    dirs[12].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
   check('模拟器含 CT2TEE / TEE Simulator 图谱',
-    dirs[12].items.some(i => /ct2tee/.test(i.url)) &&
-    dirs[12].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[13].items.some(i => /ct2tee/.test(i.url)) &&
+    dirs[13].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   check('器械支持 3 条（CRT / LAD / LVAD）', dirs[2].items.length, 3, 0);
   check('器械支持含 CRT 同步化',
     dirs[2].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
@@ -533,18 +533,23 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('大血管与急症含 ' + id,
       dirs[5].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病 3 条（分流判读 / 可手术性 / TOF 术后 PR）', dirs[6].items.length, 3, 0);
-  ['shd', 'pht-rev', 'tof-pr'].forEach(id => {
+  check('先天性心脏病 5 条（分流判读 / 可手术性 / TOF 术后 PR / Ebstein / DORV）', dirs[6].items.length, 5, 0);
+  ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
     check('先天性心脏病含 ' + id,
       dirs[6].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('负荷与功能试验 1 条（运动负荷超声）', dirs[7].items.length, 1, 0);
+  check('先心病术后残余病变 3 条（Mustard / Fontan / ASO）', dirs[7].items.length, 3, 0);
+  ['mustard', 'fontan', 'as-switch'].forEach(id => {
+    check('先心术后含 ' + id,
+      dirs[7].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+  });
+  check('负荷与功能试验 1 条（运动负荷超声）', dirs[8].items.length, 1, 0);
   check('负荷试验含 stress-echo',
-    dirs[7].items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
-  check('介入 TEE 评估 3 条（三尖瓣 / 二尖瓣 / TAVR）', dirs[8].items.length, 3, 0);
+    dirs[8].items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
+  check('介入 TEE 评估 3 条（三尖瓣 / 二尖瓣 / TAVR）', dirs[9].items.length, 3, 0);
   ['tr-interv', 'mv-interv', 'tavr'].forEach(id => {
     check('介入 TEE 评估含 ' + id,
-      dirs[8].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirs[9].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
 
@@ -715,6 +720,39 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.refresh();
   check('PVR 6 WU → 灰区需复评',
     /灰区/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  // —— v1.2.1：Ebstein / Mustard / Fontan ——
+  pgF.onLoad({ id: 'ebstein' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '16';
+  pgF.data.inputs[1].value = '1.6';
+  pgF.refresh();
+  check('下移指数 10 mm/m² → 符合 Ebstein',
+    /10\.0 mm\/m²/.test(pgF.data.out) && /符合 Ebstein/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  pgF.data.inputs[0].value = '6';
+  pgF.refresh();
+  check('下移指数 3.8 mm/m² → 未达显著下移',
+    /未达显著下移/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'mustard' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '9';
+  pgF.data.inputs[1].value = '2';
+  pgF.refresh();
+  check('体静脉挡板 9 mmHg → 建议干预评估',
+    /建议干预评估/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('肺静脉挡板 2 mmHg → 可接受',
+    /可接受/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'fontan' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '5';
+  pgF.data.inputs[1].value = '2';
+  pgF.refresh();
+  check('管道压差 5 mmHg → 明显梗阻',
+    /明显梗阻/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('开窗 2 mm → 偏小提示',
+    /偏小/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
   pgF.onLoad({ id: 'lvad' });
   pgF.onShow();
