@@ -101,6 +101,14 @@ const calcJs = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js')
 console.log('\n=== 4d. 公式集（目录 + 详情页） ===');
 if (appJson.pages.includes('pages/formula/formula')) ok('formula 详情页已注册');
 else bad('formula 详情页未注册');
+if (appJson.pages.includes('pages/video/video')) ok('video 站内播放页已注册');
+else bad('video 播放页未注册');
+const vidJs = fs.readFileSync(path.join(MP, 'pages/video/video.js'), 'utf8');
+if (vidJs.indexOf('.mp4') !== -1 && vidJs.indexOf('https:') !== -1) ok('video 页仅接受 https 的 mp4 地址');
+else bad('video 页未校验视频地址');
+const calcJs2 = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
+if (calcJs2.indexOf("'/pages/video/video?url='") !== -1) ok('目录点击 mp4 条目跳转站内播放页');
+else bad('目录未接入站内播放页');
 const tabCalc = appJson.tabBar.list.find(t => t.pagePath === 'pages/calculators/calculators');
 if (tabCalc && tabCalc.text === '公式集') ok('tabBar 页签名 = 公式集');
 else bad('tabBar 公式集页签名异常: ' + (tabCalc && tabCalc.text));
@@ -149,14 +157,14 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 39) ok('参考文献 39 条');
+if (EX.REFS.length === 40) ok('参考文献 40 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 
-console.log('\n=== 4f. 切面学习 / 切面指南 / TEE 模拟器（纯外链） ===');
-if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 3) ok('外链分组 3 个（切面学习 / 切面指南 / TEE 模拟器）');
-else bad('外链分组数异常');
+console.log('\n=== 4f. 切面学习 / 书籍视频 / 切面指南 / TEE 模拟器（纯外链） ===');
+if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 4) ok('外链分组 4 个（切面学习 / 书籍视频 / 切面指南 / TEE 模拟器）');
+else bad('外链分组数异常: ' + (EX.LINK_SECTIONS || []).length);
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
-if (linkIds.length === 12) ok('外链条目 12 条');
+if (linkIds.length === 37) ok('外链条目 37 条（12 + 书籍视频 25）');
 else bad('外链条目数异常: ' + linkIds.length);
 const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it =>
   !it.id || !it.title || !it.sub || String(it.url).indexOf('https://') !== 0));
@@ -169,8 +177,16 @@ else bad('外链条目定义不完整');
 const tteItem = EX.LINK_SECTIONS[0].items.filter(function (i) { return i.id === 'tte-sv'; })[0];
 if (tteItem && /TTE-HTML5-SV\/index\.html$/.test(tteItem.url)) ok('TTE 经胸切面为直达交互应用链接');
 else bad('TTE 经胸切面链接未直达交互应用');
-if (EX.LINK_SECTIONS[2].items.length === 3) ok('TEE 模拟器仅 3 条');
-else bad('TEE 模拟器条目数异常: ' + EX.LINK_SECTIONS[2].items.length);
+if (EX.LINK_SECTIONS[3].items.length === 3) ok('TEE 模拟器仅 3 条');
+else bad('TEE 模拟器条目数异常: ' + EX.LINK_SECTIONS[3].items.length);
+// 书籍视频：25 条 mp4 直链 + 书籍出处
+const bv = EX.LINK_SECTIONS.filter(function (s3) { return s3.id === 'bookvid'; })[0];
+if (bv && bv.items.length === 25) ok('书籍视频 25 条（第三章心血管系统 1–25）');
+else bad('书籍视频条目数异常: ' + (bv ? bv.items.length : 'missing'));
+if (bv && bv.items.every(function (it) { return /\.mp4$/.test(it.url); })) ok('书籍视频均为 mp4 直链');
+else bad('书籍视频存在非 mp4 链接');
+if (bv && /王辉/.test(bv.note || '') && /978-7-5189-8028-4/.test(bv.note || '')) ok('书籍视频标注编者与 ISBN');
+else bad('书籍视频缺少书籍出处');
 const extSrc = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
 if (extSrc.indexOf('EX.LINK_SECTIONS') !== -1) ok('目录页已接入 LINK_SECTIONS');
 else bad('目录页未接入 LINK_SECTIONS');

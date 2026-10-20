@@ -9,16 +9,18 @@
 
   <block wx:for="{{sections}}" wx:key="id" wx:for-item="sec">
     <view class="fx-group">{{sec.title}}</view>
+    <view wx:if="{{sec.note}}" class="fx-group__note">{{sec.note}}</view>
 
     <view class="fx-list">
       <view wx:for="{{sec.items}}" wx:key="id" wx:for-item="it"
             class="fx-item" hover-class="fx-item--tap"
-            data-kind="{{it.kind}}" data-id="{{it.id}}" data-url="{{it.url}}" bindtap="onOpen">
+            data-kind="{{it.kind}}" data-id="{{it.id}}" data-url="{{it.url}}"
+            data-title="{{it.title}}" bindtap="onOpen">
         <view class="fx-item__main">
           <view class="fx-item__n">{{it.title}}</view>
           <view class="fx-item__d">{{it.sub}}</view>
         </view>
-        <view class="fx-item__a">›</view>
+        <view class="fx-item__a">{{it.video ? '▶' : '›'}}</view>
       </view>
     </view>
   </block>

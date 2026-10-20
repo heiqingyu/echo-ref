@@ -449,11 +449,15 @@ check('首页已无延展阅读卡片', html.indexOf('page-index') < html.indexO
 check('评估内容块样式已内联', html.indexOf('.fx-tbl__c {') !== -1, true);
 check('参考文献样式已内联', html.indexOf('.ref-item__zh {') !== -1, true);
 check('版本行样式已内联', html.indexOf('.verline {') !== -1, true);
-check('版本号已注入（非 1.0.0）', /v1\.[01]\.[0-9]/.test(html), true);
+check('版本号已注入（非 1.0.0）', /v\d+\.\d+\.\d+/.test(html) && html.indexOf('v1.0.0') === -1, true);
 
 /* 切面学习 / TEE 模拟器：纯外链条目（不嵌图片与 iframe，省内存） */
 check('含 LINK_SECTIONS 外链数据', html.indexOf('LINK_SECTIONS') !== -1, true);
 check('含切面学习分组', (html.match(/title: '切面学习（视频）'/g) || []).length === 1, true);
+check('含书籍视频分组（25 条 mp4）',
+  html.match(/title: '实用超声规范化检查与操作（视频）'/g) &&
+  (html.match(/image\.medonhand\.com/g) || []).length === 1 &&
+  html.indexOf('978-7-5189-8028-4') !== -1, true);
 check('含 TEE 模拟器分组', (html.match(/title: 'TEE 模拟器'/g) || []).length === 1, true);
 check('含切面指南分组', (html.match(/title: '切面指南'/g) || []).length === 1, true);
 check('含 CT2TEE 模拟器链接', html.indexOf('ct2tee.agh.edu.pl') !== -1, true);

@@ -5,7 +5,8 @@
     "pages/formula/formula",
     "pages/valves/valves",
     "pages/segments/segments",
-    "pages/pediatric/pediatric"
+    "pages/pediatric/pediatric",
+    "pages/video/video"
   ],
   "window": {
     "backgroundTextStyle": "light",

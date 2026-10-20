@@ -840,10 +840,7 @@ function buildPublicHtml() {
   }
 
   // 6) 顶部说明改为发布版口径 + 免责声明
-  out = out.replace(
-    '<title>心脏超声参考值</title>',
-    '<title>心脏超声参考值 · 成人参考值 / EF / 儿童 Z 值 / 公式集</title>'
-  );
+  // 标题保持简短（用户要求线上只显示「心脏超声参考值」），不在此处加长
   out = out.replace(
     '<main class="main" id="main">',
     `<main class="main" id="main">

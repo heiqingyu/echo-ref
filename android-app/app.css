@@ -761,6 +761,17 @@ html, body {
   letter-spacing: 0.5px;
 }
 
+/* 分组说明（如书籍的编者 / 出版社 / ISBN） */
+.fx-gnote {
+  margin: 0 2px 8px;
+  padding: 7px 9px;
+  border-radius: 6px;
+  background: #eef2f9;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #5b6472;
+}
+
 .fx-list {
   background: var(--card);
   border-radius: 12px;
