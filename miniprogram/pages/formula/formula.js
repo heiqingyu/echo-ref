@@ -27,7 +27,15 @@ function toBlocks(blocks) {
     if (b.kind === 'table') {
       return { kind: 'table', heads: b.heads, rows: b.rows, cols: b.heads.length, warn: !!b.warn };
     }
-    return { kind: b.kind, text: b.text, warn: !!b.warn };
+    const o = { kind: b.kind, text: b.text, warn: !!b.warn };
+    // 桥接块带的计算器 id → 标题，渲染成可点胶囊
+    if (b.links && b.links.length) {
+      o.links = b.links.map(function (id) {
+        const g = CG.groupOf(id);
+        return { id: id, n: g ? g.title : id };
+      });
+    }
+    return o;
   });
 }
 
@@ -84,8 +92,18 @@ Page({
         return { key: f.k, name: f.n, unit: f.u, value: cache[f.k] || '' };
       });
       // 选项组（性别 / 心律 / 节段总数 …）：缺省取第一项，选择结果另存 optsV
+      // ★ 性别类按「EF·参考值」页录入的性别预填，避免每次都要手点
+      const prof0 = app.globalData.profile || {};
       const opts = (g.opts || []).map(function (o) {
-        return { k: o.k, n: o.n, list: o.list, v: cache[o.k] !== undefined ? cache[o.k] : o.list[0][0] };
+        if (cache[o.k] !== undefined) {
+          return { k: o.k, n: o.n, list: o.list, v: cache[o.k] };
+        }
+        const isSex = o.list.some(function (c) { return c[0] === 'm' && c[1] === '男'; }) &&
+          o.list.some(function (c) { return c[0] === 'f' && c[1] === '女'; });
+        return {
+          k: o.k, n: o.n, list: o.list,
+          v: isSex ? (prof0.sex === 'female' ? 'f' : 'm') : o.list[0][0],
+        };
       });
       const optsV = {};
       opts.forEach(function (o) { optsV[o.k] = o.v; });
@@ -94,7 +112,7 @@ Page({
         mode: 'calc',
         title: g.title,
         note: g.note,
-        blocks: [],
+        blocks: toBlocks(g.blocks || []),
         refs: [],
         inputs: inputs,
         opts: opts,
@@ -150,6 +168,14 @@ Page({
     });
     this.setData({ inputs: inputs, collapseV: '', signsV: '', out: '', hasOut: false });
     this.saveCache();
+  },
+
+  /** 点「相关计算」胶囊：跳到公式集里对应的计算器（性别 / BSA 由 profile 自动带入） */
+  onJump(e) {
+    const id = e && e.currentTarget && e.currentTarget.dataset
+      ? e.currentTarget.dataset.id : '';
+    if (!id) return;
+    wx.navigateTo({ url: '/pages/formula/formula?id=' + id });
   },
 
   /** 把当前输入写回缓存 */
@@ -966,12 +992,17 @@ Page({
         const r = calc.rvDpDt(v.rdt);
         out = r.error ? r.error : 'RV dP/dt ≈ ' + calc.fmt(r.dpdt, 0) + ' mmHg/s · ' + r.text;
       }
-    } else if (gid === 'wilkins') {
-      // —— Wilkins 形态评分 ——
+    } else if (gid === 'wilkins' || gid === 'mitral') {
+      // —— Wilkins 形态评分（二尖瓣评估页内嵌同一套算法）——
       if (valid(v.wk1) || valid(v.wk2) || valid(v.wk3) || valid(v.wk4)) {
         const r = calc.wilkinsScore(v.wk1, v.wk2, v.wk3, v.wk4);
-        out = r.error ? r.error
-          : 'Wilkins 总分 ' + r.total + ' / 16 · ' + r.text;
+        if (r.error) out = r.error;
+        else {
+          const detail = r.items.map(function (it) {
+            return it.n.replace('瓣叶', '') + ' ' + it.score;
+          }).join(' · ');
+          out = 'Wilkins ' + r.total + ' / 16（' + detail + '）；' + r.text + '；' + r.worstText;
+        }
       }
     } else if (gid === 'vcw') {
       // —— 缩流颈宽度 ——
@@ -1070,6 +1101,57 @@ Page({
           }).join(' / ');
           const parts = [segTxt, r.text];
           if (r.ascIndexText) parts.push(r.ascIndexText);
+          out = parts.join('；');
+        }
+      }
+    } else if (gid === 'evp') {
+      // —— E/Vp：左房压估测 ——
+      if (valid(v.evpe) && valid(v.evpvp)) {
+        const r = calc.evpRatio(v.evpe, v.evpvp);
+        if (r.error) out = r.error;
+        else {
+          const parts = ['E/Vp ' + calc.fmt(r.ratio, 2), r.vpText, r.text];
+          if (r.note) parts.push(r.note);
+          out = parts.join('；');
+        }
+      }
+    } else if (gid === 'lastiff') {
+      // —— 左房僵硬度 = E/e′ ÷ LARS ——
+      if (valid(v.lsee) && valid(v.lslars)) {
+        const r = calc.laStiffness(v.lsee, v.lslars);
+        if (r.error) out = r.error;
+        else {
+          const parts = ['LA stiffness ' + calc.fmt(r.stiffness, 2), r.text];
+          if (r.note) parts.push(r.note);
+          out = parts.join('；');
+        }
+      }
+    } else if (gid === 'vtir') {
+      // —— RVOT / LVOT VTI 比 ——
+      if (valid(v.vtrvo) && valid(v.vtrlo)) {
+        const r = calc.vtiRatio(v.vtrvo, v.vtrlo);
+        out = r.error ? r.error : 'VTI 比 ' + calc.fmt(r.ratio, 2) + '；' + r.text;
+      }
+    } else if (gid === 'lvnc') {
+      // —— 致密化不全 NC/C 比 ——
+      if (valid(v.lnvnc) && valid(v.lnvc)) {
+        const r = calc.lvncRatio(v.lnvnc, v.lnvc);
+        if (r.error) out = r.error;
+        else {
+          const parts = ['NC/C ' + calc.fmt(r.ratio, 2), r.text];
+          if (r.note) parts.push(r.note);
+          out = parts.join('；');
+        }
+      }
+    } else if (gid === 'phprob') {
+      // —— 超声肺高压可能性（2022 ESC/ERS 三步法）——
+      if (valid(v.phv) || valid(v.phrvotat) || ov.phsign === 'y') {
+        const r = calc.phLikelihood(v.phv, ov.phsign === 'y', v.phrvotat);
+        if (r.error) out = r.error;
+        else {
+          const parts = ['可能性 ' + r.prob, r.text];
+          if (r.atText) parts.push(r.atText);
+          if (r.note) parts.push(r.note);
           out = parts.join('；');
         }
       }

@@ -43,11 +43,13 @@
     <view class="card__title refs-hd {{refsOpen ? 'refs-hd--open' : ''}}"
           bindtap="onToggleRefs">
       <text class="refs-hd__t">参考文献</text>
-      <text class="refs-hd__n">{{refsCount}} 条</text>
+      <text class="refs-hd__n">{{refsCount}} 条 · {{refsPdf}} 条附直链</text>
       <text class="refs-hd__a">›</text>
     </view>
     <view class="card__desc">
-      本工具全部数据与分级标准的来源。详情页底部会标注该条目使用的文献编号，点标题展开全部。
+      本工具全部数据与分级标准的来源（含 ASE 官方指南 PDF 直链，切面指南已并入此处）。
+      详情页底部会标注该条目使用的文献编号，点标题展开全部；点条目上的「PDF / 中文 PDF」
+      复制链接，粘贴到手机浏览器即可打开。
     </view>
 
     <view wx:if="{{refsOpen}}">
@@ -58,6 +60,11 @@
           <view class="ref-item__en">{{item.en}}</view>
           <view class="ref-item__where">{{item.where}}</view>
           <view class="ref-item__use">用于：{{item.use}}</view>
+          <view wx:if="{{item.dl.length}}" class="ref-dl">
+            <view wx:for="{{item.dl}}" wx:for-item="lk" wx:key="u"
+                  class="ref-dl__i" hover-class="ref-dl__i--tap"
+                  data-url="{{lk.u}}" catchtap="onCopyLink">{{lk.t}}</view>
+          </view>
         </view>
       </view>
     </view>

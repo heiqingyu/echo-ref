@@ -1709,19 +1709,89 @@ function rvDpDt(dtMs) {
  * ════════════════════════════════════════════════════════════════ */
 
 /**
- * Wilkins 二尖瓣形态评分（4 项各 1–4 分，总分 4–16）
- *   瓣叶厚度 / 钙化 / 活动度 / 瓣下增厚；≤8 分适合经皮球囊二尖瓣成形（PBMV）
+ * Wilkins 二尖瓣形态评分：四项 × 1–4 分，总分 4–16
+ *
+ *   按原始文献顺序：① 瓣叶活动度 ② 瓣叶增厚 ③ 瓣叶钙化 ④ 瓣下增厚
+ *   每一项的 1/2/3/4 分都有明确的形态学定义（见 WILKINS_ITEMS），
+ *   评分靠对照描述打，不是凭感觉给个数字——这也是它主观性大的根源，
+ *   建议由有经验的医师复核，并在报告里写明哪一项扣分最多。
+ *
+ *   ≤8 适合 PBMV；9–11 边缘区需个体化；≥12 优先外科
  */
-function wilkinsScore(leaflet, calc, mobility, subvalv) {
-  const arr = [leaflet, calc, mobility, subvalv];
+const WILKINS_ITEMS = [
+  {
+    k: 'wk1', n: '瓣叶活动度', en: 'Mobility',
+    levels: [
+      '瓣叶活动良好，仅瓣尖部受限',
+      '瓣叶中部与基底部活动正常，瓣尖及部分中部受限',
+      '瓣叶仅基底部有活动',
+      '瓣叶无活动，全部僵硬',
+    ],
+  },
+  {
+    k: 'wk2', n: '瓣叶增厚', en: 'Thickening',
+    levels: [
+      '接近正常（≤3 mm）',
+      '边缘增厚 4–5 mm，中部正常',
+      '中部增厚 5–8 mm，边缘正常',
+      '全部增厚 >8 mm',
+    ],
+  },
+  {
+    k: 'wk3', n: '瓣叶钙化', en: 'Calcification',
+    levels: [
+      '无钙化，或仅单个小钙化点',
+      '散在钙化，局限于瓣叶边缘',
+      '钙化延伸至瓣叶中部',
+      '大部分瓣叶钙化',
+    ],
+  },
+  {
+    k: 'wk4', n: '瓣下增厚', en: 'Subvalvular',
+    levels: [
+      '瓣下腱索轻度增厚，长度正常',
+      '腱索增厚累及近端 1/3',
+      '腱索增厚累及远端 1/3',
+      '全部腱索增厚缩短，并累及乳头肌',
+    ],
+  },
+];
+
+function wilkinsScore(mobility, thick, calc, subvalv) {
+  const arr = [mobility, thick, calc, subvalv];
   const ok = arr.every(function (x) { return x >= 1 && x <= 4; });
   if (!ok) return { error: '四项均需填 1–4 分（1 最轻、4 最重）' };
   const total = arr.reduce(function (a, b) { return a + b; }, 0);
+  const items = WILKINS_ITEMS.map(function (it, i) {
+    return {
+      k: it.k,
+      n: it.n,
+      score: arr[i],
+      desc: it.levels[arr[i] - 1],
+    };
+  });
+  // 扣分最多的那一项：PBMV 前最该关注的形态限制
+  let worst = items[0];
+  items.forEach(function (it) { if (it.score > worst.score) worst = it; });
+  let text;
+  let level;
+  if (total <= 8) {
+    level = 1;
+    text = 'Wilkins ≤8：瓣膜形态适合经皮球囊二尖瓣成形（PBMV）';
+  } else if (total <= 11) {
+    level = 2;
+    text = 'Wilkins 9–11：边缘区，需结合年龄、合并症与外科风险个体化决定';
+  } else {
+    level = 3;
+    text = 'Wilkins ≥12：形态差，优先外科';
+  }
   return {
     total: total,
-    text: total <= 8
-      ? 'Wilkins ≤8：瓣膜形态适合经皮球囊二尖瓣成形（PBMV）'
-      : 'Wilkins >8：形态不适合 PBMV，优先考虑外科',
+    items: items,
+    level: level,
+    worst: worst.n,
+    worstText: '扣分最多的是「' + worst.n + '」（' + worst.score + ' 分：' + worst.desc + '）',
+    text: text,
   };
 }
 
@@ -1897,6 +1967,128 @@ function fmt(n, dec) {
   return Number(n).toFixed(dec === undefined ? 2 : dec);
 }
 
+/* ════════════════════════════════════════════════════════════════
+ * v1.3.2 新增：E/Vp · 左房僵硬度 · VTI 比 · 致密化比 · 肺高压概率
+ *   补的是「跨指标派生量」——现有 53 项里每个单项都能算，
+ *   但把两项凑成一个判读量的算法一直缺，而报告里恰恰要写这个结论。
+ * ════════════════════════════════════════════════════════════════ */
+
+/**
+ * E/Vp（E 峰流速 / 血流传播速度）
+ *   Vp 用彩色 M 型在四腔切面测（cm/s）；E 峰也用 cm/s，同单位相除
+ *   正常 E/Vp ≤1.5；>1.5 提示 PCWP >15 mmHg；>2.5 提示 >18 mmHg
+ *   Vp 本身 <45 cm/s 即提示左室松弛受损
+ *   Vp 正常而 E/Vp 升高时，E 峰是被容量负荷或 MR 抬起来的，不是松弛问题
+ */
+function evpRatio(eCm, vpCm) {
+  if (!(eCm > 0) || !(vpCm > 0)) return { error: '需填写 E 峰速度与 Vp（都用 cm/s）' };
+  const r = eCm / vpCm;
+  const out = {
+    ratio: r,
+    vp: vpCm,
+    vpText: vpCm < 45 ? 'Vp <45 cm/s：左室松弛受损' : 'Vp 正常（≥45 cm/s）',
+  };
+  if (r > 2.5) { out.level = 3; out.text = 'E/Vp >2.5（约 PCWP >18 mmHg）：左房压明显升高'; }
+  else if (r > 1.5) { out.level = 2; out.text = 'E/Vp >1.5（约 PCWP >15 mmHg）：左房压升高'; }
+  else { out.level = 1; out.text = 'E/Vp 正常（≤1.5）'; }
+  if (vpCm >= 45 && r > 1.5) {
+    out.note = 'Vp 正常而 E/Vp 仍高：E 峰多半被容量负荷或二尖瓣反流抬高，别直接判「松弛受损」，先看 LA 容积与 TR 速度';
+  }
+  return out;
+}
+
+/**
+ * 左房僵硬度 LA stiffness = E/e′ ÷ LARS
+ *   LARS 填正数百分值（如 25 表示 25%），不再额外乘 100
+ *   ≤0.47 正常；>0.47 提示左房僵硬（HFpEF 的独立预测因子）；>0.60 明显升高
+ *   意义：E/e′ 只反映压力，除以泵血效能才反映「心房壁有多硬」
+ */
+function laStiffness(ee, larsPct) {
+  if (!(ee > 0) || !(larsPct > 0)) return { error: '需填写 E/e′ 与 LARS（LARS 填正数百分值）' };
+  const st = ee / larsPct;
+  const out = { ee: ee, lars: larsPct, stiffness: st };
+  if (st > 0.6) { out.level = 3; out.text = 'LA stiffness >0.60：左房明显僵硬，HFpEF 可能性高'; }
+  else if (st > 0.47) { out.level = 2; out.text = 'LA stiffness >0.47：左房僵硬，支持 HFpEF'; }
+  else { out.level = 1; out.text = 'LA stiffness 正常（≤0.47）'; }
+  if (larsPct < 18) out.note = 'LARS 本身已明显减低（<18%），比值可能被「分母小」放大，需结合 LA 容积确认';
+  return out;
+}
+
+/**
+ * RVOT / LVOT 的 VTI 比（无分流时的 Qp/Qs 替代）
+ *   正常 0.7–1.05；>1.2 提示左向右分流；<0.6 提示肺血流减少
+ *   比直接算 Qp/Qs 稳：不需要测两处直径（直径平方误差被放大两次）
+ */
+function vtiRatio(rvotVti, lvotVti) {
+  if (!(rvotVti > 0) || !(lvotVti > 0)) return { error: '需填写 RVOT 与 LVOT 的 VTI（同单位）' };
+  const r = rvotVti / lvotVti;
+  const out = { ratio: r };
+  if (r > 1.2) { out.level = 3; out.text = 'RVOT/LVOT VTI >1.2：提示左向右分流，可近似当作 Qp/Qs'; }
+  else if (r > 1.05) { out.level = 2; out.text = 'VTI 比 1.05–1.2：临界，小量左向右分流可能'; }
+  else if (r < 0.6) { out.level = 2; out.text = 'VTI 比 <0.6：肺血流低于体循环，考虑右向左分流或肺动脉血流受限'; }
+  else { out.level = 1; out.text = 'VTI 比正常（0.7–1.05）'; }
+  return out;
+}
+
+/**
+ * 左室心肌致密化不全：非致密层 / 致密层厚度比
+ *   Jenni（超声，收缩末期短轴）>2.0；Petersen（CMR，舒张末期）>2.3
+ *   ★ 单靠比值不能确诊——三个条件缺一不可：
+ *     ① 两层结构分明（致密薄层 + 非致密厚层）
+ *     ② NC/C 超阈值
+ *     ③ 深陷隐窝与左室腔血流相通（彩色多普勒可见穿入血流）
+ */
+function lvncRatio(ncMm, compMm) {
+  if (!(ncMm > 0) || !(compMm > 0)) return { error: '需填写非致密层与致密层厚度（同一部位、同一时相）' };
+  const r = ncMm / compMm;
+  const out = { ratio: r, nc: ncMm, comp: compMm };
+  if (r > 2.3) { out.level = 3; out.text = 'NC/C >2.3：同时满足 Jenni 与 Petersen 阈值，符合致密化不全的形态标准'; }
+  else if (r > 2.0) { out.level = 2; out.text = 'NC/C 2.0–2.3：满足超声（Jenni）阈值，未达 CMR 阈值，需结合隐窝血流确认'; }
+  else { out.level = 1; out.text = 'NC/C ≤2.0：未达致密化不全的形态阈值'; }
+  out.note = '比值必须同部位同时相；把乳头肌与小梁误当非致密层是假阳性最常见的原因';
+  return out;
+}
+
+/**
+ * 超声肺高压可能性（2022 ESC/ERS 三步法）
+ *   trVmax ≤2.8 且无右心征象 → 低
+ *   trVmax ≤2.8 有征象 / 2.9–3.4 无征象 → 中
+ *   2.9–3.4 有征象 / >3.4（无论有无）→ 高
+ *   右心征象：RV/LV >1、室间隔变平或矛盾运动、RVOT 加速时间 <105 ms、
+ *             右房面积 >18 cm²、IVC >21 mm 不塌陷、收缩期切迹
+ *   ★ 这只是「可能性」，确诊必须右心导管（mPAP >20 mmHg）
+ */
+function phLikelihood(trVmax, hasSigns, rvotAt) {
+  const signs = !!hasSigns;
+  const atLow = rvotAt > 0 && rvotAt < 105;
+  const out = { vmax: trVmax, signs: signs };
+  if (!(trVmax > 0)) {
+    if (signs || atLow) {
+      out.level = 2;
+      out.prob = '中';
+      out.text = '无可用 TR 流速，但存在右心负荷征象：肺高压可能性中等，需设法测 TR / 肺动脉反流速度';
+    } else {
+      out.level = 1;
+      out.prob = '低';
+      out.text = '无可用 TR 流速且无右心征象：暂不能评估，建议多切面试 TR';
+    }
+    return out;
+  }
+  if (trVmax > 3.4) {
+    out.level = 3; out.prob = '高';
+    out.text = 'TR Vmax ' + trVmax.toFixed(1) + ' m/s >3.4：肺高压可能性高';
+  } else if (trVmax > 2.8) {
+    if (signs || atLow) { out.level = 3; out.prob = '高'; out.text = 'TR Vmax 2.9–3.4 伴右心征象：肺高压可能性高'; }
+    else { out.level = 2; out.prob = '中'; out.text = 'TR Vmax 2.9–3.4 无右心征象：肺高压可能性中等'; }
+  } else {
+    if (signs || atLow) { out.level = 2; out.prob = '中'; out.text = 'TR Vmax ≤2.8 但存在右心征象：肺高压可能性中等'; }
+    else { out.level = 1; out.prob = '低'; out.text = 'TR Vmax ≤2.8 且无右心征象：肺高压可能性低'; }
+  }
+  if (atLow) out.atText = 'RVOT 加速时间 ' + Math.round(rvotAt) + ' ms（<105 ms）：支持肺血管阻力升高';
+  out.note = '超声只给「可能性」，确诊需右心导管（mPAP >20 mmHg）；TR 速度受血容量、心律、右室流出道形态影响，别单指标定论';
+  return out;
+}
+
 module.exports = {
   csaFromDiameter,
   strokeVolume,
@@ -1976,11 +2168,18 @@ module.exports = {
   resistanceIndices,
   rvDpDt,
   // —— v1.3.0 第三批：瓣膜与舒张细节 ——
+  WILKINS_ITEMS,
   wilkinsScore,
   vcwGrade,
   laEmptying,
   quickRatios,
   lvmHeightIndex,
+  // —— v1.3.2 新增：跨指标派生量 ——
+  evpRatio,
+  laStiffness,
+  vtiRatio,
+  lvncRatio,
+  phLikelihood,
   // —— v1.3.0 第四批：先心 / 心肌 / 耦联 ——
   paIndex,
   apicalSparing,

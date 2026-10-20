@@ -122,7 +122,7 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 53) ok('公式集定义 53 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 58) ok('公式集定义 58 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
@@ -130,7 +130,7 @@ if (calcSecIds.join('/') === 'hemo/right/vq/recon/score/ivs')
   ok('计算组 6 个（血流动力学 / 右心肺循环 / 瓣膜舒张 / 重构心肌 / 评分与室壁运动 / 介入尺寸与先心）');
 else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1);
-if (!badSec.length) ok('53 条公式的 sec 归属均合法');
+if (!badSec.length) ok('58 条公式的 sec 归属均合法');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
@@ -138,8 +138,8 @@ const nVq = CG.GROUPS.filter(g => g.sec === 'vq').length;
 const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
 const nScore = CG.GROUPS.filter(g => g.sec === 'score').length;
 const nIvs = CG.GROUPS.filter(g => g.sec === 'ivs').length;
-if (nHemo === 14 && nRight === 12 && nVq === 9 && nRecon === 10 && nScore === 3 && nIvs === 5)
-  ok('分组条目数 14 / 12 / 9 / 10 / 3 / 5');
+if (nHemo === 15 && nRight === 13 && nVq === 10 && nRecon === 12 && nScore === 3 && nIvs === 5)
+  ok('分组条目数 15 / 13 / 10 / 12 / 3 / 5');
 else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
@@ -177,7 +177,7 @@ const EX = require(exPath);
 if (EX.BRIEF_SECTIONS.length === 9) ok('评估内容 9 个分组（器械 / 心腔与应变 / 瓣膜 / 心肌病变 / 大血管与急症 / 先天性心脏病 / 先心术后 / 负荷试验 / 介入 TEE）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,lf-lg,ie,hcm,amyloid,rcm-strain,aorta,pe,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr') ok('评估条目 = 36 条（器械 3 + 心腔 11 + 瓣膜 4 + 心肌 3 + 大血管 3 + 先心 5 + 先心术后 3 + 负荷 1 + 介入 3）');
+if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr') ok('评估条目 = 41 条（器械 3 + 心腔 12 + 瓣膜 5 + 心肌 5 + 大血管 4 + 先心 5 + 先心术后 3 + 负荷 1 + 介入 3）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -191,14 +191,28 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 40) ok('参考文献 40 条');
+if (EX.REFS.length === 48) ok('参考文献 48 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
+// 文献直链：只挂官方/免费可直连的 PDF，需登录下载的坚决不挂
+const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
+if (dlAll.length >= 45) ok('文献直链 ' + dlAll.length + ' 条（官方 PDF / 免费全文）');
+else bad('文献直链过少: ' + dlAll.length);
+if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文/.test(d.t)))
+  ok('每条直链含 https 地址与类型标注');
+else bad('存在不合规的文献直链');
+if (EX.REFS.filter(r => (r.dl || []).length).length >= 35)
+  ok('带直链的文献 ' + EX.REFS.filter(r => (r.dl || []).length).length + ' 条（≥35）');
+else bad('带直链的文献过少');
+if (dlAll.filter(d => /asecho\.org\/wp-content\/uploads\/.+\.pdf$/.test(d.u)).length >= 20)
+  ok('ASE 官方 PDF 直链 ≥ 20 条');
+else bad('ASE 官方 PDF 直链不足');
 
-console.log('\n=== 4f. 切面学习（含操作规范专辑）/ 切面指南 / TEE 模拟器（纯外链） ===');
-if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 3) ok('外链分组 3 个（切面学习 / 切面指南 / TEE 模拟器）');
+console.log('\n=== 4f. 切面学习（含操作规范专辑）/ TEE 模拟器（纯外链） ===');
+console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 R11 / R12 / R41）');
+if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 模拟器）');
 else bad('外链分组数异常: ' + (EX.LINK_SECTIONS || []).length);
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
-if (linkIds.length === 13) ok('外链条目 13 条（12 条单条外链 + 操作规范专辑 1 条）');
+if (linkIds.length === 9) ok('外链条目 9 条（8 条单条外链 + 操作规范专辑 1 条）');
 else bad('外链条目数异常: ' + linkIds.length);
 const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it => {
   if (!it.id || !it.title || !it.sub) return true;
@@ -207,15 +221,24 @@ const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it => {
 }));
 if (!linkBad) ok('每条外链含 id/标题/说明/https 地址（专辑须含子条目）');
 else bad('外链条目定义不完整');
-['tee-sv', 'tte-sv', 'tee-cheat', 'guide-tte-cn', 'guide-tee-28', 'sim-toronto', 'sim-ct2tee', 'sim-atlas'].forEach(function (id) {
+['tee-sv', 'tte-sv', 'tee-cheat', 'sim-toronto', 'sim-ct2tee', 'sim-atlas'].forEach(function (id) {
   if (linkIds.indexOf(id) !== -1) ok('外链条目存在: ' + id);
   else bad('缺少外链条目: ' + id);
+});
+if (linkIds.indexOf('guide-tte-cn') === -1 && linkIds.indexOf('guide-tee-28') === -1)
+  ok('切面指南条目已从外链移除（并入参考文献）');
+else bad('切面指南仍留在外链分组里');
+['R11', 'R12', 'R41'].forEach(function (rid) {
+  const r = EX.REFS.filter(function (x) { return x.id === rid; })[0];
+  if (r && (r.dl || []).length && r.dl.some(function (d) { return /\.pdf$/.test(d.u); }))
+    ok('切面指南 PDF 已并入文献 ' + rid);
+  else bad('文献 ' + rid + ' 缺少切面指南 PDF 直链');
 });
 const tteItem = EX.LINK_SECTIONS[0].items.filter(function (i) { return i.id === 'tte-sv'; })[0];
 if (tteItem && /TTE-HTML5-SV\/index\.html$/.test(tteItem.url)) ok('TTE 经胸切面为直达交互应用链接');
 else bad('TTE 经胸切面链接未直达交互应用');
-if (EX.LINK_SECTIONS[2].items.length === 3) ok('TEE 模拟器仅 3 条');
-else bad('TEE 模拟器条目数异常: ' + (EX.LINK_SECTIONS[2] ? EX.LINK_SECTIONS[2].items.length : 'missing'));
+if (EX.LINK_SECTIONS[1].items.length === 3) ok('TEE 模拟器仅 3 条');
+else bad('TEE 模拟器条目数异常: ' + (EX.LINK_SECTIONS[1] ? EX.LINK_SECTIONS[1].items.length : 'missing'));
 // 操作规范：整本书收成 1 个专辑，且排在「切面学习（视频）」第一条
 const views = EX.LINK_SECTIONS.filter(function (s3) { return s3.id === 'views'; })[0];
 const bvAlb = views ? views.items.filter(function (it) { return it.album; })[0] : null;
@@ -504,8 +527,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
       }
     });
   });
-  (bridged.length === 23) ? ok('23 个判读条目挂上「相关计算」桥接')
-    : bad('桥接条目数 ' + bridged.length + '（期望 23）');
+  (bridged.length === 28) ? ok('28 个判读条目挂上「相关计算」桥接')
+    : bad('桥接条目数 ' + bridged.length + '（期望 28）');
   bridged.every(function (b) { return b.text.indexOf('公式集 → ') !== -1; })
     ? ok('桥接文案统一指向「公式集 → 组 · 计算器」')
     : bad('桥接文案格式不一致');
@@ -542,6 +565,83 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
   bridged.forEach(function (b) { secs[b.sec] = 1; });
   (Object.keys(secs).length >= 6) ? ok('桥接覆盖 6 个以上判读分组（' + Object.keys(secs).join('/') + '）')
     : bad('桥接只覆盖 ' + Object.keys(secs).length + ' 个判读分组');
+}
+
+// ── 11. 相关计算胶囊（CALC_LINKS）与 Wilkins 单一真相 ──
+{
+  const EC = require(path.join(MP, 'utils', 'echo-calc.js'));
+
+  // 11.1 CALC_LINKS 的 id 必须真实存在于公式集
+  const allIds = CG.GROUPS.map(g => g.id);
+  const badId = [];
+  Object.keys(EX.CALC_LINKS).forEach(function (k) {
+    (EX.CALC_LINKS[k] || []).forEach(function (id) {
+      if (allIds.indexOf(id) === -1) badId.push(k + '→' + id);
+    });
+  });
+  (!badId.length) ? ok('胶囊引用的计算器 id 全部存在')
+    : bad('胶囊引用了不存在的计算器：' + badId.join(' / '));
+
+  // 11.2 CALC_LINKS 与 CALC_HINTS 必须是同一批条目（一个出文字、一个出胶囊）
+  const linked = [], hinted = [];
+  EX.BRIEF_SECTIONS.forEach(function (sec) {
+    (sec.items || []).forEach(function (it) {
+      const last = (it.blocks || [])[it.blocks.length - 1];
+      if (last && last.links) linked.push(it.id);
+      if (last && last.text && last.text.indexOf('相关计算（通用量）') !== -1) hinted.push(it.id);
+    });
+  });
+  linked.join(',') === hinted.join(',') ? ok('胶囊条目与文字桥接条目一致（' + linked.length + ' 条）')
+    : bad('胶囊与文字桥接条目不一致：' + linked.length + ' vs ' + hinted.length);
+
+  // 11.3 每个挂胶囊的条目，id 数应为 1–4（太少没意义、太多挤成一排）
+  const badCount = linked.filter(function (id) {
+    const it = [];
+    EX.BRIEF_SECTIONS.forEach(function (sec) {
+      (sec.items || []).forEach(function (x) {
+        if (x.id === id) it.push((x.blocks[x.blocks.length - 1].links || []).length);
+      });
+    });
+    return it[0] < 1 || it[0] > 4;
+  });
+  (!badCount.length) ? ok('每条桥接挂 1–4 个胶囊')
+    : bad('胶囊数量越界：' + badCount.join(', '));
+
+  // 11.4 Wilkins 分项：4 项、每项 4 档、顺序为活动度→增厚→钙化→瓣下
+  const WK = EC.WILKINS_ITEMS || [];
+  (WK.length === 4) ? ok('Wilkins 分项 4 项')
+    : bad('Wilkins 分项数 ' + WK.length);
+  (WK.every(it => it.levels.length === 4)) ? ok('Wilkins 每项 4 个分档')
+    : bad('Wilkins 分档数不齐');
+  (WK.map(it => it.n).join('/') === '瓣叶活动度/瓣叶增厚/瓣叶钙化/瓣下增厚')
+    ? ok('Wilkins 顺序与原始文献一致（活动度 → 增厚 → 钙化 → 瓣下）')
+    : bad('Wilkins 顺序异常：' + WK.map(it => it.n).join('/'));
+
+  // 11.5 二尖瓣页手写的评分表必须与引擎的分档描述逐字一致，防止两处漂移
+  const mit = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'valve')[0]
+    .items.filter(i => i.id === 'mitral')[0];
+  const wkTables = (mit.blocks || []).filter(function (b) {
+    return b.kind === 'table' && /瓣叶活动度|瓣叶增厚|瓣叶钙化|瓣下增厚/.test(b.heads.join(' '));
+  });
+  (wkTables.length === 4) ? ok('二尖瓣页含 4 张 Wilkins 分档表')
+    : bad('二尖瓣页 Wilkins 表数 ' + wkTables.length);
+  const mismatch = [];
+  WK.forEach(function (it) {
+    const tb = wkTables.filter(t => t.heads.join(' ').indexOf(it.n) !== -1)[0];
+    if (!tb) { mismatch.push(it.n + '（缺表）'); return; }
+    it.levels.forEach(function (d, j) {
+      const row = tb.rows[j] || [];
+      if (row[0] !== String(j + 1) || row[1] !== d) mismatch.push(it.n + ' ' + (j + 1) + ' 分');
+    });
+  });
+  (!mismatch.length) ? ok('二尖瓣页评分表与引擎分档逐字一致')
+    : bad('二尖瓣页评分表与引擎不一致：' + mismatch.join(' / '));
+
+  // 11.6 二尖瓣页必须内嵌 wilkins 计算器（用户要求归位到病种页）
+  (mit.calc === 'wilkins') ? ok('二尖瓣页内嵌 Wilkins 计算器')
+    : bad('二尖瓣页未挂 calc: wilkins');
+  ((mit.fields || []).length === 4) ? ok('二尖瓣页 4 个打分输入')
+    : bad('二尖瓣页打分输入 ' + (mit.fields || []).length + ' 个');
 }
 
 console.log('\n' + '='.repeat(50));

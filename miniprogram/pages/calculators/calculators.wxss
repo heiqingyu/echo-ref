@@ -200,6 +200,27 @@
   line-height: 1.5;
 }
 
+/* 文献直链胶囊：点一下复制链接（ASE 官方 PDF / 中文 PDF / 免费全文） */
+.ref-dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 10rpx;
+}
+
+.ref-dl__i {
+  padding: 6rpx 18rpx;
+  font-size: 21rpx;
+  color: #1d4ed8;
+  background: #eff4ff;
+  border: 1rpx solid #dbe6ff;
+  border-radius: 999rpx;
+}
+
+.ref-dl__i--tap {
+  background: #dbe6ff;
+}
+
 /* ── 延展阅读 ── */
 .extlink {
   display: flex;

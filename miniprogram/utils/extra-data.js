@@ -111,7 +111,7 @@ const BRIEF_SECTIONS = [
         id: 'lvad',
         title: '机械辅助循环（LVAD）超声评估',
         sub: '入血道 / 出血道 · 泵速优化 · 抽吸事件',
-        source: ['R37', 'R5'],
+        source: ['R37', 'R5', 'R48'],
         blocks: [
           { kind: 'h', text: '一、先搞清楚血往哪里流' },
           { kind: 'text', text: '连续流 LVAD 把血从左室心尖的**入血道**抽走，经泵体从**出血道**（人工血管）泵入升主动脉。理解这条通路，就知道每一处该看什么：左室心尖看卸载是否充分，升主动脉看泵的前向血流，两者之间看主动脉瓣。' },
@@ -568,7 +568,7 @@ const BRIEF_SECTIONS = [
         id: 'strain',
         title: '心肌应变',
         sub: 'GLS · 分层应变 · 左房/右室应变',
-        source: ['R3', 'R4'],
+        source: ['R3', 'R4', 'R43'],
         blocks: [
           { kind: 'h', text: '采集规范（先规范，再看数值）' },
           {
@@ -687,6 +687,60 @@ const BRIEF_SECTIONS = [
         note: '三大类各自取最高分再相加（0–6 分）；LVMI 阈值按性别自动切换；NT-proBNP 按窦性心律阈值计算。',
       },
       {
+        id: 'diastolic',
+        title: '左室舒张功能分级',
+        sub: '2016 ASE/EACVI 四步法 · 2022 更新',
+        source: ['R16', 'R42'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '第一步：六个基本量' },
+          {
+            kind: 'table',
+            heads: ['参数', '正常', '异常', '备注'],
+            rows: [
+              ['间隔 e′', '≥7', '<7 cm/s', '组织多普勒，心尖四腔'],
+              ['侧壁 e′', '≥10', '<10 cm/s', ''],
+              ['平均 E/e′', '≤14', '>14', '侧壁与间隔取平均'],
+              ['LAVi', '≤34', '>34 mL/m²', '单平面面积长度法'],
+              ['TR Vmax', '≤2.8', '>2.8 m/s', '有 TR 束时必测'],
+              ['LARS（储备期）', '≥18', '<18%', '2022 新增，最敏感'],
+            ],
+          },
+          { kind: 'text', text: '**≥3 项异常** 提示左房压升高；**≤1 项异常** 且 E/A ≤0.8、E ≤50 cm/s 为 Ⅰ 级（松弛受损）。2 项异常落在灰区，不能定级。' },
+          { kind: 'h', text: '第二步：按 E/A 与异常项数分级' },
+          {
+            kind: 'table',
+            heads: ['分级', 'E/A', 'E 峰', '其他指标', '含义'],
+            rows: [
+              ['Ⅰ 级 松弛受损', '≤0.8', '≤50 cm/s', '≤1 项异常', '左房压正常'],
+              ['Ⅱ 级 假性正常', '0.8–2.0', '>50 cm/s', '2–3 项异常', '左房压升高'],
+              ['Ⅲ 级 限制性', '≥2.0', '—', '直接归此级', '左房压明显升高，预后差'],
+            ],
+          },
+          { kind: 'note', text: '**E/A 0.8–2.0 且只有 1 项异常 = 灰区，不能定级**。此时看 LARS、TR 速度，或做负荷超声（运动后 E/e′ 仍 >14 支持 HFpEF）。写「舒张功能不能定级」是合法且更诚实的结论。', warn: true },
+          { kind: 'h', text: '2022 ASE 更新了什么' },
+          { kind: 'text', text: '① Ⅱ/Ⅲ 级合并为「左房压升高」——因为两者处理相同，靠 E/A ≥2.0 再分出限制型；② LARS 成为第 5 个指标，且**最早出现异常**（常先于 E/e′ 升高）；③ 强调「不能定级」是允许的结论，不必硬凑。' },
+          { kind: 'h', text: '特殊情形怎么判' },
+          {
+            kind: 'table',
+            heads: ['情形', '处理'],
+            rows: [
+              ['房颤 / 心动过速', 'E/A 不可用。看间隔 e′、TR Vmax、LAVi、LARS，取 3–5 个周期平均'],
+              ['MS、重度 MR、二尖瓣环钙化', 'E/e′ 与 LARS 均失真，改看肺静脉血流、LA 容积、TR 速度'],
+              ['缩窄性心包炎', '看呼吸变异 >25%，不要套常规分级流程'],
+              ['HCM / 淀粉样变', '多为 Ⅱ–Ⅲ 级且 LARS 极低；此时病因诊断比定级更有意义'],
+              ['起搏心律 / LBBB', '充盈不同步，必须多周期平均'],
+              ['低血容量 / 脓毒症', 'E/A 可假性正常，扩容后复查更可靠'],
+            ],
+          },
+          { kind: 'note', text: '**没有单一指标能定舒张功能**。E/e′ 在年轻人与高动力状态可 >14，而房颤、重度 MR 时反而低估。分级是概率判断，不是判决——报告应写明用了哪几项、是否定级。', warn: true },
+          { kind: 'h', text: 'HFpEF 的两条评分路径' },
+          { kind: 'text', text: '**H2FPEF**（6 项，0–9 分，≥6 高度可能）偏临床 + 超声；**HFA-PEFF**（形态 / 功能 / 标志物三类，0–6 分）先算分再决定是否做负荷或侵入性检查。两者都在公式集「评分与室壁运动」组，可直接算分。' },
+          { kind: 'note', text: '**ASE 2025 已发布舒张功能与 HFpEF 诊断更新（R42）**，官方 PDF 直链见公式集页「参考文献」R42。本页仍按 2016 四步法组织（它仍是国内报告的主流口径），遇到与 2025 版不一致的阈值，以 R42 原文为准并在报告里写明依据版本。' },
+        ],
+        note: '分级依赖图像质量与节律；同一患者随访务必用同一套指标，否则「分级变化」可能只是测量方式变了。',
+      },
+      {
         id: 'peri',
         title: '心包积液与心脏压塞',
         sub: '半定量 · 压塞征象 · 缩窄鉴别',
@@ -708,6 +762,32 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '① 右房塌陷（舒张晚期 / 收缩期）；② 右室游离壁塌陷（舒张早期）；③ 吸气时三尖瓣 E 峰增高 >40%、二尖瓣 E 峰下降 >25%（呼吸变异）；④ 下腔静脉固定扩张（>21 mm 且不塌陷）。' },
           { kind: 'note', text: '心包填塞是临床—超声综合诊断：少量积液亦可在快速增加时致填塞；结合颈静脉怒张、低血压、奇脉。', warn: true },
           { kind: 'text', text: '心包增厚（>3–4 mm）伴钙化提示缩窄性心包炎可能，需与限制性心肌病鉴别（呼吸变异、室间隔摆动、充盈模式随呼吸变化）。' },
+          { kind: 'h', text: '压塞的时相学：谁在什么时候塌' },
+          {
+            kind: 'table',
+            heads: ['征象', '时相', '意义'],
+            rows: [
+              ['右房塌陷', '舒张末期（心室收缩前）', '最敏感，但低血容量也可见'],
+              ['右室游离壁塌陷', '舒张早期（三尖瓣开放后）', '特异性最高，提示压塞'],
+              ['右室舒张末塌陷', '舒张晚期', '压力已很高，濒临失代偿'],
+              ['左房塌陷', '心室收缩期', '少见，提示压力极高'],
+            ],
+          },
+          { kind: 'note', text: '右房塌陷「敏感但不特异」，右室塌陷「特异但出现晚」，两者要一起看。房颤时右房塌陷不可靠，只能靠右室与多普勒。', warn: true },
+          { kind: 'h', text: '积液定位与性质' },
+          { kind: 'text', text: '环周积液最常见；心脏术后、尿毒症、肿瘤可出现局限 / 包裹（右房旁、左室后壁、心尖）。超声不能定性，但内部自发回声、纤维条索、絮状物常提示血性或渗出性，最终以穿刺液送检为准。' },
+          { kind: 'h', text: '引流时机与方式' },
+          {
+            kind: 'table',
+            heads: ['情形', '处理'],
+            rows: [
+              ['压塞 + 血流动力学不稳', '立即引流，超声引导剑下入路首选'],
+              ['大量积液但血流动力学稳定', '24 h 内择期，先扩容维持前负荷'],
+              ['恶性 / 反复复发', '心包开窗或留置引流管'],
+              ['局限 / 包裹 / 术后', '必须影像定位，不可盲穿'],
+            ],
+          },
+          { kind: 'note', text: '单次引流不宜超过 1 L、速度不宜过快：右心充盈压骤降可致急性右心扩张与肺水肿，尿毒症与缩窄性心包炎尤其危险。', warn: true },
         ],
         note: '心包穿刺引流前需评估积液量、定位（剑下 / 心尖）、有无包裹及凝血状态。',
       },
@@ -778,7 +858,32 @@ const BRIEF_SECTIONS = [
           { kind: 'h', text: '患者—瓣膜不匹配（PPM）' },
           { kind: 'text', text: '主动脉瓣 PPM：有效开口面积指数 EOAI <0.85 cm²/m² 为轻度、<0.65 为重度；重度 PPM 与小瓣环女性预后不良相关。' },
           { kind: 'note', text: '人工瓣膜少量中心性反流多为生理性；瓣周漏（PAR）为异常，常因缝合问题，需结合溶血与血流动力学。', warn: true },
+          { kind: 'h', text: '按位置与类型分开判读' },
+          {
+            kind: 'table',
+            heads: ['位置 · 类型', '峰值流速', '平均压差', '注意'],
+            rows: [
+              ['主动脉位 · 机械双叶', '2.0–3.0 m/s', '<20 mmHg', '小号瓣（19–21 mm）压差偏高属正常'],
+              ['主动脉位 · 生物瓣', '2.0–3.0 m/s', '<20 mmHg', '支架瓣有效面积小于同尺寸机械瓣'],
+              ['二尖瓣位 · 机械', '1.5–2.0 m/s', '<5 mmHg', '压差 >5 先查血栓 / 血管翳'],
+              ['二尖瓣位 · 生物瓣', '1.5–2.0 m/s', '<6 mmHg', ''],
+              ['三尖瓣位 · 生物瓣', '0.6–1.5 m/s', '<6 mmHg', '机械瓣在右心易血栓，多用生物瓣'],
+            ],
+          },
+          { kind: 'h', text: '结构衰败 / 血栓 / 血管翳：三种「压差升高」怎么分' },
+          {
+            kind: 'table',
+            heads: ['情形', '表现', '处理'],
+            rows: [
+              ['结构衰败 SVD', '进行性压差升高或新发反流，无感染', '按 VARC-3 分期，随访或再干预'],
+              ['瓣膜血栓', '压差升高 + 瓣叶活动受限，可见团块', '抗凝后复查，多数可溶解'],
+              ['血管翳 pannus', '压差升高但无团块，起病隐匿', '抗凝无效，需手术'],
+              ['瓣周漏', '反流束位于瓣环外侧、高速射流', '评估溶血与心衰，重者封堵或再手术'],
+            ],
+          },
+          { kind: 'note', text: '机械瓣「压差一过性升高 + 瓣叶活动受限」按瓣膜血栓处理，不要直接判 SVD——两者处理方向完全相反（抗凝 vs 手术）。', warn: true },
           { kind: 'text', text: '评估必须对比术后基线（6–12 周复查）；随访中压差升高或新发反流提示结构衰败或血栓 / 血管翳。' },
+          { kind: 'text', text: '溶血线索：LDH 升高、结合珠蛋白降低、贫血，而超声只见少量反流——超声低估瓣周漏并不少见，怀疑时需 TEE。' },
         ],
         note: '人工瓣膜功能判读以“与基线比较”为核心，单次绝对值易误判。',
       },
@@ -786,7 +891,7 @@ const BRIEF_SECTIONS = [
         id: 'ctrcd',
         title: '肿瘤治疗相关心功能不全（CTRCD）',
         sub: 'GLS 相对下降 · 三级分档 · 监测节点',
-        source: ['R32', 'R3'],
+        source: ['R32', 'R3', 'R43'],
         fields: [
           { k: 'g0', n: '基线 GLS（负值）', u: '%' },
           { k: 'g1', n: '本次 GLS（负值）', u: '%' },
@@ -840,9 +945,15 @@ const BRIEF_SECTIONS = [
       {
         id: 'mitral',
         title: '二尖瓣疾病评估',
-        sub: '狭窄 MS · 反流 MR（定性 + 定量）',
-        source: ['R9'],
-        fields: [],
+        sub: '狭窄 MS（Wilkins 评分）· 反流 MR（定性 + 定量）',
+        source: ['R9', 'R45', 'R46'],
+        calc: 'wilkins',
+        fields: [
+          { k: 'wk1', n: '① 瓣叶活动度', u: '分' },
+          { k: 'wk2', n: '② 瓣叶增厚', u: '分' },
+          { k: 'wk3', n: '③ 瓣叶钙化', u: '分' },
+          { k: 'wk4', n: '④ 瓣下增厚', u: '分' },
+        ],
         blocks: [
           { kind: 'h', text: '二尖瓣狭窄 MS（定性 + 定量）' },
           {
@@ -867,6 +978,66 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'note', text: '原发病因决定随访策略：风湿性、退行性（脱垂 / 腱索断裂）、继发性（乳头肌缺血 / DCM）。偏心性射流易低估，需多切面确认。', warn: true },
+          { kind: 'h', text: '狭窄严重度的补充指标' },
+          { kind: 'text', text: '除面积外还要看峰值流速（重度 >2.0 m/s）与平均压差（重度 >10 mmHg）。压差随心率与流量变化，心率快时虚高，报压差必须同时报心率——理想是把心率校正到 60–80 次/分再判。' },
+          { kind: 'h', text: 'Wilkins 形态评分：每一项该给几分' },
+          { kind: 'text', text: '按**原始文献顺序**逐项对照打分，1 分最轻、4 分最重。先看描述、再落分数——不要先想总分再倒推。' },
+          {
+            kind: 'table',
+            heads: ['分', '① 瓣叶活动度 Mobility'],
+            rows: [
+              ['1', '瓣叶活动良好，仅瓣尖部受限'],
+              ['2', '瓣叶中部与基底部活动正常，瓣尖及部分中部受限'],
+              ['3', '瓣叶仅基底部有活动'],
+              ['4', '瓣叶无活动，全部僵硬'],
+            ],
+          },
+          {
+            kind: 'table',
+            heads: ['分', '② 瓣叶增厚 Thickening'],
+            rows: [
+              ['1', '接近正常（≤3 mm）'],
+              ['2', '边缘增厚 4–5 mm，中部正常'],
+              ['3', '中部增厚 5–8 mm，边缘正常'],
+              ['4', '全部增厚 >8 mm'],
+            ],
+          },
+          {
+            kind: 'table',
+            heads: ['分', '③ 瓣叶钙化 Calcification'],
+            rows: [
+              ['1', '无钙化，或仅单个小钙化点'],
+              ['2', '散在钙化，局限于瓣叶边缘'],
+              ['3', '钙化延伸至瓣叶中部'],
+              ['4', '大部分瓣叶钙化'],
+            ],
+          },
+          {
+            kind: 'table',
+            heads: ['分', '④ 瓣下增厚 Subvalvular'],
+            rows: [
+              ['1', '瓣下腱索轻度增厚，长度正常'],
+              ['2', '腱索增厚累及近端 1/3'],
+              ['3', '腱索增厚累及远端 1/3'],
+              ['4', '全部腱索增厚缩短，并累及乳头肌'],
+            ],
+          },
+          { kind: 'note', text: '总分 4–16：**≤8 适合 PBMV；9–11 边缘区需结合年龄、合并症与外科风险个体化；≥12 优先外科**。报告里最好写明哪一项扣分最多——同样是 9 分，「钙化 4 分」和「活动度 4 分」的手术风险并不一样。', warn: true },
+          { kind: 'h', text: 'PBMV（经皮球囊二尖瓣成形）指征' },
+          { kind: 'text', text: '理想候选：Wilkins 评分 ≤8、瓣叶活动好、交界薄、无明显钙化与瓣下融合、无左房血栓、MR ≤轻度。评分 9–11 为相对禁忌，>11 一般不考虑。' },
+          { kind: 'h', text: 'MR 的病因分型（决定术式，比程度更重要）' },
+          {
+            kind: 'table',
+            heads: ['类型', '机制', '修复可能'],
+            rows: [
+              ['心室型（功能性）', '左室扩大、乳头肌移位牵拉', '成形环，多需同期处理左室'],
+              ['心房型', '房颤致左房扩大、瓣环扩张', '成形环效果好'],
+              ['脱垂 / 腱索断裂', '退行性，原发性', '修复率高，优先修复'],
+              ['风湿性', '瓣叶增厚挛缩、交界融合', '修复困难，多需置换'],
+            ],
+          },
+          { kind: 'note', text: '继发性 MR 的介入阈值比原发性更严：EROA ≥0.4 cm² 且 LVEF 30–50% 才考虑 TEER（COAPT 标准）；LVEF <30% 或不可逆左室扩大者获益有限，别只看 EROA 大小。', warn: true },
+          { kind: 'note', text: '**风湿性病因背景看 R45（ASE 2022 风湿性心脏病超声评估，官方 PDF 在参考文献里）**：国内的 MS 绝大多数是风湿性的，Wilkins 评分本身就是为「风湿性二尖瓣球囊扩张是否合适」设计的，所以它评的是瓣膜形态而不是狭窄程度——形态分高不等于一定不能做，但要提前把风险讲清楚。' },
         ],
         note: '反流程度需结合定性（彩色面积、频谱密度）与定量（PISA 法 EROA / RVol）。',
       },
@@ -874,7 +1045,7 @@ const BRIEF_SECTIONS = [
         id: 'aortic',
         title: '主动脉瓣疾病评估',
         sub: '狭窄 AS（三联） · 反流 AR',
-        source: ['R9'],
+        source: ['R9', 'R46', 'R47'],
         fields: [],
         blocks: [
           { kind: 'h', text: '主动脉瓣狭窄 AS（三联定量）' },
@@ -907,10 +1078,59 @@ const BRIEF_SECTIONS = [
         note: 'AS 与 AR 定量均应先在「瓣膜评估」页用连续性方程 / PISA 法精算。',
       },
       {
+        id: 'bav',
+        title: '主动脉瓣二叶式畸形（BAV）',
+        sub: 'Sievers 分型 · 主动脉扩张随访',
+        source: ['R9', 'R26', 'R30', 'R46'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '一、Sievers 分型：数瓣叶、看嵴数' },
+          {
+            kind: 'table',
+            heads: ['型', '嵴数', '占比', '说明'],
+            rows: [
+              ['0 型', '0', '约 7%', '两个瓣叶、两个窦，无嵴'],
+              ['1 型', '1', '约 88%', '最常见，再按融合部位命名'],
+              ['2 型', '2', '约 5%', '三个瓣叶被两个嵴连成功能二叶'],
+            ],
+          },
+          { kind: 'text', text: '1 型按融合部位称：**右-左冠瓣融合**（最常见，约 70–80%）、右-无冠瓣融合、左-无冠瓣融合。融合类型决定钙化分布与主动脉扩张的模式。' },
+          { kind: 'h', text: '二、诊断要点：短轴收缩期才作数' },
+          { kind: 'text', text: '确定依据是**收缩期短轴上的瓣叶数目**（2 个瓣叶 + 1 或 2 条交界线），不是长轴的「穹隆样」开放，也不是舒张期关闭线的数目。辅助征象：收缩期「橄榄球」样开放、关闭线偏心、钙化偏心、瓣叶不等大。' },
+          { kind: 'note', text: '**长轴看到两条关闭线 ≠ BAV**。正常三叶瓣在某些时相或声束角度下也会出现类似图像。必须短轴收缩期逐帧确认，必要时 TEE。把三叶瓣误判成 BAV 会直接改变手术决策。', warn: true },
+          { kind: 'h', text: '三、两种临床表型' },
+          {
+            kind: 'table',
+            heads: ['表型', '人群', '特点'],
+            rows: [
+              ['钙化型', '偏老年、男性', '进行性 AS，钙化偏心；Vmax 约每年 +0.15 m/s'],
+              ['反流型', '偏年轻', '瓣叶脱垂 / 根部扩张致 AR，常需手术'],
+            ],
+          },
+          { kind: 'text', text: 'BAV 的 AS 仍按三级定量（Vmax / 平均压差 / AVA），但**进展比三叶瓣快**，随访要更密：Vmax 3.0–4.0 m/s 之间建议每 6–12 个月复查。' },
+          { kind: 'h', text: '四、主动脉扩张：BAV 最该盯的并发症' },
+          {
+            kind: 'table',
+            heads: ['部位', '发生率', '手术阈值（参考）'],
+            rows: [
+              ['升主动脉（管状部）', '最常见', '≥50 mm；有危险因素或快速进展时 ≥45 mm 也考虑'],
+              ['主动脉根部', '次之', '同上'],
+              ['主动脉弓', '少见', '—'],
+            ],
+          },
+          { kind: 'note', text: 'BAV 的主动脉手术阈值比三叶瓣**更低**（三叶瓣一般 ≥55 mm）。★ 各指南与中心口径有 5 mm 差异，报告要写明用的哪套标准，随访必须同一套。', warn: true },
+          { kind: 'text', text: '测量须**舒张末、垂直于长轴、内缘到内缘**；升主动脉在肺动脉分叉水平取。只报「主动脉增宽」不给数值和部位，等于没报。' },
+          { kind: 'h', text: '五、必须一起查的三件事' },
+          { kind: 'text', text: '① **主动脉缩窄**（约 7% 合并）——看弓部与降主动脉血流并测压差；② **Turner 综合征**（约 30% 有 BAV）——身材矮小、原发性闭经的女性主动筛查；③ **一级亲属**——家族聚集明显，一级亲属患病率约 9%，建议超声筛查。' },
+          { kind: 'note', text: 'TAVR 前必须明确是不是 BAV：瓣环更椭圆、钙化不对称、常伴升主动脉扩张，术后瓣周漏与瓣环破裂风险高于三叶瓣，**不能直接套用三叶瓣的 oversizing 公式**。' },
+        ],
+        note: 'BAV 报告要写四件事：Sievers 型别与融合部位、瓣叶钙化程度、升主动脉各段直径、有无缩窄。',
+      },
+      {
         id: 'lf-lg',
         title: '主动脉瓣狭窄 LF-LG 判读',
         sub: '低流量低压差 · 真性 / 假性重度 · 负荷试验',
-        source: ['R22', 'R9'],
+        source: ['R22', 'R9', 'R46'],
         blocks: [
           { kind: 'h', text: '一、为什么「重度」会测不出来' },
           { kind: 'text', text: '重度 AS 的形态学标准是 AVA ≤1.0 cm²，但 AVA 由连续性方程算出，而连续性方程的分母里就有每搏输出量。当左室射血能力下降（LVEF 低）、或左室腔本身很小（向心性肥厚、女性小体型、房颤），流经瓣口的流量不足，压差就升不上去——此时 AVA 已经 ≤1.0，压差却 <40 mmHg。这就是低流量低压差（LF-LG）型 AS。' },
@@ -1165,6 +1385,114 @@ const BRIEF_SECTIONS = [
         calc: 'rcm-strain',
         note: 'RAR >0.94 提示心尖保留；再填心内膜 / 心外膜应变，可看梯度是否消失（正常比值 >1.5）。',
       },
+      {
+        id: 'dcm',
+        title: '扩张型心肌病（DCM）',
+        sub: 'LVEF 减低 · 病因筛查 · 缺血性鉴别',
+        source: ['R2'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '一、诊断要素' },
+          {
+            kind: 'table',
+            heads: ['项目', '界值'],
+            rows: [
+              ['LVEDD', '男 >58 / 女 >52 mm（或 >年龄身高预测值 112%）'],
+              ['LVEF', '<45%，多数 <40%'],
+              ['LVEDV 指数', '男 >61、女 >53 mL/m²'],
+              ['LVESV 指数', '男 >31、女 >31 mL/m²'],
+              ['室壁厚度', '变薄或正常，无肥厚'],
+            ],
+          },
+          { kind: 'text', text: 'LVEF 减低 + 左室扩大 + **排除其他病因**，三条齐了才叫 DCM。只凭 LVEF 35% 就写「扩心病」，是最常见的过度诊断。' },
+          { kind: 'h', text: '二、必须先排除的六类可逆病因' },
+          {
+            kind: 'table',
+            heads: ['病因', '线索'],
+            rows: [
+              ['冠心病（缺血性心肌病）', '区域性室壁运动异常，符合冠脉分布'],
+              ['心动过速性心肌病', '长期快速房颤 / 房速，控制心室率后可恢复'],
+              ['酒精 / 化疗 / 免疫检查点抑制剂', '病史，见「肿瘤治疗相关心功能不全」条'],
+              ['围产期心肌病', '妊娠末月到产后 5 个月内起病'],
+              ['甲亢 / 嗜铬细胞瘤', '高动力状态，心率快，治疗原发病后恢复'],
+              ['血色病 / 淀粉样变 / 结节病', '壁厚不减、应变异常、有系统表现'],
+            ],
+          },
+          { kind: 'h', text: '三、缺血性 vs 非缺血性：超声怎么分' },
+          {
+            kind: 'table',
+            heads: ['征象', '缺血性', '非缺血性（DCM）'],
+            rows: [
+              ['室壁运动', '区域性、符合冠脉分布', '弥漫性减弱'],
+              ['室壁厚度', '节段性变薄（对应梗死区）', '普遍变薄或正常'],
+              ['应变', '区域性减低，非梗死区可保留', '弥漫减低'],
+              ['心尖', '常保留（除非 LAD 病变）', '可受累'],
+              ['左房扩大', '与左室扩大程度匹配', '常不成比例地扩大'],
+            ],
+          },
+          { kind: 'text', text: '**区域性的「应变保留」** 提示缺血或心肌炎；**心尖保留** 则是淀粉样变的特征。两者容易混，区别在部位与范围：前者沿冠脉分布，后者固定在心尖 1/3。' },
+          { kind: 'h', text: '四、与左室心肌致密化不全的鉴别' },
+          { kind: 'text', text: 'DCM 常有小梁粗大，但 LVNC 需要三条同时满足：① 两层结构分明；② NC/C >2.0（超声收缩末期）；③ 深陷隐窝与左室腔血流相通。只满足比值不算。公式集「重构与心肌功能」组有 NC/C 计算器。' },
+          { kind: 'h', text: '五、随访与器械指征' },
+          {
+            kind: 'table',
+            heads: ['LVEF（优化药物 ≥3 个月后）', '建议'],
+            rows: [
+              ['≤35% + 有症状（NYHA Ⅱ–Ⅲ）', '评估 ICD / CRT'],
+              ['35–40%', '继续优化药物，3–6 个月复查'],
+              ['恢复至 ≥40%', '属「射血分数恢复」，每 6–12 个月复查，不等于治愈'],
+              ['≤30% + LBBB 且 QRS ≥150 ms', 'CRT 获益最大'],
+            ],
+          },
+          { kind: 'note', text: '**LVEF 的重复性约 ±5%**。判「恶化」前先确认测量条件一致（同一方法、同一分析者、图像质量相当），否则很容易把测量变异当成病情变化。', warn: true },
+        ],
+        note: 'DCM 的超声报告重点不是「EF 多少」，而是「能不能排除缺血、有没有可逆病因、要不要上器械」。',
+      },
+      {
+        id: 'athlete',
+        title: '运动员心脏与生理性重构',
+        sub: '生理性 vs 病理性 · 灰区处理',
+        source: ['R20'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '一、生理性重构的三个特征' },
+          { kind: 'text', text: '① 容量负荷为主——LVEDD 轻度增大但 LVEF 正常或偏高，E/A ≥1；② **全域、对称**——不出现区域性异常；③ **可逆**——停训 3 个月后回缩。三条都符合才敢判生理性。' },
+          { kind: 'h', text: '二、对照表：别只盯一个数' },
+          {
+            kind: 'table',
+            heads: ['参数', '运动员', '病理性重构'],
+            rows: [
+              ['LVEDD', '≤60 mm（耐力项少数 ≤65）', '>60 mm 且伴 LVEF 低'],
+              ['LVEF', '≥55%', '<50%'],
+              ['室壁厚度', '≤15 mm（男性极高强度 ≤16）', '>15 mm 需排查 HCM'],
+              ['LVEDV 指数', '≤130 mL/m²', '更高，且伴功能减低'],
+              ['E/A', '≥1.0', '<0.8（松弛受损）'],
+              ['间隔 e′', '≥8 cm/s', '<7 cm/s'],
+              ['GLS', '正常或偏高（约 −20%）', '减低或区域性减低'],
+              ['右室', '可轻度扩大，收缩功能正常', '扩大 + TAPSE / FAC 减低'],
+              ['左房', '轻度扩大', '明显扩大伴功能减低'],
+            ],
+          },
+          { kind: 'h', text: '三、灰区（壁厚 13–16 mm、LVEDD 58–62 mm）怎么破' },
+          {
+            kind: 'table',
+            heads: ['手段', '价值'],
+            rows: [
+              ['停训 3 个月复查', '最关键——可逆 = 生理，不可逆 = 病理'],
+              ['GLS / 分层应变', 'HCM 即使 EF 正常，GLS 也常减低'],
+              ['心电图 + 家族史', 'HCM / ARVC 的一线线索'],
+              ['CMR 钆延迟', '看纤维化分布（HCM 多在肥厚节段交界处）'],
+              ['基因检测', '家族性病例的确诊依据'],
+            ],
+          },
+          { kind: 'note', text: '**别把「运动员 + 壁厚 14 mm」直接判 HCM，也别把 16 mm 当生理**。13–16 mm 是公认灰区，必须靠停训试验、家族史与 CMR 综合判断。单凭一个数值下结论，两边都会错：漏诊猝死风险，或误判断送职业生涯。', warn: true },
+          { kind: 'h', text: '四、女性与青少年运动员的标准要下调' },
+          { kind: 'text', text: '女性重构幅度普遍小于男性：壁厚上限约 11–12 mm、LVEDD 上限约 55 mm，直接套男性阈值会过度诊断。青少年要按体表面积与年龄校正，不能套成人界值。' },
+          { kind: 'h', text: '五、超声正常不能排除的猝死病因' },
+          { kind: 'text', text: '离子通道病（长 QT、Brugada、CPVT）、冠脉起源异常（需 CT 确认）、儿茶酚胺敏感性室速早期——这些超声可以完全正常。**「超声正常」不等于「可以运动」**，有晕厥史或家族猝死史者必须做心电图并进一步评估。' },
+        ],
+        note: '运动员筛查的超声价值在「排除结构性心脏病」，不在「确诊某病」；结论要写清灰区与建议的下一步，而不是给一个似是而非的诊断。',
+      },
     ],
   },
   {
@@ -1251,6 +1579,58 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '出院前应留基线右心功能。约 0.5–4% 患者发展为**慢性血栓栓塞性肺高压（CTEPH）**，抗凝 3 个月后仍有呼吸困难者需复查超声，右心功能未恢复或 PASP 持续升高应转诊评估。' },
         ],
         note: '急诊床旁超声在 PE 里的正确问法不是「有没有血栓」，而是「右室扛不扛得住」。',
+      },
+      {
+        id: 'ph',
+        title: '肺动脉高压（PH）评估',
+        sub: '2022 ESC/ERS · 超声只给可能性',
+        source: ['R13', 'R7'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '一、2022 新定义：门槛降了' },
+          {
+            kind: 'table',
+            heads: ['指标', '阈值', '说明'],
+            rows: [
+              ['mPAP', '>20 mmHg', '旧标准 25，2022 下调'],
+              ['PVR', '>2 WU', '旧标准 3 WU'],
+              ['PAWP', '≤15 mmHg', '毛细血管前；>15 为毛细血管后'],
+            ],
+          },
+          { kind: 'note', text: '**超声测不出 mPAP，也不能确诊 PH**。超声只给「可能性」，确诊必须右心导管。把 PASP 直接当 PH 诊断依据，是超声报告里最常见的过度诊断。', warn: true },
+          { kind: 'h', text: '二、超声三步法（2022 ESC/ERS）' },
+          {
+            kind: 'table',
+            heads: ['TR Vmax', '其他右心征象', '超声 PH 可能性'],
+            rows: [
+              ['≤2.8 m/s', '无', '低'],
+              ['≤2.8 m/s', '有', '中'],
+              ['2.9–3.4 m/s', '无', '中'],
+              ['2.9–3.4 m/s', '有', '高'],
+              ['>3.4 m/s', '不计', '高'],
+            ],
+          },
+          { kind: 'text', text: '「其他右心征象」：RV/LV 基底径比 >1、室间隔变平或矛盾运动、RVOT 加速时间 <105 ms、右房面积 >18 cm²、IVC >21 mm 且不塌陷、肺动脉收缩中期切迹（notching）。' },
+          { kind: 'h', text: '三、毛细血管前 vs 后：超声能给的线索' },
+          {
+            kind: 'table',
+            heads: ['线索', '毛细血管前（PAH / CTEPH / 肺病）', '毛细血管后（左心相关）'],
+            rows: [
+              ['左房扩大', '无', '常有'],
+              ['E/e′', '正常', '升高'],
+              ['左室壁厚 / 舒张功能', '正常', '异常'],
+              ['MR / MS', '无', '可有'],
+              ['RV 扩大与 TR 速度', '较匹配', '可不匹配，左心病变会掩盖右心表现'],
+            ],
+          },
+          { kind: 'note', text: '用 E/e′ 估 PAWP 在房颤、重度 MR、心包病变时不成立。分不清前后时写「需右心导管」，比硬判一个方向更有价值。', warn: true },
+          { kind: 'h', text: '四、PASP 估测的五个坑' },
+          { kind: 'text', text: '① TR 束不完整或偏心，包络只取到峰值一半 → 低估；② 右房压靠 IVC 估，误差可达 ±5 mmHg；③ 血容量、麻醉、机械通气都影响；④ 严重 TR 时右房压接近右室压，压差被压缩；⑤ 高动力状态（贫血、甲亢、分流）压差虚高但阻力不高。' },
+          { kind: 'h', text: '五、随访看哪几个数' },
+          { kind: 'text', text: '**TAPSE/PASP（RV-PA 耦联）** 比单看 PASP 更有预后价值：<0.55 mm/mmHg 提示失耦联。再加 RVFWS（>−20% 为异常，即绝对值 <20%）、右房面积、IVC、NT-proBNP 与 6 分钟步行。若 PASP 下降但 TAPSE/PASP 未改善，说明右室本身在恶化，别被「压差降了」误导。' },
+          { kind: 'note', text: '分流相关肺高压（ASD / VSD / PDA）看「先天性心脏病」组的可手术性判读，那套标准与本页不同，不要混用。' },
+        ],
+        note: '报告四句话最有用：TR Vmax 是多少、有无右心征象、可能性低/中/高、建议是否转诊做右心导管。',
       },
       {
         id: 'thrombus',
@@ -1798,7 +2178,7 @@ const BRIEF_SECTIONS = [
         id: 'tr-interv',
         title: '三尖瓣反流机制分型与介入前评估',
         sub: '机制五型 · 五级严重度 · TEE 测量清单',
-        source: ['R25', 'R14'],
+        source: ['R25', 'R14', 'R47'],
         blocks: [
           { kind: 'h', text: '一、先分清「瓣叶本身有病」还是「被拉开的」' },
           { kind: 'text', text: 'TR 的治疗决策取决于机制，不是取决于反流量。同样 4+ 的重度 TR，瓣叶结构正常的瓣环扩张用一台修复装置可能就够，瓣叶被起搏导线打穿或风湿性挛缩则完全不同的术式。' },
@@ -1852,7 +2232,7 @@ const BRIEF_SECTIONS = [
         id: 'mv-interv',
         title: '二尖瓣介入（TEER）术前评估',
         sub: 'Carpentier 分型 · 解剖适配 · 术后压差',
-        source: ['R26', 'R9'],
+        source: ['R26', 'R9', 'R41'],
         fields: [],
         blocks: [
           { kind: 'h', text: '一、Carpentier 分型：决定能不能夹' },
@@ -1898,7 +2278,7 @@ const BRIEF_SECTIONS = [
         id: 'tavr',
         title: 'TAVR 术前超声评估',
         sub: '瓣环测量 · 冠脉高度 · 入路 · 术后压差',
-        source: ['R33', 'R22'],
+        source: ['R33', 'R22', 'R41'],
         fields: [],
         blocks: [
           { kind: 'h', text: '一、超声在 TAVR 里负责什么（CT 负责什么）' },
@@ -1942,6 +2322,10 @@ const BRIEF_SECTIONS = [
  * 不嵌图片、不嵌 iframe，点击由系统浏览器打开原站（省内存、零流量开销）。
  * 主要来源：多伦多大学 PIE（Perioperative Interactive Education）TEE/TTE 教学站，
  * 其余为公开的在线 TEE 模拟器。
+ *
+ * ★ 2025-10 调整：原「切面指南」分组（4 份 ASE 官方 PDF）已并入「参考文献」
+ *   —— R11（TTE 中/英文）、R12（TEE 2013）、R41（TEE 介入筛查）。
+ *   PDF 直链统一挂在参考文献条目下，点一下即复制，不再单独占一个分组。
  */
 
 /**
@@ -2028,36 +2412,7 @@ const LINK_SECTIONS = [
       },
     ],
   },
-  {
-    id: 'guides',
-    title: '切面指南',
-    items: [
-      {
-        id: 'guide-tte-cn',
-        title: '经胸切面指南（中文版）',
-        sub: 'ASE 成人完整 TTE 检查操作指南 · 官方中文翻译 PDF',
-        url: 'https://www.asecho.org/wp-content/uploads/2025/04/Adult-CompTTE_Chinese.pdf',
-      },
-      {
-        id: 'guide-tte-en',
-        title: '经胸切面指南（英文原版）',
-        sub: 'ASE 成人完整 TTE 检查操作指南（2019）· 官方 PDF',
-        url: 'https://www.asecho.org/wp-content/uploads/2025/07/Guidelines-for-Performing-a-Comprehensive-Transthoracic-Echocardiographic-Examination-in-Adults.pdf',
-      },
-      {
-        id: 'guide-tee-28',
-        title: '经食道切面指南（28 标准切面）',
-        sub: 'ASE/SCA 成人 TEE 完整检查指南（2013）· 官方 PDF 直链',
-        url: 'https://www.asecho.org/wp-content/uploads/2014/05/2013_Performing-Comprehensive-TEE.pdf',
-      },
-      {
-        id: 'guide-tee-shd',
-        title: '经食道切面指南（介入筛查）',
-        sub: 'ASE 2021 结构性心脏病介入 TEE 筛查标准 · 官方 PDF',
-        url: 'https://www.asecho.org/wp-content/uploads/2025/04/PIIS0894731721005940.pdf',
-      },
-    ],
-  },
+
   {
     id: 'sim',
     title: 'TEE 模拟器',
@@ -2097,8 +2452,12 @@ const REFS = [
     id: 'R2',
     zh: '成人心腔超声心动图定量指南（2015）',
     en: 'Lang RM, Bierig SM, Devereux RB, et al. Recommendations for Cardiac Chamber Quantification by Echocardiography',
-    where: 'J Am Soc Echocardiogr, 2015, 16(6): 309–343',
+    where: 'J Am Soc Echocardiogr, 2015, 28(1): 1–39.e14',
     use: 'EF、LVEDVi、LVMI、LAVi 的测量规范与分级',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2015_ChamberQuantificationREV.pdf' },
+      { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/Chamber-Quantification-2015-Chinese.pdf' },
+    ],
   },
   {
     id: 'R3',
@@ -2117,9 +2476,12 @@ const REFS = [
   {
     id: 'R5',
     zh: '成人右心超声心动图评估指南（ASE 2025）',
-    en: 'ASE Guidelines for the Evaluation of the Right Heart',
-    where: 'J Am Soc Echocardiogr, 2025',
+    en: 'Mukherjee M, Rudski LG, Addetia K, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults and Special Considerations in Pulmonary Hypertension',
+    where: 'J Am Soc Echocardiogr, 2025, 38(2): 141–186',
     use: 'TAPSE、FAC、RV S′、右房面积等右心定量',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2026/08/ASE-Right-Heart-Guidelines-May-2025.pdf' },
+    ],
   },
   {
     id: 'R6',
@@ -2134,6 +2496,9 @@ const REFS = [
     en: 'ESC/ERS Guidelines for the diagnosis and treatment of pulmonary hypertension',
     where: 'Eur Respir J, 2022',
     use: 'PASP、右房压与 PH 超声概率',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://erj.ersjournals.com/content/erj/early/2022/08/25/13993003.00879-2022.full.pdf' },
+    ],
   },
   {
     id: 'R8',
@@ -2161,14 +2526,21 @@ const REFS = [
     zh: '成人完整经胸超声心动图操作指南（ASE 2019）',
     en: 'Mitchell C, Rahko PS, Blauwet LAB, et al. Guidelines for Performing a Comprehensive Transthoracic Echocardiographic Examination in Adults',
     where: 'J Am Soc Echocardiogr, 2019, 32(1): 1–64（ASE 官网提供官方中文翻译版）',
-    use: '经胸标准切面命名、采集顺序与测量规范（见「切面指南」）',
+    use: '经胸标准切面命名、采集顺序与测量规范（本条附官方中英文 PDF 直链，原「切面指南」入口已并入此）',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2019_Comprehensive-TTE.pdf' },
+      { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/Adult-CompTTE_Chinese.pdf' },
+    ],
   },
   {
     id: 'R12',
     zh: '成人经食管超声心动图完整检查指南（ASE/SCA）',
     en: 'Hahn RT, Abraham T, Adams MS, et al. Guidelines for Performing a Comprehensive Transesophageal Echocardiographic Examination',
     where: 'J Am Soc Echocardiogr, 2013, 26(12): 921–964（28 个标准切面）',
-    use: 'TEE 28 标准切面命名与采集规范（见「切面指南」）',
+    use: 'TEE 28 标准切面命名与采集规范（本条附官方 PDF 直链，原「切面指南」入口已并入此）',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2014/05/2013_Performing-Comprehensive-TEE.pdf' },
+    ],
   },
   {
     id: 'R13',
@@ -2176,6 +2548,9 @@ const REFS = [
     en: 'Humbert M, et al. 2022 ESC/ERS Guidelines for the diagnosis and treatment of pulmonary hypertension',
     where: 'Eur Respir J, 2022, 60(1): 2200879',
     use: 'PH 血流动力学分型、超声概率与右心导管定义',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://erj.ersjournals.com/content/erj/early/2022/08/25/13993003.00879-2022.full.pdf' },
+    ],
   },
   {
     id: 'R14',
@@ -2183,6 +2558,10 @@ const REFS = [
     en: 'Rudski LG, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults',
     where: 'J Am Soc Echocardiogr, 2010, 23(7): 685–713',
     use: '右室功能、右房压与 PH 超声评估的金标准参考',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/05/Archive-2010-Echo-Assessment-of-Right-Heart-in-Adults.pdf' },
+      { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/05/Archive-2010-Right-heart-guidelines_Chinese.pdf' },
+    ],
   },
   {
     id: 'R15',
@@ -2190,20 +2569,30 @@ const REFS = [
     en: 'Klein AL, et al. ASE/EACVI Guidelines for Echocardiographic Evaluation of Pericardial Disease',
     where: 'J Am Soc Echocardiogr, 2013, 26(9): 965–1012',
     use: '心包积液半定量、心脏压塞与缩窄性心包炎征象',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2013_Multimodality-CV-Imaging-for-Pericardial-Disease.pdf' },
+      { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/Pericardial-Disease-Multimodality-ASE-guideline_Chinese.pdf' },
+    ],
   },
   {
     id: 'R16',
     zh: '左心室舒张功能评估指南（2016）',
     en: 'Nagueh SF, et al. Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography (2016 ASE/EACVI)',
     where: 'J Am Soc Echocardiogr, 2016, 29(4): 277–314',
-    use: '舒张功能分级四步法与灰区处理',
+    use: '舒张功能分级四步法与灰区处理（ASE 2025 已发布更新，见 R42）',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/07/Eval-of-Left-Ventricular-Diastolic-Function-by-Echo-superseded.pdf' },
+    ],
   },
   {
     id: 'R17',
-    zh: '人工心脏瓣膜超声评估指南（2017）',
-    en: 'Zoghbi WA, et al. Recommendations for Evaluation of Prosthetic Valves with Echocardiography (2017 ASE)',
-    where: 'J Am Soc Echocardiogr, 2017, 30(4): 372–428',
+    zh: '人工心脏瓣膜功能评估指南（2024 版）',
+    en: 'Zoghbi WA, Jone PN, Chamsi-Pasha MA, et al. Guidelines for the Evaluation of Prosthetic Valve Function With Cardiovascular Imaging',
+    where: 'J Am Soc Echocardiogr, 2024, 37(1): 2–63（替代 2017 版）',
     use: '人工瓣膜正常压差、PPM 与瓣周漏判读',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/PIIS0894731723005333.pdf' },
+    ],
   },
   {
     id: 'R18',
@@ -2218,6 +2607,9 @@ const REFS = [
     en: 'Delgado V, et al. 2023 ESC Guidelines for the management of endocarditis',
     where: 'Eur Heart J, 2023, 44(39): 3948–4042',
     use: '赘生物大小与栓塞风险、TEE 指征、重复超声时机',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/advance-article-pdf/doi/10.1093/eurheartj/ehad193/51716381/ehad193.pdf' },
+    ],
   },
   {
     id: 'R20',
@@ -2225,6 +2617,9 @@ const REFS = [
     en: 'Ommen SR, et al. 2020 AHA/ACC Guideline for the Diagnosis and Treatment of Patients With Hypertrophic Cardiomyopathy',
     where: 'Circulation, 2020, 142(25): e558–e631',
     use: '最大壁厚诊断阈值、LVOT 梗阻分级与猝死风险因素',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000937' },
+    ],
   },
   {
     id: 'R21',
@@ -2232,6 +2627,9 @@ const REFS = [
     en: 'Garcia-Pavia P, et al. Diagnosis and Treatment of Cardiac Amyloidosis: A Position Statement of the ESC Working Group on Myocardial and Pericardial Diseases',
     where: 'Eur Heart J, 2021, 42(16): 1554–1568',
     use: '心肌「苹果核」应变、心尖保留比值与确诊路径',
+    dl: [
+      { t: 'PMC 全文', u: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8060056' },
+    ],
   },
   {
     id: 'R22',
@@ -2239,13 +2637,20 @@ const REFS = [
     en: 'Otto CM, et al. 2020 ACC/AHA Guideline for the Management of Patients With Valvular Heart Disease',
     where: 'Circulation, 2021, 143(4): e72–e227',
     use: '低流量低压差 AS 的负荷试验、钙化评分与手术时机',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000923' },
+    ],
   },
   {
     id: 'R23',
-    zh: '右心超声评估指南（2015 ASE）',
-    en: 'Rudski LG, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults: 2015 Update',
-    where: 'J Am Soc Echocardiogr, 2015, 28(1): 1–39',
-    use: '右室功能障碍六指标积分分级、RV 应变与右心衰评估',
+    zh: '成人右心超声评估指南（ASE 2010 存档 + 2025 更新）',
+    en: 'Rudski LG, et al. 2010 Right Heart Guidelines（存档）；2025 更新另见 R5',
+    where: 'J Am Soc Echocardiogr, 2010, 23(7): 685–713；2025, 38(2): 141–186',
+    use: '右室功能障碍六指标积分分级、RV 应变与右心衰评估（六指标出自 2010 版，阈值以 2025 更新为准）',
+    dl: [
+      { t: 'ASE PDF（中文版）', u: 'https://www.asecho.org/wp-content/uploads/2025/05/Archive-2010-Right-heart-guidelines_Chinese.pdf' },
+      { t: 'ASE PDF（2025 更新）', u: 'https://www.asecho.org/wp-content/uploads/2026/08/ASE-Right-Heart-Guidelines-May-2025.pdf' },
+    ],
   },
   {
     id: 'R24',
@@ -2253,6 +2658,9 @@ const REFS = [
     en: 'Adler Y, et al. 2015 ESC Guidelines for the Diagnosis and Management of Pericardial Diseases',
     where: 'Eur Heart J, 2015, 36(42): 2921–2964',
     use: '缩窄性心包炎的呼吸变异、瓣环反转与鉴别路径',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/36/42/2921/33342779/ehv318.pdf' },
+    ],
   },
   {
     id: 'R25',
@@ -2267,6 +2675,9 @@ const REFS = [
     en: 'Vahanian A, et al. 2021 ESC/EACTS Guidelines for the management of valvular heart disease',
     where: 'Eur Heart J, 2022, 43(7): 561–632',
     use: '二尖瓣 TEER 适应证、解剖适配与介入时机',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/advance-article-pdf/doi/10.1093/eurheartj/ehab395/40340593/ehab395.pdf' },
+    ],
   },
   {
     id: 'R27',
@@ -2274,6 +2685,9 @@ const REFS = [
     en: 'Badano LP, et al. Standardization of left atrial, right ventricular, and right atrial deformation imaging using two-dimensional speckle tracking echocardiography',
     where: 'Eur Heart J Cardiovasc Imaging, 2018, 19(6): 591–600',
     use: '左房应变三时相（LASr / LAScd / LASct）的正常值与测量规范',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/19/6/591/24834126/jey042.pdf' },
+    ],
   },
   {
     id: 'R28',
@@ -2281,6 +2695,9 @@ const REFS = [
     en: 'Pieske B, et al. How to diagnose heart failure with preserved ejection fraction: the HFA-PEFF diagnostic algorithm',
     where: 'Eur Heart J, 2019, 40(40): 3297–3317',
     use: '形态学 + 功能两大类计分、总分判读与负荷试验指征',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/40/40/3297/30195412/ehz641.pdf' },
+    ],
   },
   {
     id: 'R29',
@@ -2288,30 +2705,47 @@ const REFS = [
     en: 'Pellikka PA, et al. Guidelines for Performance, Interpretation, and Application of Stress Echocardiography in Ischemic Heart Disease',
     where: 'J Am Soc Echocardiogr, 2020, 33(1): 1–41',
     use: '室壁运动评分、阳性标准、WMSI 与负荷方式选择',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/Stress-Echo-2020.pdf' },
+      { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/Guidelines-for-Performance-Interpretationand-Application-of-Stress-Echocardiography-in-Ischemic-Heart-Disease-Chinese-version.pdf' },
+    ],
   },
   {
     id: 'R30',
     zh: '胸主动脉疾病多模态影像评估指南（2015 ASE）',
     where: 'J Am Soc Echocardiogr, 2015, 28(2): 119–182',
     use: '主动脉根部测量位点、扩张分级、二叶式瓣与夹层征象',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2015_Thoracic-Aorta.pdf' },
+      { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/MM-Imaging-in-Thoracic-Aortic-Diseases-2015_Chinese.pdf' },
+    ],
   },
   {
     id: 'R31',
     zh: '急性肺栓塞诊断与管理指南（2019 ESC）',
     where: 'Eur Heart J, 2020, 41(4): 543–603',
     use: '右心功能不全的危险分层地位、McConnell 征与随访',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/41/4/543/34306708/ehz405.pdf' },
+    ],
   },
   {
     id: 'R32',
     zh: '肿瘤心脏病学指南（2022 ESC）',
     where: 'Eur Heart J, 2022, 43(41): 4229–4361',
     use: 'CTRCD 三级分档、GLS 相对下降 15% 阈值与监测节点',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/43/41/4229/51099586/ehac244.pdf' },
+    ],
   },
   {
     id: 'R33',
     zh: '经导管瓣膜介入术后瓣膜反流评估指南（2019 ASE）',
     where: 'J Am Soc Echocardiogr, 2019, 32(4): 431–475',
     use: 'TAVR 术后跨瓣压差、瓣周漏半定量与随访基线',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/Percutaneous-VR_2019.pdf' },
+    ],
   },
   {
     id: 'R34',
@@ -2326,6 +2760,9 @@ const REFS = [
     en: 'Stout KK, Daniels CJ, Aboulhosn JA, et al. 2018 AHA/ACC Guideline for the Management of Adults With Congenital Heart Disease',
     where: 'Circulation, 2019, 139(14): e698–e800',
     use: 'ASD / VSD / PDA 的分型、干预指征与随访节点',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000603' },
+    ],
   },
   {
     id: 'R36',
@@ -2333,6 +2770,9 @@ const REFS = [
     en: 'Baumgartner H, De Backer J, Babu-Narayan SV, et al. 2020 ESC Guidelines for the management of adult congenital heart disease',
     where: 'Eur Heart J, 2021, 42(6): 563–645',
     use: '分流性肺高压的可手术性评估、艾森曼格综合征管理',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/42/6/563/39353654/ehaa554.pdf' },
+    ],
   },
   {
     id: 'R37',
@@ -2340,6 +2780,10 @@ const REFS = [
     en: 'Stainback RF, Estep JD, Agler DA, et al. Echocardiography in the Management of Patients with Left Ventricular Assist Devices: Recommendations from the American Society of Echocardiography',
     where: 'J Am Soc Echocardiogr, 2015, 28(8): 853–909',
     use: '入血道 / 出血道评估、泵速优化与抽吸事件的超声识别',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2015_EchoLVAD.pdf' },
+      { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/ASE-LVAD-Guideline_Chinese.pdf' },
+    ],
   },
   {
     id: 'R38',
@@ -2347,6 +2791,9 @@ const REFS = [
     en: 'Geva T. Repaired tetralogy of Fallot: the roles of cardiovascular magnetic resonance in evaluating pathophysiology and for pulmonary valve replacement decision support',
     where: 'J Cardiovasc Magn Reson, 2011, 13: 9',
     use: 'RVEDVi >160 / RVESVi >80 mL/m² 等 PVR 容量阈值的来源',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://jcmr-online.biomedcentral.com/articles/10.1186/1532-429X-13-9' },
+    ],
   },
   {
     id: 'R39',
@@ -2354,6 +2801,9 @@ const REFS = [
     en: 'Sharma T, Lau EMT, Choudhary P, et al. Dobutamine stress for evaluation of right ventricular reserve in pulmonary arterial hypertension',
     where: 'Eur Respir J, 2015, 45(3): 700–708',
     use: '低剂量多巴酚丁胺下 RVFWS 变化与右室收缩储备的判读标准',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://erj.ersjournals.com/content/erj/45/3/700.full.pdf' },
+    ],
   },
   {
     id: 'R40',
@@ -2361,6 +2811,87 @@ const REFS = [
     en: '王辉, 王小丛 主编. 实用超声规范化检查与操作',
     where: '科学技术文献出版社, 2021 年 9 月, 北京. ISBN 978-7-5189-8028-4',
     use: '第三章心血管系统配套动图（切面扫查 / 瓣口血流 / 典型病例）',
+  },
+  {
+    id: 'R41',
+    zh: '经食道超声结构性心脏病介入筛查标准（ASE 2021）',
+    en: 'Hahn RT, Saric M, Faletra FF, et al. Recommended Standards for the Performance of Transesophageal Echocardiographic Screening for Structural Heart Intervention',
+    where: 'J Am Soc Echocardiogr, 2022, 35(1): 1–76',
+    use: 'TEE 介入筛查的切面清单与评估要点（原「切面指南」入口已并入此）',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/PIIS0894731721005940.pdf' },
+    ],
+  },
+  {
+    id: 'R42',
+    zh: '左室舒张功能与 HFpEF 诊断更新（ASE 2025）',
+    en: 'Nagueh SF, Sanborn DY, Oh JK, et al. Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography and for Heart Failure With Preserved Ejection Fraction Diagnosis: An Update From the ASE',
+    where: 'J Am Soc Echocardiogr, 2025, 38(4): 537–569',
+    use: '舒张功能与左房压评估的最新口径（本工具四步法仍按 2016 版组织，见 R16）',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/07/Left-Ventricular-Diastolic-Function.pdf' },
+    ],
+  },
+  {
+    id: 'R43',
+    zh: '应变成像临床应用指南（ASE/EACVI 2025）',
+    en: 'ASE/EACVI Clinical Applications of Strain Echocardiography（ASE 官网现行版）',
+    where: 'ASE 官网 PDF, 2025',
+    use: 'GLS / RV 应变 / 左房应变的采集与报告规范（官网现行版）',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/11/Strain-2025-Guideline-2.pdf' },
+    ],
+  },
+  {
+    id: 'R44',
+    zh: '成人超声心动图报告标准化建议（ASE 2025）',
+    en: 'Taub CC, Stainback RF, Abraham T, et al. Guidelines for the Standardization of Adult Echocardiography Reporting',
+    where: 'J Am Soc Echocardiogr, 2025, 38(6): 735–774',
+    use: '报告结构与必填项（写报告时的条目清单）',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/09/PIIS0894731725002925.pdf' },
+    ],
+  },
+  {
+    id: 'R45',
+    zh: '风湿性心脏病超声评估建议（ASE 2022）',
+    en: 'Pandian NG, Kim JK, Arias-Godinez JA, et al. Recommendations for the Use of Echocardiography in the Evaluation of Rheumatic Heart Disease',
+    where: 'J Am Soc Echocardiogr, 2023, 36(1): 3–28',
+    use: '风湿性二尖瓣形态与狭窄分级（Wilkins 评分的风湿病因背景）',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/PIIS0894731722005211.pdf' },
+    ],
+  },
+  {
+    id: 'R46',
+    zh: '主动脉瓣狭窄超声评估更新（ASE/EACVI 2017）',
+    en: 'Baumgartner H, Hung J, Bermejo J, et al. Recommendations on the Echocardiographic Assessment of Aortic Valve Stenosis: A Focused Update',
+    where: 'J Am Soc Echocardiogr, 2017, 30(4): 372–392',
+    use: 'AS 压差 / AVA / DVI 的测法与低流量低压差状态识别',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2017ValveStenosisGuideline.pdf' },
+      { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/Aortic-stenosis-2017-update_Chinese.pdf' },
+    ],
+  },
+  {
+    id: 'R47',
+    zh: '自体瓣膜反流无创评估建议（ASE 2017）',
+    en: 'Zoghbi WA, Adams D, Bonow RO, et al. Recommendations for Noninvasive Evaluation of Native Valvular Regurgitation',
+    where: 'J Am Soc Echocardiogr, 2017, 30(4): 303–371',
+    use: 'AR / MR / TR 的多参数分级与 PISA / VCW 口径',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2017VavularRegurgitationGuideline.pdf' },
+    ],
+  },
+  {
+    id: 'R48',
+    zh: 'LVAD 与临时机械支持多模态影像建议（ASE 2024）',
+    en: 'Estep JD, Nicoara A, Cavalcante J, et al. Recommendations for Multimodality Imaging of Patients With Left Ventricular Assist Devices and Temporary Mechanical Support',
+    where: 'J Am Soc Echocardiogr, 2024, 37(8): 820–871',
+    use: '入 / 出血道、泵速优化与抽吸事件识别（替代 2015 版，见 R37）',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/PIIS0894731724003183_2024-LVAD.pdf' },
+    ],
   },
 ];
 
@@ -2378,6 +2909,11 @@ var CALC_HINTS = {
   aorta: '介入尺寸与先心 · 主动脉分节段 Z 值；重构与心肌功能 · 升主动脉直径指数',
   pe: '右心与肺循环 · 右室容积指数 RVEDVi/RVESVi；PAPi 肺动脉搏动指数',
   /* 心肌病变 */
+  diastolic: '瓣膜与舒张定量 · 舒张功能分级（四步法）；E/Vp 左房压估测；重构与心肌功能 · 左房僵硬度',
+  ph: '右心与肺循环 · 超声肺高压可能性；肺动脉收缩压 PASP；阻力指数 PVRI / SVRI',
+  bav: '瓣膜与舒张定量 · 主动脉瓣面积（连续性方程）；无量纲指数 DVI；介入尺寸与先心 · 主动脉分节段 Z 值；TAVR 瓣环尺寸与 oversizing',
+  dcm: '血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · 致密化不全 NC/C 比；容积指数与重构分级',
+  athlete: '血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · LVMI 身高^2.7；左室质量与几何构型',
   amyloid: '重构与心肌功能 · 心尖保留比值 RAS；LVMI 身高^2.7；应变离散度 MDS',
   hcm: '重构与心肌功能 · LVMI 身高^2.7；左室质量与几何构型；左室球形指数',
   'rcm-strain': '重构与心肌功能 · 左房应变三值；应变离散度 MDS',
@@ -2405,6 +2941,50 @@ var CALC_HINTS = {
   'tr-interv': '瓣膜与舒张定量 · 缩流颈宽度 VCW 分级；反流定量（PISA）',
 };
 
+/* ══════════════════════════════════════════════════════════════
+   判读条目 → 计算器 id（供小程序渲染成可点胶囊）
+   ──────────────────────────────────────────────────────────────
+   只存 id，名称由 calc-groups 的 title 运行时取，避免两处文案漂移。
+   与 CALC_HINTS 是同一批条目：CALC_HINTS 给网页/APK 出纯文字，
+   CALC_LINKS 给小程序出可点胶囊。改一处必须同改另一处（校验会查）。
+   ══════════════════════════════════════════════════════════════ */
+var CALC_LINKS = {
+  /* 心腔与应变 */
+  lv: ['ef', 'flow', 'mtype'],
+  rv: ['rvvol', 'quickratio'],
+  rcoupling: ['rcratiov', 'papi'],
+  rvfail: ['rvfacv', 'rvfws'],
+  'rv-strain': ['rvfws'],
+  strain: ['mdsv', 'spher'],
+  'la-strain': ['lastrain', 'laef'],
+  diastolic: ['dfun', 'evp', 'lastiff'],
+  prosthetic: ['ppm', 'vcw'],
+  /* 瓣膜 */
+  mitral: ['mvav', 'mvac', 'wilkins'],
+  aortic: ['avav', 'dvi', 'vcw'],
+  bav: ['avav', 'dvi', 'aortaz', 'tavrsz'],
+  'lf-lg': ['swv', 'ea'],
+  /* 心肌病变 */
+  hcm: ['lvmih', 'lvmass', 'spher'],
+  amyloid: ['ras', 'lvmih', 'mdsv'],
+  'rcm-strain': ['lastrain', 'mdsv'],
+  dcm: ['ef', 'lvnc', 'volidx'],
+  athlete: ['ef', 'lvmih', 'lvmass'],
+  /* 大血管与急症 */
+  aorta: ['aortaz', 'aortaidx'],
+  pe: ['rvvol', 'papi'],
+  ph: ['phprob', 'paspv', 'residx'],
+  /* 先心病 */
+  shd: ['paidx', 'shunt'],
+  'pht-rev': ['pvrv', 'residx', 'pdap'],
+  'tof-pr': ['rvvol', 'rvfws'],
+  /* 负荷与介入 */
+  'stress-echo': ['paspv', 'papi'],
+  tavr: ['tavrsz', 'aortaz'],
+  'mv-interv': ['mvav', 'pisav'],
+  'tr-interv': ['vcw', 'pisav'],
+};
+
 (function attachCalcHints() {
   BRIEF_SECTIONS.forEach(function (sec) {
     (sec.items || []).forEach(function (it) {
@@ -2414,6 +2994,8 @@ var CALC_HINTS = {
         kind: 'note',
         text: '**相关计算（通用量）**：公式集 → ' + hint +
           '。本页给判读阈值，公式集给算法，两者口径一致、可互相印证。',
+        // 小程序把这串 id 渲染成可点胶囊，点了直接进对应计算器
+        links: CALC_LINKS[it.id] || [],
       });
     });
   });
@@ -2423,4 +3005,5 @@ module.exports = {
   BRIEF_SECTIONS: BRIEF_SECTIONS,
   LINK_SECTIONS: LINK_SECTIONS,
   REFS: REFS,
+  CALC_LINKS: CALC_LINKS,
 };
