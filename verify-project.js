@@ -132,10 +132,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 4) ok('评估内容 4 个分组（器械支持 / 心腔与应变 / 瓣膜评估 / 心肌病变）');
+if (EX.BRIEF_SECTIONS.length === 6) ok('评估内容 6 个分组（器械 / 心腔与应变 / 瓣膜 / 心肌病变 / 负荷试验 / 介入 TEE）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'crt,la,lv,rv,rcoupling,rvfail,strain,peri,cp-rm,prosthetic,mitral,aortic,lf-lg,ie,hcm,amyloid') ok('评估条目 = crt/la/lv/rv/rcoupling/rvfail/strain/peri/cp-rm/prosthetic/mitral/aortic/lf-lg/ie/hcm/amyloid');
+if (briefIds.join(',') === 'crt,la,lv,rv,rcoupling,rvfail,strain,la-strain,peri,cp-rm,prosthetic,mitral,aortic,lf-lg,ie,hcm,amyloid,stress-echo,tr-interv,mv-interv') ok('评估条目 = crt/la/lv/rv/rcoupling/rvfail/strain/la-strain/peri/cp-rm/prosthetic/mitral/aortic/lf-lg/ie/hcm/amyloid/stress-echo/tr-interv/mv-interv');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -149,7 +149,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 24) ok('参考文献 24 条');
+if (EX.REFS.length === 29) ok('参考文献 29 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 
 console.log('\n=== 4f. 切面学习 / 切面指南 / TEE 模拟器（纯外链） ===');

@@ -405,10 +405,10 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('card__title">参考文献') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 24 条', EXD.REFS.length, 24, 0);
+  check('参考文献 29 条', EXD.REFS.length, 29, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
-  check('文献编号连续 R1–R24',
-    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24' ? 1 : 0, 1, 0);
+  check('文献编号连续 R1–R29',
+    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29' ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
 
@@ -476,33 +476,33 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 8 个大组', dirs.length, 8, 0);
+  check('公式集分 10 个大组', dirs.length, 10, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 38 条（5 血流动力学 + 9 瓣膜 + 12 评估 + 12 外链）', nItems, 38, 0);
-  check('切面学习 5 条', dirs[5].items.length, 5, 0);
-  check('切面指南 4 条', dirs[6].items.length, 4, 0);
-  check('TEE 模拟器 3 条', dirs[7].items.length, 3, 0);
+  check('目录共 42 条（5 血流动力学 + 9 瓣膜 + 16 评估 + 12 外链）', nItems, 42, 0);
+  check('切面学习 5 条', dirs[7].items.length, 5, 0);
+  check('切面指南 4 条', dirs[8].items.length, 4, 0);
+  check('TEE 模拟器 3 条', dirs[9].items.length, 3, 0);
   check('外链条目为 link 类型',
-    dirs[5].items.every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+    dirs[7].items.every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('TTE 经胸切面为直达交互链接',
-    dirs[5].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[7].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含速查表 / 指南条目',
-    dirs[5].items.some(i => i.id === 'tee-cheat') &&
-    dirs[6].items.some(i => i.id === 'guide-tte-cn') &&
-    dirs[6].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
+    dirs[7].items.some(i => i.id === 'tee-cheat') &&
+    dirs[8].items.some(i => i.id === 'guide-tte-cn') &&
+    dirs[8].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
   check('模拟器含 CT2TEE / TEE Simulator 图谱',
-    dirs[7].items.some(i => /ct2tee/.test(i.url)) &&
-    dirs[7].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[9].items.some(i => /ct2tee/.test(i.url)) &&
+    dirs[9].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   check('器械支持 2 条（CRT / LAD）', dirs[2].items.length, 2, 0);
   check('器械支持含 CRT 同步化',
     dirs[2].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
   check('器械支持含 LAD 参数',
     dirs[2].items.some(i => i.id === 'la') ? 1 : 0, 1, 0);
-  check('心腔与应变 8 条', dirs[3].items.length, 8, 0);
-  ['lv', 'rv', 'rcoupling', 'rvfail', 'strain', 'peri', 'cp-rm', 'prosthetic'].forEach(id => {
+  check('心腔与应变 9 条', dirs[3].items.length, 9, 0);
+  ['lv', 'rv', 'rcoupling', 'rvfail', 'strain', 'la-strain', 'peri', 'cp-rm', 'prosthetic'].forEach(id => {
     check('心腔与应变含 ' + id,
       dirs[3].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
@@ -520,6 +520,14 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   ['hcm', 'amyloid'].forEach(id => {
     check('心肌病变含 ' + id,
       dirs[4].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+  });
+  check('负荷与功能试验 1 条（运动负荷超声）', dirs[5].items.length, 1, 0);
+  check('负荷试验含 stress-echo',
+    dirs[5].items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
+  check('介入 TEE 评估 2 条（三尖瓣 / 二尖瓣）', dirs[6].items.length, 2, 0);
+  ['tr-interv', 'mv-interv'].forEach(id => {
+    check('介入 TEE 评估含 ' + id,
+      dirs[6].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
 

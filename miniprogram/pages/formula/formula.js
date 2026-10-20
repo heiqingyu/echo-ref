@@ -359,6 +359,42 @@ Page({
       if (r.feats.length) parts.push(r.feats.join('、'));
       if (r.text) parts.push('→ ' + r.text);
       out = parts.join('；');
+    } else if (gid === 'la-strain') {
+      // —— 左房应变与 HFA-PEFF 三大类计分 ——
+      const r = calc.hfaPeff({
+        lavi: v.hplavi, lvmi: v.hplvmi, female: female, rwt: v.hprwt,
+        ntp: v.hpntp, ee: v.hpee, trv: v.hptrv, lasr: v.hplasr, gls: v.hpgls,
+      });
+      const parts = [];
+      if (r.n) {
+        parts.push('形态学 ' + r.morph + ' 分' + (r.morphName ? '（' + r.morphName + '）' : ''));
+        parts.push('标志物 ' + r.bio + ' 分' + (r.bioName ? '（' + r.bioName + '）' : ''));
+        parts.push('功能 ' + r.func + ' 分' + (r.funcName ? '（' + r.funcName + '）' : ''));
+        parts.push('合计 ' + r.total + '/6 → ' + r.text);
+      }
+      out = parts.join('；');
+    } else if (gid === 'stress-echo') {
+      // —— Duke 评分 + 收缩储备 ——
+      const parts = [];
+      const dk = calc.dukeScore({ time: v.dktime, stDev: v.dkst, angina: v.dkang });
+      if (dk.score !== undefined) {
+        parts.push('Duke ' + calc.fmt(dk.score, 1) + ' 分 · ' + dk.text);
+      }
+      if (valid(v.dkefr, v.dkefp)) {
+        const d = v.dkefp - v.dkefr;
+        parts.push('EF 变化 ' + (d >= 0 ? '+' : '') + calc.fmt(d, 1) + '% · ' +
+          (d >= 5 ? '收缩储备正常' : '收缩储备不足（提示多支病变 / 预后不良）'));
+      }
+      out = parts.join('；');
+    } else if (gid === 'tr-interv') {
+      // —— TR 五级严重度 ——
+      const g = calc.trGrade(v.treroa, v.trrvol);
+      const parts = [];
+      if (g.text) {
+        parts.push('TR ' + g.text);
+        if (g.byEroa !== g.byRvol) parts.push('EROA 与 RVol 不一致，取较重档');
+      }
+      out = parts.join('；');
     } else if (gid === 'strain') {
       // —— 应变判读 ——
       const parts = [];
