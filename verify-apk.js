@@ -525,6 +525,17 @@ check('第四批引擎函数已内联（paIndex / apicalSparing / ventriculoArte
   ['function paIndex', 'function apicalSparing', 'function ventriculoArterial',
    'function coarctationEcho']
     .every(function (k) { return html.indexOf(k) !== -1; }), true);
+/* v1.3.1 成人主动脉分节段 Z 值 */
+check('含主动脉分节段 Z 值计算器 aortaz', html.indexOf("id: 'aortaz'") !== -1, true);
+check('Z 值引擎与成人参考区间已内联（aorticZscore / AORTIC_SEGS）',
+  html.indexOf('function aorticZscore') !== -1 && html.indexOf('const AORTIC_SEGS') !== -1, true);
+check('aortaz 带性别选项组', html.indexOf("{ k: 'azsex', n: '性别'") !== -1, true);
+check('主动脉判读页已挂公式集跳转提示', html.indexOf('主动脉分节段 Z 值') !== -1, true);
+check('判读页桥接文案已内联（相关计算（通用量））',
+  html.indexOf('相关计算（通用量）') !== -1, true);
+/* 桥接是运行时挂到 blocks 上的，静态 HTML 里只应出现机制本身，不指望 23 份文案 */
+check('桥接机制已内联（CALC_HINTS + attachCalcHints）',
+  html.indexOf('var CALC_HINTS') !== -1 && html.indexOf('attachCalcHints') !== -1, true);
 check('首页已无延展阅读卡片', html.indexOf('page-index') < html.indexOf('id="extLinks"'), true);
 check('评估内容块样式已内联', html.indexOf('.fx-tbl__c {') !== -1, true);
 check('参考文献样式已内联', html.indexOf('.ref-item__zh {') !== -1, true);

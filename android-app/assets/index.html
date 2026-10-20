@@ -1341,7 +1341,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.3.0</div>
+    <div class="verline">心脏超声参考值 · v1.3.1</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1397,7 +1397,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.3.0</div>
+      <div class="verline">心脏超声参考值 · v1.3.1</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -3975,6 +3975,85 @@ function aortaIndex(dMm, bsa, female) {
 }
 
 /**
+ * 成人主动脉分节段参考区间（cm，舒张末，内缘到内缘）
+ *
+ * 与站内「主动脉」条目同一口径（中国成年人超声心动图检查测量指南）。
+ * 四个标准测量位点：瓣环 / 窦部（Valsalva）/ 窦管交界 / 近段升主动脉。
+ * 注意：不同指南与国内参考值有 1–2 mm 差异，随访必须用同一参考标准。
+ */
+const AORTIC_SEGS = [
+  { k: 'annulus', n: '主动脉瓣环', sn: '瓣环', ref: { m: [2.3, 2.9], f: [2.1, 2.7] } },
+  { k: 'sinus', n: '窦部（Valsalva）', sn: '窦部', ref: { m: [3.0, 3.8], f: [2.7, 3.5] } },
+  { k: 'stj', n: '窦管交界', sn: '窦管交界', ref: { m: [2.6, 3.2], f: [2.4, 3.0] } },
+  { k: 'asc', n: '近段升主动脉', sn: '升主动脉', ref: { m: [2.7, 3.5], f: [2.5, 3.3] } },
+];
+
+/**
+ * 主动脉分节段 Z 值
+ *
+ * ★ 方法学说明（重要）：成人主动脉没有像儿童 PHN 那样的公开 SD 曲线可直接引用，
+ *   本函数用「参考区间反推」的近似算法：
+ *     均值 = (下限 + 上限) / 2，SD = (上限 − 均值) / 1.96
+ *   即假定参考区间为 95% 参考范围（±1.96 SD）。这样得到的 Z 值与临床常用的
+ *   「Z > 2 视为扩张」判断口径一致，但**不是人群实测 SD**，不能与儿童 Z 值
+ *   或 CT 形态学 Z 值直接互换。界面必须如实标注。
+ *
+ *   判读：|Z| ≤ 2 参考范围内；2 < Z ≤ 3 轻度扩张；Z > 3 显著扩张；
+ *        Z ≤ −2 小于参考下限（多数无临床意义，需结合体型）。
+ *   另对近段升主动脉按 BSA 指数化：男 ≥2.1、女 ≥2.0 cm/m² 提示扩张。
+ *
+ * @param {number[]} mm  依次为 瓣环/窦部/窦管交界/近段升主动脉，单位 mm，可留空
+ * @param {boolean} female 女性
+ * @param {number} [bsa] 体表面积 m²，用于升主动脉指数
+ */
+function aorticZscore(mm, female, bsa) {
+  const arr = mm || [];
+  const out = { segs: [] };
+  let any = false;
+  AORTIC_SEGS.forEach(function (s, i) {
+    const v = arr[i];
+    if (!(v > 0)) return;
+    any = true;
+    const ref = female ? s.ref.f : s.ref.m;
+    const mean = (ref[0] + ref[1]) / 2;
+    const sd = (ref[1] - mean) / 1.96;
+    const cm = v / 10;
+    let z = sd > 0 ? (cm - mean) / sd : 0;
+    if (Math.abs(z) < 1e-9) z = 0;  // 消掉浮点噪声，避免显示 -0.0
+    const r = { k: s.k, n: s.n, sn: s.sn, mm: v, lo: ref[0], hi: ref[1], mean: mean, sd: sd, z: z };
+    if (z > 3) { r.level = 3; r.text = '显著扩张（Z >3）'; }
+    else if (z > 2) { r.level = 2; r.text = '轻度扩张（Z 2–3）'; }
+    else if (z < -2) { r.level = 1; r.text = '小于参考下限（Z ≤ −2）'; }
+    else { r.level = 0; r.text = '参考范围内（|Z| ≤ 2）'; }
+    out.segs.push(r);
+  });
+  if (!any) return { error: '至少填写一个位点的内径' };
+
+  let max = out.segs[0];
+  out.segs.forEach(function (s) { if (s.z > max.z) max = s; });
+  out.maxZ = max.z;
+  out.maxName = max.n;
+  out.maxSn = max.sn;
+  out.level = max.level;
+  if (max.level === 3) out.text = '最大 Z ' + max.z.toFixed(1) + '（' + max.sn + '）：显著扩张，评估外科 / 介入时机与遗传性主动脉病';
+  else if (max.level === 2) out.text = '最大 Z ' + max.z.toFixed(1) + '（' + max.sn + '）：轻度扩张，缩短随访间隔';
+  else if (max.level === 1) out.text = '各位点均未扩张；' + max.sn + '低于参考下限，需结合体型复核';
+  else out.text = '各位点均未超参考上限（Z 均 ≤ 2，最大 ' + max.z.toFixed(1) + '）';
+
+  // 升主动脉指数（近段升主动脉 cm / BSA）
+  if (arr[3] > 0 && bsa > 0) {
+    const idx = (arr[3] / 10) / bsa;
+    const hi = female ? 2.0 : 2.1;
+    out.ascIndex = idx;
+    out.ascIndexHi = hi;
+    out.ascIndexText = idx >= hi
+      ? '升主动脉指数 ' + idx.toFixed(2) + ' cm/m²（≥' + hi + '）提示扩张'
+      : '升主动脉指数 ' + idx.toFixed(2) + ' cm/m²（<' + hi + '）未达扩张';
+  }
+  return out;
+}
+
+/**
  * 应变离散度（MDS，6 壁峰值纵向应变的标准差）
  *
  * 逐壁输入峰值纵向应变（负值，或直接填绝对值均可），算均值与标准差。
@@ -4576,6 +4655,8 @@ function fmt(n, dec) {
     sphericityIndex: sphericityIndex,
     laStrainTri: laStrainTri,
     aortaIndex: aortaIndex,
+    AORTIC_SEGS: AORTIC_SEGS,
+    aorticZscore: aorticZscore,
     strainDispersion: strainDispersion,
     strokeWork: strokeWork,
     round: round,
@@ -7308,12 +7389,68 @@ const REFS = [
   },
 ];
 
+/* ══════════════════════════════════════════════════════════════
+   判读页 ↔ 计算器的桥（结构性解耦）
+   ──────────────────────────────────────────────────────────────
+   设计原则：**判读页只放阈值与处理原则，量化公式独立存在于公式集**。
+   这里给每个判读条目挂一行「相关计算（通用量）」，指向公式集里对应的
+   计算器，让用户不必离开判读语境就能找到算法入口。
+   只写真实存在的计算器；没有对应算法的条目（如感染性心内膜炎、
+   Fontan 术后）故意不挂，避免指错路。
+   ══════════════════════════════════════════════════════════════ */
+var CALC_HINTS = {
+  /* 大血管与急症 */
+  aorta: '介入尺寸与先心 · 主动脉分节段 Z 值；重构与心肌功能 · 升主动脉直径指数',
+  pe: '右心与肺循环 · 右室容积指数 RVEDVi/RVESVi；PAPi 肺动脉搏动指数',
+  /* 心肌病变 */
+  amyloid: '重构与心肌功能 · 心尖保留比值 RAS；LVMI 身高^2.7；应变离散度 MDS',
+  hcm: '重构与心肌功能 · LVMI 身高^2.7；左室质量与几何构型；左室球形指数',
+  'rcm-strain': '重构与心肌功能 · 左房应变三值；应变离散度 MDS',
+  /* 心腔与应变 */
+  lv: '血流动力学与心功能 · 左室容积与射血分数；LVOT 每搏量与心排量；M 型三合一',
+  rv: '右心与肺循环 · 右室容积指数 RVEDVi/RVESVi；快速比值 RV/LV',
+  rcoupling: '右心与肺循环 · TAPSE/PASP 耦联比；PAPi 肺动脉搏动指数',
+  rvfail: '右心与肺循环 · 右室面积变化分数 FAC；右室游离壁应变 RVFWS',
+  'rv-strain': '右心与肺循环 · 右室游离壁应变 RVFWS',
+  strain: '重构与心肌功能 · 应变离散度 MDS；左室球形指数',
+  'la-strain': '重构与心肌功能 · 左房应变三值；左房排空分数 LAEF',
+  prosthetic: '瓣膜与舒张定量 · 人工瓣 EOAi 与 PPM；缩流颈宽度 VCW 分级',
+  /* 瓣膜评估 */
+  mitral: '瓣膜与舒张定量 · MVA（PHT 法）；MVA（连续性方程）；Wilkins 二尖瓣形态评分',
+  aortic: '瓣膜与舒张定量 · 主动脉瓣面积（连续性方程）；无量纲指数 DVI；VCW 分级',
+  'lf-lg': '重构与心肌功能 · 每搏功 SW / SWi；血流动力学与心功能 · 有效动脉弹性 Ea',
+  /* 先天性心脏病 */
+  shd: '介入尺寸与先心 · McGoon 比值与 Nakata 指数；血流动力学与心功能 · Qp/Qs',
+  'tof-pr': '右心与肺循环 · 右室容积指数；右室游离壁应变 RVFWS',
+  'pht-rev': '右心与肺循环 · 肺血管阻力 PVR；阻力指数 PVRI / SVRI；舒张期肺动脉压 PADP',
+  /* 负荷与介入 */
+  'stress-echo': '血流动力学与心功能 · 肺动脉收缩压 PASP；右心与肺循环 · PAPi',
+  tavr: '介入尺寸与先心 · TAVR 瓣环尺寸与 oversizing；主动脉分节段 Z 值',
+  'mv-interv': '瓣膜与舒张定量 · MVA（PHT 法）；反流定量（PISA）',
+  'tr-interv': '瓣膜与舒张定量 · 缩流颈宽度 VCW 分级；反流定量（PISA）',
+};
+
+(function attachCalcHints() {
+  BRIEF_SECTIONS.forEach(function (sec) {
+    (sec.items || []).forEach(function (it) {
+      var hint = CALC_HINTS[it.id];
+      if (!hint || !it.blocks || !it.blocks.length) return;
+      it.blocks.push({
+        kind: 'note',
+        text: '**相关计算（通用量）**：公式集 → ' + hint +
+          '。本页给判读阈值，公式集给算法，两者口径一致、可互相印证。',
+      });
+    });
+  });
+})();
+
   window.ExtraData = {
     BRIEF_SECTIONS: BRIEF_SECTIONS,
     BV_BASE: BV_BASE,
     BOOK_CH3_VIDEOS: BOOK_CH3_VIDEOS,
     LINK_SECTIONS: LINK_SECTIONS,
     REFS: REFS,
+    CALC_HINTS: CALC_HINTS,
   };
 })();
 
@@ -7804,6 +7941,11 @@ const REFS = [
     { id: 'coa', sec: 'ivs', title: '主动脉缩窄压差与拖尾',
       fields: [['coav', '缩窄处峰值流速', 'm/s'], ['coaved', '舒张末期流速（可选）', 'm/s']],
       note: '压差 = 4 × Vmax²。峰值压差 ≥20 mmHg 提示有血流动力学意义；舒张末期仍有 ≥5 mmHg 压差说明存在持续跨缩窄血流（拖尾征）。新生儿期压差可能不高' },
+    { id: 'aortaz', sec: 'ivs', title: '主动脉分节段 Z 值',
+      opts: [{ k: 'azsex', n: '性别', list: [['m', '男'], ['f', '女']] }],
+      fields: [['azann', '主动脉瓣环', 'mm'], ['azsin', '窦部（Valsalva）', 'mm'],
+        ['azstj', '窦管交界', 'mm'], ['azasc', '近段升主动脉', 'mm']],
+      note: '四个位点可只填测到的。Z 值由站内成人参考区间反推（均值 = 区间中点，SD = 半径 ÷ 1.96），口径与「Z > 2 视为扩张」一致，但不是人群实测 SD，不能与儿童 Z 值或 CT 的 Z 值互换。近段升主动脉另按 BSA 指数化：男 ≥2.1、女 ≥2.0 cm/m² 提示扩张' },
 
     /* ── 瓣膜与舒张定量（sec: vq） ── */
     { id: 'pisav', sec: 'vq', title: '反流定量（PISA）',
@@ -7964,6 +8106,7 @@ const REFS = [
     ras: '心尖段 ÷ 基底段 · ≥1 提示淀粉样变',
     ea: 'ESP ÷ SV · Ees/Ea ≈ SV ÷ ESV',
     coa: '峰值压差 · 舒张末期持续血流',
+    aortaz: '四段 Z 值 · 成人参考区间',
   };
 
   /** 评估类内容（器械支持 / 心腔与应变）与参考文献：来自 extra-data.js，与小程序同源 */
@@ -9053,6 +9196,19 @@ const REFS = [
         put('coa', partsOf(parts));
       }
     } else put('coa');
+
+    // 主动脉分节段 Z 值
+    if (has('azann') || has('azsin') || has('azstj') || has('azasc')) {
+      const r = Calc.aorticZscore(
+        [v.azann, v.azsin, v.azstj, v.azasc], calcOpt.azsex === 'f', bsa);
+      if (r.error) put('aortaz', r.error);
+      else {
+        const segTxt = r.segs.map(function (s) {
+          return s.sn + ' Z ' + Calc.fmt(s.z, 1) + '（参考 ' + s.lo + '–' + s.hi + ' cm）';
+        }).join(' / ');
+        put('aortaz', partsOf([segTxt, r.text, r.ascIndexText]));
+      }
+    } else put('aortaz');
 
     // ── 评估类条目（器械支持 / 心腔与应变）──
 

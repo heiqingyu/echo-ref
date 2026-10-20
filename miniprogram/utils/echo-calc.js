@@ -1275,6 +1275,85 @@ function aortaIndex(dMm, bsa, female) {
 }
 
 /**
+ * 成人主动脉分节段参考区间（cm，舒张末，内缘到内缘）
+ *
+ * 与站内「主动脉」条目同一口径（中国成年人超声心动图检查测量指南）。
+ * 四个标准测量位点：瓣环 / 窦部（Valsalva）/ 窦管交界 / 近段升主动脉。
+ * 注意：不同指南与国内参考值有 1–2 mm 差异，随访必须用同一参考标准。
+ */
+const AORTIC_SEGS = [
+  { k: 'annulus', n: '主动脉瓣环', sn: '瓣环', ref: { m: [2.3, 2.9], f: [2.1, 2.7] } },
+  { k: 'sinus', n: '窦部（Valsalva）', sn: '窦部', ref: { m: [3.0, 3.8], f: [2.7, 3.5] } },
+  { k: 'stj', n: '窦管交界', sn: '窦管交界', ref: { m: [2.6, 3.2], f: [2.4, 3.0] } },
+  { k: 'asc', n: '近段升主动脉', sn: '升主动脉', ref: { m: [2.7, 3.5], f: [2.5, 3.3] } },
+];
+
+/**
+ * 主动脉分节段 Z 值
+ *
+ * ★ 方法学说明（重要）：成人主动脉没有像儿童 PHN 那样的公开 SD 曲线可直接引用，
+ *   本函数用「参考区间反推」的近似算法：
+ *     均值 = (下限 + 上限) / 2，SD = (上限 − 均值) / 1.96
+ *   即假定参考区间为 95% 参考范围（±1.96 SD）。这样得到的 Z 值与临床常用的
+ *   「Z > 2 视为扩张」判断口径一致，但**不是人群实测 SD**，不能与儿童 Z 值
+ *   或 CT 形态学 Z 值直接互换。界面必须如实标注。
+ *
+ *   判读：|Z| ≤ 2 参考范围内；2 < Z ≤ 3 轻度扩张；Z > 3 显著扩张；
+ *        Z ≤ −2 小于参考下限（多数无临床意义，需结合体型）。
+ *   另对近段升主动脉按 BSA 指数化：男 ≥2.1、女 ≥2.0 cm/m² 提示扩张。
+ *
+ * @param {number[]} mm  依次为 瓣环/窦部/窦管交界/近段升主动脉，单位 mm，可留空
+ * @param {boolean} female 女性
+ * @param {number} [bsa] 体表面积 m²，用于升主动脉指数
+ */
+function aorticZscore(mm, female, bsa) {
+  const arr = mm || [];
+  const out = { segs: [] };
+  let any = false;
+  AORTIC_SEGS.forEach(function (s, i) {
+    const v = arr[i];
+    if (!(v > 0)) return;
+    any = true;
+    const ref = female ? s.ref.f : s.ref.m;
+    const mean = (ref[0] + ref[1]) / 2;
+    const sd = (ref[1] - mean) / 1.96;
+    const cm = v / 10;
+    let z = sd > 0 ? (cm - mean) / sd : 0;
+    if (Math.abs(z) < 1e-9) z = 0;  // 消掉浮点噪声，避免显示 -0.0
+    const r = { k: s.k, n: s.n, sn: s.sn, mm: v, lo: ref[0], hi: ref[1], mean: mean, sd: sd, z: z };
+    if (z > 3) { r.level = 3; r.text = '显著扩张（Z >3）'; }
+    else if (z > 2) { r.level = 2; r.text = '轻度扩张（Z 2–3）'; }
+    else if (z < -2) { r.level = 1; r.text = '小于参考下限（Z ≤ −2）'; }
+    else { r.level = 0; r.text = '参考范围内（|Z| ≤ 2）'; }
+    out.segs.push(r);
+  });
+  if (!any) return { error: '至少填写一个位点的内径' };
+
+  let max = out.segs[0];
+  out.segs.forEach(function (s) { if (s.z > max.z) max = s; });
+  out.maxZ = max.z;
+  out.maxName = max.n;
+  out.maxSn = max.sn;
+  out.level = max.level;
+  if (max.level === 3) out.text = '最大 Z ' + max.z.toFixed(1) + '（' + max.sn + '）：显著扩张，评估外科 / 介入时机与遗传性主动脉病';
+  else if (max.level === 2) out.text = '最大 Z ' + max.z.toFixed(1) + '（' + max.sn + '）：轻度扩张，缩短随访间隔';
+  else if (max.level === 1) out.text = '各位点均未扩张；' + max.sn + '低于参考下限，需结合体型复核';
+  else out.text = '各位点均未超参考上限（Z 均 ≤ 2，最大 ' + max.z.toFixed(1) + '）';
+
+  // 升主动脉指数（近段升主动脉 cm / BSA）
+  if (arr[3] > 0 && bsa > 0) {
+    const idx = (arr[3] / 10) / bsa;
+    const hi = female ? 2.0 : 2.1;
+    out.ascIndex = idx;
+    out.ascIndexHi = hi;
+    out.ascIndexText = idx >= hi
+      ? '升主动脉指数 ' + idx.toFixed(2) + ' cm/m²（≥' + hi + '）提示扩张'
+      : '升主动脉指数 ' + idx.toFixed(2) + ' cm/m²（<' + hi + '）未达扩张';
+  }
+  return out;
+}
+
+/**
  * 应变离散度（MDS，6 壁峰值纵向应变的标准差）
  *
  * 逐壁输入峰值纵向应变（负值，或直接填绝对值均可），算均值与标准差。
@@ -1877,6 +1956,8 @@ module.exports = {
   sphericityIndex,
   laStrainTri,
   aortaIndex,
+  AORTIC_SEGS,
+  aorticZscore,
   strainDispersion,
   strokeWork,
   // —— v1.2.8 新增：M 型 / 评分体系 / 介入尺寸 ——

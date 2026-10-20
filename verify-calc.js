@@ -408,5 +408,38 @@ check('2.0 m/s → 16 mmHg 属轻度',
   C.coarctationEcho(2.0, 1.8).text.indexOf('轻度') !== -1 ? 'ok' : 'bad', 'ok');
 check('缺峰值速度报错', C.coarctationEcho().error ? 'ok' : 'bad', 'ok');
 
+console.log('=== 46. 成人主动脉分节段 Z 值 ===');
+check('参考表含 4 个位点', C.AORTIC_SEGS.length, 4);
+check('位点顺序：瓣环 / 窦部 / 窦管交界 / 升主动脉',
+  C.AORTIC_SEGS.map(function (s) { return s.sn; }).join('/'), '瓣环/窦部/窦管交界/升主动脉');
+const azOk = C.aorticZscore([26, 34, 29, 31], false, 1.75);
+check('男性四段取区间中点 → Z 全为 0',
+  azOk.segs.every(function (s) { return s.z === 0; }) ? 'ok' : 'bad', 'ok');
+check('四段 Z=0 判未超上限', azOk.text.indexOf('未超参考上限') !== -1 ? 'ok' : 'bad', 'ok');
+check('Z=0 不出现 -0.0', azOk.text.indexOf('-0.0') === -1 ? 'ok' : 'bad', 'ok');
+check('升主动脉 31mm / BSA1.75 → 指数 1.77', C.round(azOk.ascIndex, 2), 1.77, 0.01);
+check('指数 1.77 < 2.1 判未达扩张', azOk.ascIndexText.indexOf('未达扩张') !== -1 ? 'ok' : 'bad', 'ok');
+
+const azHigh = C.aorticZscore([26, 42, 29, 38], false, 1.75);
+check('窦部 42mm → Z 3.92', C.round(azHigh.segs[1].z, 2), 3.92, 0.02);
+check('Z >3 判显著扩张', azHigh.segs[1].level, 3);
+check('汇总取最大 Z 并点名窦部', azHigh.maxSn === '窦部' ? 'ok' : 'bad', 'ok');
+check('汇总文案提示评估干预时机', azHigh.text.indexOf('外科') !== -1 ? 'ok' : 'bad', 'ok');
+check('升主动脉 38mm → 指数 2.17 ≥2.1 判扩张',
+  azHigh.ascIndexText.indexOf('提示扩张') !== -1 ? 'ok' : 'bad', 'ok');
+
+const azMid = C.aorticZscore([26, 40, 29, 33], false, 1.75);
+check('窦部 40mm → Z 2.94 属轻度扩张', azMid.segs[1].level, 2);
+check('轻度扩张文案提示缩短随访', azMid.text.indexOf('随访') !== -1 ? 'ok' : 'bad', 'ok');
+
+const azF = C.aorticZscore([24], true);
+check('女性瓣环 24mm → Z 0（区间中点）', azF.segs[0].z, 0);
+check('女性参考区间 2.1–2.7', azF.segs[0].lo + '-' + azF.segs[0].hi, '2.1-2.7');
+check('只填一段时只返回一段', azF.segs.length, 1);
+check('小于下限 Z ≤ -2 单独提示',
+  C.aorticZscore([19], false).segs[0].text.indexOf('小于参考下限') !== -1 ? 'ok' : 'bad', 'ok');
+check('全空报错', C.aorticZscore([]).error ? 'ok' : 'bad', 'ok');
+check('缺 BSA 时不给指数', C.aorticZscore([26, 34, 29, 31], false).ascIndex === undefined ? 'ok' : 'bad', 'ok');
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);

@@ -122,7 +122,7 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 52) ok('公式集定义 52 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 53) ok('公式集定义 53 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
@@ -130,7 +130,7 @@ if (calcSecIds.join('/') === 'hemo/right/vq/recon/score/ivs')
   ok('计算组 6 个（血流动力学 / 右心肺循环 / 瓣膜舒张 / 重构心肌 / 评分与室壁运动 / 介入尺寸与先心）');
 else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1);
-if (!badSec.length) ok('52 条公式的 sec 归属均合法');
+if (!badSec.length) ok('53 条公式的 sec 归属均合法');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
@@ -138,8 +138,8 @@ const nVq = CG.GROUPS.filter(g => g.sec === 'vq').length;
 const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
 const nScore = CG.GROUPS.filter(g => g.sec === 'score').length;
 const nIvs = CG.GROUPS.filter(g => g.sec === 'ivs').length;
-if (nHemo === 14 && nRight === 12 && nVq === 9 && nRecon === 10 && nScore === 3 && nIvs === 4)
-  ok('分组条目数 14 / 12 / 9 / 10 / 3 / 4');
+if (nHemo === 14 && nRight === 12 && nVq === 9 && nRecon === 10 && nScore === 3 && nIvs === 5)
+  ok('分组条目数 14 / 12 / 9 / 10 / 3 / 5');
 else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
@@ -492,6 +492,57 @@ const pHostile2 = peds.buildPedsList(pBsa, { LVEDD: null, LVM: undefined, ROOT: 
 const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
 (pRoot0.hasValue === true && typeof pRoot0.z === 'number')
   ? ok('ROOT = 0 作为合法测值参与计算') : bad('ROOT=0 处理异常');
+
+// ── 10. 判读页 ↔ 计算器桥接（结构性解耦）──
+{
+  const bridged = [];
+  EX.BRIEF_SECTIONS.forEach(function (sec) {
+    (sec.items || []).forEach(function (it) {
+      const last = (it.blocks || [])[it.blocks.length - 1];
+      if (last && last.kind === 'note' && last.text.indexOf('相关计算（通用量）') !== -1) {
+        bridged.push({ sec: sec.id, id: it.id, text: last.text });
+      }
+    });
+  });
+  (bridged.length === 23) ? ok('23 个判读条目挂上「相关计算」桥接')
+    : bad('桥接条目数 ' + bridged.length + '（期望 23）');
+  bridged.every(function (b) { return b.text.indexOf('公式集 → ') !== -1; })
+    ? ok('桥接文案统一指向「公式集 → 组 · 计算器」')
+    : bad('桥接文案格式不一致');
+
+  // 桥接里点名的「组」必须是公式集里真实存在的 6 个计算组
+  const GROUPS6 = ['血流动力学与心功能', '右心与肺循环', '瓣膜与舒张定量',
+    '重构与心肌功能', '评分与室壁运动', '介入尺寸与先心'];
+  const body = function (t) {
+    return t.replace(/^\*\*相关计算（通用量）\*\*：公式集 → /, '')
+      .replace(/。本页给判读阈值.*$/, '');
+  };
+  // 分段规则：「组 · 计算器A；计算器B」——续段省略组名，需继承上一段的组
+  const badGroup = [];
+  const noSep = [];
+  bridged.forEach(function (b) {
+    let cur = '';
+    body(b.text).split('；').forEach(function (seg) {
+      const parts = seg.split(' · ');
+      if (parts.length >= 2) {
+        cur = parts[0].trim();
+        if (GROUPS6.indexOf(cur) === -1) badGroup.push(cur);
+      } else if (!cur) {
+        noSep.push(seg);
+      }
+    });
+  });
+  (!badGroup.length) ? ok('桥接引用的计算组名称全部合法')
+    : bad('桥接引用了不存在的计算组：' + badGroup.join(' / '));
+  (!noSep.length) ? ok('桥接每段都能追溯到所属计算组')
+    : bad('桥接首段缺组名：' + noSep.join(' / '));
+
+  // 每个大组至少有一条桥接，避免只做了几个页面
+  const secs = {};
+  bridged.forEach(function (b) { secs[b.sec] = 1; });
+  (Object.keys(secs).length >= 6) ? ok('桥接覆盖 6 个以上判读分组（' + Object.keys(secs).join('/') + '）')
+    : bad('桥接只覆盖 ' + Object.keys(secs).length + ' 个判读分组');
+}
 
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
