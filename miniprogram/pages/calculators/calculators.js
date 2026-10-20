@@ -152,6 +152,8 @@ Page({
     bsaText: '—',
     countText: '',
     refs: EX.REFS,
+    refsCount: EX.REFS.length,
+    refsOpen: false,
     extLinks: [
       { url: 'https://zs-echo.com', name: '心超速查 ZS-Echo Copilot', desc: '86 个计算器 · 19 类参考值 · 瓣膜与决策流程' },
       { url: 'https://bdrwss.github.io/tte-quickref/dist/', name: 'TTE 心超速查 · 中文版', desc: '床旁速查卡片 · 测量与切面要点' },
@@ -168,6 +170,11 @@ Page({
   onShow() {
     const p = app.globalData.profile;
     this.setData({ bsaText: p && p.bsa ? p.bsa.toFixed(2) : '—' });
+  },
+
+  /** 参考文献默认折叠（40 条会把页面拉得很长），点标题才展开全部 */
+  onToggleRefs() {
+    this.setData({ refsOpen: !this.data.refsOpen });
   },
 
   /** 「共 N 项」/「找到 N 项」（hasKw 由调用方传入，避免读到还没刷新的 this.data.kw） */

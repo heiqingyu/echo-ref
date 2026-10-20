@@ -703,6 +703,35 @@ html, body {
 
 /* ── 参考文献 ── */
 
+/* 折叠头：默认收起，点标题展开全部 40 条 */
+.refs-hd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.refs-hd__n {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--sub);
+}
+
+.refs-hd__a {
+  flex: none;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--sub);
+  transition: transform .18s ease;
+}
+
+.refs-hd--open .refs-hd__a { transform: rotate(90deg); }
+
+#calcRefList[hidden] { display: none; }
+
 .ref-item {
   display: flex;
   gap: 8px;
@@ -1501,7 +1530,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.2.6</div>
+    <div class="verline">心脏超声参考值 · v1.2.7</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1523,11 +1552,16 @@ html, body {
 
       <div id="calcList"></div>
 
-      <!-- 参考文献（列表由 app.js 渲染） -->
+      <!-- 参考文献（列表由 app.js 渲染；默认折叠，点标题才展开全部） -->
       <div class="card" id="calcRefs">
-        <div class="card__t">参考文献</div>
-        <div class="card__d">本工具全部数据与分级标准的来源，详情页会标注该条目使用的文献编号。</div>
-        <div id="calcRefList"></div>
+        <div class="card__t refs-hd" id="refsToggle" role="button" tabindex="0"
+             aria-expanded="false" aria-controls="calcRefList">
+          <span>参考文献</span>
+          <span class="refs-hd__n" id="refsCount"></span>
+          <span class="refs-hd__a" aria-hidden="true">›</span>
+        </div>
+        <div class="card__d">本工具全部数据与分级标准的来源，详情页会标注该条目使用的文献编号。点标题展开全部。</div>
+        <div id="calcRefList" hidden></div>
       </div>
 
       <!-- ══ 延展阅读（第三方工具，点击由系统浏览器打开） ══ -->
@@ -1552,7 +1586,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.2.6</div>
+      <div class="verline">心脏超声参考值 · v1.2.7</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -8088,7 +8122,13 @@ const REFS = [
     return h;
   }
 
-  /** 目录底部的参考文献总表 */
+  /**
+   * 目录底部的参考文献总表
+   *
+   * 40 条文献平铺会把目录拉得极长，所以默认折叠：标题行显示条数，
+   * 点一下才把全部条目展开（再点收起）。展开状态由 #calcRefList 的 hidden 决定，
+   * 单一数据源，不必另存变量。
+   */
   function renderRefs() {
     const box = $('calcRefList');
     if (!box) return;
@@ -8103,6 +8143,28 @@ const REFS = [
         '</div></div>';
     });
     box.innerHTML = h;
+
+    const cnt = $('refsCount');
+    if (cnt) cnt.textContent = REFS.length + ' 条';
+    const hd = $('refsToggle');
+    if (hd && !hd.dataset.bound) {
+      hd.dataset.bound = '1';
+      hd.addEventListener('click', function () { toggleRefs(); });
+      hd.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleRefs(); }
+      });
+    }
+  }
+
+  /** 展开 / 收起参考文献总表（force 为 true/false 时指定状态） */
+  function toggleRefs(force) {
+    const hd = $('refsToggle');
+    const list = $('calcRefList');
+    if (!hd || !list) return;
+    const open = typeof force === 'boolean' ? force : !!list.hidden;
+    list.hidden = !open;
+    hd.classList.toggle('refs-hd--open', open);
+    hd.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
   /** 一组输入框（两两一行） */

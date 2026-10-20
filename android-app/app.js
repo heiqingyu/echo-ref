@@ -627,7 +627,13 @@
     return h;
   }
 
-  /** 目录底部的参考文献总表 */
+  /**
+   * 目录底部的参考文献总表
+   *
+   * 40 条文献平铺会把目录拉得极长，所以默认折叠：标题行显示条数，
+   * 点一下才把全部条目展开（再点收起）。展开状态由 #calcRefList 的 hidden 决定，
+   * 单一数据源，不必另存变量。
+   */
   function renderRefs() {
     const box = $('calcRefList');
     if (!box) return;
@@ -642,6 +648,28 @@
         '</div></div>';
     });
     box.innerHTML = h;
+
+    const cnt = $('refsCount');
+    if (cnt) cnt.textContent = REFS.length + ' 条';
+    const hd = $('refsToggle');
+    if (hd && !hd.dataset.bound) {
+      hd.dataset.bound = '1';
+      hd.addEventListener('click', function () { toggleRefs(); });
+      hd.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleRefs(); }
+      });
+    }
+  }
+
+  /** 展开 / 收起参考文献总表（force 为 true/false 时指定状态） */
+  function toggleRefs(force) {
+    const hd = $('refsToggle');
+    const list = $('calcRefList');
+    if (!hd || !list) return;
+    const open = typeof force === 'boolean' ? force : !!list.hidden;
+    list.hidden = !open;
+    hd.classList.toggle('refs-hd--open', open);
+    hd.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
   /** 一组输入框（两两一行） */

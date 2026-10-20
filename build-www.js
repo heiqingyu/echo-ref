@@ -452,11 +452,16 @@ const html = `<!DOCTYPE html>
 
       <div id="calcList"></div>
 
-      <!-- 参考文献（列表由 app.js 渲染） -->
+      <!-- 参考文献（列表由 app.js 渲染；默认折叠，点标题才展开全部） -->
       <div class="card" id="calcRefs">
-        <div class="card__t">参考文献</div>
-        <div class="card__d">本工具全部数据与分级标准的来源，详情页会标注该条目使用的文献编号。</div>
-        <div id="calcRefList"></div>
+        <div class="card__t refs-hd" id="refsToggle" role="button" tabindex="0"
+             aria-expanded="false" aria-controls="calcRefList">
+          <span>参考文献</span>
+          <span class="refs-hd__n" id="refsCount"></span>
+          <span class="refs-hd__a" aria-hidden="true">›</span>
+        </div>
+        <div class="card__d">本工具全部数据与分级标准的来源，详情页会标注该条目使用的文献编号。点标题展开全部。</div>
+        <div id="calcRefList" hidden></div>
       </div>
 
       <!-- ══ 延展阅读（第三方工具，点击由系统浏览器打开） ══ -->

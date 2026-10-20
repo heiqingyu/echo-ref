@@ -469,6 +469,14 @@ check('含 v1.2.1 新增条目（ebstein / mustard / fontan / dorv / as-switch�
   }), true);
 check('参考文献区容器 #calcRefs 存在', html.indexOf('id="calcRefs"') !== -1, true);
 check('参考文献列表容器 #calcRefList 存在', html.indexOf('id="calcRefList"') !== -1, true);
+/* 参考文献默认折叠：40 条平铺会把目录拉得极长，点标题才展开 */
+check('参考文献折叠头存在（#refsToggle + .refs-hd）',
+  html.indexOf('id="refsToggle"') !== -1 && html.indexOf('class="card__t refs-hd"') !== -1, true);
+check('参考文献列表初始折叠（#calcRefList 带 hidden）',
+  /<div id="calcRefList"[^>]*hidden/.test(html), true);
+check('折叠态样式已内联（.refs-hd--open 箭头旋转）',
+  html.indexOf('.refs-hd--open .refs-hd__a') !== -1, true);
+check('折叠开关逻辑已内联（toggleRefs）', html.indexOf('function toggleRefs') !== -1, true);
 check('首页已无延展阅读卡片', html.indexOf('page-index') < html.indexOf('id="extLinks"'), true);
 check('评估内容块样式已内联', html.indexOf('.fx-tbl__c {') !== -1, true);
 check('参考文献样式已内联', html.indexOf('.ref-item__zh {') !== -1, true);

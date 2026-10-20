@@ -115,6 +115,33 @@
 }
 
 /* ── 参考文献 ── */
+
+/* 折叠头：默认收起，点标题展开全部 */
+.refs-hd {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.refs-hd__n {
+  margin-left: auto;
+  font-size: 22rpx;
+  font-weight: 400;
+  color: var(--sub);
+}
+
+.refs-hd__a {
+  flex: none;
+  font-size: 30rpx;
+  line-height: 1;
+  color: var(--sub);
+  transition: transform .18s ease;
+}
+
+.refs-hd--open .refs-hd__a {
+  transform: rotate(90deg);
+}
+
 .ref-item {
   display: flex;
   gap: 14rpx;
