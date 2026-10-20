@@ -440,6 +440,24 @@ check('参考文献样式已内联', html.indexOf('.ref-item__zh {') !== -1, tru
 check('版本行样式已内联', html.indexOf('.verline {') !== -1, true);
 check('版本号已注入（非 1.0.0）', /v1\.0\.[1-9]/.test(html), true);
 
+/* 切面学习 / TEE 模拟器：纯外链条目（不嵌图片与 iframe，省内存） */
+check('含 LINK_SECTIONS 外链数据', html.indexOf('LINK_SECTIONS') !== -1, true);
+check('含切面学习分组', (html.match(/title: '切面学习（视频）'/g) || []).length === 1, true);
+check('含 TEE 模拟器分组', (html.match(/title: 'TEE 模拟器'/g) || []).length === 1, true);
+check('含 CT2TEE 模拟器链接', html.indexOf('ct2tee.agh.edu.pl') !== -1, true);
+check('含 TEE Simulator 图谱链接', html.indexOf('tee-simulator.anesthbeta.com') !== -1, true);
+check('含 utoronto 标准视图链接',
+  html.indexOf('TEE-HTML5-SV-CH') !== -1, true);
+check('含 M-TEER / T-TEER 条目',
+  html.indexOf("id: 'm-teer'") !== -1 && html.indexOf("id: 't-teer'") !== -1, true);
+check('含 TTE 经胸切面条目', html.indexOf("id: 'tte-sv'") !== -1, true);
+check('外链渲染为 a[target=_blank]',
+  html.indexOf("' target=\"_blank\" rel=\"noopener noreferrer\'") !== -1 ||
+  html.indexOf('target=\"_blank\" rel=\"noopener noreferrer\"') !== -1 ||
+  html.indexOf('target="_blank" rel="noopener noreferrer"') !== -1, true);
+check('发布版页签 = 3（EF·参考值 / 儿童 Z 值 / 公式集）',
+  html.indexOf('data-tab="calc"') !== -1, true);
+
 /* 延展阅读：外链卡片（APK 端点击链接由 MainActivity 交给系统浏览器） */
 check('APK 页面含延展阅读卡片', html.indexOf('延展阅读') !== -1 ? 1 : 0, 1, 0);
 check('APK 外链条目 2 条',

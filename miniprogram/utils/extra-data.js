@@ -255,6 +255,136 @@ const BRIEF_SECTIONS = [
   },
 ];
 
+/**
+ * 切面学习与模拟器：**纯链接条目**（kind: 'link'）
+ *
+ * 不嵌图片、不嵌 iframe，点击由系统浏览器打开原站（省内存、零流量开销）。
+ * 主要来源：多伦多大学 PIE（Perioperative Interactive Education）TEE/TTE 教学站，
+ * 其余为公开的在线 TEE 模拟器。
+ */
+const LINK_SECTIONS = [
+  {
+    id: 'views',
+    title: '切面学习（视频）',
+    items: [
+      {
+        id: 'tee-sv',
+        title: 'TEE 标准 20 视图（中文）',
+        sub: 'ASE/SCA 标准切面 · 带过场视频',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/standardViewsHTML5/TEE-HTML5-SV-CH/',
+      },
+      {
+        id: 'tee-av',
+        title: 'TEE 备选 19 视图',
+        sub: '非常用但实用的 2D 切面',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/alternateViewsHTML5/TEE-HTML5-AV/',
+      },
+      {
+        id: 'tee-cd',
+        title: 'TEE 彩色多普勒对比',
+        sub: '哪些结构该用彩色看 · 对比演示',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/colourCompareHTML5/TEE-HTML5-CD/',
+      },
+      {
+        id: 'tte-sv',
+        title: 'TTE 经胸标准切面',
+        sub: '胸骨旁 / 心尖 / 剑下标准窗',
+        url: 'https://pie.med.utoronto.ca/TTE/TTE_content/standardViews.html',
+      },
+      {
+        id: 'tee-spectral',
+        title: 'TEE 频谱多普勒逐项讲解',
+        sub: '主动脉瓣 / 二尖瓣 / 三尖瓣 / 肺静脉…',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_spectral.html',
+      },
+      {
+        id: 'tee-valve',
+        title: 'TEE 心脏瓣膜评估',
+        sub: '术中瓣膜评估方法（TEER 基础）',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_assessment_cardiacValves.html',
+      },
+      {
+        id: 'm-teer',
+        title: 'M-TEER 二尖瓣边缘修复切面',
+        sub: '二尖瓣夹持定位的超声基础',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_spectral_mitralValve.html',
+      },
+      {
+        id: 't-teer',
+        title: 'T-TEER 三尖瓣边缘修复切面',
+        sub: '三尖瓣反流评估与夹持定位',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_spectral_tricuspidValve.html',
+      },
+      {
+        id: 'tee-3d',
+        title: 'TEE 三维与 MPR 测量',
+        sub: '左室容积 / 二尖瓣 / 主动脉瓣 MPR',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_3DTEE.html',
+      },
+      {
+        id: 'tee-path',
+        title: 'TEE 病理实例',
+        sub: '钙化性主动脉瓣狭窄 / 心房黏液瘤 / SOVA',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_synopses.html',
+      },
+      {
+        id: 'tee-guide',
+        title: 'TEE 标准视图速查表',
+        sub: '探头角度 · 平面 · 对应结构（可打印）',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_guideSheet.html',
+      },
+      {
+        id: 'tee-quiz',
+        title: 'TEE 在线测验',
+        sub: '切面识别与结构辨认自测',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_standardViews_quizzes.html',
+      },
+    ],
+  },
+  {
+    id: 'sim',
+    title: 'TEE 模拟器',
+    items: [
+      {
+        id: 'sim-ct2tee',
+        title: 'CT2TEE 在线模拟器',
+        sub: 'CT 重建驱动 · 旋转 / 俯仰 / 成角操控',
+        url: 'https://www.ct2tee.agh.edu.pl/',
+      },
+      {
+        id: 'sim-virtual',
+        title: 'Virtual TEE（3D 心模型）',
+        sub: '视频与超声平面同步 · 隐藏组织看内部',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_virtualTEE.html',
+      },
+      {
+        id: 'sim-probe',
+        title: 'TEE 探针操控模拟',
+        sub: '练旋转 / 前倾 / 推进 / 退出的手感',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_probeManipulation_intro.html',
+      },
+      {
+        id: 'sim-atlas',
+        title: 'TEE Simulator 图谱',
+        sub: '交互式切面图谱（英文）',
+        url: 'https://tee-simulator.anesthbeta.com/atlas?lang=en',
+      },
+      {
+        id: 'sim-av',
+        title: '备选视图应用（模拟版）',
+        sub: '非常用切面交互演示',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/alternateViewsHTML5/TEE-HTML5-AV/',
+      },
+      {
+        id: 'sim-cd',
+        title: '彩色对比应用（模拟版）',
+        sub: '彩色多普勒使用时机演示',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/colourCompareHTML5/TEE-HTML5-CD/',
+      },
+    ],
+  },
+];
+
 /** 全部引用文献（公式集目录页底部统一列出） */
 const REFS = [
   {
@@ -318,7 +448,7 @@ const REFS = [
     zh: '瓣膜性心脏病超声评估系列（AS / AR / MS / MR / TR）',
     en: 'ASE valve assessment guideline series（含经导管瓣膜术后反流评估）',
     where: 'J Am Soc Echocardiogr, 2017 / 2019',
-    use: '瓣膜专项计算与分级（见瓣膜评估页）',
+    use: '瓣膜专项计算与分级（完整版瓣膜页）',
   },
   {
     id: 'R10',
@@ -331,5 +461,6 @@ const REFS = [
 
 module.exports = {
   BRIEF_SECTIONS: BRIEF_SECTIONS,
+  LINK_SECTIONS: LINK_SECTIONS,
   REFS: REFS,
 };
