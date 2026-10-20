@@ -148,6 +148,27 @@ else bad('存在悬空的引用编号');
 if (EX.REFS.length === 10) ok('参考文献 10 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 
+console.log('\n=== 4f. 切面学习 / TEE 模拟器（纯外链） ===');
+if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 模拟器）');
+else bad('外链分组数异常');
+const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
+if (linkIds.length === 18) ok('外链条目 18 条');
+else bad('外链条目数异常: ' + linkIds.length);
+const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it =>
+  !it.id || !it.title || !it.sub || String(it.url).indexOf('https://') !== 0));
+if (!linkBad) ok('每条外链含 id/标题/说明/https 地址');
+else bad('外链条目定义不完整');
+['tee-sv', 'tte-sv', 'm-teer', 't-teer', 'sim-ct2tee', 'sim-atlas'].forEach(function (id) {
+  if (linkIds.indexOf(id) !== -1) ok('外链条目存在: ' + id);
+  else bad('缺少外链条目: ' + id);
+});
+const extSrc = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
+if (extSrc.indexOf('EX.LINK_SECTIONS') !== -1) ok('目录页已接入 LINK_SECTIONS');
+else bad('目录页未接入 LINK_SECTIONS');
+const calcWxml3 = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.wxml'), 'utf8');
+if (calcWxml3.indexOf('data-url="{{it.url}}"') !== -1) ok('目录条目透传 url（小程序内复制链接）');
+else bad('目录条目未透传 url');
+
 const idxWxml2 = fs.readFileSync(path.join(MP, 'pages/index/index.wxml'), 'utf8');
 const idxWxss2 = fs.readFileSync(path.join(MP, 'pages/index/index.wxss'), 'utf8');
 if (idxWxml2.indexOf('延展阅读') === -1 && idxWxss2.indexOf('.extlink') === -1) ok('首页已移除延展阅读（已搬至公式集页）');

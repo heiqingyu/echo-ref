@@ -406,7 +406,7 @@
   let calcCollapse = '';
   let calcSigns = '';
 
-  /** 公式集目录里的瓣膜条目：点击跳到瓣膜评估页并选中该瓣膜 */
+  /** 公式集目录里的瓣膜条目：点击跳到瓣膜页并预选该瓣膜（发布版无此页，故不渲染该组） */
   const VALVE_INDEX = [
     { id: 'as', title: 'AS 主动脉瓣狭窄', sub: 'AVA · 峰值流速 · 压差分级' },
     { id: 'ar', title: 'AR 主动脉瓣反流', sub: '反流束 · PHT · 压力减半时间' },
@@ -428,6 +428,7 @@
 
   /** 评估类内容（器械支持 / 心腔与应变）与参考文献：来自 extra-data.js，与小程序同源 */
   const BRIEF = (window.ExtraData && window.ExtraData.BRIEF_SECTIONS) || [];
+  const LINKS = (window.ExtraData && window.ExtraData.LINK_SECTIONS) || [];
   const REFS = (window.ExtraData && window.ExtraData.REFS) || [];
 
   /** 当前打开的条目（详情视图） */
@@ -454,13 +455,19 @@
     return '<div class="fx-group">' + esc(title) + '</div><div class="fx-list">';
   }
 
-  /** 目录条目：kind = calc / brief / valve */
-  function fxItemHtml(kind, id, title, sub) {
-    return '<button class="fx-item" data-kind="' + kind + '" data-id="' + id +
-      '"><span class="fx-item__main">' +
+  /** 目录条目：kind = calc / brief / valve / link
+   *  link 为纯外链条目：渲染成 <a target="_blank">，不加载任何图片或 iframe */
+  function fxItemHtml(kind, id, title, sub, url) {
+    const inner = '<span class="fx-item__main">' +
       '<span class="fx-item__n">' + esc(title) + '</span>' +
       '<span class="fx-item__d">' + esc(sub) + '</span>' +
-      '</span><span class="fx-item__a">›</span></button>';
+      '</span><span class="fx-item__a">›</span>';
+    if (kind === 'link') {
+      return '<a class="fx-item" href="' + esc(url || '#') +
+        '" target="_blank" rel="noopener noreferrer">' + inner + '</a>';
+    }
+    return '<button class="fx-item" data-kind="' + kind + '" data-id="' + id + '">' +
+      inner + '</button>';
   }
 
   /** 评估类内容块 → HTML（与小程序 formula 页渲染一致） */
@@ -550,19 +557,31 @@
     if (!$('calcList')) return;
 
     // ── 目录 ──
+    const hasValvePage = !!$('page-valves');
     let list = fxGroupHtml('血流动力学与心功能');
     CALC_GROUPS.forEach(function (g) {
       list += fxItemHtml('calc', g.id, g.title, CALC_SUB[g.id] || '');
     });
-    list += '</div>' + fxGroupHtml('瓣膜评估');
-    VALVE_INDEX.forEach(function (v) {
-      list += fxItemHtml('valve', v.id, v.title, v.sub);
-    });
     list += '</div>';
+    // 瓣膜页只在完整版存在，发布版不列这一组
+    if (hasValvePage) {
+      list += fxGroupHtml('瓣膜评估');
+      VALVE_INDEX.forEach(function (v) {
+        list += fxItemHtml('valve', v.id, v.title, v.sub);
+      });
+      list += '</div>';
+    }
     BRIEF.forEach(function (sec) {
       list += fxGroupHtml(sec.title);
       sec.items.forEach(function (it) {
         list += fxItemHtml('brief', it.id, it.title, it.sub || '');
+      });
+      list += '</div>';
+    });
+    LINKS.forEach(function (sec) {
+      list += fxGroupHtml(sec.title);
+      sec.items.forEach(function (it) {
+        list += fxItemHtml('link', it.id, it.title, it.sub || '', it.url);
       });
       list += '</div>';
     });

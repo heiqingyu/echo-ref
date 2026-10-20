@@ -49,6 +49,17 @@ function buildSections() {
     });
   });
 
+  // 切面学习与 TEE 模拟器：纯链接条目（不嵌图片，点击复制链接）
+  EX.LINK_SECTIONS.forEach(function (s) {
+    sections.push({
+      id: s.id,
+      title: s.title,
+      items: s.items.map(function (it) {
+        return { kind: 'link', id: it.id, title: it.title, sub: it.sub || '', url: it.url };
+      }),
+    });
+  });
+
   return sections;
 }
 
@@ -76,9 +87,18 @@ Page({
     this.setData({ bsaText: p && p.bsa ? p.bsa.toFixed(2) : '—' });
   },
 
-  /** 点击条目：公式/评估 → 详情页；瓣膜 → 瓣膜评估页并预选该瓣膜 */
+  /**
+   * 点击条目：
+   *   link  → 复制外链（小程序内无法打开外部网页）
+   *   valve → 瓣膜评估页并预选该瓣膜
+   *   其余  → 公式 / 评估内容详情页
+   */
   onOpen(e) {
     const d = e.currentTarget.dataset;
+    if (d.kind === 'link') {
+      this.copyLink(d.url);
+      return;
+    }
     if (d.kind === 'valve') {
       wx.navigateTo({ url: '/pages/valves/valves?tab=' + d.id });
     } else {
@@ -95,6 +115,11 @@ Page({
     const url = e && e.currentTarget && e.currentTarget.dataset
       ? e.currentTarget.dataset.url
       : '';
+    this.copyLink(url);
+  },
+
+  /** 复制外链（统一入口） */
+  copyLink(url) {
     if (!url) return;
     wx.setClipboardData({
       data: url,

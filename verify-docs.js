@@ -1,4 +1,4 @@
-// 用 Chrome DevTools Protocol 实测发布版三页签：切页 + 计算 + 控制台报错
+// 用 Chrome DevTools Protocol 实测发布版三页签（EF·参考值 / 儿童 Z 值 / 公式集）
 const http = require('http');
 const { spawn } = require('child_process');
 const path = require('path');
@@ -103,17 +103,19 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 1500)); // 等 boot
 
   console.log('\n【一】结构');
-  check('页签数 = 2',
-    (await c.evalJs('document.querySelectorAll(".tab").length')) === 2);
+  check('页签数 = 3',
+    (await c.evalJs('document.querySelectorAll(".tab").length')) === 3);
   const tabNames = await c.evalJs(
     '[...document.querySelectorAll(".tab")].map(e=>e.dataset.tab).join(",")');
-  check('页签顺序 index,peds', tabNames === 'index,peds', tabNames);
-  check('页面容器 2 个（无 ef/calc/valves/segments）',
-    (await c.evalJs('document.querySelectorAll(".page").length')) === 2);
+  check('页签顺序 index,peds,calc', tabNames === 'index,peds,calc', tabNames);
+  check('页面容器 3 个（无 ef/valves/segments）',
+    (await c.evalJs('document.querySelectorAll(".page").length')) === 3);
   check('Core 引擎已挂载', (await c.evalJs('typeof window.Core === "object"')) === true);
   check('Peds 引擎已挂载', (await c.evalJs('typeof window.Peds === "object"')) === true);
-  check('Calc 引擎已移除', (await c.evalJs('typeof window.Calc')) === 'undefined');
+  check('Calc 引擎已挂载（公式集需要）', (await c.evalJs('typeof window.Calc')) === 'object');
+  check('ExtraData 评估内容已挂载', (await c.evalJs('typeof window.ExtraData')) === 'object');
   check('ValveCalc 引擎已移除', (await c.evalJs('typeof window.ValveCalc')) === 'undefined');
+  check('SegSvg 引擎已移除', (await c.evalJs('typeof window.SegSvg')) === 'undefined');
   check('SegSvg 引擎已移除', (await c.evalJs('typeof window.SegSvg')) === 'undefined');
 
   console.log('\n【二】Tab1 EF·参考值（EF 计算 + 参数参考值已合并）');
@@ -219,17 +221,78 @@ function check(name, ok, detail) {
   const pdBsa = await c.evalJs('document.getElementById("pdBsa").textContent');
   check('儿童 BSA 已算出', pdBsa && /\d\.\d+/.test(pdBsa), pdBsa);
 
-  console.log('\n【三·五】延展阅读与参考文献（已随公式集页移出发布版）');
+  console.log('\n【三·五】公式集（发布版第三页）');
   await c.evalJs('document.querySelector(\'.tab[data-tab="index"]\').click()');
-  await new Promise((r) => setTimeout(r, 300));
-  // 延展阅读与参考文献现在位于「公式集」页，而公式集属于转载/扩展内容，
-  // 发布版（GitHub Pages）在构建阶段已整页剥离，这里验证剥离干净即可。
-  const extGone = await c.evalJs('document.getElementById("extLinks") === null');
-  check('发布版已无延展阅读卡片（随公式集页剥离）', extGone, true);
-  const refGone = await c.evalJs('document.getElementById("calcRefs") === null');
-  check('发布版已无参考文献区（随公式集页剥离）', refGone, true);
-  const noExtra = await c.evalJs('typeof window.ExtraData === "undefined"');
-  check('发布版已剔除评估内容数据 ExtraData', noExtra, true);
+  await new Promise((r) => setTimeout(r, 250));
+  await c.evalJs('document.querySelector(\'.tab[data-tab="calc"]\').click()');
+  await new Promise((r) => setTimeout(r, 600));
+
+  const info = await c.evalJs(`(function(){
+    var idx=document.getElementById('calcIndex');
+    if (!idx) return 'MISSING';
+    return JSON.stringify({
+      visible: !document.getElementById('page-calc').hidden,
+      groups: [...idx.querySelectorAll('.fx-group')].map(function(e){return e.textContent;}),
+      items: idx.querySelectorAll('.fx-item').length,
+      links: idx.querySelectorAll('a.fx-item').length,
+      valve: idx.querySelectorAll('.fx-item[data-kind="valve"]').length,
+      refs: document.querySelectorAll('#calcRefList .ref-item').length,
+      ext: !!document.getElementById('extLinks'),
+      media: idx.querySelectorAll('img, iframe, video').length,
+      href: (document.querySelector('#calcList a.fx-item') || {}).getAttribute
+        ? document.querySelector('#calcList a.fx-item').getAttribute('href') : ''
+    });
+  })()`);
+
+  if (info === 'MISSING') {
+    check('发布版含公式集页', false, '未找到 #calcIndex');
+  } else {
+    const d = JSON.parse(info);
+    check('发布版含公式集页且默认可见', d.visible, true);
+    check('公式集分组 = 血流动力学 / 器械支持 / 心腔与应变 / 切面学习 / TEE 模拟器',
+      d.groups.join('|') === '血流动力学与心功能|器械支持|心腔与应变|切面学习（视频）|TEE 模拟器',
+      d.groups.join('|'));
+    check('条目 30 条（7 计算 + 5 评估 + 18 外链）', d.items === 30, d.items);
+    check('外链条目 18 条', d.links === 18, d.links);
+    check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);
+    check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
+    check('发布版不列瓣膜条目（无瓣膜页）', d.valve === 0, d.valve);
+    check('参考文献 10 条', d.refs === 10, d.refs);
+    check('延展阅读卡片在公式集页', d.ext, true);
+  }
+
+  // 详情视图在发布版仍可用
+  await c.evalJs(`(function(){
+    var e=[].slice.call(document.querySelectorAll('#calcList .fx-item'))
+      .filter(function(x){return /CRT 同步化/.test(x.textContent);});
+    if (e[0]) e[0].click();
+  })()`);
+  await new Promise((r) => setTimeout(r, 500));
+  const det = await c.evalJs(`(function(){
+    var v=[].slice.call(document.querySelectorAll('#calcGroups > .card'))
+      .filter(function(c){return !c.hidden;}).map(function(c){return c.dataset.g;});
+    return JSON.stringify({g: v, tbl: document.querySelectorAll(
+      '#calcGroups > .card:not([hidden]) .fx-tbl').length});
+  })()`);
+  const dd = JSON.parse(det);
+  check('发布版可打开评估类详情（CRT）', dd.g[0] === 'crt', det);
+  check('详情内表格已渲染', dd.tbl >= 2, dd.tbl);
+
+  // 转载内容仍应剥离干净
+  const stripped = await c.evalJs(`(function(){
+    return JSON.stringify({
+      valvePage: !!document.getElementById('page-valves'),
+      segPage: !!document.getElementById('page-segments'),
+      valveEngine: typeof window.ValveCalc,
+      segEngine: typeof window.SegSvg
+    });
+  })()`);
+  const st = JSON.parse(stripped);
+  check('发布版已剥离瓣膜页', st.valvePage === false, stripped);
+  check('发布版已剥离节段页', st.segPage === false, stripped);
+  check('发布版已剥离 ValveCalc / SegSvg 引擎',
+    st.valveEngine === 'undefined' && st.segEngine === 'undefined', stripped);
+
   const homeVer = await c.evalJs('document.querySelector("#page-index .verline") ? 1 : 0');
   check('首页显示版本行', homeVer === 1, homeVer);
   const verText = await c.evalJs('(document.querySelector("#page-index .verline") || {}).textContent || ""');

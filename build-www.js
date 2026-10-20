@@ -22,7 +22,7 @@ const MP = path.join(ROOT, 'miniprogram');
 const OUT = path.join(ROOT, 'www', 'index.html');
 
 /** 发布版（GitHub Pages）保留的页签：只留自有内容，转载内容不上线 */
-const PUBLIC_TABS = ['index', 'peds'];
+const PUBLIC_TABS = ['index', 'peds', 'calc'];
 
 /**
  * 版本号单一来源：android-app/VERSION 第一行
@@ -634,9 +634,7 @@ ${segSrc}
 
 ${valveSrc}
 
-/*<<<PUBLIC-CUT:extra>>>*/
 ${extraSrc}
-/*<<<END-CUT:extra>>>*/
 
 ${js}
 </script>
@@ -651,6 +649,36 @@ console.log('✅ 已生成 ' + path.relative(ROOT, OUT) + '  (' + kb + ' KB)');
 /* ══════════════════════════════════════════════════════════
    发布版：仅保留 PUBLIC_TABS 三个页签 + 对应引擎，去掉转载内容
    ══════════════════════════════════════════════════════════ */
+
+/**
+ * 按 section 的开闭标签配对，删掉指定 id 的整段（含其后紧跟的换行）。
+ *
+ * 为什么不用非贪婪正则：section 内部还会出现 <section>，
+ * 正则会在第一个 </section> 处提前截断，导致内容残留。
+ */
+function removeSectionById(out, id) {
+  const open = new RegExp('^[ \\t]*<section class="page" id="' + id + '"', 'm');
+  const m = open.exec(out);
+  if (!m) throw new Error('发布版：未找到页面容器 ' + id);
+
+  let depth = 0;
+  const tagRe = /<\/?section\b/g;
+  tagRe.lastIndex = m.index;
+  let t;
+  while ((t = tagRe.exec(out)) !== null) {
+    if (t[0][1] === '/') {
+      depth -= 1;
+      if (depth === 0) {
+        let end = t.index + t[0].length;
+        while (end < out.length && (out[end] === '\n' || out[end] === '\r')) end += 1;
+        return out.slice(0, m.index) + out.slice(end);
+      }
+    } else {
+      depth += 1;
+    }
+  }
+  throw new Error('发布版：页面容器 ' + id + ' 未闭合');
+}
 
 /**
  * 按"整段"删除 CSS 块。
@@ -694,75 +722,60 @@ function buildPublicHtml() {
   // 导致 trim 之外的精确比较全部失配。先归一成 LF 再做切块清理。
   let out = html.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-  // 1) 删掉不发布的页面容器（含其后的空行）
-  ['page-calc', 'page-valves', 'page-segments'].forEach((id) => {
-    const re = new RegExp('^[ \\t]*<section class="page" id="' + id + '"[\\s\\S]*?\\n[ \\t]*</section>\\n?', 'm');
-    if (!re.test(out)) throw new Error('发布版：未找到页面容器 ' + id);
-    out = out.replace(re, '');
+  // 1) 删掉不发布的页面容器（含其后的空行）。公式集页已列入发布版，不再删除。
+  ['page-valves', 'page-segments'].forEach((id) => {
+    out = removeSectionById(out, id);
   });
-  // 2) 删掉不发布的页签
-  ['calc', 'valves', 'segments'].forEach((t) => {
+  // 2) 删掉不发布的页签（公式集页签保留）
+  ['valves', 'segments'].forEach((t) => {
     const re = new RegExp('^[ \\t]*<div class="tab" data-tab="' + t + '"[\\s\\S]*?\\n[ \\t]*</div>\\n?', 'm');
     if (!re.test(out)) throw new Error('发布版：未找到页签 ' + t);
     out = out.replace(re, '');
   });
 
-  // 3) 删掉用不到的引擎（Calc / SegSvg / ValveCalc）
-  [calcSrc, segSrc, valveSrc].forEach((src) => {
+  // 3) 删掉用不到的引擎（SegSvg / ValveCalc）；Calc 引擎供公式集页使用，保留
+  [segSrc, valveSrc].forEach((src) => {
     if (out.indexOf(src) === -1) throw new Error('发布版：未找到待移除的引擎块');
     out = out.replace(src + '\n', '');
   });
 
   // 3b) 删掉 app.js 里被标记为 PUBlic-CUT 的整块逻辑（其他计算 / 瓣膜 / 节段）
-  ['calc', 'valve', 'seg', 'segclick', 'visimport', 'extra'].forEach((tag) => {
+  ['valve', 'seg', 'segclick', 'visimport'].forEach((tag) => {
     const re = new RegExp('/\\*<<<PUBLIC-CUT:' + tag + '>>>\\*/[\\s\\S]*?/\\*<<<END-CUT:' + tag + '>>>\\*/\\n?');
     if (!re.test(out)) throw new Error('发布版：未找到切块标记 ' + tag);
     out = out.replace(re, '');
   });
 
+  // 3c) 公式集页已发布，calc 段内容保留；清掉残留的切块标记行（只删标记，不删内容）
+  out = out.replace(/^[ \t]*\/\*<<<PUBLIC-CUT:[^>]*>>>\*\/[ \t]*\n/gm, '');
+  out = out.replace(/^[ \t]*\/\*<<<END-CUT:[^>]*>>>\*\/[ \t]*\n?/gm, '');
+
   // 4) 清理残留（按「先整行删除、后统一替换」顺序，避免行粘连）
   // 4a) 整行删除：引用已切块内容的语句、指向被删页面的条目
   const DROP_LINES = [
-    /^[ \t]*Object\.keys\(calcVal\)[^\n]*\n/m,
-    /^[ \t]*calcCollapse = '';[^\n]*\n/m,
-    /^[ \t]*calcSigns = '';[^\n]*\n/m,
-    /^[ \t]*calccollapse: function[^\n]*\n/m,
-    /^[ \t]*calcsigns: function[^\n]*\n/m,
     /^[ \t]*valveivc: function[^\n]*\n/m,
-    /^[ \t]*calc: '[^']*',[^\n]*\n/m,
     /^[ \t]*valves: '瓣膜评估',[^\n]*\n/m,
     /^[ \t]*segments: '节段划分',[^\n]*\n/m,
-    // 已切块的引擎/页面，其顶部声明与页签分派也要摘掉
-    /^[ \t]*const Calc = window\.Calc;[^\n]*\n/m,
+    // 已切块的引擎/页面，其顶部声明与页签分派也要摘掉（Calc 引擎保留给公式集页）
     /^[ \t]*const ValveCalc = window\.ValveCalc;[^\n]*\n/m,
-    /^[ \t]*if \(name === 'calc'\)[^\n]*\n/m,
     /^[ \t]*if \(name === 'valves'\) renderValves\(\);[^\n]*\n/m,
-    /^[ \t]*<!--[^\n]*其他计算[^\n]*-->[^\n]*\n/m,
     /^[ \t]*<!--[^\n]*瓣膜评估[^\n]*-->[^\n]*\n/m,
     /^[ \t]*<!--[^\n]*节段划分[^\n]*-->[^\n]*\n/m,
-    /^[ \t]*\/\/[^\n]*其他计算[^\n]*\n/m,
     /^[ \t]*\/\/[^\n]*瓣膜评估[^\n]*\n/m,
     /^[ \t]*\/\/[^\n]*节段划分[^\n]*\n/m,
-    /^[ \t]*<button class="btn btn--ghost" data-go="calc"[^\n]*\n/m,
   ];
   DROP_LINES.forEach((re) => { out = out.replace(re, ''); });
 
-  // 4b) 发布版没有 calc / valves / seg 三页，凡是对这三页的调用都是死代码，整行删掉。
+  // 4b) 发布版没有 valves / seg 两页，凡是对这两页的调用都是死代码，整行删掉。
   //     注意：必须先删「裸调用」，再删「带守卫的调用」—— 顺序反了的话，
   //     第一步刚生成的 if (window.__HAS_*) 行在同一趟里匹配不到，会漏进产物。
   const DEAD_CALLS = [
-    // 裸调用（app.js 原始形态）
-    'buildCalcInputs();',
-    'renderCalc();',
+    // 裸调用（app.js 原始形态）——公式集页已发布，其调用必须保留
     'renderValves();',
     'renderSegAll();',
     'clearValves();',
-    "if (name === 'calc') renderCalc();",
     "if (name === 'valves') renderValves();",
-    "if (currentTab === 'calc') renderCalc();",
     // 带守卫的调用（上一步包裹后可能出现）
-    'if (window.__HAS_CALC) buildCalcInputs();',
-    'if (window.__HAS_CALC) renderCalc();',
     'if (window.__HAS_VALVE) renderValves();',
     'if (window.__HAS_VALVE) clearValves();',
     'if (window.__HAS_SEG) renderSegAll();',
@@ -775,12 +788,7 @@ function buildPublicHtml() {
   out = out
     .replace(/\/\* ────────── 其他计算页：结果行 ────────── \*\//, '/* ────────── 计算结果行样式 ────────── */');
 
-  // 4d) 剥掉公式集目录的样式（仅完整版使用），再删残留的结束标记行
-  out = stripCssBlock(out,
-    '/* ────────── 公式集目录（仅完整版） ────────── */',
-    '/* ────────── 公式集目录结束 ────────── */'
-  );
-  out = out.replace(/\/\* ────────── 公式集目录结束 ────────── \*\/\n?/, '');
+  // 4d) 公式集页已进入发布版，其样式（.fx-* / 表格 / 参考文献）一并保留
 
   // 4e) 剥掉被删页面的专属样式块（按「起止注释行」整段去掉，不用贪婪正则）
   //     —— .calc-out 保留（EF / 儿童 Z 值页也在用），只删节段与瓣膜两段。
@@ -794,21 +802,32 @@ function buildPublicHtml() {
   );
 
   // 5) 兜底自检：被移除的页面 id / 入口 / 样式不得残留
-  ['id="page-calc"', 'id="page-valves"', 'id="page-segments"', 'id="calcGroups"', 'data-go="calc"',
-   'id="calcIndex"', 'id="calcList"', 'id="calcDetail"', 'id="calcBack"',
-   '.fx-item', '.fx-back', 'openCalcGroup', 'closeCalcGroup', 'VALVE_INDEX', 'fxItemHtml',
+  ['id="page-valves"', 'id="page-segments"', 'data-go="calc"',
    'PUBLIC-CUT', 'END-CUT',
    '节段划分页', '瓣膜评估页', '.vswitch', '.vchip', '.bull-wrap', '.lvl--severe', '.vsum',
-   '肝静脉', 'Wilkins', 'PISA', 'EROA',
-   'window.Calc', 'window.ValveCalc', 'window.ExtraData', 'ExtraData', 'BRIEF_SECTIONS', 'REFS',
-   'renderCalc', 'renderValves', 'clearValves', '__HAS_']
+   '肝静脉', 'Wilkins',
+   // PISA / EROA 属于 echo-calc.js 的通用公式注释，发布版保留 Calc 引擎，故不禁止
+   'window.ValveCalc', 'ValveCalc', 'renderValves', 'clearValves', '__HAS_']
     .forEach((s) => {
-      if (out.indexOf(s) !== -1) throw new Error('发布版：仍残留 ' + s);
+      if (out.indexOf(s) !== -1) {
+        const at = out.indexOf(s);
+        const ctx = out.slice(Math.max(0, at - 140), at + 60).replace(/\s+/g, ' ');
+        throw new Error('发布版：仍残留 ' + s + '  >>  ' + ctx);
+      }
+    });
+
+  // 5b2) 公式集页已发布：其依赖必须齐全（引擎 / 数据 / 目录容器 / 样式）
+  ['id="calcIndex"', 'id="calcList"', 'id="calcDetail"', 'id="calcBack"',
+   'id="calcRefs"', 'id="calcRefList"', 'id="extLinks"',
+   'window.Calc', 'window.ExtraData', 'BRIEF_SECTIONS', 'LINK_SECTIONS', 'REFS',
+   'buildCalcInputs', 'renderCalc', 'openCalcGroup', '.fx-item', '.fx-tbl__c', '.ref-item__zh']
+    .forEach((s) => {
+      if (out.indexOf(s) === -1) throw new Error('发布版：公式集依赖缺失 ' + s);
     });
 
   // 5b) 结构完整性自检：切块/删行容易把 HTML 骨架带掉，必须逐项确认
   ['</style>', '</head>', '<body', '</body>', '</html>', '<nav class="tabbar" id="tabbar"',
-   'id="page-index"', 'id="page-peds"']
+   'id="page-index"', 'id="page-peds"', 'id="page-calc"']
     .forEach((s) => {
       if (out.indexOf(s) === -1) throw new Error('发布版：结构缺失 ' + s);
     });
@@ -821,7 +840,7 @@ function buildPublicHtml() {
   // 6) 顶部说明改为发布版口径 + 免责声明
   out = out.replace(
     '<title>心脏超声参考值</title>',
-    '<title>心脏超声参考值 · 成人参考值 / EF / 儿童 Z 值</title>'
+    '<title>心脏超声参考值 · 成人参考值 / EF / 儿童 Z 值 / 公式集</title>'
   );
   out = out.replace(
     '<main class="main" id="main">',
@@ -829,8 +848,10 @@ function buildPublicHtml() {
 
   <div class="pubnote">
     <b>关于本页</b><br>
-    本页为个人整理的成人经胸超声（TTE）参考值速查工具，含三部分：M 型 EF 计算、成人正常参考值
-    （中国 2016 指南 37 项 / ASE-EACVI 2015）、儿童 Z 值（PHN 数据库）。
+    本页为个人整理的成人经胸超声（TTE）参考值速查工具，含四部分：M 型 EF 计算、成人正常参考值
+    （中国 2016 指南 37 项 / ASE-EACVI 2015）、儿童 Z 值（PHN 数据库）、
+    公式集（血流动力学计算 / 器械支持 / 心腔与应变 / 切面与模拟器外链）。
+    切面与模拟器条目均为第三方站点的文字链接，本工具不加载其任何内容。
     <b>本页内容为自行整理，非任何学会或机构的官方产品</b>，仅供医学教育与速查使用；
     参考值需结合患者体型、血流状态及测量方法，<b>不能单凭一个指标作出诊断</b>。
   </div>`

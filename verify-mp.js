@@ -476,12 +476,23 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 4 个大组', dirs.length, 4, 0);
+  check('公式集分 6 个大组', dirs.length, 6, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 17 条', nItems, 17, 0);
+  check('目录共 35 条（7 血流动力学 + 5 瓣膜 + 5 评估 + 18 外链）', nItems, 35, 0);
+  check('切面学习 12 条', dirs[4].items.length, 12, 0);
+  check('TEE 模拟器 6 条', dirs[5].items.length, 6, 0);
+  check('外链条目为 link 类型',
+    dirs[4].items.every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+  check('外链条目含 M-TEER / T-TEER',
+    dirs[4].items.some(i => i.id === 'm-teer') && dirs[4].items.some(i => i.id === 't-teer') ? 1 : 0, 1, 0);
+  check('外链条目含 TTE 经胸切面',
+    dirs[4].items.some(i => i.id === 'tte-sv') ? 1 : 0, 1, 0);
+  check('模拟器含 CT2TEE / TEE Simulator 图谱',
+    dirs[5].items.some(i => /ct2tee/.test(i.url)) &&
+    dirs[5].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   check('器械支持 2 条（CRT / LAD）', dirs[2].items.length, 2, 0);
   check('器械支持含 CRT 同步化',
     dirs[2].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
@@ -504,6 +515,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgA.onOpen({ currentTarget: { dataset: { kind: 'brief', id: 'crt' } } });
   check('点击评估条目 → navigateTo formula?id=crt',
     navTo === '/pages/formula/formula?id=crt' ? 1 : 0, 1, 0);
+  const EXD23 = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
+  const teeSvUrl = EXD23.LINK_SECTIONS[0].items.filter(i => i.id === 'tee-sv')[0].url;
+  pgA.onOpen({ currentTarget: { dataset: { kind: 'link', id: 'tee-sv', url: teeSvUrl } } });
+  check('点击切面条目 → 复制链接到剪贴板', clip === teeSvUrl ? 1 : 0, 1, 0);
   pgA.onCopyLink({ currentTarget: { dataset: { url: 'https://zs-echo.com' } } });
   check('延展阅读点击 → 复制链接', clip === 'https://zs-echo.com' ? 1 : 0, 1, 0);
 

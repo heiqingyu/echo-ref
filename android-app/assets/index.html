@@ -1419,7 +1419,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.0.1</div>
+    <div class="verline">心脏超声参考值 · v1.0.2</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1462,7 +1462,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.0.1</div>
+      <div class="verline">心脏超声参考值 · v1.0.2</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -3817,7 +3817,6 @@ function valveCalc(id, v, bsa) {
   };
 })();
 
-/*<<<PUBLIC-CUT:extra>>>*/
 /* ── 引擎：extra-data.js（由小程序源码自动抽取，勿手改）── */
 (function () {
 /**
@@ -4077,6 +4076,136 @@ const BRIEF_SECTIONS = [
   },
 ];
 
+/**
+ * 切面学习与模拟器：**纯链接条目**（kind: 'link'）
+ *
+ * 不嵌图片、不嵌 iframe，点击由系统浏览器打开原站（省内存、零流量开销）。
+ * 主要来源：多伦多大学 PIE（Perioperative Interactive Education）TEE/TTE 教学站，
+ * 其余为公开的在线 TEE 模拟器。
+ */
+const LINK_SECTIONS = [
+  {
+    id: 'views',
+    title: '切面学习（视频）',
+    items: [
+      {
+        id: 'tee-sv',
+        title: 'TEE 标准 20 视图（中文）',
+        sub: 'ASE/SCA 标准切面 · 带过场视频',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/standardViewsHTML5/TEE-HTML5-SV-CH/',
+      },
+      {
+        id: 'tee-av',
+        title: 'TEE 备选 19 视图',
+        sub: '非常用但实用的 2D 切面',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/alternateViewsHTML5/TEE-HTML5-AV/',
+      },
+      {
+        id: 'tee-cd',
+        title: 'TEE 彩色多普勒对比',
+        sub: '哪些结构该用彩色看 · 对比演示',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/colourCompareHTML5/TEE-HTML5-CD/',
+      },
+      {
+        id: 'tte-sv',
+        title: 'TTE 经胸标准切面',
+        sub: '胸骨旁 / 心尖 / 剑下标准窗',
+        url: 'https://pie.med.utoronto.ca/TTE/TTE_content/standardViews.html',
+      },
+      {
+        id: 'tee-spectral',
+        title: 'TEE 频谱多普勒逐项讲解',
+        sub: '主动脉瓣 / 二尖瓣 / 三尖瓣 / 肺静脉…',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_spectral.html',
+      },
+      {
+        id: 'tee-valve',
+        title: 'TEE 心脏瓣膜评估',
+        sub: '术中瓣膜评估方法（TEER 基础）',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_assessment_cardiacValves.html',
+      },
+      {
+        id: 'm-teer',
+        title: 'M-TEER 二尖瓣边缘修复切面',
+        sub: '二尖瓣夹持定位的超声基础',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_spectral_mitralValve.html',
+      },
+      {
+        id: 't-teer',
+        title: 'T-TEER 三尖瓣边缘修复切面',
+        sub: '三尖瓣反流评估与夹持定位',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_spectral_tricuspidValve.html',
+      },
+      {
+        id: 'tee-3d',
+        title: 'TEE 三维与 MPR 测量',
+        sub: '左室容积 / 二尖瓣 / 主动脉瓣 MPR',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_3DTEE.html',
+      },
+      {
+        id: 'tee-path',
+        title: 'TEE 病理实例',
+        sub: '钙化性主动脉瓣狭窄 / 心房黏液瘤 / SOVA',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_synopses.html',
+      },
+      {
+        id: 'tee-guide',
+        title: 'TEE 标准视图速查表',
+        sub: '探头角度 · 平面 · 对应结构（可打印）',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_guideSheet.html',
+      },
+      {
+        id: 'tee-quiz',
+        title: 'TEE 在线测验',
+        sub: '切面识别与结构辨认自测',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_standardViews_quizzes.html',
+      },
+    ],
+  },
+  {
+    id: 'sim',
+    title: 'TEE 模拟器',
+    items: [
+      {
+        id: 'sim-ct2tee',
+        title: 'CT2TEE 在线模拟器',
+        sub: 'CT 重建驱动 · 旋转 / 俯仰 / 成角操控',
+        url: 'https://www.ct2tee.agh.edu.pl/',
+      },
+      {
+        id: 'sim-virtual',
+        title: 'Virtual TEE（3D 心模型）',
+        sub: '视频与超声平面同步 · 隐藏组织看内部',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_virtualTEE.html',
+      },
+      {
+        id: 'sim-probe',
+        title: 'TEE 探针操控模拟',
+        sub: '练旋转 / 前倾 / 推进 / 退出的手感',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/TEE_probeManipulation_intro.html',
+      },
+      {
+        id: 'sim-atlas',
+        title: 'TEE Simulator 图谱',
+        sub: '交互式切面图谱（英文）',
+        url: 'https://tee-simulator.anesthbeta.com/atlas?lang=en',
+      },
+      {
+        id: 'sim-av',
+        title: '备选视图应用（模拟版）',
+        sub: '非常用切面交互演示',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/alternateViewsHTML5/TEE-HTML5-AV/',
+      },
+      {
+        id: 'sim-cd',
+        title: '彩色对比应用（模拟版）',
+        sub: '彩色多普勒使用时机演示',
+        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/colourCompareHTML5/TEE-HTML5-CD/',
+      },
+    ],
+  },
+];
+
 /** 全部引用文献（公式集目录页底部统一列出） */
 const REFS = [
   {
@@ -4140,7 +4269,7 @@ const REFS = [
     zh: '瓣膜性心脏病超声评估系列（AS / AR / MS / MR / TR）',
     en: 'ASE valve assessment guideline series（含经导管瓣膜术后反流评估）',
     where: 'J Am Soc Echocardiogr, 2017 / 2019',
-    use: '瓣膜专项计算与分级（见瓣膜评估页）',
+    use: '瓣膜专项计算与分级（完整版瓣膜页）',
   },
   {
     id: 'R10',
@@ -4153,10 +4282,10 @@ const REFS = [
 
   window.ExtraData = {
     BRIEF_SECTIONS: BRIEF_SECTIONS,
+    LINK_SECTIONS: LINK_SECTIONS,
     REFS: REFS,
   };
 })();
-/*<<<END-CUT:extra>>>*/
 
 /* ══════════════════════════════════════════════════════════
    心脏超声参考值 · 单页应用逻辑
@@ -4566,7 +4695,7 @@ const REFS = [
   let calcCollapse = '';
   let calcSigns = '';
 
-  /** 公式集目录里的瓣膜条目：点击跳到瓣膜评估页并选中该瓣膜 */
+  /** 公式集目录里的瓣膜条目：点击跳到瓣膜页并预选该瓣膜（发布版无此页，故不渲染该组） */
   const VALVE_INDEX = [
     { id: 'as', title: 'AS 主动脉瓣狭窄', sub: 'AVA · 峰值流速 · 压差分级' },
     { id: 'ar', title: 'AR 主动脉瓣反流', sub: '反流束 · PHT · 压力减半时间' },
@@ -4588,6 +4717,7 @@ const REFS = [
 
   /** 评估类内容（器械支持 / 心腔与应变）与参考文献：来自 extra-data.js，与小程序同源 */
   const BRIEF = (window.ExtraData && window.ExtraData.BRIEF_SECTIONS) || [];
+  const LINKS = (window.ExtraData && window.ExtraData.LINK_SECTIONS) || [];
   const REFS = (window.ExtraData && window.ExtraData.REFS) || [];
 
   /** 当前打开的条目（详情视图） */
@@ -4614,13 +4744,19 @@ const REFS = [
     return '<div class="fx-group">' + esc(title) + '</div><div class="fx-list">';
   }
 
-  /** 目录条目：kind = calc / brief / valve */
-  function fxItemHtml(kind, id, title, sub) {
-    return '<button class="fx-item" data-kind="' + kind + '" data-id="' + id +
-      '"><span class="fx-item__main">' +
+  /** 目录条目：kind = calc / brief / valve / link
+   *  link 为纯外链条目：渲染成 <a target="_blank">，不加载任何图片或 iframe */
+  function fxItemHtml(kind, id, title, sub, url) {
+    const inner = '<span class="fx-item__main">' +
       '<span class="fx-item__n">' + esc(title) + '</span>' +
       '<span class="fx-item__d">' + esc(sub) + '</span>' +
-      '</span><span class="fx-item__a">›</span></button>';
+      '</span><span class="fx-item__a">›</span>';
+    if (kind === 'link') {
+      return '<a class="fx-item" href="' + esc(url || '#') +
+        '" target="_blank" rel="noopener noreferrer">' + inner + '</a>';
+    }
+    return '<button class="fx-item" data-kind="' + kind + '" data-id="' + id + '">' +
+      inner + '</button>';
   }
 
   /** 评估类内容块 → HTML（与小程序 formula 页渲染一致） */
@@ -4710,19 +4846,31 @@ const REFS = [
     if (!$('calcList')) return;
 
     // ── 目录 ──
+    const hasValvePage = !!$('page-valves');
     let list = fxGroupHtml('血流动力学与心功能');
     CALC_GROUPS.forEach(function (g) {
       list += fxItemHtml('calc', g.id, g.title, CALC_SUB[g.id] || '');
     });
-    list += '</div>' + fxGroupHtml('瓣膜评估');
-    VALVE_INDEX.forEach(function (v) {
-      list += fxItemHtml('valve', v.id, v.title, v.sub);
-    });
     list += '</div>';
+    // 瓣膜页只在完整版存在，发布版不列这一组
+    if (hasValvePage) {
+      list += fxGroupHtml('瓣膜评估');
+      VALVE_INDEX.forEach(function (v) {
+        list += fxItemHtml('valve', v.id, v.title, v.sub);
+      });
+      list += '</div>';
+    }
     BRIEF.forEach(function (sec) {
       list += fxGroupHtml(sec.title);
       sec.items.forEach(function (it) {
         list += fxItemHtml('brief', it.id, it.title, it.sub || '');
+      });
+      list += '</div>';
+    });
+    LINKS.forEach(function (sec) {
+      list += fxGroupHtml(sec.title);
+      sec.items.forEach(function (it) {
+        list += fxItemHtml('link', it.id, it.title, it.sub || '', it.url);
       });
       list += '</div>';
     });

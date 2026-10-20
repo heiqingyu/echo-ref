@@ -13,7 +13,7 @@
     <view class="fx-list">
       <view wx:for="{{sec.items}}" wx:key="id" wx:for-item="it"
             class="fx-item" hover-class="fx-item--tap"
-            data-kind="{{it.kind}}" data-id="{{it.id}}" bindtap="onOpen">
+            data-kind="{{it.kind}}" data-id="{{it.id}}" data-url="{{it.url}}" bindtap="onOpen">
         <view class="fx-item__main">
           <view class="fx-item__n">{{it.title}}</view>
           <view class="fx-item__d">{{it.sub}}</view>
