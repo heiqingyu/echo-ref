@@ -1036,7 +1036,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.0.4</div>
+    <div class="verline">心脏超声参考值 · v1.0.5</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1079,7 +1079,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.0.4</div>
+      <div class="verline">心脏超声参考值 · v1.0.5</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -2858,6 +2858,165 @@ const BRIEF_SECTIONS = [
         calc: 'strain',
         note: 'GLS 越接近 0（绝对值越小）提示纵向收缩越差；−18% 可作为多数成人的实用下限。',
       },
+      {
+        id: 'dias-grade',
+        title: '舒张功能分级',
+        sub: '2016 ASE/EACVI 四步法 · 灰区处理',
+        source: ['R16'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '评估四步法（综合判读，不可单凭一项）' },
+          { kind: 'text', text: '① 二尖瓣 E/A；② 平均 e′（间隔 / 侧壁取均值）与 E/e′；③ 左房容积指数 LAVi；④ 三尖瓣反流峰值速度 TR Vmax。' },
+          {
+            kind: 'table',
+            heads: ['指标', '正常 / 不升高', '升高提示'],
+            rows: [
+              ['E/A', '<0.8 松弛受损可能；0.8–2 灰区；≥2 限制性', '—'],
+              ['平均 E/e′', '<7', '7–14 灰区；>14 左房压升高'],
+              ['LAVi', '≤34 mL/m²', '>34 mL/m² 升高'],
+              ['TR Vmax', '≤2.8 m/s', '>2.8 m/s 提示肺高压 / 左房压升高'],
+            ],
+          },
+          { kind: 'h', text: '分级（需多指标一致）' },
+          {
+            kind: 'table',
+            heads: ['等级', '主要表现'],
+            rows: [
+              ['正常', 'E/A<0.8 且 E/e′<7、LAVi 正常、无结构性改变'],
+              ['Ⅰ级（松弛受损）', 'E/A<0.8，E/e′ 与 LAVi 正常'],
+              ['Ⅱ级（假性正常化）', 'E/A 0.8–2，E/e′ 7–14 或 LAVi 升高'],
+              ['Ⅲ级（限制性）', 'E/A≥2，E/e′>14 且 LAVi 升高'],
+              ['Ⅳ级（进展性限制）', 'E/A≥2 且随 Valsalva 呼吸不变（不下降）'],
+            ],
+          },
+          { kind: 'note', text: '灰区（E/e′ 7–14 或 LAVi 临界）必须结合多个指标与临床；单一指标不能独立定级。', warn: true },
+        ],
+        note: '舒张功能分级随年龄变化：老年人 E/A 可假性正常化，需以 E/e′ 与 LAVi 辅助。',
+      },
+      {
+        id: 'peri',
+        title: '心包积液与心脏压塞',
+        sub: '半定量 · 压塞征象 · 缩窄鉴别',
+        source: ['R15'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '积液量半定量（胸骨旁长轴）' },
+          {
+            kind: 'table',
+            heads: ['程度', '表现'],
+            rows: [
+              ['微量', '<50 mL，仅心尖 / 后壁小无回声'],
+              ['少量', '50–100 mL，环形 <10 mm'],
+              ['中量', '100–500 mL，10–20 mm'],
+              ['大量', '>500 mL，>20 mm，可伴心脏摆动'],
+            ],
+          },
+          { kind: 'h', text: '心脏压塞征象' },
+          { kind: 'text', text: '① 右房塌陷（舒张晚期 / 收缩期）；② 右室游离壁塌陷（舒张早期）；③ 吸气时三尖瓣 E 峰增高 >40%、二尖瓣 E 峰下降 >25%（呼吸变异）；④ 下腔静脉固定扩张（>21 mm 且不塌陷）。' },
+          { kind: 'note', text: '心包填塞是临床—超声综合诊断：少量积液亦可在快速增加时致填塞；结合颈静脉怒张、低血压、奇脉。', warn: true },
+          { kind: 'text', text: '心包增厚（>3–4 mm）伴钙化提示缩窄性心包炎可能，需与限制性心肌病鉴别（呼吸变异、室间隔摆动、充盈模式随呼吸变化）。' },
+        ],
+        note: '心包穿刺引流前需评估积液量、定位（剑下 / 心尖）、有无包裹及凝血状态。',
+      },
+      {
+        id: 'prosthetic',
+        title: '人工瓣膜评估',
+        sub: '正常压差 · PPM · 瓣周漏',
+        source: ['R17'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '正常跨瓣流速 / 压差（因型号与尺寸而异，需对照基线）' },
+          {
+            kind: 'table',
+            heads: ['瓣膜', '正常峰值流速', '正常平均压差'],
+            rows: [
+              ['二尖瓣机械 / 生物瓣', '1.5–2.5 m/s', '<5 mmHg'],
+              ['主动脉瓣机械 / 生物瓣', '1.5–3.0 m/s', '<20 mmHg'],
+            ],
+          },
+          { kind: 'text', text: '数值随瓣环尺寸增大而降低；小号瓣（19–21 mm）正常压差更高，判读需对照该型号基线。' },
+          { kind: 'h', text: '患者—瓣膜不匹配（PPM）' },
+          { kind: 'text', text: '主动脉瓣 PPM：有效开口面积指数 EOAI <0.85 cm²/m² 为轻度、<0.65 为重度；重度 PPM 与小瓣环女性预后不良相关。' },
+          { kind: 'note', text: '人工瓣膜少量中心性反流多为生理性；瓣周漏（PAR）为异常，常因缝合问题，需结合溶血与血流动力学。', warn: true },
+          { kind: 'text', text: '评估必须对比术后基线（6–12 周复查）；随访中压差升高或新发反流提示结构衰败或血栓 / 血管翳。' },
+        ],
+        note: '人工瓣膜功能判读以“与基线比较”为核心，单次绝对值易误判。',
+      },
+    ],
+  },
+  {
+    id: 'valve',
+    title: '瓣膜疾病评估',
+    items: [
+      {
+        id: 'mitral',
+        title: '二尖瓣疾病评估',
+        sub: '狭窄 MS · 反流 MR（定性 + 定量）',
+        source: ['R9'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '二尖瓣狭窄 MS（定性 + 定量）' },
+          {
+            kind: 'table',
+            heads: ['参数', '轻度', '中度', '重度'],
+            rows: [
+              ['MVA（压力减半时间）', '>1.5', '1.0–1.5', '<1.0 cm²'],
+              ['平均跨瓣压差', '<5', '5–10', '>10 mmHg'],
+              ['肺动脉收缩压', '<30', '30–50', '>50 mmHg'],
+            ],
+          },
+          { kind: 'text', text: '二尖瓣口面积正常 4–6 cm²；平面法（二维）测 MVA 更直观，PISA 法用于反流程度评估而非狭窄面积。' },
+          { kind: 'h', text: '二尖瓣反流 MR（定性 + 定量）' },
+          {
+            kind: 'table',
+            heads: ['参数', '轻度', '中度', '重度'],
+            rows: [
+              ['EROA', '<20', '20–39', '≥40 mm²'],
+              ['反流容积 RVol', '<30', '30–59', '≥60 mL'],
+              ['反流分数 RF', '<30', '30–49', '≥50%'],
+              ['缩流颈 VC', '<3', '3–6.9', '≥7 mm'],
+            ],
+          },
+          { kind: 'note', text: '原发病因决定随访策略：风湿性、退行性（脱垂 / 腱索断裂）、继发性（乳头肌缺血 / DCM）。偏心性射流易低估，需多切面确认。', warn: true },
+        ],
+        note: '反流程度需结合定性（彩色面积、频谱密度）与定量（PISA 法 EROA / RVol）。',
+      },
+      {
+        id: 'aortic',
+        title: '主动脉瓣疾病评估',
+        sub: '狭窄 AS（三联） · 反流 AR',
+        source: ['R9'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '主动脉瓣狭窄 AS（三联定量）' },
+          {
+            kind: 'table',
+            heads: ['参数', '轻度', '中度', '重度'],
+            rows: [
+              ['峰值流速 Vmax', '<3', '3–4', '≥4 m/s'],
+              ['平均跨瓣压差', '<20', '20–40', '≥40 mmHg'],
+              ['主动脉瓣口面积 AVA', '>1.5', '1.0–1.5', '≤1.0 cm²'],
+              ['AV 流速比值 DVI', '>0.5', '0.25–0.5', '<0.25'],
+            ],
+          },
+          { kind: 'note', text: '三者需一致；不一致时按最严重一级，并考虑低流量低压差（LF-LG）型，需多巴酚丁胺负荷或 CT 钙化评分辅助。', warn: true },
+          { kind: 'text', text: '重度 AS 分期：B 期（进展风险高，每年随访）；C 期（无症状但 Vmax≥4 或 AVA≤1.0）；D 期（有症状）。' },
+          { kind: 'h', text: '主动脉瓣反流 AR' },
+          {
+            kind: 'table',
+            heads: ['参数', '轻度', '重度'],
+            rows: [
+              ['缩流颈宽度', '<3 mm', '≥6 mm'],
+              ['反流束宽 / LVOT 直径', '<25%', '>65%'],
+              ['PISA 半径（舒张期）', '—', '≥9 mm'],
+              ['EROA', '<10', '≥30 mm²'],
+              ['RVol', '<30', '≥60 mL'],
+            ],
+          },
+          { kind: 'text', text: '急性 AR（夹层、感染性心内膜炎）与慢性 AR 表现不同；慢性者左室可长期耐受，一旦出现症状或 LVEF<50% 应考虑手术。' },
+        ],
+        note: 'AS 与 AR 定量均应先在「瓣膜评估」页用连续性方程 / PISA 法精算。',
+      },
     ],
   },
 ];
@@ -3061,6 +3220,27 @@ const REFS = [
     en: 'Rudski LG, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults',
     where: 'J Am Soc Echocardiogr, 2010, 23(7): 685–713',
     use: '右室功能、右房压与 PH 超声评估的金标准参考',
+  },
+  {
+    id: 'R15',
+    zh: '心包疾病超声心动图评估指南（2013）',
+    en: 'Klein AL, et al. ASE/EACVI Guidelines for Echocardiographic Evaluation of Pericardial Disease',
+    where: 'J Am Soc Echocardiogr, 2013, 26(9): 965–1012',
+    use: '心包积液半定量、心脏压塞与缩窄性心包炎征象',
+  },
+  {
+    id: 'R16',
+    zh: '左心室舒张功能评估指南（2016）',
+    en: 'Nagueh SF, et al. Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography (2016 ASE/EACVI)',
+    where: 'J Am Soc Echocardiogr, 2016, 29(4): 277–314',
+    use: '舒张功能分级四步法与灰区处理',
+  },
+  {
+    id: 'R17',
+    zh: '人工心脏瓣膜超声评估指南（2017）',
+    en: 'Zoghbi WA, et al. Recommendations for Evaluation of Prosthetic Valves with Echocardiography (2017 ASE)',
+    where: 'J Am Soc Echocardiogr, 2017, 30(4): 372–428',
+    use: '人工瓣膜正常压差、PPM 与瓣周漏判读',
   },
 ];
 
@@ -3676,15 +3856,17 @@ const REFS = [
           blocksHtml(it.blocks);
         if (it.fields && it.fields.length) {
           html += fieldsHtml(it.fields);
-          if (it.id === it.id === 'rv') {
+          if (it.id === 'rv') {
             html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse) +
               segHtml('calcsigns', CALC_SIGNS, calcSigns);
           }
         }
+        if (it.fields && it.fields.length) {
+          html += '<div class="calc-out" id="calcOut-' + it.id + '">' +
+            '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div>';
+        }
         if (it.note) html += '<div class="note">' + esc(it.note) + '</div>';
-        html += '<div class="calc-out" id="calcOut-' + it.id + '">' +
-          '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div>' +
-          briefRefsHtml(it.source) + '</div>';
+        html += briefRefsHtml(it.source) + '</div>';
       });
     });
     $('calcGroups').innerHTML = html;
@@ -3930,7 +4112,7 @@ const REFS = [
       document.querySelectorAll('#calcGroups input[data-ck="' + k + '"]')
         .forEach(function (o) { o.value = ''; });
     });
-    if (curCalcGroup === curCalcGroup === 'rv') {
+    if (curCalcGroup === 'rv') {
       calcCollapse = '';
       calcSigns = '';
       setSeg('calccollapse', '');

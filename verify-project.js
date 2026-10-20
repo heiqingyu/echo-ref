@@ -132,10 +132,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 2) ok('评估内容 2 个分组（器械支持 / 心腔与应变）');
+if (EX.BRIEF_SECTIONS.length === 3) ok('评估内容 3 个分组（器械支持 / 心腔与应变 / 瓣膜疾病评估）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'crt,la,lv,rv,strain') ok('评估条目 = crt/la/lv/rv/strain');
+if (briefIds.join(',') === 'crt,la,lv,rv,strain,dias-grade,peri,prosthetic,mitral,aortic') ok('评估条目 = crt/la/lv/rv/strain/dias-grade/peri/prosthetic/mitral/aortic');
 else bad('评估条目异常: ' + briefIds.join(','));
 const briefBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   !it.title || !it.sub || !it.blocks || !it.blocks.length || !it.source));
@@ -145,7 +145,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 14) ok('参考文献 14 条');
+if (EX.REFS.length === 17) ok('参考文献 17 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 
 console.log('\n=== 4f. 切面学习 / 切面指南 / TEE 模拟器（纯外链） ===');

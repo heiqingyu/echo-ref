@@ -611,15 +611,17 @@
           blocksHtml(it.blocks);
         if (it.fields && it.fields.length) {
           html += fieldsHtml(it.fields);
-          if (it.id === it.id === 'rv') {
+          if (it.id === 'rv') {
             html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse) +
               segHtml('calcsigns', CALC_SIGNS, calcSigns);
           }
         }
+        if (it.fields && it.fields.length) {
+          html += '<div class="calc-out" id="calcOut-' + it.id + '">' +
+            '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div>';
+        }
         if (it.note) html += '<div class="note">' + esc(it.note) + '</div>';
-        html += '<div class="calc-out" id="calcOut-' + it.id + '">' +
-          '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div>' +
-          briefRefsHtml(it.source) + '</div>';
+        html += briefRefsHtml(it.source) + '</div>';
       });
     });
     $('calcGroups').innerHTML = html;
@@ -865,7 +867,7 @@
       document.querySelectorAll('#calcGroups input[data-ck="' + k + '"]')
         .forEach(function (o) { o.value = ''; });
     });
-    if (curCalcGroup === curCalcGroup === 'rv') {
+    if (curCalcGroup === 'rv') {
       calcCollapse = '';
       calcSigns = '';
       setSeg('calccollapse', '');
