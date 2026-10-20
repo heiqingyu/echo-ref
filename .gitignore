@@ -32,6 +32,9 @@ keystore.properties
 project.config.json
 project.private.config.json
 
+# ══════════ 无头浏览器测试残留 ══════════
+.chrome-*/
+
 # ══════════ 系统杂项 ══════════
 Thumbs.db
 .DS_Store
