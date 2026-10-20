@@ -55,17 +55,19 @@
 
     <view class="note">{{note}}</view>
 
-    <view wx:if="{{hasOut}}" class="calc-out">
-      <text class="calc-out__lbl">结果</text>
-      <text class="calc-out__v">{{out}}</text>
-    </view>
-    <view wx:else class="calc-out calc-out--idle">
-      <text class="calc-out__lbl">结果</text>
-      <text class="calc-out__v">等待输入</text>
-    </view>
+    <block wx:if="{{!isReference}}">
+      <view wx:if="{{hasOut}}" class="calc-out">
+        <text class="calc-out__lbl">结果</text>
+        <text class="calc-out__v">{{out}}</text>
+      </view>
+      <view wx:else class="calc-out calc-out--idle">
+        <text class="calc-out__lbl">结果</text>
+        <text class="calc-out__v">等待输入</text>
+      </view>
+    </block>
   </view>
 
-  <button class="clear-btn" bindtap="onClear">清空本组输入</button>
+  <button wx:if="{{!isReference}}" class="clear-btn" bindtap="onClear">清空本组输入</button>
 
   <view class="card" wx:if="{{refs.length}}">
     <view class="card__title">本条目引用</view>

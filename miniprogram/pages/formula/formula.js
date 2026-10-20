@@ -48,6 +48,7 @@ Page({
     sexLabel: '男性',
     out: '',
     hasOut: false,
+    isReference: false,
   },
 
   onLoad(query) {
@@ -70,6 +71,7 @@ Page({
           return r ? { id: r.id, zh: r.zh, where: r.where } : null;
         }).filter(Boolean),
         inputs: inputs,
+        isReference: !(brief.fields && brief.fields.length),
         collapseV: cache.__collapse || '',
         signsV: cache.__signs || '',
       });
@@ -87,6 +89,7 @@ Page({
         blocks: [],
         refs: [],
         inputs: inputs,
+        isReference: false,
         collapseV: cache.__collapse || '',
         signsV: cache.__signs || '',
       });
