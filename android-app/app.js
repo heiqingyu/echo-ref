@@ -431,6 +431,68 @@
       fields: [['smap', '平均动脉压 MAP', 'mmHg'], ['srap', '右房压 RAP', 'mmHg'], ['sco', '心输出量 CO', 'L/min']],
       note: '正常 800–1200 dyn·s·cm⁻⁵；有 BSA 时同出 SVRI（1600–2400）' },
 
+    /* ── v1.2.9 第二批：右心与肺循环补全 ── */
+    { id: 'rvvol', sec: 'right', title: '右室容积指数 RVEDVi / RVESVi',
+      fields: [['rvedv', 'RV 舒张末容积', 'mL'], ['rvesv', 'RV 收缩末容积（可选）', 'mL']],
+      note: 'RVEDVi 上限男 87 / 女 75 mL/m²；RVESVi 上限男 44 / 女 35 mL/m²（ASE 右心指南）。右室扩大而左室正常时注意 ARVC、房间隔缺损、肺高压；随访必须同一方法' },
+    { id: 'rvfws', sec: 'right', title: '右室游离壁应变 RVFWS',
+      fields: [['rfb', '基底段', '%'], ['rfm', '中间段', '%'], ['rfa', '心尖段', '%']],
+      note: 'RVFWS 正常 |均值| ≥20%（即 ≤ −20%）。右室纵向功能常先于 TAPSE、FAC 下降；填负数更符合习惯（如 −24）。仅填一到两段也能算，但三段齐全更可靠' },
+    { id: 'papi', sec: 'right', title: 'PAPi 肺动脉搏动指数',
+      fields: [['pispap', '肺动脉收缩压 sPAP', 'mmHg'], ['pidpap', '肺动脉舒张压 dPAP', 'mmHg'],
+        ['pirap', '右房压 RAP', 'mmHg']],
+      note: 'PAPi = (sPAP − dPAP) / RAP，反映右室与肺循环的耦联。<1.85 提示失耦联，肺高压与心衰患者预后差；>2.0 相对保留。RAP 需先由 IVC 估出' },
+    { id: 'pdap', sec: 'right', title: '舒张期肺动脉压 PADP',
+      fields: [['pdprv', 'PR 舒张末期流速', 'm/s'], ['pdrap', '右房压 RAP', 'mmHg']],
+      note: 'PADP = 4 × V² + RAP，正常 8–15 mmHg。平均肺动脉压条目（mpap）用 PR 峰值速度算平均压，本条算舒张末压，两者互补' },
+    { id: 'residx', sec: 'right', title: '阻力指数 PVRI / SVRI',
+      fields: [['ripvr', 'PVR（可选）', 'WU'], ['risvr', 'SVR（可选）', 'dyn·s·cm⁻⁵']],
+      note: 'PVRI = PVR × BSA，正常 3–5 WU·m²，>5 提示肺血管阻力显著升高（先心手术决策关键）；SVRI = SVR × BSA，正常 1970–2390 dyn·s·cm⁻⁵·m²' },
+    { id: 'rvdvdt', sec: 'right', title: '右室 dP/dt',
+      fields: [['rdt', '1→2 m/s 时间差 Δt', 'ms']],
+      note: '两点压差差为 4×2² − 4×1² = 12 mmHg，故 dP/dt = 12 ÷ Δt(s)，单位 mmHg/s。<400 提示右室收缩功能减低' },
+
+    /* ── v1.3.0 第三批：瓣膜与舒张细节 ── */
+    { id: 'wilkins', sec: 'vq', title: 'Wilkins 二尖瓣形态评分',
+      fields: [['wk1', '瓣叶厚度', '分'], ['wk2', '瓣叶钙化', '分'],
+        ['wk3', '瓣叶活动度', '分'], ['wk4', '瓣下增厚', '分']],
+      note: '四项各 1–4 分（1 最轻、4 最重），总分 4–16。≤8 分提示形态尚好、适合经皮球囊二尖瓣成形（PBMV）；>8 分优先外科。评分受主观影响，建议由有经验医师复核' },
+    { id: 'vcw', sec: 'vq', title: '缩流颈宽度 VCW 分级',
+      opts: [{ k: 'vsite', n: '瓣膜', list: [['mr', 'MR 二尖瓣'], ['ar', 'AR 主动脉瓣'], ['tr', 'TR 三尖瓣']] }],
+      fields: [['vcwv', '缩流颈宽度', 'mm']],
+      note: 'MR / TR：<3 轻度、3–6.9 中度、≥7 重度；AR：<3 轻度、3–5.9 中度、≥6 重度。VCW 受仪器设置与血流动力学影响，重度判读应与 PISA、反流分数互相印证' },
+    { id: 'rf', sec: 'vq', title: '反流分数 RF',
+      fields: [['rfvol', '反流量 RVol', 'mL'], ['rfsv', '每搏量 SV', 'mL']],
+      note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷' },
+    { id: 'mvac', sec: 'vq', title: '二尖瓣面积（连续性方程法）',
+      fields: [['mvd', 'LVOT 直径', 'cm'], ['mvlvti', 'LVOT VTI', 'cm'], ['mvmvti', '二尖瓣 VTI', 'cm']],
+      note: 'MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV，与 PHT 法互为校核：连续性方程不受心率与合并反流影响，房颤时更可靠' },
+    { id: 'laef', sec: 'recon', title: '左房排空分数 LAEF',
+      fields: [['lavmax', 'LA 最大容积', 'mL'], ['lavmin', 'LA 最小容积', 'mL']],
+      note: 'LAEF = (LAVmax − LAVmin) / LAVmax，正常 ≥50%；扩张指数 = (LAVmax − LAVmin) / LAVmin。LAEF 减低提示左房机械功能受损' },
+    { id: 'quickratio', sec: 'hemo', title: '快速比值：LA/Ao · RV/LV',
+      fields: [['qla', '左房内径 LA', 'mm'], ['qao', '主动脉根部 Ao', 'mm'],
+        ['qrv', '右室舒张末内径 RV', 'mm'], ['qlv', '左室舒张末内径 LV', 'mm']],
+      note: 'LA/Ao ≤1.1 正常；RV/LV >0.6 提示右室扩大（>1.0 高度提示右心负荷过重）。单位同组一致即可' },
+    { id: 'lvmih', sec: 'recon', title: 'LVMI 身高^2.7（肥胖适用）',
+      fields: [['lhmass', '左室质量 LV Mass', 'g'], ['lhheight', '身高', 'cm']],
+      note: 'LVMI = Mass / 身高(m)^2.7，男 >50、女 >47 g/m^2.7 提示左室肥厚。肥胖患者按 BSA 指数化会低估肥厚程度，此时应改用身高^2.7' },
+
+    /* ── v1.3.0 第四批：先心 / 心肌 / 耦联 ── */
+    { id: 'paidx', sec: 'ivs', title: 'McGoon 比值与 Nakata 指数',
+      fields: [['prpa', '右肺动脉 RPA', 'mm'], ['plpa', '左肺动脉 LPA', 'mm'],
+        ['pdao', '膈肌水平降主动脉（可选）', 'mm']],
+      note: 'McGoon = (RPA + LPA) ÷ 降主动脉，≥1.8 可考虑根治；Nakata = 左右肺动脉截面积之和 ÷ BSA（需身高体重），≥150 mm²/m² 可考虑根治。随访必须用同一口径' },
+    { id: 'ras', sec: 'recon', title: '心尖保留比值 RAS',
+      fields: [['rasap', '心尖段平均应变', '%'], ['rasba', '基底段平均应变', '%']],
+      note: 'RAS = |心尖段均值| ÷ |基底段均值|。≥1 提示相对心尖保留，是心肌淀粉样变的典型表现；典型淀粉样变多在 2.0 以上' },
+    { id: 'ea', sec: 'hemo', title: '有效动脉弹性 Ea / Ees-Ea 耦联',
+      fields: [['eaesp', '收缩末压 ESP', 'mmHg'], ['easv', '每搏量 SV', 'mL'], ['eaesv', '收缩末容积 ESV', 'mL']],
+      note: 'Ea = ESP / SV；单点 Ees ≈ ESP / ESV，故 Ees/Ea = SV / ESV。常见区间 0.8–1.5，心衰时降低。单点法仅作趋势参考' },
+    { id: 'coa', sec: 'ivs', title: '主动脉缩窄压差与拖尾',
+      fields: [['coav', '缩窄处峰值流速', 'm/s'], ['coaved', '舒张末期流速（可选）', 'm/s']],
+      note: '压差 = 4 × Vmax²。峰值压差 ≥20 mmHg 提示有血流动力学意义；舒张末期仍有 ≥5 mmHg 压差说明存在持续跨缩窄血流（拖尾征）。新生儿期压差可能不高' },
+
     /* ── 瓣膜与舒张定量（sec: vq） ── */
     { id: 'pisav', sec: 'vq', title: '反流定量（PISA）',
       fields: [['prad', 'PISA 半球半径 r', 'cm'], ['palias', 'Nyquist 速度（默认 40）', 'cm/s'],
@@ -474,6 +536,38 @@
     { id: 'swv', sec: 'recon', title: '每搏功 SW / SWi',
       fields: [['ssv', '每搏量 SV', 'mL'], ['wmap', '平均动脉压 MAP', 'mmHg']],
       note: 'SW(g·m) = SV × MAP × 0.0136，正常 60–110；SWi = SW/BSA。GWI/GCW/GWE 需专有软件，无法手算' },
+
+    /* ── v1.2.8 第一批：M 型 / 评分体系 / 介入尺寸 ── */
+    { id: 'mtype', sec: 'hemo', title: 'M 型三合一：FS · Teichholz EF · EPSS',
+      fields: [['mtdd', 'LVIDd（舒张末内径）', 'mm'], ['mtds', 'LVIDs（收缩末内径）', 'mm'],
+        ['mtepss', 'EPSS（可选）', 'mm']],
+      note: 'FS = (LVIDd − LVIDs)/LVIDd；Teichholz：V = 7D³/(2.4+D)（D 取 cm），EF = (EDV−ESV)/EDV。EPSS <7 mm 正常，>12 mm 提示 EF 显著减低。M 型受取样线偏斜与节段性室壁运动异常影响，条件允许时以 Simpson 双平面为准' },
+    { id: 'wmsi', sec: 'score', title: 'WMSI 室壁运动积分',
+      opts: [{ k: 'wseg', n: '节段总数', list: [['17', '17 节段（推荐）'], ['16', '16 节段']] }],
+      fields: [['wn1', '正常（1 分）节段数', '个'], ['wn2', '运动减弱（2 分）', '个'],
+        ['wn3', '无运动（3 分）', '个'], ['wn4', '反常运动（4 分）', '个'],
+        ['wn5', '室壁瘤（5 分）', '个']],
+      note: 'WMSI = (1·n1 + 2·n2 + 3·n3 + 4·n4 + 5·n5) ÷ 节段总数。按各类节段个数录入，比逐段填 17 个格子快且不易漏段。1.0 正常，1.0–1.5 轻度，1.5–1.7 中度，≥1.7 提示大面积缺血且预后差' },
+    { id: 'h2fpef', sec: 'score', title: 'H2FPEF 评分',
+      opts: [{ k: 'haf', n: '心房颤动', list: [['0', '无'], ['1', '有']] },
+        { k: 'hbp', n: '降压药种数', list: [['0', '0–1 种'], ['1', '≥2 种']] }],
+      fields: [['hbmi', 'BMI', 'kg/m²'], ['hage', '年龄', '岁'], ['hee', 'E/e′', ''], ['hpasp', 'PASP', 'mmHg']],
+      note: '加权评分：BMI >30 计 2 分，心房颤动 3 分，年龄 >60 岁 1 分，≥2 种降压药 1 分，E/e′ >9 计 1 分，PASP >35 mmHg 计 1 分。≥6 分 HFpEF 可能性高，≤1 分可能性低，2–5 分需负荷超声或侵入性血流动力学' },
+    { id: 'hfapeff', sec: 'score', title: 'HFA-PEFF 评分',
+      opts: [{ k: 'hsex', n: '性别', list: [['m', '男性'], ['f', '女性']] },
+        { k: 'haf2', n: '心律', list: [['0', '窦性心律'], ['1', '心房颤动']] }],
+      fields: [['hlavi', 'LAVi', 'mL/m²'], ['hlvmi', 'LVMI', 'g/m²'], ['hrwt', 'RWT', ''],
+        ['hpasp2', 'PASP', 'mmHg'], ['hee2', 'E/e′', ''], ['hes', '间隔 e′', 'cm/s'],
+        ['hel', '侧壁 e′', 'cm/s'], ['htrv', 'TR Vmax', 'm/s'], ['hgls', 'GLS（绝对值）', '%'],
+        ['hbnp', 'NT-proBNP', 'pg/mL']],
+      note: '三类各取最高分后相加（0–6）。形态学：LAVi ≥34 计 1、≥40 计 2；LVMI 男 >115/149、女 >95/122 计 1/2；RWT >0.42 计 1；PASP >35 计 1。功能学：E/e′ 9–14 计 1、≥15 计 2；e′ 减低计 1；TR Vmax >2.8 计 1；GLS <16% 计 1。标志物按窦律/房颤分档。≥5 分支持 HFpEF' },
+    { id: 'tavrsz', sec: 'ivs', title: 'TAVR 瓣环尺寸与 oversizing',
+      fields: [['tcirc', '瓣环周长', 'mm'], ['tarea', '瓣环面积', 'mm²'], ['tnom', '拟用标称直径', 'mm']],
+      note: '周长导出直径 = C/π；面积导出直径 = 2√(A/π)；面积 oversizing = (标称面积/实测面积 − 1)×100%。自膨胀瓣常见目标 10–20%，球囊扩张瓣 −10% ~ +5%。具体型号按厂商说明书与术者经验核定' },
+    { id: 'laasz', sec: 'ivs', title: '左心耳封堵尺寸推荐',
+      fields: [['lzmax', '着陆区最大径', 'mm'], ['lzmin', '着陆区最小径（可选）', 'mm'],
+        ['lzdepth', '着陆区深度（可选）', 'mm']],
+      note: '按着陆区最大径 × 1.08 上取整落到常规型号（17/20/24/27/31/35 mm）。长短径比 >1.3 提示椭圆度大；深度不足时考虑小一号。多用于 Watchman FLX 类器械，其他产品按各自说明书' },
   ];
 
   /** 计算类条目的目录分组（与 calc-groups.js 的 CALC_SECTIONS 同源同序） */
@@ -482,6 +576,8 @@
     { id: 'right', title: '右心与肺循环' },
     { id: 'vq', title: '瓣膜与舒张定量' },
     { id: 'recon', title: '重构与心肌功能' },
+    { id: 'score', title: '评分与室壁运动' },
+    { id: 'ivs', title: '介入尺寸与先心' },
   ];
 
   const CALC_COLLAPSE = [['', 'IVC 塌陷未知'], ['yes', '吸气塌陷 >50%'], ['no', '吸气塌陷 ≤50%']];
@@ -490,6 +586,8 @@
   const calcVal = {};
   let calcCollapse = '';
   let calcSigns = '';
+  /** 选项组状态（性别 / 心律 / 节段总数 …），键为 calcc-groups 里的 opts.k */
+  const calcOpt = {};
 
   /** 公式集目录里的瓣膜条目：点击跳到瓣膜页并预选该瓣膜（发布版无此页，故不渲染该组） */
   const VALVE_INDEX = [
@@ -531,6 +629,29 @@
     aortaidx: '内径 ÷ BSA · 扩张分层',
     mdsv: '六壁峰值应变的均值与标准差',
     swv: 'SV × MAP × 0.0136',
+    mtype: '缩短分数 · 立方公式 EF · EPSS',
+    wmsi: '按分值节段个数录入 · 1.0 正常 · ≥1.7 提示大面积缺血',
+    h2fpef: 'BMI · 房颤 · 年龄 · 降压药 · E/e′ · PASP → 0–9 分',
+    hfapeff: '形态学 / 功能学 / 生物标志物 三类取最高后相加',
+    tavrsz: '周长/面积导出直径 · 面积 oversizing 判读',
+    laasz: '着陆区最大径 → 推荐型号 · 深度与椭圆度提示',
+    rvvol: '按性别分档 · 右室扩大与 ARVC 随访',
+    rvfws: '三节段均值 · |均值| <20% 提示减低',
+    papi: '(sPAP − dPAP) ÷ RAP · <1.85 失耦联',
+    pdap: '4 × V(PR 舒张末)² + RAP',
+    residx: 'PVR、SVR 按 BSA 指数化',
+    rvdvdt: 'TR 反流谱 1→2 m/s 的 Δt · <400 减低',
+    wilkins: '4 项各 1–4 分 · ≤8 适合 PBMV',
+    vcw: 'MR / TR：<3 轻 · 3–6.9 中 · ≥7 重',
+    rf: 'RVol ÷ SV · 轻 <30 中 30–49 重 ≥50',
+    mvac: 'MVA = SV ÷ 二尖瓣 VTI',
+    laef: 'LAEF 与 LA 扩张指数',
+    quickratio: '床头最常用的两个半定量比值',
+    lvmih: 'de Simone 指数 · 男 >50 女 >47',
+    paidx: '肺动脉发育 · 先心根治可行性',
+    ras: '心尖段 ÷ 基底段 · ≥1 提示淀粉样变',
+    ea: 'ESP ÷ SV · Ees/Ea ≈ SV ÷ ESV',
+    coa: '峰值压差 · 舒张末期持续血流',
   };
 
   /** 评估类内容（器械支持 / 心腔与应变）与参考文献：来自 extra-data.js，与小程序同源 */
@@ -687,6 +808,22 @@
       }
       h += '</div>';
     }
+    return h;
+  }
+
+  /** 选项组（性别 / 心律 / 节段总数 …）：与 calc-groups.js 的 opts 同构 */
+  function optsHtml(opts) {
+    let h = '';
+    opts.forEach(function (o) {
+      const cur = calcOpt[o.k] !== undefined ? calcOpt[o.k] : o.list[0][0];
+      h += '<div class="field"><label class="field__l">' + esc(o.n) + '</label>' +
+        '<div class="seg" data-opt="' + o.k + '">';
+      o.list.forEach(function (c) {
+        h += '<div class="seg__i' + (c[0] === cur ? ' seg__i--on' : '') +
+          '" data-v="' + esc(c[0]) + '">' + esc(c[1]) + '</div>';
+      });
+      h += '</div></div>';
+    });
     return h;
   }
 
@@ -932,6 +1069,7 @@
       html += '<div class="card" data-g="' + g.id + '" hidden>' +
         '<div class="card__t">' + esc(g.title) + '</div>' +
         fieldsHtml(g.fields.map(function (f) { return { k: f[0], n: f[1], u: f[2] }; }));
+      if (g.opts) html += optsHtml(g.opts);
       // 右房压条目需要 IVC 塌陷选项（与右心评估条目共用同一条状态）
       if (g.id === 'rapv') html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse);
       html += '<div class="note">' + esc(g.note) + '</div>' +
@@ -983,6 +1121,15 @@
           });
           const fn = segHandlers[group];
           if (fn) fn(val);
+        });
+      });
+    });
+    // 选项组（性别 / 心律 / 节段总数 …）：高亮由上面的通用绑定负责，这里只记状态重算
+    $('calcGroups').querySelectorAll('.seg[data-opt]').forEach(function (seg) {
+      seg.querySelectorAll('.seg__i').forEach(function (item) {
+        item.addEventListener('click', function () {
+          calcOpt[seg.dataset.opt] = item.dataset.v;
+          renderCalc();
         });
       });
     });
@@ -1360,6 +1507,240 @@
       parts.push('· ' + r.text);
       put('swv', partsOf(parts));
     } else put('swv');
+
+    // ── v1.2.8 第一批：M 型 / 评分体系 / 介入尺寸 ──
+
+    // M 型三合一
+    {
+      const r = Calc.mModeTriple(v.mtdd, v.mtds, v.mtepss);
+      if (r.error) put('mtype', r.error);
+      else {
+        const parts = [
+          'FS ' + Calc.fmt(r.fs, 1) + '% · ' + r.fsText,
+          'Teichholz EDV ' + Calc.fmt(r.edv, 1) + ' / ESV ' + Calc.fmt(r.esv, 1) +
+            ' mL / EF ' + Calc.fmt(r.ef, 1) + '% · ' + r.efText,
+        ];
+        if (r.epss !== undefined) parts.push(r.epssText);
+        if (r.mismatch) parts.push(r.mismatch);
+        put('mtype', partsOf(parts));
+      }
+    }
+
+    // WMSI 室壁运动积分
+    {
+      const r = Calc.wmsiIndex([v.wn1, v.wn2, v.wn3, v.wn4, v.wn5]);
+      if (r.error) put('wmsi', r.error);
+      else {
+        const want = parseInt(calcOpt.wseg || '17', 10);
+        const parts = ['WMSI = ' + Calc.fmt(r.wmsi, 2) + '（' + r.total + ' 节段，总分 ' + r.score + '）'];
+        if (r.total !== want) parts.push('注意：录入节段数 ' + r.total + ' 与所选 ' + want + ' 节段不一致');
+        parts.push(r.text);
+        put('wmsi', partsOf(parts));
+      }
+    }
+
+    // H2FPEF
+    if (has('hbmi', 'hage', 'hee', 'hpasp')) {
+      const r = Calc.h2fpefScore({
+        bmi: v.hbmi, age: v.hage, ee: v.hee, pasp: v.hpasp,
+        af: calcOpt.haf === '1', bpMeds: calcOpt.hbp === '1' ? 2 : 1,
+      });
+      const parts = ['H2FPEF ' + r.score + ' 分 · ' + r.text];
+      if (r.items.length) {
+        parts.push('计分项：' + r.items.map(function (it) { return it[0] + ' +' + it[1]; }).join('、'));
+      }
+      put('h2fpef', partsOf(parts));
+    } else put('h2fpef');
+
+    // HFA-PEFF
+    if (has('hlavi') || has('hee2') || has('hbnp')) {
+      const r = Calc.hfaPeffScore({
+        female: calcOpt.hsex === 'f', af: calcOpt.haf2 === '1',
+        lavi: v.hlavi, lvmi: v.hlvmi, rwt: v.hrwt, pasp: v.hpasp2,
+        ee: v.hee2, es: v.hes, el: v.hel, trv: v.htrv,
+        gls: v.hgls, ntprobnp: v.hbnp,
+      });
+      put('hfapeff', 'HFA-PEFF ' + r.score + ' 分（形态 ' + r.structural +
+        ' + 功能 ' + r.functional + ' + 标志物 ' + r.biomarker + '）· ' + r.text);
+    } else put('hfapeff');
+
+    // TAVR 瓣环与 oversizing
+    if (has('tcirc') || has('tarea')) {
+      const r = Calc.tavrSizing(v.tcirc, v.tarea, v.tnom);
+      if (r.error) put('tavrsz', r.error);
+      else {
+        const parts = [];
+        if (r.dc !== undefined) parts.push('周长导出直径 ' + Calc.fmt(r.dc, 1) + ' mm');
+        if (r.da !== undefined) parts.push('面积导出直径 ' + Calc.fmt(r.da, 1) + ' mm');
+        if (r.areaOver !== undefined) {
+          parts.push('面积 oversizing ' + Calc.fmt(r.areaOver, 1) + '%');
+          if (r.circOver !== undefined) parts.push('周长 oversizing ' + Calc.fmt(r.circOver, 1) + '%');
+          parts.push(r.text);
+        } else if (r.hint) parts.push(r.hint);
+        put('tavrsz', partsOf(parts));
+      }
+    } else put('tavrsz');
+
+    // 左心耳封堵尺寸
+    if (has('lzmax')) {
+      const r = Calc.laaSize(v.lzmax, v.lzmin, v.lzdepth);
+      if (r.error) put('laasz', r.error);
+      else {
+        const parts = [];
+        if (r.ratio !== undefined) parts.push('长短径比 ' + Calc.fmt(r.ratio, 2));
+        parts.push(r.text);
+        if (r.shapeText) parts.push(r.shapeText);
+        if (r.depthWarn) parts.push(r.depthWarn);
+        put('laasz', partsOf(parts));
+      }
+    } else put('laasz');
+
+    // ── v1.2.9 第二批：右心与肺循环 ──
+
+    // RV 容积指数
+    if (has('rvedv')) {
+      const r = Calc.rvVolumeIndex(v.rvedv, v.rvesv, bsa, female);
+      if (r.error) put('rvvol', r.error);
+      else {
+        const parts = ['RVEDVi ' + Calc.fmt(r.edvi, 1) + ' mL/m² · ' + r.edvText];
+        if (r.esvi !== undefined) {
+          parts.push('RVESVi ' + Calc.fmt(r.esvi, 1) + ' mL/m² · ' + r.esvText);
+        }
+        put('rvvol', partsOf(parts));
+      }
+    } else put('rvvol');
+
+    // RVFWS
+    if (has('rfb') || has('rfm') || has('rfa')) {
+      const r = Calc.rvFreeWallStrain(v.rfb, v.rfm, v.rfa);
+      if (r.error) put('rvfws', r.error);
+      else put('rvfws', 'RVFWS 均值 ' + Calc.fmt(r.mean, 1) + '%（' + r.n + ' 段）· ' + r.text);
+    } else put('rvfws');
+
+    // PAPi
+    if (has('pispap', 'pidpap', 'pirap')) {
+      const r = Calc.pulmonaryPulseIndex(v.pispap, v.pidpap, v.pirap);
+      put('papi', r.error ? r.error : 'PAPi = ' + Calc.fmt(r.papi, 2) + ' · ' + r.text);
+    } else put('papi');
+
+    // PADP
+    if (has('pdprv')) {
+      const r = Calc.pulmonaryDiastolicPressure(v.pdprv, v.pdrap);
+      put('pdap', r.error ? r.error
+        : 'PADP ≈ ' + Calc.fmt(r.padp, 1) + ' mmHg（压差 ' + Calc.fmt(r.grad, 1) + ' + RAP）');
+    } else put('pdap');
+
+    // 阻力指数
+    if (has('ripvr') || has('risvr')) {
+      const r = Calc.resistanceIndices(v.ripvr, v.risvr, bsa);
+      if (r.error) put('residx', r.error);
+      else {
+        const parts = [];
+        if (r.pvri !== undefined) parts.push('PVRI ' + Calc.fmt(r.pvri, 1) + ' WU·m² · ' + r.pvriText);
+        if (r.svri !== undefined) parts.push('SVRI ' + Calc.fmt(r.svri, 0) + ' · ' + r.svriText);
+        put('residx', partsOf(parts));
+      }
+    } else put('residx');
+
+    // RV dP/dt
+    if (has('rdt')) {
+      const r = Calc.rvDpDt(v.rdt);
+      put('rvdvdt', r.error ? r.error : 'RV dP/dt ≈ ' + Calc.fmt(r.dpdt, 0) + ' mmHg/s · ' + r.text);
+    } else put('rvdvdt');
+
+    // ── v1.3.0 第三批：瓣膜与舒张细节 ──
+
+    // Wilkins 形态评分
+    if (has('wk1') || has('wk2') || has('wk3') || has('wk4')) {
+      const r = Calc.wilkinsScore(v.wk1, v.wk2, v.wk3, v.wk4);
+      put('wilkins', r.error ? r.error : 'Wilkins 总分 ' + r.total + ' / 16 · ' + r.text);
+    } else put('wilkins');
+
+    // 缩流颈宽度
+    if (has('vcwv')) {
+      const r = Calc.vcwGrade(v.vcwv, calcOpt.vsite || 'mr');
+      put('vcw', r.error ? r.error : r.text);
+    } else put('vcw');
+
+    // 反流分数
+    if (has('rfvol', 'rfsv')) {
+      const r = Calc.regurgFraction(v.rfvol, v.rfsv);
+      put('rf', r.error ? r.error : 'RF = ' + Calc.fmt(r.rf, 1) + '% · ' + r.text);
+    } else put('rf');
+
+    // MVA 连续性方程
+    if (has('mvd', 'mvlvti', 'mvmvti')) {
+      const sv = Calc.strokeVolume(v.mvd, v.mvlvti);
+      const mva = Calc.mvaContinuity(sv, v.mvmvti);
+      put('mvac', 'SV ' + Calc.fmt(sv, 1) + ' mL · MVA ' + Calc.fmt(mva) + ' cm² · ' +
+        Calc.gradeMva(mva).text);
+    } else put('mvac');
+
+    // 左房排空分数
+    if (has('lavmax', 'lavmin')) {
+      const r = Calc.laEmptying(v.lavmax, v.lavmin);
+      put('laef', r.error ? r.error : 'LAEF ' + Calc.fmt(r.laef, 1) + '% · 扩张指数 ' +
+        Calc.fmt(r.expand, 1) + '% · ' + r.text);
+    } else put('laef');
+
+    // 快速比值
+    if (has('qla', 'qao') || has('qrv', 'qlv')) {
+      const r = Calc.quickRatios(v.qla, v.qao, v.qrv, v.qlv);
+      if (r.error) put('quickratio', r.error);
+      else {
+        const parts = [];
+        if (r.laAo !== undefined) parts.push('LA/Ao = ' + Calc.fmt(r.laAo) + ' · ' + r.laAoText);
+        if (r.rvLv !== undefined) parts.push('RV/LV = ' + Calc.fmt(r.rvLv) + ' · ' + r.rvLvText);
+        put('quickratio', partsOf(parts));
+      }
+    } else put('quickratio');
+
+    // LVMI 身高^2.7
+    if (has('lhmass', 'lhheight')) {
+      const r = Calc.lvmHeightIndex(v.lhmass, v.lhheight, female);
+      put('lvmih', r.error ? r.error : 'LVMI ' + Calc.fmt(r.index, 1) + ' g/m^2.7 · ' + r.text);
+    } else put('lvmih');
+
+    // ── v1.3.0 第四批：先心 / 心肌 / 耦联 ──
+
+    // McGoon / Nakata
+    if (has('prpa', 'plpa')) {
+      const r = Calc.paIndex(v.prpa, v.plpa, v.pdao, bsa);
+      if (r.error) put('paidx', r.error);
+      else {
+        const parts = [];
+        if (r.mcgoon !== undefined) parts.push('McGoon ' + Calc.fmt(r.mcgoon) + ' · ' + r.mcgoonText);
+        if (r.nakata !== undefined) parts.push('Nakata ' + Calc.fmt(r.nakata, 0) + ' mm²/m² · ' + r.nakataText);
+        put('paidx', partsOf(parts));
+      }
+    } else put('paidx');
+
+    // 心尖保留比值
+    if (has('rasap', 'rasba')) {
+      const r = Calc.apicalSparing(v.rasap, v.rasba);
+      put('ras', r.error ? r.error : 'RAS = ' + Calc.fmt(r.ras) + ' · ' + r.text);
+    } else put('ras');
+
+    // Ea / Ees-Ea
+    if (has('eaesp', 'easv', 'eaesv')) {
+      const r = Calc.ventriculoArterial(v.eaesp, v.easv, v.eaesv);
+      if (r.error) put('ea', r.error);
+      else {
+        put('ea', 'Ea ' + Calc.fmt(r.ea) + ' mmHg/mL · Ees(单点) ' + Calc.fmt(r.ees, 2) +
+          ' · Ees/Ea ' + Calc.fmt(r.ratio) + ' · ' + r.text);
+      }
+    } else put('ea');
+
+    // 主动脉缩窄
+    if (has('coav')) {
+      const r = Calc.coarctationEcho(v.coav, v.coaved);
+      if (r.error) put('coa', r.error);
+      else {
+        const parts = ['峰值压差 ' + Calc.fmt(r.grad, 0) + ' mmHg · ' + r.text];
+        if (r.continuum) parts.push(r.continuum);
+        put('coa', partsOf(parts));
+      }
+    } else put('coa');
 
     // ── 评估类条目（器械支持 / 心腔与应变）──
 

@@ -42,6 +42,8 @@ Page({
     collapse: CG.COLLAPSE,
     signs: CG.SIGNS,
     inputs: [],
+    opts: [],
+    optsV: {},
     collapseV: '',
     signsV: '',
     bsaText: '—',
@@ -81,6 +83,12 @@ Page({
       const inputs = g.fields.map(function (f) {
         return { key: f.k, name: f.n, unit: f.u, value: cache[f.k] || '' };
       });
+      // 选项组（性别 / 心律 / 节段总数 …）：缺省取第一项，选择结果另存 optsV
+      const opts = (g.opts || []).map(function (o) {
+        return { k: o.k, n: o.n, list: o.list, v: cache[o.k] !== undefined ? cache[o.k] : o.list[0][0] };
+      });
+      const optsV = {};
+      opts.forEach(function (o) { optsV[o.k] = o.v; });
       this.setData({
         gid: g.id,
         mode: 'calc',
@@ -89,6 +97,8 @@ Page({
         blocks: [],
         refs: [],
         inputs: inputs,
+        opts: opts,
+        optsV: optsV,
         isReference: false,
         collapseV: cache.__collapse || '',
         signsV: cache.__signs || '',
@@ -125,6 +135,15 @@ Page({
     this.refresh();
   },
 
+  /** 选项组（性别 / 心律 / 节段总数 …） */
+  onOpt(e) {
+    const d = e.currentTarget.dataset;
+    const patch = {};
+    patch['optsV.' + d.k] = d.v;
+    this.setData(patch);
+    this.refresh();
+  },
+
   onClear() {
     const inputs = this.data.inputs.map(function (r) {
       return Object.assign({}, r, { value: '' });
@@ -142,6 +161,8 @@ Page({
     });
     if (this.data.collapseV) c.__collapse = this.data.collapseV;
     if (this.data.signsV) c.__signs = this.data.signsV;
+    const ov = this.data.optsV || {};
+    Object.keys(ov).forEach(function (k) { if (ov[k] !== '') c[k] = ov[k]; });
     app.globalData.calcCache[this.data.gid] = c;
   },
 
@@ -158,6 +179,7 @@ Page({
     const prof = app.globalData.profile || {};
     const bsa = prof.bsa || 0;
     const female = prof.sex === 'female';
+    const ov = this.data.optsV || {};
     const valid = (...xs) => xs.every((x) => x !== undefined && isFinite(x));
 
     let out = '';
@@ -812,6 +834,230 @@ Page({
           (v.rvstrain <= -20 ? '正常' : '缩短减低'));
       }
       out = parts.join('；');
+    } else if (gid === 'mtype') {
+      // —— M 型三合一：FS / Teichholz EF / EPSS ——
+      const r = calc.mModeTriple(v.mtdd, v.mtds, v.mtepss);
+      if (r.error) out = r.error;
+      else {
+        const parts = [
+          'FS ' + calc.fmt(r.fs, 1) + '% · ' + r.fsText,
+          'Teichholz EDV ' + calc.fmt(r.edv, 1) + ' mL / ESV ' + calc.fmt(r.esv, 1) +
+            ' mL / EF ' + calc.fmt(r.ef, 1) + '% · ' + r.efText,
+        ];
+        if (r.epss !== undefined) parts.push(r.epssText);
+        if (r.mismatch) parts.push(r.mismatch);
+        out = parts.join('；');
+      }
+    } else if (gid === 'wmsi') {
+      // —— WMSI 室壁运动积分 ——
+      const r = calc.wmsiIndex([v.wn1, v.wn2, v.wn3, v.wn4, v.wn5]);
+      const want = parseInt(ov.wseg || '17', 10);
+      if (r.error) out = r.error;
+      else {
+        const parts = ['WMSI = ' + calc.fmt(r.wmsi, 2) + '（' + r.total + ' 节段，总分 ' + r.score + '）'];
+        if (r.total !== want) {
+          parts.push('注意：录入节段数 ' + r.total + ' 与所选的 ' + want + ' 节段不一致，请补齐未填的分值');
+        }
+        parts.push(r.text);
+        out = parts.join('；');
+      }
+    } else if (gid === 'h2fpef') {
+      // —— H2FPEF 评分 ——
+      if (valid(v.hbmi, v.hage, v.hee, v.hpasp)) {
+        const r = calc.h2fpefScore({
+          bmi: v.hbmi, age: v.hage, ee: v.hee, pasp: v.hpasp,
+          af: ov.haf === '1', bpMeds: ov.hbp === '1' ? 2 : 1,
+        });
+        const parts = ['H2FPEF ' + r.score + ' 分 · ' + r.text];
+        if (r.items.length) {
+          parts.push('计分项：' + r.items.map(function (it) {
+            return it[0] + ' +' + it[1];
+          }).join('、'));
+        }
+        out = parts.join('；');
+      }
+    } else if (gid === 'hfapeff') {
+      // —— HFA-PEFF 评分 ——
+      if (valid(v.hlavi) || valid(v.hee2) || valid(v.hbnp)) {
+        const r = calc.hfaPeffScore({
+          female: ov.hsex === 'f', af: ov.haf2 === '1',
+          lavi: v.hlavi, lvmi: v.hlvmi, rwt: v.hrwt, pasp: v.hpasp2,
+          ee: v.hee2, es: v.hes, el: v.hel, trv: v.htrv,
+          gls: v.hgls, ntprobnp: v.hbnp,
+        });
+        out = 'HFA-PEFF ' + r.score + ' 分（形态 ' + r.structural +
+          ' + 功能 ' + r.functional + ' + 标志物 ' + r.biomarker + '）· ' + r.text;
+      }
+    } else if (gid === 'tavrsz') {
+      // —— TAVR 瓣环与 oversizing ——
+      const r = calc.tavrSizing(v.tcirc, v.tarea, v.tnom);
+      if (r.error) out = r.error;
+      else {
+        const parts = [];
+        if (r.dc !== undefined) parts.push('周长导出直径 ' + calc.fmt(r.dc, 1) + ' mm');
+        if (r.da !== undefined) parts.push('面积导出直径 ' + calc.fmt(r.da, 1) + ' mm');
+        if (r.areaOver !== undefined) {
+          parts.push('面积 oversizing ' + calc.fmt(r.areaOver, 1) + '%');
+          if (r.circOver !== undefined) parts.push('周长 oversizing ' + calc.fmt(r.circOver, 1) + '%');
+          parts.push(r.text);
+        } else if (r.hint) parts.push(r.hint);
+        out = parts.join('；');
+      }
+    } else if (gid === 'laasz') {
+      // —— 左心耳封堵尺寸 ——
+      const r = calc.laaSize(v.lzmax, v.lzmin, v.lzdepth);
+      if (r.error) out = r.error;
+      else {
+        const parts = [];
+        if (r.ratio !== undefined) parts.push('长短径比 ' + calc.fmt(r.ratio, 2));
+        parts.push(r.text);
+        if (r.shapeText) parts.push(r.shapeText);
+        if (r.depthWarn) parts.push(r.depthWarn);
+        out = parts.join('；');
+      }
+    } else if (gid === 'rvvol') {
+      // —— 右室容积指数 ——
+      if (valid(v.rvedv)) {
+        const r = calc.rvVolumeIndex(v.rvedv, v.rvesv, bsa, female);
+        if (r.error) out = r.error;
+        else {
+          const parts = ['RVEDVi ' + calc.fmt(r.edvi, 1) + ' mL/m² · ' + r.edvText];
+          if (r.esvi !== undefined) {
+            parts.push('RVESVi ' + calc.fmt(r.esvi, 1) + ' mL/m² · ' + r.esvText);
+          }
+          out = parts.join('；');
+        }
+      }
+    } else if (gid === 'rvfws') {
+      // —— 右室游离壁应变 ——
+      if (valid(v.rfb) || valid(v.rfm) || valid(v.rfa)) {
+        const r = calc.rvFreeWallStrain(v.rfb, v.rfm, v.rfa);
+        if (r.error) out = r.error;
+        else out = 'RVFWS 均值 ' + calc.fmt(r.mean, 1) + '%（' + r.n + ' 段）· ' + r.text;
+      }
+    } else if (gid === 'papi') {
+      // —— 肺动脉搏动指数 ——
+      if (valid(v.pispap, v.pidpap, v.pirap)) {
+        const r = calc.pulmonaryPulseIndex(v.pispap, v.pidpap, v.pirap);
+        out = r.error ? r.error : 'PAPi = ' + calc.fmt(r.papi, 2) + ' · ' + r.text;
+      }
+    } else if (gid === 'pdap') {
+      // —— 舒张期肺动脉压 ——
+      if (valid(v.pdprv)) {
+        const r = calc.pulmonaryDiastolicPressure(v.pdprv, v.pdrap);
+        out = r.error ? r.error
+          : 'PADP ≈ ' + calc.fmt(r.padp, 1) + ' mmHg（压差 ' + calc.fmt(r.grad, 1) + ' + RAP）';
+      }
+    } else if (gid === 'residx') {
+      // —— 阻力指数 ——
+      if (valid(v.ripvr) || valid(v.risvr)) {
+        const r = calc.resistanceIndices(v.ripvr, v.risvr, bsa);
+        if (r.error) out = r.error;
+        else {
+          const parts = [];
+          if (r.pvri !== undefined) parts.push('PVRI ' + calc.fmt(r.pvri, 1) + ' WU·m² · ' + r.pvriText);
+          if (r.svri !== undefined) parts.push('SVRI ' + calc.fmt(r.svri, 0) + ' · ' + r.svriText);
+          out = parts.join('；');
+        }
+      }
+    } else if (gid === 'rvdvdt') {
+      // —— 右室 dP/dt ——
+      if (valid(v.rdt)) {
+        const r = calc.rvDpDt(v.rdt);
+        out = r.error ? r.error : 'RV dP/dt ≈ ' + calc.fmt(r.dpdt, 0) + ' mmHg/s · ' + r.text;
+      }
+    } else if (gid === 'wilkins') {
+      // —— Wilkins 形态评分 ——
+      if (valid(v.wk1) || valid(v.wk2) || valid(v.wk3) || valid(v.wk4)) {
+        const r = calc.wilkinsScore(v.wk1, v.wk2, v.wk3, v.wk4);
+        out = r.error ? r.error
+          : 'Wilkins 总分 ' + r.total + ' / 16 · ' + r.text;
+      }
+    } else if (gid === 'vcw') {
+      // —— 缩流颈宽度 ——
+      if (valid(v.vcwv)) {
+        const r = calc.vcwGrade(v.vcwv, ov.vsite || 'mr');
+        out = r.error ? r.error : r.text;
+      }
+    } else if (gid === 'rf') {
+      // —— 反流分数 ——
+      if (valid(v.rfvol, v.rfsv)) {
+        const r = calc.regurgFraction(v.rfvol, v.rfsv);
+        out = r.error ? r.error : 'RF = ' + calc.fmt(r.rf, 1) + '% · ' + r.text;
+      }
+    } else if (gid === 'mvac') {
+      // —— MVA 连续性方程 ——
+      if (valid(v.mvd, v.mvlvti, v.mvmvti)) {
+        const sv = calc.strokeVolume(v.mvd, v.mvlvti);
+        const mva = calc.mvaContinuity(sv, v.mvmvti);
+        const g = calc.gradeMva(mva);
+        out = 'SV ' + calc.fmt(sv, 1) + ' mL · MVA ' + calc.fmt(mva) + ' cm² · ' + g.text;
+      }
+    } else if (gid === 'laef') {
+      // —— 左房排空分数 ——
+      if (valid(v.lavmax, v.lavmin)) {
+        const r = calc.laEmptying(v.lavmax, v.lavmin);
+        out = r.error ? r.error
+          : 'LAEF ' + calc.fmt(r.laef, 1) + '% · 扩张指数 ' + calc.fmt(r.expand, 1) + '% · ' + r.text;
+      }
+    } else if (gid === 'quickratio') {
+      // —— LA/Ao · RV/LV ——
+      if (valid(v.qla, v.qao) || valid(v.qrv, v.qlv)) {
+        const r = calc.quickRatios(v.qla, v.qao, v.qrv, v.qlv);
+        if (r.error) out = r.error;
+        else {
+          const parts = [];
+          if (r.laAo !== undefined) parts.push('LA/Ao = ' + calc.fmt(r.laAo) + ' · ' + r.laAoText);
+          if (r.rvLv !== undefined) parts.push('RV/LV = ' + calc.fmt(r.rvLv) + ' · ' + r.rvLvText);
+          out = parts.join('；');
+        }
+      }
+    } else if (gid === 'lvmih') {
+      // —— LVMI 身高^2.7 ——
+      if (valid(v.lhmass, v.lhheight)) {
+        const r = calc.lvmHeightIndex(v.lhmass, v.lhheight, female);
+        out = r.error ? r.error
+          : 'LVMI ' + calc.fmt(r.index, 1) + ' g/m^2.7 · ' + r.text;
+      }
+    } else if (gid === 'paidx') {
+      // —— McGoon / Nakata ——
+      if (valid(v.prpa, v.plpa)) {
+        const r = calc.paIndex(v.prpa, v.plpa, v.pdao, bsa);
+        if (r.error) out = r.error;
+        else {
+          const parts = [];
+          if (r.mcgoon !== undefined) parts.push('McGoon ' + calc.fmt(r.mcgoon) + ' · ' + r.mcgoonText);
+          if (r.nakata !== undefined) parts.push('Nakata ' + calc.fmt(r.nakata, 0) + ' mm²/m² · ' + r.nakataText);
+          out = parts.join('；');
+        }
+      }
+    } else if (gid === 'ras') {
+      // —— 心尖保留比值 ——
+      if (valid(v.rasap, v.rasba)) {
+        const r = calc.apicalSparing(v.rasap, v.rasba);
+        out = r.error ? r.error : 'RAS = ' + calc.fmt(r.ras) + ' · ' + r.text;
+      }
+    } else if (gid === 'ea') {
+      // —— Ea / Ees-Ea ——
+      if (valid(v.eaesp, v.easv, v.eaesv)) {
+        const r = calc.ventriculoArterial(v.eaesp, v.easv, v.eaesv);
+        if (r.error) out = r.error;
+        else {
+          out = 'Ea ' + calc.fmt(r.ea) + ' mmHg/mL · Ees(单点) ' + calc.fmt(r.ees, 2) +
+            ' · Ees/Ea ' + calc.fmt(r.ratio) + ' · ' + r.text;
+        }
+      }
+    } else if (gid === 'coa') {
+      // —— 主动脉缩窄 ——
+      if (valid(v.coav)) {
+        const r = calc.coarctationEcho(v.coav, v.coaved);
+        if (r.error) out = r.error;
+        else {
+          const parts = ['峰值压差 ' + calc.fmt(r.grad, 0) + ' mmHg · ' + r.text];
+          if (r.continuum) parts.push(r.continuum);
+          out = parts.join('；');
+        }
+      }
     }
 
     this.setData({ out: out, hasOut: !!out });

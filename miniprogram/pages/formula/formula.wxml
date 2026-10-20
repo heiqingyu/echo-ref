@@ -33,6 +33,16 @@
              data-idx="{{index}}" bindinput="onInput" placeholder="未填写" />
     </view>
 
+    <!-- 选项组（性别 / 心律 / 节段总数 等，来自 calc-groups.js 的 opts） -->
+    <view wx:for="{{opts}}" wx:key="k" wx:for-item="o" class="field">
+      <text class="field__label">{{o.n}}</text>
+      <view class="seg">
+        <view wx:for="{{o.list}}" wx:key="index" wx:for-item="c"
+              class="seg__item {{optsV[o.k] === c[0] ? 'seg__item--on' : ''}}"
+              data-k="{{o.k}}" data-v="{{c[0]}}" bindtap="onOpt">{{c[1]}}</view>
+      </view>
+    </view>
+
     <!-- 右心评估 / 右房压条目的附加选项（IVC 塌陷） -->
     <block wx:if="{{gid === 'rv' || gid === 'rapv'}}">
       <view class="field">

@@ -1326,6 +1326,493 @@ function round(n, dec) {
 }
 
 /** 格式化：非法值返回 '—' */
+/* ════════════════════════════════════════════════════════════════
+ * v1.2.8 新增：M 型 / 评分体系 / 介入尺寸
+ * ════════════════════════════════════════════════════════════════ */
+
+/**
+ * M 型三合一：缩短分数 FS + Teichholz 容积与 EF + EPSS 判读
+ * 输入内径为 mm（超声机默认单位），内部换 cm 再套公式
+ *   FS = (LVIDd − LVIDs) / LVIDd × 100%
+ *   Teichholz：V = 7·D³ / (2.4 + D)（D 为 cm）
+ *   EPSS：<7 mm 正常，7–12 可疑，>12 提示 EF 明显减低
+ */
+function mModeTriple(lviddMm, lvidsMm, epssMm) {
+  if (!(lviddMm > 0) || !(lvidsMm > 0)) return { error: '需同时填写 LVIDd 与 LVIDs' };
+  if (lvidsMm >= lviddMm) return { error: '收缩末内径应小于舒张末内径，请核对取值' };
+  const dd = lviddMm / 10;
+  const ds = lvidsMm / 10;
+  const fs = (dd - ds) / dd * 100;
+  const vol = function (d) { return 7 * Math.pow(d, 3) / (2.4 + d); };
+  const edv = vol(dd);
+  const esv = vol(ds);
+  const ef = (edv - esv) / edv * 100;
+  const r = { fs: fs, edv: edv, esv: esv, ef: ef };
+  r.fsText = fs < 25 ? 'FS 减低（<25%）'
+    : fs > 45 ? 'FS 高于常见区间（>45%），注意高动力状态'
+    : 'FS 在常见区间（25–45%）';
+  r.efText = ef >= 50 ? 'EF 保留（≥50%）'
+    : ef >= 40 ? 'EF 轻度减低（40–49%）'
+    : ef >= 30 ? 'EF 中度减低（30–39%）'
+    : 'EF 重度减低（<30%）';
+  if (epssMm > 0) {
+    r.epss = epssMm;
+    r.epssText = epssMm < 7 ? 'EPSS 正常（<7 mm）'
+      : epssMm <= 12 ? 'EPSS 增大（7–12 mm），结合 EF 与其他指标判读'
+      : 'EPSS 明显增大（>12 mm），提示射血分数显著减低';
+    if (epssMm > 12 && ef >= 50) {
+      r.mismatch = 'EPSS 明显增大而 Teichholz EF 正常：更可能是节段性室壁运动异常或 M 型取样线偏斜，建议以 Simpson 双平面复核';
+    }
+  }
+  return r;
+}
+
+/**
+ * WMSI 室壁运动积分指数
+ * 按各分值节段的个数录入（比逐段填 17 个格子快，也避免漏段）
+ *   WMSI = (1·n1 + 2·n2 + 3·n3 + 4·n4 + 5·n5) ÷ 节段总数
+ *   1.0 正常；1.0–1.5 轻度；1.5–1.7 中度；≥1.7 重度（大面积缺血，预后差）
+ */
+function wmsiIndex(counts) {
+  const n = counts.map(function (x) { return x > 0 ? x : 0; });
+  const total = n.reduce(function (a, b) { return a + b; }, 0);
+  if (!total) return { error: '请至少填写一个分值对应的节段个数' };
+  let score = 0;
+  n.forEach(function (c, i) { score += (i + 1) * c; });
+  const w = score / total;
+  const r = { total: total, score: score, wmsi: w };
+  if (w <= 1.0) { r.level = 0; r.text = '室壁运动正常（WMSI = 1.0）'; }
+  else if (w < 1.5) { r.level = 1; r.text = '轻度异常（1.0–1.5）：局限性运动减弱'; }
+  else if (w < 1.7) { r.level = 2; r.text = '中度异常（1.5–1.7）：提示较大范围缺血'; }
+  else { r.level = 3; r.text = '重度异常（≥1.7）：大面积缺血/梗死，预后差'; }
+  return r;
+}
+
+/**
+ * H2FPEF 评分（心衰杂志 2018，Reddy 等）
+ *   BMI >30 → 2；心房颤动 → 3；年龄 >60 → 1；
+ *   ≥2 种降压药 → 1；E/e′ >9 → 1；PASP >35 → 1
+ *   总分 0–9：≥6 高可能，≤1 低可能，2–5 中间
+ */
+function h2fpefScore(o) {
+  const s = o || {};
+  let score = 0;
+  const items = [];
+  if (s.bmi > 30) { score += 2; items.push(['BMI >30 kg/m²', 2]); }
+  if (s.af) { score += 3; items.push(['心房颤动', 3]); }
+  if (s.age > 60) { score += 1; items.push(['年龄 >60 岁', 1]); }
+  if (s.bpMeds >= 2) { score += 1; items.push(['≥2 种降压药', 1]); }
+  if (s.ee > 9) { score += 1; items.push(['E/e′ >9', 1]); }
+  if (s.pasp > 35) { score += 1; items.push(['PASP >35 mmHg', 1]); }
+  const r = { score: score, items: items };
+  r.text = score >= 6 ? 'HFpEF 可能性高（≥6 分），可按 HFpEF 管理'
+    : score <= 1 ? 'HFpEF 可能性低（≤1 分），优先排查其他病因'
+    : '中间区间（2–5 分）：需负荷超声或侵入性血流动力学进一步评估';
+  return r;
+}
+
+/**
+ * HFA-PEFF 评分（2019 ESC HFA）
+ * 形态学 / 功能学 / 生物标志物三类，每类内部取最高分，三类相加（0–6）
+ *   ≥5 确诊 HFpEF；2–4 需负荷/侵入性；≤1 基本排除
+ */
+function hfaPeffScore(o) {
+  const s = o || {};
+  const female = !!s.female;
+  const af = !!s.af;
+  // ① 形态学
+  let st = 0;
+  if (s.lavi >= 40) st = Math.max(st, 2); else if (s.lavi >= 34) st = Math.max(st, 1);
+  const lvmiHi = female ? 122 : 149;
+  const lvmiLo = female ? 95 : 115;
+  if (s.lvmi > lvmiHi) st = Math.max(st, 2); else if (s.lvmi > lvmiLo) st = Math.max(st, 1);
+  if (s.rwt > 0.42) st = Math.max(st, 1);
+  if (s.pasp > 35) st = Math.max(st, 1);
+  // ② 功能学
+  let fn = 0;
+  if (s.ee >= 15) fn = Math.max(fn, 2); else if (s.ee >= 9) fn = Math.max(fn, 1);
+  if ((s.es > 0 && s.es < 7) || (s.el > 0 && s.el < 10)) fn = Math.max(fn, 1);
+  if (s.trv > 2.8) fn = Math.max(fn, 1);
+  if (s.gls > 0 && s.gls < 16) fn = Math.max(fn, 1);
+  // ③ 生物标志物（NT-proBNP，房颤阈值更高）
+  let bm = 0;
+  const hi = af ? 1500 : 500;
+  const lo = af ? 365 : 125;
+  if (s.ntprobnp > hi) bm = 2; else if (s.ntprobnp >= lo) bm = 1;
+  const total = st + fn + bm;
+  const r = { structural: st, functional: fn, biomarker: bm, score: total };
+  r.text = total >= 5 ? '支持 HFpEF（≥5 分）'
+    : total >= 2 ? '可疑（2–4 分）：需负荷超声或侵入性血流动力学'
+    : '基本可排除 HFpEF（≤1 分）';
+  return r;
+}
+
+/**
+ * TAVR 瓣环尺寸与 oversizing
+ *   周长导出直径 Dc = C / π
+ *   面积导出直径 Da = 2√(A/π)
+ *   面积 oversizing = (标称瓣环面积 / 实测瓣环面积 − 1) × 100%
+ *   经验区间：自膨胀瓣 10–20%；球囊扩张瓣 −10% ~ +5%
+ */
+function tavrSizing(circMm, areaMm2, nominalMm) {
+  if (!(circMm > 0) && !(areaMm2 > 0)) return { error: '需填写瓣环周长或面积（至少一项）' };
+  const r = {};
+  if (circMm > 0) r.dc = circMm / Math.PI;
+  if (areaMm2 > 0) r.da = 2 * Math.sqrt(areaMm2 / Math.PI);
+  if (nominalMm > 0 && areaMm2 > 0) {
+    const nominalArea = Math.PI * Math.pow(nominalMm / 2, 2);
+    r.areaOver = (nominalArea / areaMm2 - 1) * 100;
+    r.nominalArea = nominalArea;
+    if (nominalMm > 0 && circMm > 0) r.circOver = (Math.PI * nominalMm / circMm - 1) * 100;
+    const o = r.areaOver;
+    r.text = o < -10 ? '面积 oversizing 偏小（<−10%），瓣周漏风险升高'
+      : o < 0 ? '轻度偏小（−10% ~ 0）：球扩瓣可接受区间'
+      : o <= 5 ? '球扩瓣理想区间（0 ~ +5%）'
+      : o <= 20 ? '自膨胀瓣理想区间（+5% ~ +20%）'
+      : 'oversizing 过大（>20%），注意瓣环破裂与传导阻滞风险';
+  } else if (nominalMm > 0) {
+    r.hint = '填了标称型号但缺瓣环面积，无法算 oversizing';
+  }
+  return r;
+}
+
+/**
+ * 左心耳封堵（Watchman FLX 类）尺寸推荐
+ *   着陆区最大径 × 1.08 ~ 1.20 落到常规型号（17/20/24/27/31/35 mm）
+ *   深度不足或椭圆度过大时提示复核
+ */
+function laaSize(lzMax, lzMin, depth) {
+  const SIZES = [17, 20, 24, 27, 31, 35];
+  if (!(lzMax > 0)) return { error: '需填写着陆区最大径' };
+  const r = { lzMax: lzMax };
+  if (lzMin > 0) {
+    r.ratio = lzMax / lzMin;
+    if (r.ratio > 1.3) r.shapeText = '着陆区椭圆度大（长短径比 >1.3），按最大径选型并注意封堵器贴合';
+  }
+  const need = lzMax * 1.08;
+  const pick = SIZES.filter(function (s) { return s >= need; })[0];
+  if (!pick) {
+    r.text = '着陆区最大径 ' + fmt(lzMax, 1) + ' mm 超出常规型号上限，需按具体产品说明书复核';
+  } else {
+    r.size = pick;
+    r.text = '建议选用 ' + pick + ' mm（按着陆区最大径 ' + fmt(lzMax, 1) +
+      ' mm × 1.08 = ' + fmt(need, 1) + ' mm 上取整）';
+    if (depth > 0 && depth < pick * 0.8) {
+      r.depthWarn = '深度 ' + fmt(depth, 1) + ' mm 小于所选型号的 0.8 倍，可能压缩不足，考虑选小一号或换型';
+    }
+  }
+  return r;
+}
+
+/** 反流分数 RF = RVol / SV × 100%（轻 <30，中 30–49，重 ≥50） */
+function regurgFraction(rvol, sv) {
+  if (!(rvol > 0) || !(sv > 0)) return { error: '需填写反流量与每搏量' };
+  if (rvol >= sv) return { error: '反流量不应大于或等于每搏量，请核对' };
+  const rf = rvol / sv * 100;
+  return {
+    rf: rf,
+    text: rf < 30 ? '轻度反流（RF <30%）'
+      : rf < 50 ? '中度反流（RF 30–49%）'
+      : '重度反流（RF ≥50%）',
+  };
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * v1.2.9 第二批：右心与肺循环补全
+ * ════════════════════════════════════════════════════════════════ */
+
+/**
+ * 右室容积指数（ASE 右心指南，按性别分档）
+ *   RVEDVi 上限 男 87 / 女 75 mL/m²；RVESVi 上限 男 44 / 女 35 mL/m²
+ */
+function rvVolumeIndex(redv, resv, bsa, female) {
+  if (!(redv > 0)) return { error: '需填写 RV 舒张末容积' };
+  if (!(bsa > 0)) return { error: '需先填写身高体重得到 BSA' };
+  const hiEdv = female ? 75 : 87;
+  const hiEsv = female ? 35 : 44;
+  const edvi = redv / bsa;
+  const r = { edvi: edvi, hiEdv: hiEdv };
+  r.edvText = edvi > hiEdv ? 'RVEDVi 增大（>' + hiEdv + '）' : 'RVEDVi 正常';
+  if (resv > 0) {
+    const esvi = resv / bsa;
+    r.esvi = esvi;
+    r.hiEsv = hiEsv;
+    r.esvText = esvi > hiEsv ? 'RVESVi 增大（>' + hiEsv + '）' : 'RVESVi 正常';
+  }
+  return r;
+}
+
+/**
+ * 右室游离壁纵向应变 RVFWS：基底、中间、心尖三节段取均值
+ * 正常 |均值| ≥20%（即 ≤ −20%）；绝对值 <20% 提示右室纵向收缩减低
+ */
+function rvFreeWallStrain(b, m, a) {
+  const vals = [b, m, a].filter(function (x) {
+    return x !== undefined && x !== null && isFinite(x) && x !== 0;
+  });
+  if (!vals.length) return { error: '需填写至少一个节段的峰值应变' };
+  const mean = vals.reduce(function (s, x) { return s + x; }, 0) / vals.length;
+  const abs = Math.abs(mean);
+  return {
+    mean: mean,
+    n: vals.length,
+    text: abs < 20 ? 'RVFWS 减低（|均值| <20%）' : 'RVFWS 在正常范围（|均值| ≥20%）',
+  };
+}
+
+/**
+ * PAPi 肺动脉搏动指数 = (sPAP − dPAP) / RAP
+ * <1.85 提示右室-肺循环失耦联（肺高压 / 心衰预后差）
+ */
+function pulmonaryPulseIndex(spap, dpap, rap) {
+  if (!(spap > 0) || !(dpap > 0) || !(rap > 0)) {
+    return { error: '需填写 sPAP、dPAP 与 RAP' };
+  }
+  if (dpap >= spap) return { error: '舒张压不应高于收缩压，请核对' };
+  const v = (spap - dpap) / rap;
+  return {
+    papi: v,
+    text: v < 1.85 ? 'PAPi 减低（<1.85）：右室-肺循环失耦联，预后差'
+      : v < 2.0 ? 'PAPi 边缘（1.85–2.0）'
+      : 'PAPi 保留（≥2.0）',
+  };
+}
+
+/** 舒张期肺动脉压 PADP = 4 × V(PR 舒张末)² + RAP */
+function pulmonaryDiastolicPressure(prVmax, rap) {
+  if (!(prVmax > 0)) return { error: '需填写 PR 舒张末期反流速度' };
+  const padp = 4 * prVmax * prVmax + (rap > 0 ? rap : 0);
+  return { padp: padp, grad: 4 * prVmax * prVmax };
+}
+
+/**
+ * 阻力指数化
+ *   PVRI = PVR(WU) × BSA，正常 3–5 WU·m²，>5 显著升高
+ *   SVRI = SVR(dyn·s·cm⁻⁵) × BSA，正常约 1970–2390 dyn·s·cm⁻⁵·m²
+ */
+function resistanceIndices(pvrWu, svrDyn, bsa) {
+  if (!(bsa > 0)) return { error: '需先填写身高体重得到 BSA' };
+  const r = {};
+  if (pvrWu > 0) {
+    r.pvri = pvrWu * bsa;
+    r.pvriText = r.pvri > 5
+      ? 'PVRI >5 WU·m²：肺血管阻力显著升高，注意右心失代偿'
+      : 'PVRI ≤5 WU·m²（正常 3–5）';
+  }
+  if (svrDyn > 0) {
+    r.svri = svrDyn * bsa;
+    r.svriText = r.svri > 2390 ? 'SVRI 升高（>2390）：体循环阻力偏高'
+      : r.svri < 1970 ? 'SVRI 偏低（<1970）：注意血管扩张状态 / 脓毒症'
+      : 'SVRI 正常（1970–2390）';
+  }
+  if (r.pvri === undefined && r.svri === undefined) {
+    return { error: '需填写 PVR 或 SVR' };
+  }
+  return r;
+}
+
+/**
+ * 右室压力上升速率 dP/dt（TR 反流谱 1→2 m/s）
+ *   ΔP = 4×2² − 4×1² = 12 mmHg，dP/dt = 12 / Δt(s)
+ *   <400 mmHg/s 提示右室收缩功能减低
+ */
+function rvDpDt(dtMs) {
+  if (!(dtMs > 0)) return { error: '需填写 1→2 m/s 的时间差' };
+  const v = 12 / (dtMs / 1000);
+  return {
+    dpdt: v,
+    text: v < 400 ? 'RV dP/dt 减低（<400 mmHg/s）' : 'RV dP/dt 保留（≥400 mmHg/s）',
+  };
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * v1.3.0 第三批：瓣膜与舒张细节
+ * ════════════════════════════════════════════════════════════════ */
+
+/**
+ * Wilkins 二尖瓣形态评分（4 项各 1–4 分，总分 4–16）
+ *   瓣叶厚度 / 钙化 / 活动度 / 瓣下增厚；≤8 分适合经皮球囊二尖瓣成形（PBMV）
+ */
+function wilkinsScore(leaflet, calc, mobility, subvalv) {
+  const arr = [leaflet, calc, mobility, subvalv];
+  const ok = arr.every(function (x) { return x >= 1 && x <= 4; });
+  if (!ok) return { error: '四项均需填 1–4 分（1 最轻、4 最重）' };
+  const total = arr.reduce(function (a, b) { return a + b; }, 0);
+  return {
+    total: total,
+    text: total <= 8
+      ? 'Wilkins ≤8：瓣膜形态适合经皮球囊二尖瓣成形（PBMV）'
+      : 'Wilkins >8：形态不适合 PBMV，优先考虑外科',
+  };
+}
+
+/**
+ * 缩流颈宽度 VCW 分级（MR / TR 与 AR 阈值不同）
+ *   MR / TR：<3 轻度，3–6.9 中度，≥7 重度（mm）
+ *   AR：    <3 轻度，3–5.9 中度，≥6 重度
+ */
+function vcwGrade(vcwMm, site) {
+  if (!(vcwMm > 0)) return { error: '需填写缩流颈宽度' };
+  const ar = site === 'ar';
+  const tr = site === 'tr';
+  const hiCut = ar ? 6 : 7;
+  const name = ar ? 'AR' : tr ? 'TR' : 'MR';
+  let level = 1;
+  let text = '轻度（<3 mm）';
+  if (vcwMm >= hiCut) { level = 3; text = '重度（≥' + hiCut + ' mm）'; }
+  else if (vcwMm >= 3) { level = 2; text = '中度（3–' + (hiCut === 6 ? '5.9' : '6.9') + ' mm）'; }
+  return { vcw: vcwMm, site: name, level: level, text: name + ' ' + text };
+}
+
+/**
+ * 左房排空分数 LAEF 与扩张指数
+ *   LAEF = (LAVmax − LAVmin) / LAVmax × 100%，正常 ≥50%
+ *   扩张指数 = (LAVmax − LAVmin) / LAVmin × 100%
+ */
+function laEmptying(lavMax, lavMin) {
+  if (!(lavMax > 0) || !(lavMin > 0)) return { error: '需填写 LA 最大与最小容积' };
+  if (lavMin >= lavMax) return { error: '最小容积应小于最大容积，请核对' };
+  const laef = (lavMax - lavMin) / lavMax * 100;
+  const expand = (lavMax - lavMin) / lavMin * 100;
+  return {
+    laef: laef,
+    expand: expand,
+    text: laef >= 50 ? 'LAEF 保留（≥50%）'
+      : laef >= 35 ? 'LAEF 轻度减低（35–49%）'
+      : 'LAEF 明显减低（<35%），提示左房机械功能受损',
+  };
+}
+
+/**
+ * 快速比值：LA/Ao（正常 ≤1.1）、RV/LV 舒张末内径比（>0.6 提示右室扩大）
+ * 单位任意但需同组一致
+ */
+function quickRatios(la, ao, rv, lv) {
+  const r = {};
+  if (la > 0 && ao > 0) {
+    r.laAo = la / ao;
+    r.laAoText = r.laAo > 1.1 ? 'LA/Ao 增大（>1.1）' : 'LA/Ao 正常（≤1.1）';
+  }
+  if (rv > 0 && lv > 0) {
+    r.rvLv = rv / lv;
+    r.rvLvText = r.rvLv > 0.6 ? 'RV/LV >0.6：右室扩大' : 'RV/LV 正常（≤0.6）';
+  }
+  if (r.laAo === undefined && r.rvLv === undefined) {
+    return { error: '需至少填一组数值（LA 与 Ao，或 RV 与 LV）' };
+  }
+  return r;
+}
+
+/**
+ * 左室质量按身高^2.7 指数化（de Simone）
+ *   男 >50、女 >47 g/m^2.7 提示左室肥厚；肥胖患者比 BSA 指数更可靠
+ */
+function lvmHeightIndex(massG, heightCm, female) {
+  if (!(massG > 0) || !(heightCm > 0)) return { error: '需填写左室质量与身高' };
+  const h = heightCm / 100;
+  const idx = massG / Math.pow(h, 2.7);
+  const hi = female ? 47 : 50;
+  return {
+    index: idx,
+    hi: hi,
+    text: idx > hi ? 'LVMI/height^2.7 升高（> ' + hi + '）' : '正常（≤ ' + hi + '）',
+  };
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * v1.3.0 第四批：先心 / 心肌 / 心室-动脉耦联
+ * ════════════════════════════════════════════════════════════════ */
+
+/**
+ * McGoon 比值与 Nakata 肺动脉指数（先心根治可行性）
+ *   McGoon = (RPA + LPA) ÷ 膈肌水平降主动脉，≥1.8 可考虑根治
+ *   Nakata = π(RPA/2)² + π(LPA/2)² 之和 ÷ BSA，≥150 mm²/m² 可考虑根治
+ */
+function paIndex(rpa, lpa, dao, bsa) {
+  if (!(rpa > 0) || !(lpa > 0)) return { error: '需填写左右肺动脉直径' };
+  const total = rpa + lpa;
+  const r = { total: total };
+  if (dao > 0) {
+    r.mcgoon = total / dao;
+    r.mcgoonText = r.mcgoon >= 1.8
+      ? 'McGoon ≥1.8：肺动脉发育可，考虑根治'
+      : 'McGoon <1.8：肺动脉发育不足，需评估分期手术';
+  }
+  if (bsa > 0) {
+    const area = Math.PI * (Math.pow(rpa / 2, 2) + Math.pow(lpa / 2, 2));
+    r.nakata = area / bsa;
+    r.nakataText = r.nakata >= 150
+      ? 'Nakata ≥150 mm²/m²：可考虑根治'
+      : 'Nakata <150 mm²/m²：肺动脉发育不足';
+  }
+  if (r.mcgoon === undefined && r.nakata === undefined) {
+    return { error: '还需填写降主动脉内径或身高体重（BSA）' };
+  }
+  return r;
+}
+
+/**
+ * 心尖保留比值 RAS = |心尖段平均应变| ÷ |基底段平均应变|
+ * ≥1 提示心尖相对保留（心肌淀粉样变的典型表现）
+ */
+function apicalSparing(apicalAvg, basalAvg) {
+  const a = Math.abs(apicalAvg || 0);
+  const b = Math.abs(basalAvg || 0);
+  if (!(a > 0)) return { error: '需填写心尖段平均应变' };
+  if (!(b > 0)) return { error: '基底段应变不能为 0' };
+  const ras = a / b;
+  return {
+    ras: ras,
+    text: ras >= 1
+      ? 'RAS ≥1：存在相对心尖保留（提示心肌淀粉样变，需结合其他征象）'
+      : 'RAS <1：无相对心尖保留',
+  };
+}
+
+/**
+ * 有效动脉弹性 Ea 与单点 Ees/Ea（心室-动脉耦联）
+ *   Ea = ESP / SV（mmHg/mL）
+ *   单点 Ees ≈ ESP / ESV（V0 取 0），故 Ees/Ea = SV / ESV
+ *   常见区间 0.8–1.5；心衰时下降
+ */
+function ventriculoArterial(esp, sv, esv) {
+  if (!(esp > 0) || !(sv > 0) || !(esv > 0)) {
+    return { error: '需填写收缩末压、每搏量与收缩末容积' };
+  }
+  const ea = esp / sv;
+  const ees = esp / esv;
+  const ratio = sv / esv;
+  return {
+    ea: ea,
+    ees: ees,
+    ratio: ratio,
+    text: ratio < 0.8 ? 'Ees/Ea <0.8：耦联不足（收缩力相对后负荷偏低）'
+      : ratio > 1.5 ? 'Ees/Ea >1.5：耦联偏向后负荷（收缩力相对充足）'
+      : 'Ees/Ea 在常见区间（0.8–1.5）',
+    note: '单点法估算（V0 取 0），仅作趋势参考，不能替代压力-容积环',
+  };
+}
+
+/**
+ * 主动脉缩窄 CoA：峰值压差与舒张期拖尾
+ *   压差 = 4 × Vmax²；舒张末期仍有明显压差说明存在持续跨缩窄血流（拖尾征）
+ */
+function coarctationEcho(vmax, vEndDiastolic) {
+  if (!(vmax > 0)) return { error: '需填写缩窄处峰值流速' };
+  const grad = 4 * vmax * vmax;
+  const r = { grad: grad };
+  if (vEndDiastolic > 0) {
+    r.endGrad = 4 * vEndDiastolic * vEndDiastolic;
+    r.continuum = r.endGrad >= 5
+      ? '舒张末期仍有 ' + fmt(r.endGrad, 0) + ' mmHg 压差：舒张期持续血流（拖尾征），提示有血流动力学意义'
+      : '舒张末期压差小，拖尾征不明显';
+  }
+  r.text = grad >= 20 ? '峰值压差 ≥20 mmHg：提示有血流动力学意义的缩窄'
+    : grad >= 10 ? '压差 10–19 mmHg：轻度，需结合形态与舒张期拖尾综合判断'
+    : '压差 <10 mmHg：无明显狭窄';
+  return r;
+}
+
 function fmt(n, dec) {
   if (n === undefined || n === null || !isFinite(n)) return '—';
   return Number(n).toFixed(dec === undefined ? 2 : dec);
@@ -1392,6 +1879,32 @@ module.exports = {
   aortaIndex,
   strainDispersion,
   strokeWork,
+  // —— v1.2.8 新增：M 型 / 评分体系 / 介入尺寸 ——
+  mModeTriple,
+  wmsiIndex,
+  h2fpefScore,
+  hfaPeffScore,
+  tavrSizing,
+  laaSize,
+  regurgFraction,
+  // —— v1.2.9 第二批：右心与肺循环 ——
+  rvVolumeIndex,
+  rvFreeWallStrain,
+  pulmonaryPulseIndex,
+  pulmonaryDiastolicPressure,
+  resistanceIndices,
+  rvDpDt,
+  // —— v1.3.0 第三批：瓣膜与舒张细节 ——
+  wilkinsScore,
+  vcwGrade,
+  laEmptying,
+  quickRatios,
+  lvmHeightIndex,
+  // —— v1.3.0 第四批：先心 / 心肌 / 耦联 ——
+  paIndex,
+  apicalSparing,
+  ventriculoArterial,
+  coarctationEcho,
   round,
   fmt,
 };

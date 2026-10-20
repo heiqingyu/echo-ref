@@ -122,22 +122,25 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 29) ok('公式集定义 29 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 52) ok('公式集定义 52 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
-// 计算条目按 4 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
+// 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
-if (calcSecIds.join('/') === 'hemo/right/vq/recon') ok('计算组 4 个（血流动力学 / 右心与肺循环 / 瓣膜与舒张定量 / 重构与心肌功能）');
+if (calcSecIds.join('/') === 'hemo/right/vq/recon/score/ivs')
+  ok('计算组 6 个（血流动力学 / 右心肺循环 / 瓣膜舒张 / 重构心肌 / 评分与室壁运动 / 介入尺寸与先心）');
 else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1);
-if (!badSec.length) ok('29 条公式的 sec 归属均合法');
+if (!badSec.length) ok('52 条公式的 sec 归属均合法');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
 const nVq = CG.GROUPS.filter(g => g.sec === 'vq').length;
 const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
-if (nHemo === 11 && nRight === 6 && nVq === 5 && nRecon === 7)
-  ok('分组条目数 11 / 6 / 5 / 7');
-else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon].join('/'));
+const nScore = CG.GROUPS.filter(g => g.sec === 'score').length;
+const nIvs = CG.GROUPS.filter(g => g.sec === 'ivs').length;
+if (nHemo === 14 && nRight === 12 && nVq === 9 && nRecon === 10 && nScore === 3 && nIvs === 4)
+  ok('分组条目数 14 / 12 / 9 / 10 / 3 / 4');
+else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
 const SHARED_KEYS = { ld: 1, lvti: 1 };

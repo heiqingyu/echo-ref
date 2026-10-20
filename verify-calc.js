@@ -191,5 +191,222 @@ check('SWi 47.6', C.round(sw.swi, 1), 47.6, 0.05);
 check('SW 85 正常', sw.text.indexOf('正常') !== -1 ? 'ok' : 'bad', 'ok');
 check('SW 40/90 = 48.96 偏低', C.strokeWork(40, 90, 1.8).text.indexOf('偏低') !== -1 ? 'ok' : 'bad', 'ok');
 
+console.log('=== 22. M 型三合一 ===');
+const mt = C.mModeTriple(50, 32, 8);
+check('FS (50−32)/50 = 36%', C.round(mt.fs, 1), 36.0, 0.05);
+check('Teichholz EDV 118.24', C.round(mt.edv, 2), 118.24, 0.05);
+check('Teichholz ESV 40.96', C.round(mt.esv, 2), 40.96, 0.05);
+check('EF 65.36%', C.round(mt.ef, 1), 65.4, 0.05);
+check('EPSS 8 判增大', mt.epssText.indexOf('增大') !== -1 ? 'ok' : 'bad', 'ok');
+check('内径倒挂报错', C.mModeTriple(30, 35).error ? 'ok' : 'bad', 'ok');
+const mtNoEpss = C.mModeTriple(50, 32);
+check('不填 EPSS 不给 EPSS 判读', mtNoEpss.epss === undefined ? 'ok' : 'bad', 'ok');
+check('FS 20 判减低', C.mModeTriple(50, 40).fsText.indexOf('减低') !== -1 ? 'ok' : 'bad', 'ok');
+
+console.log('=== 23. WMSI ===');
+const w1 = C.wmsiIndex([12, 3, 1, 1, 0]);
+check('总分 25', w1.score, 25);
+check('17 节段', w1.total, 17);
+check('WMSI 1.47', C.round(w1.wmsi, 2), 1.47, 0.005);
+check('1.47 判轻度', w1.level, 1);
+check('全正常 WMSI = 1', C.wmsiIndex([17, 0, 0, 0, 0]).wmsi, 1);
+check('WMSI 1 判正常', C.wmsiIndex([17, 0, 0, 0, 0]).level, 0);
+check('8/2/4/3 → 2.12 重度', C.wmsiIndex([8, 2, 4, 3, 0]).level, 3);
+check('全 0 报错', C.wmsiIndex([0, 0, 0, 0, 0]).error ? 'ok' : 'bad', 'ok');
+check('负数按 0 计', C.wmsiIndex([-3, 17, 0, 0, 0]).total, 17);
+
+console.log('=== 24. H2FPEF ===');
+const h2 = C.h2fpefScore({ bmi: 31, age: 65, ee: 10, pasp: 40, af: true, bpMeds: 2 });
+check('全阳性 9 分', h2.score, 9);
+check('9 分判高可能', h2.text.indexOf('可能性高') !== -1 ? 'ok' : 'bad', 'ok');
+check('计分项 6 条', h2.items.length, 6);
+check('全阴性 0 分', C.h2fpefScore({ bmi: 22, age: 50, ee: 7, pasp: 28, af: false, bpMeds: 1 }).score, 0);
+check('仅房颤 3 分', C.h2fpefScore({ bmi: 22, age: 50, ee: 7, pasp: 28, af: true, bpMeds: 1 }).score, 3);
+check('5 分判中间区间', C.h2fpefScore({ bmi: 31, age: 50, ee: 7, pasp: 28, af: true, bpMeds: 1 }).text.indexOf('中间') !== -1 ? 'ok' : 'bad', 'ok');
+
+console.log('=== 25. HFA-PEFF ===');
+const hp = C.hfaPeffScore({ female: false, af: false, lavi: 42, lvmi: 120, rwt: 0.45,
+  pasp: 38, ee: 16, es: 6, el: 8, trv: 3.0, gls: 14, ntprobnp: 600 });
+check('形态学取最高 2', hp.structural, 2);
+check('功能学取最高 2', hp.functional, 2);
+check('标志物 2', hp.biomarker, 2);
+check('总分 6', hp.score, 6);
+check('6 分支持 HFpEF', hp.text.indexOf('支持') !== -1 ? 'ok' : 'bad', 'ok');
+const hpLow = C.hfaPeffScore({ female: true, af: false, lavi: 28, lvmi: 80, rwt: 0.35,
+  pasp: 25, ee: 7, es: 9, el: 12, trv: 2.2, gls: 20, ntprobnp: 80 });
+check('全阴性 0 分', hpLow.score, 0);
+check('0 分基本可排除', hpLow.text.indexOf('排除') !== -1 ? 'ok' : 'bad', 'ok');
+check('女性 LVMI 阈值更低（100 计 1）',
+  C.hfaPeffScore({ female: true, lvmi: 100 }).structural, 1);
+check('男性 LVMI 100 不计分', C.hfaPeffScore({ female: false, lvmi: 100 }).structural, 0);
+check('房颤 NT-proBNP 400 < 365? 不，400 计 1',
+  C.hfaPeffScore({ af: true, ntprobnp: 400 }).biomarker, 1);
+check('窦律 NT-proBNP 400 计 1', C.hfaPeffScore({ af: false, ntprobnp: 400 }).biomarker, 1);
+
+console.log('=== 26. TAVR oversizing ===');
+const tv = C.tavrSizing(75, 420, 26);
+check('周长导出直径 23.87', C.round(tv.dc, 2), 23.87, 0.01);
+check('面积导出直径 23.12', C.round(tv.da, 2), 23.12, 0.01);
+check('面积 oversizing 26.4%', C.round(tv.areaOver, 1), 26.4, 0.05);
+check('26.4% 判过大', tv.text.indexOf('过大') !== -1 ? 'ok' : 'bad', 'ok');
+check('球扩理想区间 +3%', C.tavrSizing(75, 510, 26).text.indexOf('球扩瓣理想') !== -1 ? 'ok' : 'bad', 'ok');
+check('缺面积时给提示', C.tavrSizing(75, undefined, 26).hint ? 'ok' : 'bad', 'ok');
+check('全空报错', C.tavrSizing().error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 27. 左心耳封堵尺寸 ===');
+const lz = C.laaSize(24, 19, 20);
+check('24mm → 推荐 27', lz.size, 27);
+check('长短径比 1.26', C.round(lz.ratio, 2), 1.26, 0.01);
+check('深度 20 < 27×0.8 给提示', lz.depthWarn ? 'ok' : 'bad', 'ok');
+check('17mm → 推荐 20', C.laaSize(17).size, 20);
+check('31mm → 推荐 35', C.laaSize(31).size, 35);
+check('34mm 超上限', C.laaSize(34).size === undefined ? 'ok' : 'bad', 'ok');
+check('椭圆度 1.4 提示', C.laaSize(28, 20).shapeText ? 'ok' : 'bad', 'ok');
+check('缺最大径报错', C.laaSize().error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 28. 反流分数 ===');
+check('RF 60/86 = 69.8% 重度', C.round(C.regurgFraction(60, 86).rf, 1), 69.8, 0.05);
+check('RF 20/80 = 25% 轻度', C.regurgFraction(20, 80).text.indexOf('轻度') !== -1 ? 'ok' : 'bad', 'ok');
+check('RF 40/80 = 50% 重度', C.regurgFraction(40, 80).text.indexOf('重度') !== -1 ? 'ok' : 'bad', 'ok');
+check('反流量 ≥ SV 报错', C.regurgFraction(90, 80).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 29. 右室容积指数 ===');
+const rv = C.rvVolumeIndex(160, 60, 2.0, false);
+check('RVEDVi 80', C.round(rv.edvi, 1), 80.0, 0.05);
+check('RVESVi 30', C.round(rv.esvi, 1), 30.0, 0.05);
+check('男 80 正常', rv.edvText.indexOf('正常') !== -1 ? 'ok' : 'bad', 'ok');
+check('男 90 增大', C.rvVolumeIndex(180, undefined, 2.0, false).edvText.indexOf('增大') !== -1 ? 'ok' : 'bad', 'ok');
+check('女 78 增大（阈值 75）', C.rvVolumeIndex(156, undefined, 2.0, true).edvText.indexOf('增大') !== -1 ? 'ok' : 'bad', 'ok');
+check('缺 BSA 报错', C.rvVolumeIndex(160, undefined, 0).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 30. RVFWS ===');
+const rf = C.rvFreeWallStrain(-18, -22, -25);
+check('三段均值 −21.67', C.round(rf.mean, 1), -21.7, 0.05);
+check('n=3', rf.n, 3);
+check('−21.7 判正常', rf.text.indexOf('正常') !== -1 ? 'ok' : 'bad', 'ok');
+check('单段 −15 判减低', C.rvFreeWallStrain(-15).text.indexOf('减低') !== -1 ? 'ok' : 'bad', 'ok');
+check('全空报错', C.rvFreeWallStrain().error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 31. PAPi ===');
+const pp = C.pulmonaryPulseIndex(50, 25, 10);
+check('(50−25)/10 = 2.5', C.round(pp.papi, 2), 2.5, 0.01);
+check('2.5 保留', pp.text.indexOf('保留') !== -1 ? 'ok' : 'bad', 'ok');
+check('(40−20)/15 = 1.33 失耦联', C.pulmonaryPulseIndex(40, 20, 15).text.indexOf('失耦联') !== -1 ? 'ok' : 'bad', 'ok');
+check('(50−25)/13 = 1.92 边缘', C.pulmonaryPulseIndex(50, 25, 13).text.indexOf('边缘') !== -1 ? 'ok' : 'bad', 'ok');
+check('dPAP ≥ sPAP 报错', C.pulmonaryPulseIndex(30, 35, 8).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 32. 舒张期肺动脉压 ===');
+const pd = C.pulmonaryDiastolicPressure(1.5, 8);
+check('4×1.5² = 9 mmHg 压差', pd.grad, 9);
+check('PADP 17', pd.padp, 17);
+check('缺速度报错', C.pulmonaryDiastolicPressure().error ? 'ok' : 'bad', 'ok');
+check('不填 RAP 只出压差', C.pulmonaryDiastolicPressure(2.0).padp, 16);
+
+console.log('=== 33. 阻力指数 ===');
+const ri = C.resistanceIndices(6, 960, 1.8);
+check('PVRI 10.8', C.round(ri.pvri, 1), 10.8, 0.05);
+check('PVRI >5 提示升高', ri.pvriText.indexOf('升高') !== -1 ? 'ok' : 'bad', 'ok');
+check('SVRI 1728', C.round(ri.svri, 0), 1728, 1);
+check('SVRI 1728 偏低', ri.svriText.indexOf('偏低') !== -1 ? 'ok' : 'bad', 'ok');
+check('PVR 4/1.8 = 7.2? 不，4×1.8 = 7.2 略高',
+  C.round(C.resistanceIndices(4, undefined, 1.8).pvri, 1), 7.2, 0.05);
+check('只填 SVR 也出结果', C.resistanceIndices(undefined, 1000, 2).svri, 2000);
+check('全空报错', C.resistanceIndices(undefined, undefined, 1.8).error ? 'ok' : 'bad', 'ok');
+check('缺 BSA 报错', C.resistanceIndices(4, 900, 0).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 34. 右室 dP/dt ===');
+check('Δt 25ms → 480', C.rvDpDt(25).dpdt, 480);
+check('480 保留', C.rvDpDt(25).text.indexOf('保留') !== -1 ? 'ok' : 'bad', 'ok');
+check('Δt 40ms → 300 减低', C.rvDpDt(40).text.indexOf('减低') !== -1 ? 'ok' : 'bad', 'ok');
+check('Δt 0 报错', C.rvDpDt(0).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 35. Wilkins 评分 ===');
+check('四面各 2 分 → 8 分', C.wilkinsScore(2, 2, 2, 2).total, 8);
+check('8 分适合 PBMV', C.wilkinsScore(2, 2, 2, 2).text.indexOf('PBMV') !== -1 ? 'ok' : 'bad', 'ok');
+check('3/4/3/4 → 14 分', C.wilkinsScore(3, 4, 3, 4).total, 14);
+check('14 分优先外科', C.wilkinsScore(3, 4, 3, 4).text.indexOf('外科') !== -1 ? 'ok' : 'bad', 'ok');
+check('缺一项报错', C.wilkinsScore(2, 2, 2).error ? 'ok' : 'bad', 'ok');
+check('超范围（5 分）报错', C.wilkinsScore(5, 1, 1, 1).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 36. 缩流颈宽度 VCW ===');
+check('MR 7mm → 重度', C.vcwGrade(7, 'mr').level, 3);
+check('MR 7mm 文案', C.vcwGrade(7, 'mr').text.indexOf('重度') !== -1 ? 'ok' : 'bad', 'ok');
+check('AR 阈值更低：6mm 即重度', C.vcwGrade(6, 'ar').level, 3);
+check('MR 4mm 为中度（同尺寸 AR 不同档）', C.vcwGrade(4, 'mr').level, 2);
+check('AR 3mm 已中度', C.vcwGrade(3, 'ar').level, 2);
+check('缺值报错', C.vcwGrade().error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 37. 反流分数 RF ===');
+check('60/86 → 69.8%', C.round(C.regurgFraction(60, 86).rf, 1), 69.8, 0.05);
+check('69.8% 判重度', C.regurgFraction(60, 86).text.indexOf('重度') !== -1 ? 'ok' : 'bad', 'ok');
+check('30/86 → 34.9% 中度', C.regurgFraction(30, 86).text.indexOf('中度') !== -1 ? 'ok' : 'bad', 'ok');
+check('每搏量为 0 报错', C.regurgFraction(60, 0).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 38. MVA 连续性方程 ===');
+const svMva = C.strokeVolume(2.0, 20);
+check('LVOT 20mm/VTI20 → SV 62.8', C.round(svMva, 1), 62.8, 0.1);
+check('62.8/8 → MVA 7.85', C.round(C.mvaContinuity(svMva, 8), 2), 7.85, 0.01);
+check('MVA 7.85 属轻度/无狭窄', C.gradeMva(C.mvaContinuity(svMva, 8)).level, 'normal');
+
+console.log('=== 39. 左房排空分数 ===');
+const laE = C.laEmptying(80, 40);
+check('80→40 → LAEF 50%', laE.laef, 50);
+check('扩张指数 100%', laE.expand, 100);
+check('50% 判保留', laE.text.indexOf('保留') !== -1 ? 'ok' : 'bad', 'ok');
+check('90→50 → LAEF 44.4%（轻度减低）',
+  C.laEmptying(90, 50).text.indexOf('轻度减低') !== -1 ? 'ok' : 'bad', 'ok');
+check('最小容积 ≥ 最大容积报错', C.laEmptying(40, 80).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 40. 快速比值 LA/Ao · RV/LV ===');
+const qr = C.quickRatios(40, 32, 40, 50);
+check('LA/Ao = 1.25', qr.laAo, 1.25);
+check('1.25 判增大', qr.laAoText.indexOf('增大') !== -1 ? 'ok' : 'bad', 'ok');
+check('RV/LV = 0.80', qr.rvLv, 0.8);
+check('0.80 判右室扩大', qr.rvLvText.indexOf('扩大') !== -1 ? 'ok' : 'bad', 'ok');
+check('30/34 = 0.88 判正常', C.quickRatios(30, 34, 30, 48).laAoText.indexOf('正常') !== -1 ? 'ok' : 'bad', 'ok');
+
+console.log('=== 41. LVMI 身高^2.7 ===');
+const lh = C.lvmHeightIndex(200, 170, false);
+check('200g / 1.7^2.7 → 47.7', C.round(lh.index, 1), 47.7, 0.05);
+check('男性阈值 50', lh.hi, 50);
+check('47.7 男性正常', lh.text.indexOf('正常') !== -1 ? 'ok' : 'bad', 'ok');
+check('女性阈值 47', C.lvmHeightIndex(200, 170, true).hi, 47);
+check('47.7 女性已升高', C.lvmHeightIndex(200, 170, true).text.indexOf('升高') !== -1 ? 'ok' : 'bad', 'ok');
+
+console.log('=== 42. 肺动脉指数 McGoon / Nakata ===');
+const pa = C.paIndex(10, 10, 12, 1.75);
+check('McGoon (10+10)/12 = 1.67', C.round(pa.mcgoon, 2), 1.67, 0.01);
+check('1.67 < 1.8 判不足', pa.mcgoonText.indexOf('不足') !== -1 ? 'ok' : 'bad', 'ok');
+check('Nakata π(5²+5²)/1.75 ≈ 89.8', C.round(pa.nakata, 1), 89.8, 0.05);
+check('Nakata 89.8 < 150 判不足', pa.nakataText.indexOf('不足') !== -1 ? 'ok' : 'bad', 'ok');
+const pa2 = C.paIndex(14, 14, 18, 1.7);
+check('良好发育：McGoon 1.56 仍不足', pa2.mcgoonText.indexOf('不足') !== -1 ? 'ok' : 'bad', 'ok');
+check('缺 BSA 仍出 McGoon（该指标不需要体表面积）',
+  C.paIndex(10, 10, 12, 0).mcgoon > 0 ? 'ok' : 'bad', 'ok');
+check('缺 BSA 时不给 Nakata', C.paIndex(10, 10, 12, 0).nakata === undefined ? 'ok' : 'bad', 'ok');
+
+console.log('=== 43. 心尖保留比 RAS ===');
+check('|−18| / |−9| = 2.00', C.apicalSparing(-18, -9).ras, 2);
+check('RAS 2.0 判心尖保留', C.apicalSparing(-18, -9).text.indexOf('心尖保留') !== -1 ? 'ok' : 'bad', 'ok');
+check('反向 0.5 判无心尖保留',
+  C.apicalSparing(-9, -18).text.indexOf('无相对心尖保留') !== -1 ? 'ok' : 'bad', 'ok');
+check('心尖为 0 报错', C.apicalSparing(0, -9).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 44. 心室-动脉耦联 Ea ===');
+const ea = C.ventriculoArterial(100, 70, 50);
+check('ESP/ESV = 100/70 → Ea 1.43', C.round(ea.ea, 2), 1.43, 0.01);
+check('Ees = 100/(70−50) = 5? 单点法取 ESP/SV', C.round(ea.ees, 2), 2, 0.01);
+check('Ees/Ea = 1.40 常见区间', ea.text.indexOf('常见区间') !== -1 ? 'ok' : 'bad', 'ok');
+check('附单点法局限性说明', ea.note && ea.note.indexOf('单点法') !== -1 ? 'ok' : 'bad', 'ok');
+
+console.log('=== 45. 主动脉缩窄 ===');
+const coa = C.coarctationEcho(3.2, 1.2);
+check('4×3.2² = 41 mmHg 峰值压差', C.round(coa.grad, 0), 41, 1);
+check('峰值 ≥20 判有意义', coa.text.indexOf('有血流动力学意义') !== -1 ? 'ok' : 'bad', 'ok');
+check('舒张末期压差 5.8 → 拖尾征', coa.continuum.indexOf('拖尾征') !== -1 ? 'ok' : 'bad', 'ok');
+check('2.0 m/s → 16 mmHg 属轻度',
+  C.coarctationEcho(2.0, 1.8).text.indexOf('轻度') !== -1 ? 'ok' : 'bad', 'ok');
+check('缺峰值速度报错', C.coarctationEcho().error ? 'ok' : 'bad', 'ok');
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);

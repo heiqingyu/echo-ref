@@ -488,25 +488,25 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 16 个大组', dirs.length, 16, 0);
+  check('公式集分 18 个大组', dirs.length, 18, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 83 条（29 计算 + 9 瓣膜 + 32 评估 + 13 外链）', nItems, 83, 0);
-  check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[13].items.length, 6, 0);
-  check('切面指南 4 条', dirs[14].items.length, 4, 0);
-  check('TEE 模拟器 3 条', dirs[15].items.length, 3, 0);
+  check('目录共 106 条（52 计算 + 9 瓣膜 + 32 评估 + 13 外链）', nItems, 106, 0);
+  check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[15].items.length, 6, 0);
+  check('切面指南 4 条', dirs[16].items.length, 4, 0);
+  check('TEE 模拟器 3 条', dirs[17].items.length, 3, 0);
   check('操作规范专辑排在切面学习第一条',
-    dirs[13].items[0] && dirs[13].items[0].kind === 'album' && dirs[13].items[0].id === 'bookvid' ? 1 : 0, 1, 0);
+    dirs[15].items[0] && dirs[15].items[0].kind === 'album' && dirs[15].items[0].id === 'bookvid' ? 1 : 0, 1, 0);
   check('专辑标题为「实用超声规范化检查与操作（视频）」',
-    dirs[13].items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
+    dirs[15].items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
   check('外链条目为 link 类型（专辑除外）',
-    dirs[13].items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+    dirs[15].items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
-    dirs[13].items[0] && dirs[13].items[0].count === 25 ? 1 : 0, 1, 0);
+    dirs[15].items[0] && dirs[15].items[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进目录数据（省 setData）',
-    dirs[13].items[0] && dirs[13].items[0].children === undefined ? 1 : 0, 1, 0);
+    dirs[15].items[0] && dirs[15].items[0].children === undefined ? 1 : 0, 1, 0);
   check('专辑条目带书籍出处说明',
     (function () {
       const EXv = require('./miniprogram/utils/extra-data.js');
@@ -514,81 +514,96 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       return /王辉/.test(it.note || '') && /978-7-5189-8028-4/.test(it.note || '') ? 1 : 0;
     })(), 1, 0);
   check('TTE 经胸切面为直达交互链接',
-    dirs[13].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[15].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含速查表 / 指南条目',
-    dirs[13].items.some(i => i.id === 'tee-cheat') &&
-    dirs[14].items.some(i => i.id === 'guide-tte-cn') &&
-    dirs[14].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
+    dirs[15].items.some(i => i.id === 'tee-cheat') &&
+    dirs[16].items.some(i => i.id === 'guide-tte-cn') &&
+    dirs[16].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
   check('模拟器含 CT2TEE / TEE Simulator 图谱',
-    dirs[15].items.some(i => /ct2tee/.test(i.url)) &&
-    dirs[15].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[17].items.some(i => /ct2tee/.test(i.url)) &&
+    dirs[17].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
-  check('血流动力学与心功能 11 条', dirs[0].items.length, 11, 0);
-  check('右心与肺循环 6 条（PASP / RAP / FAC / TAPSE-PASP / PVR / SVR）',
-    dirs[1].items.length, 6, 0);
+  check('血流动力学与心功能 14 条（含 M 型三合一、快速比值、Ea）', dirs[0].items.length, 14, 0);
+  check('右心与肺循环 12 条（PASP / RAP / FAC / TAPSE-PASP / PVR / SVR + 第二批 6 条）',
+    dirs[1].items.length, 12, 0);
+  check('右心第二批条目齐全（rvvol / rvfws / papi / pdap / residx / rvdvdt）',
+    ['rvvol', 'rvfws', 'papi', 'pdap', 'residx', 'rvdvdt']
+      .every(id => dirs[1].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('右心组条目齐全',
     ['paspv', 'rapv', 'rvfacv', 'rcratiov', 'pvrv', 'svrv']
       .every(id => dirs[1].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('瓣膜与舒张定量 5 条（PISA / AVA / MVA / PPM / 舒张分级）',
-    dirs[2].items.length, 5, 0);
+  check('瓣膜与舒张定量 9 条（PISA / AVA / MVA / PPM / 舒张分级 + Wilkins / VCW / RF / MVA 连续性）',
+    dirs[2].items.length, 9, 0);
   check('瓣膜定量组条目齐全',
     ['pisav', 'avav', 'mvav', 'ppm', 'dfun']
       .every(id => dirs[2].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('重构与心肌功能 7 条（容积指数 / RWS / 球形 / 左房应变 / 主动脉 / MDS / 每搏功）',
-    dirs[3].items.length, 7, 0);
+  check('重构与心肌功能 10 条（容积 / RWS / 球形 / 左房应变 / 主动脉 / MDS / 每搏功 + LAEF / LVMI 身高^2.7 / RAS）',
+    dirs[3].items.length, 10, 0);
   check('重构组条目齐全',
     ['volidx', 'rwsv', 'spher', 'lastrain', 'aortaidx', 'mdsv', 'swv']
       .every(id => dirs[3].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('计算类条目合计 29 条', dirs.slice(0, 4).reduce((n, d) => n + d.items.length, 0), 29, 0);
-  check('器械支持 3 条（CRT / LAD / LVAD）', dirs[5].items.length, 3, 0);
+  check('计算类条目合计 52 条', dirs.slice(0, 6).reduce((n, d) => n + d.items.length, 0), 52, 0);
+  check('评分与室壁运动 3 条（WMSI / H2FPEF / HFA-PEFF）', dirs[4].items.length, 3, 0);
+  check('评分组条目齐全',
+    ['wmsi', 'h2fpef', 'hfapeff']
+      .every(id => dirs[4].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('介入尺寸与先心 4 条（TAVR / LAA / McGoon / CoA）', dirs[5].items.length, 4, 0);
+  check('介入组条目齐全',
+    ['tavrsz', 'laasz', 'paidx', 'coa']
+      .every(id => dirs[5].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('第三四批条目齐全',
+    ['wilkins', 'vcw', 'rf', 'mvac', 'laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
+      .every(id => ['0', '1', '2', '3', '4', '5'].some(k => dirs[+k].items.some(i => i.id === id)))
+      ? 1 : 0, 1, 0);
+  check('器械支持 3 条（CRT / LAD / LVAD）', dirs[7].items.length, 3, 0);
   check('器械支持含 CRT 同步化',
-    dirs[5].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
+    dirs[7].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
   check('器械支持含 LAD 参数',
-    dirs[5].items.some(i => i.id === 'la') ? 1 : 0, 1, 0);
+    dirs[7].items.some(i => i.id === 'la') ? 1 : 0, 1, 0);
   check('器械支持含 LVAD 超声评估',
-    dirs[5].items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
-  check('心腔与应变 11 条', dirs[6].items.length, 11, 0);
+    dirs[7].items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
+  check('心腔与应变 11 条', dirs[8].items.length, 11, 0);
   ['lv', 'rv', 'rcoupling', 'rvfail', 'rv-strain', 'strain', 'la-strain', 'peri', 'cp-rm', 'prosthetic', 'ctrcd'].forEach(id => {
     check('心腔与应变含 ' + id,
-      dirs[6].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirs[8].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 5 个瓣膜计算器 + 4 条判读（合并为一组，不再有「瓣膜疾病评估」）
-  check('瓣膜评估组合并为 9 条（5 计算器 + 4 判读）', dirs[4].items.length, 9, 0);
+  check('瓣膜评估组合并为 9 条（5 计算器 + 4 判读）', dirs[6].items.length, 9, 0);
   check('瓣膜评估组含 5 个瓣膜计算器入口',
-    ['as', 'ar', 'ms', 'mr', 'tr'].every(id => dirs[4].items.some(i => i.id === id && i.kind === 'valve')) ? 1 : 0, 1, 0);
+    ['as', 'ar', 'ms', 'mr', 'tr'].every(id => dirs[6].items.some(i => i.id === id && i.kind === 'valve')) ? 1 : 0, 1, 0);
   ['mitral', 'aortic', 'lf-lg', 'ie'].forEach(id => {
     check('瓣膜评估组含判读条目 ' + id,
-      dirs[4].items.some(i => i.id === id && i.kind === 'brief') ? 1 : 0, 1, 0);
+      dirs[6].items.some(i => i.id === id && i.kind === 'brief') ? 1 : 0, 1, 0);
   });
   check('不存在重复的「瓣膜疾病评估」分组',
     dirs.filter(s => s.title.indexOf('瓣膜疾病') !== -1).length === 0 ? 1 : 0, 1, 0);
-  check('心肌病变 3 条（HCM / 淀粉样变 / 应变鉴别）', dirs[7].items.length, 3, 0);
+  check('心肌病变 3 条（HCM / 淀粉样变 / 应变鉴别）', dirs[9].items.length, 3, 0);
   ['hcm', 'amyloid', 'rcm-strain'].forEach(id => {
     check('心肌病变含 ' + id,
-      dirs[7].items.some(i => i.id === id) ? 1 : 0, 1, 0);
-  });
-  check('大血管与急症 3 条（主动脉 / 肺栓塞 / 心腔占位）', dirs[8].items.length, 3, 0);
-  ['aorta', 'pe', 'thrombus'].forEach(id => {
-    check('大血管与急症含 ' + id,
-      dirs[8].items.some(i => i.id === id) ? 1 : 0, 1, 0);
-  });
-  check('先天性心脏病 5 条（分流判读 / 可手术性 / TOF 术后 PR / Ebstein / DORV）', dirs[9].items.length, 5, 0);
-  ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
-    check('先天性心脏病含 ' + id,
       dirs[9].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先心病术后残余病变 3 条（Mustard / Fontan / ASO）', dirs[10].items.length, 3, 0);
-  ['mustard', 'fontan', 'as-switch'].forEach(id => {
-    check('先心术后含 ' + id,
+  check('大血管与急症 3 条（主动脉 / 肺栓塞 / 心腔占位）', dirs[10].items.length, 3, 0);
+  ['aorta', 'pe', 'thrombus'].forEach(id => {
+    check('大血管与急症含 ' + id,
       dirs[10].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('负荷与功能试验 1 条（运动负荷超声）', dirs[11].items.length, 1, 0);
+  check('先天性心脏病 5 条（分流判读 / 可手术性 / TOF 术后 PR / Ebstein / DORV）', dirs[11].items.length, 5, 0);
+  ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
+    check('先天性心脏病含 ' + id,
+      dirs[11].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+  });
+  check('先心病术后残余病变 3 条（Mustard / Fontan / ASO）', dirs[12].items.length, 3, 0);
+  ['mustard', 'fontan', 'as-switch'].forEach(id => {
+    check('先心术后含 ' + id,
+      dirs[12].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+  });
+  check('负荷与功能试验 1 条（运动负荷超声）', dirs[13].items.length, 1, 0);
   check('负荷试验含 stress-echo',
-    dirs[11].items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
-  check('介入 TEE 评估 3 条（三尖瓣 / 二尖瓣 / TAVR）', dirs[12].items.length, 3, 0);
+    dirs[13].items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
+  check('介入 TEE 评估 3 条（三尖瓣 / 二尖瓣 / TAVR）', dirs[14].items.length, 3, 0);
   ['tr-interv', 'mv-interv', 'tavr'].forEach(id => {
     check('介入 TEE 评估含 ' + id,
-      dirs[12].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirs[14].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
 
@@ -673,6 +688,88 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   mpCalc('mdsv', { mds1: -18, mds2: -20, mds3: -16, mds4: -19, mds5: -15, mds6: -17 },
     /SD 1\.9/, '应变离散度 SD 1.9');
   mpCalc('swv', { ssv: 70, wmap: 90 }, /SW 85\.7.*正常/, '每搏功 85.7 正常');
+
+  // —— v1.2.8 第一批：M 型 / 评分体系 / 介入尺寸（含选项组）——
+  const mpCalc2 = function (gid, vals, re, label, opts) {
+    pgF.onLoad({ id: gid });
+    pgF.onShow();
+    pgF.data.inputs.forEach(function (r) {
+      r.value = (vals[r.key] === undefined ? '' : String(vals[r.key]));
+    });
+    // 每条用例都从默认值起步，避免上一条用例残留的 optsV 影响判断
+    (pgF.data.opts || []).forEach(function (o) {
+      pgF.data.optsV[o.k] = o.list[0][0];
+    });
+    if (opts) Object.keys(opts).forEach(function (k) { pgF.data.optsV[k] = opts[k]; });
+    pgF.refresh();
+    check('小程序 ' + label, re.test(pgF.data.out) ? 1 : 0, 1, 0);
+  };
+  mpCalc2('mtype', { mtdd: 50, mtds: 32, mtepss: 8 },
+    /FS 36\.0%.*EF 65\.4%.*EPSS 增大/, 'M 型三合一 FS36/EF65/EPSS 增大');
+  mpCalc2('mtype', { mtdd: 30, mtds: 35 }, /收缩末内径应小于/, 'M 型内径倒挂报错');
+  mpCalc2('wmsi', { wn1: 12, wn2: 3, wn3: 1, wn4: 1, wn5: 0 },
+    /WMSI = 1\.47.*17 节段.*轻度异常/, 'WMSI 1.47 轻度');
+  mpCalc2('wmsi', { wn1: 8, wn2: 2, wn3: 4, wn4: 3, wn5: 0 },
+    /WMSI = 2\.12.*重度异常/, 'WMSI 2.12 重度（8/2/4/3 = 36÷17）');
+  mpCalc2('h2fpef', { hbmi: 31, hage: 65, hee: 10, hpasp: 40 },
+    /H2FPEF 9 分.*可能性高/, 'H2FPEF 9 分高可能', { haf: '1', hbp: '1' });
+  mpCalc2('h2fpef', { hbmi: 22, hage: 50, hee: 7, hpasp: 28 },
+    /H2FPEF 0 分.*可能性低/, 'H2FPEF 0 分低可能', { haf: '0', hbp: '0' });
+  mpCalc2('hfapeff', { hlavi: 42, hlvmi: 120, hrwt: 0.45, hpasp2: 38, hee2: 16,
+    hes: 6, hel: 8, htrv: 3.0, hgls: 14, hbnp: 600 },
+    /HFA-PEFF 6 分（形态 2 \+ 功能 2 \+ 标志物 2）.*支持 HFpEF/,
+    'HFA-PEFF 6 分支持 HFpEF', { hsex: 'm', haf2: '0' });
+  mpCalc2('tavrsz', { tcirc: 75, tarea: 420, tnom: 26 },
+    /周长导出直径 23\.9.*面积导出直径 23\.1.*26\.4%.*过大/,
+    'TAVR 周长23.9/面积23.1/oversizing 26.4%');
+  mpCalc2('laasz', { lzmax: 24, lzmin: 19, lzdepth: 20 },
+    /长短径比 1\.26.*建议选用 27 mm.*深度/, 'LAA 24mm → 推荐 27mm 并提示深度');
+  mpCalc2('laasz', { lzmax: 34 }, /超出常规型号上限/, 'LAA 34mm 超上限');
+
+  // —— v1.2.9 第二批：右心与肺循环 ——
+  mpCalc2('rvvol', { rvedv: 150, rvesv: 60 }, /RVEDVi 85\.7.*正常.*RVESVi 34\.3.*正常/,
+    'RV 容积指数 85.7/34.3 正常');
+  mpCalc2('rvvol', { rvedv: 200 }, /RVEDVi 114\.3.*增大/, 'RVEDVi 114 增大');
+  mpCalc2('rvfws', { rfb: -18, rfm: -22, rfa: -25 },
+    /RVFWS 均值 -21\.7%.*3 段.*正常/, 'RVFWS −21.7 正常');
+  mpCalc2('rvfws', { rfb: -12, rfm: -14, rfa: -15 },
+    /RVFWS 均值 -13\.7%.*减低/, 'RVFWS −13.7 减低');
+  mpCalc2('papi', { pispap: 40, pidpap: 20, pirap: 15 },
+    /PAPi = 1\.33.*失耦联/, 'PAPi 1.33 失耦联');
+  mpCalc2('pdap', { pdprv: 1.5, pdrap: 8 }, /PADP ≈ 17\.0 mmHg.*9\.0/, 'PADP 1.5 → 17');
+  mpCalc2('residx', { ripvr: 6, risvr: 960 }, /PVRI 10\.5.*升高.*SVRI 1680/,
+    'PVRI 10.5 升高 / SVRI 1680');
+  mpCalc2('rvdvdt', { rdt: 25 }, /dP\/dt ≈ 480.*保留/, 'RV dP/dt Δt25 = 480');
+  mpCalc2('rvdvdt', { rdt: 40 }, /dP\/dt ≈ 300.*减低/, 'RV dP/dt Δt40 = 300 减低');
+
+  // —— v1.3.0 第三批：瓣膜与舒张细节 ——
+  mpCalc2('wilkins', { wk1: 2, wk2: 2, wk3: 2, wk4: 2 },
+    /Wilkins 总分 8.*PBMV/, 'Wilkins 8 分适合 PBMV');
+  mpCalc2('wilkins', { wk1: 3, wk2: 4, wk3: 3, wk4: 4 },
+    /Wilkins 总分 14.*外科/, 'Wilkins 14 分优先外科');
+  mpCalc2('vcw', { vcwv: 7 }, /MR 重度（≥7 mm）/, 'VCW 7mm MR 重度');
+  mpCalc2('vcw', { vcwv: 6 }, /AR 重度（≥6 mm）/, 'VCW 6mm AR 重度', { vsite: 'ar' });
+  mpCalc2('vcw', { vcwv: 4 }, /MR 中度/, 'VCW 4mm MR 中度');
+  mpCalc2('rf', { rfvol: 60, rfsv: 86 }, /RF = 69\.8%.*重度/, 'RF 69.8% 重度');
+  mpCalc2('mvac', { mvd: 2.0, mvlvti: 20, mvmvti: 8 },
+    /MVA 7\.85.*轻度/, 'MVA 连续性方程 7.85');
+  mpCalc2('laef', { lavmax: 80, lavmin: 40 },
+    /LAEF 50\.0%.*扩张指数 100\.0%.*保留/, 'LAEF 50% 扩张指数 100%');
+  mpCalc2('quickratio', { qla: 40, qao: 32, qrv: 40, qlv: 50 },
+    /LA\/Ao = 1\.25.*增大.*RV\/LV = 0\.80.*右室扩大/, 'LA/Ao 1.25 / RV/LV 0.80');
+  mpCalc2('lvmih', { lhmass: 200, lhheight: 170 },
+    /LVMI 47\.7.*正常/, 'LVMI 身高^2.7 = 47.7 正常');
+
+  // —— v1.3.0 第四批：先心 / 心肌 / 耦联 ——
+  // Nakata 走 fmt(x, 0) 取整显示，故期望 90（引擎值为 89.76）
+  mpCalc2('paidx', { prpa: 10, plpa: 10, pdao: 12 },
+    /McGoon 1\.67.*不足.*Nakata 90 mm²\/m².*不足/, 'McGoon 1.67 不足 / Nakata 90');
+  mpCalc2('ras', { rasap: -18, rasba: -9 },
+    /RAS = 2\.00.*心尖保留/, 'RAS 2.0 心尖保留');
+  mpCalc2('ea', { eaesp: 100, easv: 70, eaesv: 50 },
+    /Ea 1\.43.*Ees\/Ea 1\.40.*常见区间/, 'Ea 1.43 / Ees-Ea 1.40');
+  mpCalc2('coa', { coav: 3.2, coaved: 1.2 },
+    /峰值压差 41.*拖尾征/, 'CoA 峰值 41mmHg + 拖尾征');
 
   // —— 未知 id 回退 ——
   pgF.onLoad({ id: 'nope' });
