@@ -1,4 +1,4 @@
-// 用 Chrome DevTools Protocol 实测发布版三页签（EF·参考值 / 儿童 Z 值 / 公式集）
+// 用 Chrome DevTools Protocol 实测发布版四页签（EF·参考值 / 节段划分 / 儿童 Z 值 / 公式集）
 const http = require('http');
 const { spawn } = require('child_process');
 const path = require('path');
@@ -103,20 +103,20 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 1500)); // 等 boot
 
   console.log('\n【一】结构');
-  check('页签数 = 3',
-    (await c.evalJs('document.querySelectorAll(".tab").length')) === 3);
+  check('页签数 = 4',
+    (await c.evalJs('document.querySelectorAll(".tab").length')) === 4);
   const tabNames = await c.evalJs(
     '[...document.querySelectorAll(".tab")].map(e=>e.dataset.tab).join(",")');
-  check('页签顺序 index,peds,calc', tabNames === 'index,peds,calc', tabNames);
-  check('页面容器 3 个（无 ef/valves/segments）',
-    (await c.evalJs('document.querySelectorAll(".page").length')) === 3);
+  check('页签顺序 index,segments,peds,calc', tabNames === 'index,segments,peds,calc', tabNames);
+  check('页面容器 4 个（无 ef/valves）',
+    (await c.evalJs('document.querySelectorAll(".page").length')) === 4);
   check('Core 引擎已挂载', (await c.evalJs('typeof window.Core === "object"')) === true);
   check('Peds 引擎已挂载', (await c.evalJs('typeof window.Peds === "object"')) === true);
   check('Calc 引擎已挂载（公式集需要）', (await c.evalJs('typeof window.Calc')) === 'object');
   check('ExtraData 评估内容已挂载', (await c.evalJs('typeof window.ExtraData')) === 'object');
   check('ValveCalc 引擎已移除', (await c.evalJs('typeof window.ValveCalc')) === 'undefined');
-  check('SegSvg 引擎已移除', (await c.evalJs('typeof window.SegSvg')) === 'undefined');
-  check('SegSvg 引擎已移除', (await c.evalJs('typeof window.SegSvg')) === 'undefined');
+  check('SegSvg 引擎已挂载（节段划分页需要）',
+    (await c.evalJs('typeof window.SegSvg')) === 'object');
 
   console.log('\n【二】Tab1 EF·参考值（EF 计算 + 参数参考值已合并）');
   // 通用：给输入框赋值并触发 input
@@ -201,7 +201,7 @@ function check(name, ok, detail) {
   await c.evalJs('document.querySelector(\'[data-seg="standard"] [data-v="CN"]\').click()');
 
 
-  console.log('\n【三】Tab2 儿童 Z 值');
+  console.log('\n【三】Tab3 儿童 Z 值');
   await c.evalJs('document.querySelector(\'.tab[data-tab="peds"]\').click()');
   await new Promise((r) => setTimeout(r, 400));
   check('切到儿童页后 page-peds 可见',
@@ -221,7 +221,50 @@ function check(name, ok, detail) {
   const pdBsa = await c.evalJs('document.getElementById("pdBsa").textContent');
   check('儿童 BSA 已算出', pdBsa && /\d\.\d+/.test(pdBsa), pdBsa);
 
-  console.log('\n【三·五】公式集（发布版第三页）');
+  console.log('\n【三·二】节段划分页（室壁划分，APK 也打这一份）');
+  await c.evalJs('document.querySelector(\'.tab[data-tab="segments"]\').click()');
+  await new Promise((r) => setTimeout(r, 600));
+  check('切到节段页后 page-segments 可见',
+    (await c.evalJs('!document.getElementById("page-segments").hidden')) === true);
+  const segInfo = await c.evalJs(`(function(){
+    return JSON.stringify({
+      bullSvg: document.querySelectorAll('#bullseyeBox svg').length,
+      bullSegs: document.querySelectorAll('#bullseyeBox g[data-seg]').length,
+      wallSvgs: [].slice.call(document.querySelectorAll('.wallsvg-box'))
+        .map(function(e){return e.querySelectorAll('svg').length;})
+        .filter(function(n){return n>0;}).length,
+      wallBoxes: document.querySelectorAll('.wallsvg-box').length,
+      terrChips: document.querySelectorAll('.terr-chip').length,
+      segChips: document.querySelectorAll('.segchip').length,
+      btnZoom: document.querySelectorAll('#page-segments [data-selseg]').length
+    });
+  })()`);
+  const si = JSON.parse(segInfo);
+  check('牛眼图 SVG 已绘制', si.bullSvg >= 1, segInfo);
+  check('牛眼图含 17 个可点节段', si.bullSegs === 17, si.bullSegs);
+  check('7 张切面示意图全部绘制', si.wallBoxes === 7 && si.wallSvgs === 7, segInfo);
+  check('供血分区按钮 3 个', si.terrChips === 3, si.terrChips);
+  check('节段数字按钮 ≥ 17', si.segChips >= 17, si.segChips);
+
+  // 点分区 → 高亮提示行出现
+  await c.evalJs('document.querySelector(\'#page-segments .terr-chip\').click()');
+  await new Promise((r) => setTimeout(r, 300));
+  check('点供血分区后高亮提示行可见',
+    (await c.evalJs('!document.getElementById("segHiLine").hidden')) === true);
+
+  // 点牛眼图里的节段 → 选中信息行出现
+  await c.evalJs('document.querySelector(\'#bullseyeBox g[data-seg="7"]\').dispatchEvent(' +
+    'new MouseEvent("click",{bubbles:true}))');
+  await new Promise((r) => setTimeout(r, 300));
+  const selInfo = await c.evalJs(`(function(){
+    var box=document.getElementById('segSelInfo');
+    return JSON.stringify({shown: !box.hidden, txt: box.textContent.replace(/\\s+/g,' ').slice(0,60)});
+  })()`);
+  const sel = JSON.parse(selInfo);
+  check('点节段 7 后选中信息行可见', sel.shown === true, selInfo);
+  check('选中信息含节段名与供血冠脉', /段/.test(sel.txt) && /LAD|LCx|RCA/.test(sel.txt), sel.txt);
+
+  console.log('\n【三·五】公式集（发布版第四页）');
   await c.evalJs('document.querySelector(\'.tab[data-tab="index"]\').click()');
   await new Promise((r) => setTimeout(r, 250));
   await c.evalJs('document.querySelector(\'.tab[data-tab="calc"]\').click()');
@@ -253,10 +296,10 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 血流动力学 / 瓣膜评估 / 器械支持 / 心腔与应变 / 心肌病变 / 大血管与急症 / 先天性心脏病 / 先心术后 / 负荷与功能试验 / 介入 TEE 评估 / 切面学习 / 切面指南 / TEE 模拟器',
-      d.groups.join('|') === '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器',
+    check('公式集分组 = 4 个计算组 + 瓣膜 + 8 组评估 + 3 组外链',
+      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 60 条（11 计算 + 36 评估 + 13 外链，其中专辑入口 1 条）', d.items === 60, d.items);
+    check('条目 78 条（29 计算 − 5 瓣膜计算器 + 36 评估 + 13 外链，其中专辑入口 1 条）', d.items === 78, d.items);
     check('外链 <a> 条目 12 条（专辑入口为按钮，另行校验）', d.links === 12, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -267,6 +310,88 @@ function check(name, ok, detail) {
     check('参考文献 40 条', d.refs === 40, d.refs);
     check('延展阅读卡片在公式集页', d.ext, true);
   }
+
+  // ── v1.2.4 新增计算器：端到端点开 + 填值 + 读结果 ──
+  console.log('\n【三·b】新增计算器端到端（右心 / 瓣膜 / 舒张 / 重构）');
+  const backToList = async () => {
+    await c.evalJs(`(function(){var b=document.getElementById('calcBack'); if(b) b.click();})()`);
+    await new Promise((r) => setTimeout(r, 200));
+  };
+  const openCalc = async (id) => {
+    await backToList();
+    await c.evalJs(`(function(){
+      var e=document.querySelector('#calcList .fx-item[data-kind="calc"][data-id="${id}"]');
+      if(e) e.click();
+    })()`);
+    await new Promise((r) => setTimeout(r, 250));
+  };
+  const fillCalc = async (gid, key, val) => {
+    await c.evalJs(`(function(){
+      var box=document.querySelector('#calcGroups .card[data-g="${gid}"]');
+      var i=box&&box.querySelector('input[data-ck="${key}"]');
+      if(i){i.value="${val}";i.dispatchEvent(new Event('input',{bubbles:true}));}
+    })()`);
+  };
+  const outOf = async (gid) => await c.evalJs(
+    `(document.querySelector('#calcOut-${gid} .calc-out__v')||{}).textContent||''`);
+
+  // 目录里能看到 4 个新计算组
+  const newGroupTitles = await c.evalJs(
+    `[].slice.call(document.querySelectorAll('#calcList .fx-group')).map(function(e){return e.textContent;}).join('|')`);
+  check('目录出现 4 个计算组',
+    ['右心与肺循环', '瓣膜与舒张定量', '重构与心肌功能'].every((t) => newGroupTitles.indexOf(t) !== -1),
+    newGroupTitles);
+
+  await openCalc('paspv');
+  await fillCalc('paspv', 'ptrv', '3.0');
+  await fillCalc('paspv', 'prap', '8');
+  await new Promise((r) => setTimeout(r, 300));
+  let o = await outOf('paspv');
+  check('PASP 3.0 + 8 → 44 mmHg 轻度', /44/.test(o) && /轻度/.test(o), o);
+
+  await openCalc('pvrv');
+  await fillCalc('pvrv', 'hmmpap', '45');
+  await fillCalc('pvrv', 'hmpawp', '12');
+  await fillCalc('pvrv', 'hmco', '5');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('pvrv');
+  check('PVR 33/5 → 6.6 WU 重度', /6\.6/.test(o) && /重度/.test(o), o);
+
+  await openCalc('pisav');
+  await fillCalc('pisav', 'prad', '0.8');
+  await fillCalc('pisav', 'pvmax', '5.0');
+  await fillCalc('pisav', 'pvti', '150');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('pisav');
+  check('PISA r=0.8 → EROA 0.32 / RVol 48', /0\.32/.test(o) && /48/.test(o), o);
+
+  await openCalc('dfun');
+  await fillCalc('dfun', 'dfe', '80');
+  await fillCalc('dfun', 'dfa', '60');
+  await fillCalc('dfun', 'dfes', '10');
+  await fillCalc('dfun', 'dfel', '14');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('dfun');
+  check('舒张四步法 E/A 1.33 → 正常充盈', /1\.33/.test(o) && /正常充盈/.test(o), o);
+
+  await openCalc('rwsv');
+  await fillCalc('rwsv', 'rsbp', '140');
+  await fillCalc('rwsv', 'rlvedd', '5.5');
+  await fillCalc('rwsv', 'rpwt', '1.1');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('rwsv');
+  check('RWS 140/5.5/1.1 → 195', /195/.test(o), o);
+
+  await openCalc('lastrain');
+  await fillCalc('lastrain', 'lsr', '30');
+  await fillCalc('lastrain', 'lscd', '18');
+  await fillCalc('lastrain', 'lsct', '12');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('lastrain');
+  check('左房应变三值自洽', /LASr/.test(o) && /自洽/.test(o), o);
+
+  await openCalc('paspv'); // 收尾回到列表
+  await backToList();
 
   // 详情视图在发布版仍可用
   await c.evalJs(`(function(){
@@ -285,7 +410,7 @@ function check(name, ok, detail) {
   check('发布版可打开评估类详情（CRT）', dd.g[0] === 'crt', det);
   check('详情内表格已渲染', dd.tbl >= 2, dd.tbl);
 
-  // 转载内容仍应剥离干净
+  // 转载内容仍应剥离干净；节段划分页（自有内容）已回归发布版
   const stripped = await c.evalJs(`(function(){
     return JSON.stringify({
       valvePage: !!document.getElementById('page-valves'),
@@ -296,9 +421,9 @@ function check(name, ok, detail) {
   })()`);
   const st = JSON.parse(stripped);
   check('发布版已剥离瓣膜页', st.valvePage === false, stripped);
-  check('发布版已剥离节段页', st.segPage === false, stripped);
-  check('发布版已剥离 ValveCalc / SegSvg 引擎',
-    st.valveEngine === 'undefined' && st.segEngine === 'undefined', stripped);
+  check('发布版保留节段划分页', st.segPage === true, stripped);
+  check('发布版已剥离 ValveCalc、保留 SegSvg',
+    st.valveEngine === 'undefined' && st.segEngine === 'object', stripped);
 
   const homeVer = await c.evalJs('document.querySelector("#page-index .verline") ? 1 : 0');
   check('首页显示版本行', homeVer === 1, homeVer);

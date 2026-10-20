@@ -8,8 +8,8 @@
  *
  * 两个产出：
  *   ① www/index.html            完整版（6 页签），供 APK 内嵌与本地预览
- *   ② docs/index.html           发布版（仅 2 页签：EF·参考值 / 儿童 Z 值），
- *                              可直接作为 GitHub Pages 的发布源，不含转载内容
+ *   ② docs/index.html           发布版（4 页签：EF·参考值 / 节段划分 / 儿童 Z 值 / 公式集），
+ *                              可直接作为 GitHub Pages 的发布源，不含转载的瓣膜评估内容
  *
  * 用法：node build-www.js  [--full]
  *   --full   只生成完整版（跳过 docs 发布版）
@@ -21,8 +21,13 @@ const ROOT = __dirname;
 const MP = path.join(ROOT, 'miniprogram');
 const OUT = path.join(ROOT, 'www', 'index.html');
 
-/** 发布版（GitHub Pages）保留的页签：只留自有内容，转载内容不上线 */
-const PUBLIC_TABS = ['index', 'peds', 'calc'];
+/**
+ * 发布版（GitHub Pages）保留的页签：只留自有内容，转载内容不上线。
+ * ★ 2026-10-20：节段划分（室壁划分）回归发布版 —— APK 打的就是本发布版，
+ *   上一轮裁剪把节段页一起删了，用户新装后找不到「室壁划分」。
+ *   现仅裁掉「瓣膜评估」一页（转自教材的内容）。
+ */
+const PUBLIC_TABS = ['index', 'segments', 'peds', 'calc'];
 
 /**
  * 版本号单一来源：android-app/VERSION 第一行
@@ -737,9 +742,9 @@ function stripCssBlock(src, startMark, endMark) {
 
 /**
  * 把完整版精简成发布版。三件事：
- *   1) 去掉不发布的 <section class="page" id="page-X"> 整段
+ *   1) 去掉不发布的 <section class="page" id="page-X"> 整段（目前只有瓣膜评估）
  *   2) 去掉对应的 <div class="tab" data-tab="X"> 页签
- *   3) 去掉用不到的引擎块（Calc / SegSvg / ValveCalc）
+ *   3) 去掉用不到的引擎块（ValveCalc）；Calc / SegSvg 保留
  * 另外给页面加上发布版提示与免责声明。
  */
 function buildPublicHtml() {
@@ -747,25 +752,25 @@ function buildPublicHtml() {
   // 导致 trim 之外的精确比较全部失配。先归一成 LF 再做切块清理。
   let out = html.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-  // 1) 删掉不发布的页面容器（含其后的空行）。公式集页已列入发布版，不再删除。
-  ['page-valves', 'page-segments'].forEach((id) => {
+  // 1) 只删瓣膜页（节段划分页已回归发布版：APK 打的也是 docs，用户反馈缺了室壁划分）
+  ['page-valves'].forEach((id) => {
     out = removeSectionById(out, id);
   });
-  // 2) 删掉不发布的页签（公式集页签保留）
-  ['valves', 'segments'].forEach((t) => {
+  // 2) 只删瓣膜页签
+  ['valves'].forEach((t) => {
     const re = new RegExp('^[ \\t]*<div class="tab" data-tab="' + t + '"[\\s\\S]*?\\n[ \\t]*</div>\\n?', 'm');
     if (!re.test(out)) throw new Error('发布版：未找到页签 ' + t);
     out = out.replace(re, '');
   });
 
-  // 3) 删掉用不到的引擎（SegSvg / ValveCalc）；Calc 引擎供公式集页使用，保留
-  [segSrc, valveSrc].forEach((src) => {
+  // 3) 删掉用不到的引擎（ValveCalc）；SegSvg 供节段页使用，Calc 供公式集页使用
+  [valveSrc].forEach((src) => {
     if (out.indexOf(src) === -1) throw new Error('发布版：未找到待移除的引擎块');
     out = out.replace(src + '\n', '');
   });
 
-  // 3b) 删掉 app.js 里被标记为 PUBlic-CUT 的整块逻辑（其他计算 / 瓣膜 / 节段）
-  ['valve', 'seg', 'segclick', 'visimport'].forEach((tag) => {
+  // 3b) 删掉 app.js 里被标记为 PUBLIC-CUT 的整块逻辑（目前只有瓣膜）
+  ['valve'].forEach((tag) => {
     const re = new RegExp('/\\*<<<PUBLIC-CUT:' + tag + '>>>\\*/[\\s\\S]*?/\\*<<<END-CUT:' + tag + '>>>\\*/\\n?');
     if (!re.test(out)) throw new Error('发布版：未找到切块标记 ' + tag);
     out = out.replace(re, '');
@@ -780,30 +785,26 @@ function buildPublicHtml() {
   const DROP_LINES = [
     /^[ \t]*valveivc: function[^\n]*\n/m,
     /^[ \t]*valves: '瓣膜评估',[^\n]*\n/m,
-    /^[ \t]*segments: '节段划分',[^\n]*\n/m,
-    // 已切块的引擎/页面，其顶部声明与页签分派也要摘掉（Calc 引擎保留给公式集页）
+    // 已切块的引擎/页面，其顶部声明与页签分派也要摘掉（Calc / SegSvg 引擎均保留）
     /^[ \t]*const ValveCalc = window\.ValveCalc;[^\n]*\n/m,
     /^[ \t]*if \(name === 'valves'\) renderValves\(\);[^\n]*\n/m,
     /^[ \t]*<!--[^\n]*瓣膜评估[^\n]*-->[^\n]*\n/m,
-    /^[ \t]*<!--[^\n]*节段划分[^\n]*-->[^\n]*\n/m,
     /^[ \t]*\/\/[^\n]*瓣膜评估[^\n]*\n/m,
-    /^[ \t]*\/\/[^\n]*节段划分[^\n]*\n/m,
   ];
   DROP_LINES.forEach((re) => { out = out.replace(re, ''); });
 
-  // 4b) 发布版没有 valves / seg 两页，凡是对这两页的调用都是死代码，整行删掉。
+  // 4b) 发布版没有 valves 页，凡是对它的调用都是死代码，整行删掉。
+  //     —— 节段划分页已回归发布版，renderSegAll() / clearSeg 相关调用必须保留。
   //     注意：必须先删「裸调用」，再删「带守卫的调用」—— 顺序反了的话，
   //     第一步刚生成的 if (window.__HAS_*) 行在同一趟里匹配不到，会漏进产物。
   const DEAD_CALLS = [
     // 裸调用（app.js 原始形态）——公式集页已发布，其调用必须保留
     'renderValves();',
-    'renderSegAll();',
     'clearValves();',
     "if (name === 'valves') renderValves();",
     // 带守卫的调用（上一步包裹后可能出现）
     'if (window.__HAS_VALVE) renderValves();',
     'if (window.__HAS_VALVE) clearValves();',
-    'if (window.__HAS_SEG) renderSegAll();',
   ];
   out = out.split('\n')
     .filter(function (line) { return DEAD_CALLS.indexOf(line.trim()) === -1; })
@@ -816,20 +817,18 @@ function buildPublicHtml() {
   // 4d) 公式集页已进入发布版，其样式（.fx-* / 表格 / 参考文献）一并保留
 
   // 4e) 剥掉被删页面的专属样式块（按「起止注释行」整段去掉，不用贪婪正则）
-  //     —— .calc-out 保留（EF / 儿童 Z 值页也在用），只删节段与瓣膜两段。
-  out = stripCssBlock(out,
-    '/* ────────── 节段划分页 ────────── */',
-    '/* ══════════════════════════════════════════════════════════'
-  );
+  //     —— .calc-out 保留（EF / 儿童 Z 值页也在用）；节段划分页已回归，其 CSS 必须保留。
   out = stripCssBlock(out,
     '   瓣膜评估页（AS / AR / MS / MR / TR）',
     null   // 一直删到 <style> 结束
   );
 
   // 5) 兜底自检：被移除的页面 id / 入口 / 样式不得残留
-  ['id="page-valves"', 'id="page-segments"', 'data-go="calc"',
+  //    ★ 节段划分页已回归发布版，故 'id="page-segments"' / '.bull-wrap' / '.vswitch'
+  //      等节段相关标记不再是「残留」，已移到 5b 的「必须存在」清单。
+  ['id="page-valves"', 'data-go="calc"',
    'PUBLIC-CUT', 'END-CUT',
-   '节段划分页', '瓣膜评估页', '.vswitch', '.vchip', '.bull-wrap', '.lvl--severe', '.vsum',
+   '瓣膜评估页', '.vchip', '.lvl--severe', '.vsum',
    // 「肝静脉」不再作为残留标记：公式集「右心功能分级与右心衰」「缩窄 vs 限制型」
    // 两条判读合法引用肝静脉血流频谱，不能再据此判定瓣膜页残留。
    'Wilkins',
@@ -852,9 +851,18 @@ function buildPublicHtml() {
       if (out.indexOf(s) === -1) throw new Error('发布版：公式集依赖缺失 ' + s);
     });
 
+  // 5b2b) 节段划分页必须存在（APK 打的也是本发布版，用户需能在手机上看到室壁划分）
+  ['id="page-segments"', 'data-tab="segments"',
+   'window.SegSvg', 'renderSegAll', 'SegSvg.bullseyeSvg', 'data-seg',
+   '.bull-wrap', '.terr-chip', '.segchip', '.wall-card', '.wallsvg-box',
+   '17 节段模型与冠脉供血']
+    .forEach((s) => {
+      if (out.indexOf(s) === -1) throw new Error('发布版：节段划分页依赖缺失 ' + s);
+    });
+
   // 5b) 结构完整性自检：切块/删行容易把 HTML 骨架带掉，必须逐项确认
   ['</style>', '</head>', '<body', '</body>', '</html>', '<nav class="tabbar" id="tabbar"',
-   'id="page-index"', 'id="page-peds"', 'id="page-calc"']
+   'id="page-index"', 'id="page-segments"', 'id="page-peds"', 'id="page-calc"']
     .forEach((s) => {
       if (out.indexOf(s) === -1) throw new Error('发布版：结构缺失 ' + s);
     });

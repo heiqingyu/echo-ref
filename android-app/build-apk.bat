@@ -28,13 +28,15 @@ echo.
 echo [v] version %VNAME% (see android-app\VERSION)
 
 echo.
-echo [0/7] build published site (docs/index.html, valve page stripped) and sync to assets...
+echo [0/7] build site (full www = same content as mini program, docs = public) and sync to assets...
 pushd "%HERE%.."
 call node build-www.js
 if errorlevel 1 (popd & goto :fail)
 popd
-REM APK 打包发布版（已裁剪瓣膜页，与线上一致），而非完整 www/index.html
-copy /y "%HERE%..\docs\index.html" "%HERE%assets\index.html" >nul
+REM APK is for personal use only, NOT published. So pack the FULL build (www/index.html,
+REM 5 tabs incl. valve assessment + segments) so the app matches the mini program.
+REM The trimmed docs/index.html is only for the public GitHub Pages site.
+copy /y "%HERE%..\www\index.html" "%HERE%assets\index.html" >nul
 if errorlevel 1 goto :fail
 
 echo [1/7] prepare dirs...

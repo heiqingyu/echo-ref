@@ -97,5 +97,99 @@ check('E/e′ 10 灰区', C.gradeEe(10).text, '灰区');
 const d2 = C.diastolicRatios(80, null, null, 14);
 check('缺 A 不算 E/A', d2.ea === undefined ? 'skip' : 'bad', 'skip');
 
+console.log('=== 12. PASP / RAP 分级 ===');
+check('PASP 4×3²+8 = 44', C.pasp(3.0, 8), 44, 1e-9);
+check('PASP 35 正常', C.paspGrade(35).level, 0);
+check('PASP 45 轻度', C.paspGrade(45).level, 1);
+check('PASP 60 中度', C.paspGrade(60).level, 2);
+check('PASP 75 重度', C.paspGrade(75).level, 3);
+check('IVC 18 + 塌陷充分 → RAP 3', C.rapEstimate(18, 'yes').rap, 3);
+check('IVC 24 + 塌陷差 → RAP 15', C.rapEstimate(24, 'no').rap, 15);
+check('IVC 18 + 塌陷差 → RAP 8', C.rapEstimate(18, 'no').rap, 8);
+check('IVC 24 + 塌陷充分 → RAP 8', C.rapEstimate(24, 'yes').rap, 8);
+
+console.log('=== 13. PVR / SVR ===');
+// (45−12)/5 = 6.6 WU；dyn = 33×80/5 = 528
+const pvr = C.pvrResistance(45, 12, 5);
+check('PVR 6.6 WU', C.round(pvr.wu, 2), 6.6, 0.01);
+check('PVR 528 dyn', C.round(pvr.dyn, 0), 528, 0.5);
+check('PVR 6.6 重度', pvr.text.indexOf('重度') === 0 ? 'ok' : pvr.text, 'ok');
+check('PVR 1.5 WU 正常', C.pvrResistance(27, 12, 10).wu === 1.5 ? 'ok' : 'bad', 'ok');
+check('PVR mPAP<PAWP 报错', C.pvrResistance(10, 15, 5).error ? 'ok' : 'bad', 'ok');
+// SVR (65−5)×80/5 = 960
+const svr = C.svrResistance(65, 5, 5, 1.8);
+check('SVR 960 dyn', C.round(svr.dyn, 0), 960, 0.5);
+check('SVRI 1728', C.round(svr.svri, 0), 1728, 0.5);
+check('SVR 960 正常', svr.text.indexOf('正常') !== -1 ? 'ok' : svr.text, 'ok');
+check('SVR 700 偏低', C.svrResistance(40, 5, 4).text.indexOf('降低') !== -1 ? 'ok' : 'bad', 'ok');
+
+console.log('=== 14. 人工瓣 EOAi / PPM ===');
+check('EOAi 1.5/1.8 = 0.833', C.round(C.eoaPpm(1.5, 1.8, 1).eoai, 3), 0.833, 0.001);
+check('主动脉位 0.833 重度 PPM', C.eoaPpm(1.5, 1.8, 1).level, 2);
+check('主动脉位 1.6/1.8 = 0.889 中度', C.eoaPpm(1.6, 1.8, 1).level, 1);
+check('主动脉位 2.0/1.8 = 1.11 无 PPM', C.eoaPpm(2.0, 1.8, 1).level, 0);
+check('二尖瓣位 1.5/1.8 = 0.833 重度', C.eoaPpm(1.5, 1.8, 2).level, 2);
+check('二尖瓣位 2.0/1.8 = 1.11 中度', C.eoaPpm(2.0, 1.8, 2).level, 1);
+check('二尖瓣位 2.4/1.8 = 1.33 无 PPM', C.eoaPpm(2.4, 1.8, 2).level, 0);
+
+console.log('=== 15. 容积指数 ===');
+const vi = C.volumeIndices(150, 60, 1.8, false);
+check('EF 60%', C.round(vi.ef, 1), 60, 0.05);
+check('EDVi 83.3', C.round(vi.edvi, 1), 83.3, 0.05);
+check('ESVi 33.3', C.round(vi.esvi, 1), 33.3, 0.05);
+check('EDVi 83 男上限 74 → 轻度增大', vi.edviText, '轻度增大');
+check('ESVi 33 男上限 31 → 轻度增大', vi.esviText, '轻度增大');
+check('无 BSA 只出 EF/SV', C.volumeIndices(150, 60, 0, false).edvi === undefined ? 'ok' : 'bad', 'ok');
+check('ESV≥EDV 报错', C.volumeIndices(60, 60, 1.8, false).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 16. 相对室壁应力 ===');
+check('RWS 140/5.5/1.1 = 194.8', C.round(C.relativeWallStress(140, 5.5, 1.1).rws, 1), 194.8, 0.05);
+// 0.334×100×5.0 / (1.2×(1+1.2/5)) = 167/1.488 = 112.2
+check('RWS 100/5.0/1.2 = 112.2', C.round(C.relativeWallStress(100, 5.0, 1.2).rws, 1), 112.2, 0.1);
+check('RWS 110/5/1.2 → 正常', C.relativeWallStress(110, 5.0, 1.2).text.indexOf('正常') !== -1 ? 'ok' : 'bad', 'ok');
+check('RWS 高值 → 升高', C.relativeWallStress(160, 5.5, 1.0).text.indexOf('升高') !== -1 ? 'ok' : 'bad', 'ok');
+
+console.log('=== 17. 球形指数 ===');
+check('SI 5.5/8.5 = 0.647', C.round(C.sphericityIndex(5.5, 8.5).si, 3), 0.647, 0.001);
+check('SI 0.647 正常', C.sphericityIndex(5.5, 8.5).text, '形态正常（≤0.65）');
+check('SI 6.0/8.0 边界归 0.66–0.75', C.sphericityIndex(6.0, 8.0).text, '球形化（0.66–0.75）');
+check('SI 7.0/8.0 = 0.875 显著', C.sphericityIndex(7.0, 8.0).text.indexOf('显著') === 0 ? 'ok' : 'bad', 'ok');
+check('短径≥长径 报错', C.sphericityIndex(8, 8).error ? 'ok' : 'bad', 'ok');
+
+console.log('=== 18. 左房应变三值 ===');
+const la = C.laStrainTri(30, 18, 12);
+check('LASr 30 正常', la.srText.indexOf('正常') !== -1 ? 'ok' : 'bad', 'ok');
+check('三值自洽', la.consistent, true);
+check('LASr 25 轻度', C.laStrainTri(25, 15, 10).level, 1);
+check('LASr 20 中度', C.laStrainTri(20, 12, 8).level, 2);
+check('LASr 15 重度', C.laStrainTri(15, 9, 6).level, 3);
+const laBad = C.laStrainTri(30, 10, 8);
+check('偏差 12 判不自洽', laBad.consistent, false);
+check('取绝对值（负数输入）', C.laStrainTri(30, 18, -12).sct, 12);
+
+console.log('=== 19. 升主动脉指数 ===');
+const ao = C.aortaIndex(36, 1.8, false);
+check('指数 3.6cm/1.8 = 2.0', C.round(ao.index, 2), 2.0, 0.001);
+check('2.0 边缘', ao.level, 1);
+check('42mm/1.8 = 2.33 扩张', C.aortaIndex(42, 1.8, false).level, 2);
+check('50mm/1.8 = 2.78 显著', C.aortaIndex(50, 1.8, false).level, 3);
+check('34mm/1.8 = 1.89 正常', C.aortaIndex(34, 1.8, false).level, 0);
+
+console.log('=== 20. 应变离散度 ===');
+const mds = C.strainDispersion([-18, -20, -16, -19, -15, -17]);
+check('均值 17.5', C.round(mds.mean, 1), 17.5, 0.05);
+check('SD 1.87', C.round(mds.sd, 2), 1.87, 0.01);
+check('n=6', mds.n, 6);
+check('少于 3 值不给结果', C.strainDispersion([-18, -20]).sd === undefined ? 'ok' : 'bad', 'ok');
+check('SD 6 判离散增大', C.strainDispersion([-10, -22, -12, -20, -11, -21]).text.indexOf('增大') !== -1 ? 'ok' : 'bad', 'ok');
+
+console.log('=== 21. 每搏功 ===');
+// 70×90×0.0136 = 85.68
+const sw = C.strokeWork(70, 90, 1.8);
+check('SW 85.68 g·m', C.round(sw.sw, 2), 85.68, 0.01);
+check('SWi 47.6', C.round(sw.swi, 1), 47.6, 0.05);
+check('SW 85 正常', sw.text.indexOf('正常') !== -1 ? 'ok' : 'bad', 'ok');
+check('SW 40/90 = 48.96 偏低', C.strokeWork(40, 90, 1.8).text.indexOf('偏低') !== -1 ? 'ok' : 'bad', 'ok');
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);

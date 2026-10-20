@@ -31,19 +31,26 @@ function isVideo(url) {
 }
 
 /**
- * 组装目录：血流动力学（自动） + 瓣膜 + 各评估分组 + 外链分组
+ * 组装目录：4 个计算组 + 瓣膜 + 各评估分组 + 外链分组
+ *
+ * 计算组按 calc-groups.js 的 CALC_SECTIONS 拆分（hemo / right / vq / recon），
+ * 每条 GROUP 用 sec 指定归属，缺省 hemo —— 29 个公式不再堆在同一个组里。
  *
  * ★ album 条目（如整本书的视频）在目录里只占 1 条，children 不塞进 data，
  *   点进去再按 sec/item 到 extra-data 里取，避免 setData 传输整份子列表。
  */
 function buildSections() {
-  const sections = [{
-    id: 'hemo',
-    title: '血流动力学与心功能',
-    items: CG.GROUPS.map(function (g) {
-      return { kind: 'calc', id: g.id, title: g.title, sub: g.sub || '' };
-    }),
-  }];
+  const sections = CG.CALC_SECTIONS.map(function (cs) {
+    return {
+      id: cs.id,
+      title: cs.title,
+      items: CG.GROUPS.filter(function (g) {
+        return (g.sec || 'hemo') === cs.id;
+      }).map(function (g) {
+        return { kind: 'calc', id: g.id, title: g.title, sub: g.sub || '' };
+      }),
+    };
+  });
 
   EXTRA.forEach(function (s) {
     sections.push({ id: s.id, title: s.title, items: s.items });

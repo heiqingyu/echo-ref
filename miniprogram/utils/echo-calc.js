@@ -1017,6 +1017,308 @@ function ebsteinIndex(disp, bsa) {
   return r;
 }
 
+/**
+ * PASP 分级（mmHg）
+ *
+ * 切点取自 ASE 右心评估与 ESC/ERS 肺高压指南的常用分层：
+ *   ≤36 正常（对应 TR Vmax ≤2.8 m/s）
+ *   37–49 轻度升高
+ *   50–69 中度升高
+ *   ≥70 重度升高
+ * 注意：PASP 依赖 TR 压差 + RAP 估算，TR 频谱不完整时误差大；
+ * 肺动脉瓣狭窄 / RVOT 梗阻时 4V²+RAP 会高估。
+ */
+function paspGrade(v) {
+  if (!(v > 0)) return {};
+  if (v <= 36) return { level: 0, text: '正常（≤36 mmHg）' };
+  if (v < 50) return { level: 1, text: '轻度升高（37–49 mmHg）' };
+  if (v < 70) return { level: 2, text: '中度升高（50–69 mmHg）' };
+  return { level: 3, text: '重度升高（≥70 mmHg）' };
+}
+
+/**
+ * RAP 估算（IVC 法，ASE 2015 三分级）
+ *
+ *   IVC ≤21 mm 且吸气塌陷 >50%  → 3 mmHg（正常）
+ *   IVC >21 mm 且吸气塌陷 ≤50%  → 15 mmHg（明显升高）
+ *   其余组合                    → 8 mmHg（中间档）
+ * 仅适用于自主呼吸；机械通气、心包积液、腹压增高时不可靠。
+ *
+ * @param {number} ivcMm IVC 内径 mm
+ * @param {string} collapse 'yes' >50% | 'no' ≤50% | '' 未知
+ */
+function rapEstimate(ivcMm, collapse) {
+  if (!(ivcMm > 0)) return {};
+  const rap = rapFromIvc(ivcMm, collapse);
+  let text;
+  if (rap === 3) text = '右房压正常（IVC 不宽且塌陷充分）';
+  else if (rap === 15) text = '右房压明显升高（IVC 增宽且塌陷减少）';
+  else text = '右房压中间档（需结合 IVC 形态与其他右心指标）';
+  return { rap: rap, text: text, ivc: ivcMm, collapse: collapse || '' };
+}
+
+/**
+ * 肺血管阻力（血流动力学法，右心导管口径的超声替代）
+ *
+ *   PVR(WU) = (mPAP − PAWP) / CO
+ *   PVR(dyn·s·cm⁻⁵) = (mPAP − PAWP) × 80 / CO
+ * 分级（ESC/ERS 2022）：
+ *   ≤2 WU 正常；2–3 轻度；3–5 中度；>5 重度。
+ * 先心病可手术性常以 PVR <3 WU（PVRI <6 WU·m²）为界；
+ * 移植评估中 >5 WU 属高危。超声估测值仅作筛查，确诊需右心导管。
+ *
+ * @param {number} mpap mmHg
+ * @param {number} pawp mmHg（肺动脉楔压 / 左房压替代）
+ * @param {number} co   L/min
+ */
+function pvrResistance(mpap, pawp, co) {
+  if (!(mpap > 0) || !(co > 0)) return {};
+  const pawpV = (pawp === undefined || pawp === null) ? 0 : pawp;
+  const grad = mpap - pawpV;
+  if (grad < 0) return { error: 'mPAP 小于 PAWP，请核对输入' };
+  const wu = grad / co;
+  const dyn = grad * 80 / co;
+  let text;
+  if (wu <= 2) text = '阻力正常（≤2 WU）';
+  else if (wu < 3) text = '轻度升高（2–3 WU）';
+  else if (wu <= 5) text = '中度升高（3–5 WU）：先心病关闭前需急性血管反应试验';
+  else text = '重度升高（>5 WU）：手术 / 移植高危';
+  return { wu: wu, dyn: dyn, grad: grad, text: text };
+}
+
+/**
+ * 体循环血管阻力
+ *
+ *   SVR(dyn·s·cm⁻⁵) = (MAP − RAP) × 80 / CO
+ *   参考 800–1200；<800 降低（分布性休克、肝硬化、分流），>1200 升高。
+ * 有 BSA 时同出 SVRI = SVR × BSA（正常 1600–2400 dyn·s·cm⁻⁵·m²）。
+ */
+function svrResistance(map, rap, co, bsa) {
+  if (!(map > 0) || !(co > 0)) return {};
+  const rapV = (rap === undefined || rap === null) ? 0 : rap;
+  const dyn = (map - rapV) * 80 / co;
+  const r = { dyn: dyn, grad: map - rapV };
+  if (bsa > 0) r.svri = dyn * bsa;
+  if (dyn < 800) r.text = '阻力降低（<800）：注意分布性休克 / 分流';
+  else if (dyn <= 1200) r.text = '阻力正常（800–1200）';
+  else r.text = '阻力升高（>1200）：后负荷增加';
+  return r;
+}
+
+/**
+ * 人工瓣有效开口面积指数与患者-人工瓣不匹配（PPM）
+ *
+ *   EOAi = EOA / BSA
+ * 阈值（VARC / ASE）：
+ *   主动脉位：>1.0 无 PPM；0.85–1.0 中度；<0.85 重度
+ *   二尖瓣位：>1.2 无 PPM；0.9–1.2 中度；<0.9 重度
+ *
+ * @param {number} eoa cm²
+ * @param {number} bsa m²
+ * @param {number} pos 1=主动脉位 2=二尖瓣位
+ */
+function eoaPpm(eoa, bsa, pos) {
+  if (!(eoa > 0) || !(bsa > 0)) return {};
+  const idx = eoa / bsa;
+  const av = pos !== 2;
+  const r = { eoai: idx, pos: av ? 'av' : 'mv' };
+  if (av) {
+    if (idx < 0.85) { r.level = 2; r.text = '重度 PPM（主动脉位 EOAi <0.85）'; }
+    else if (idx <= 1.0) { r.level = 1; r.text = '中度 PPM（主动脉位 0.85–1.0）'; }
+    else { r.level = 0; r.text = '无明显 PPM（主动脉位 >1.0）'; }
+  } else {
+    if (idx < 0.9) { r.level = 2; r.text = '重度 PPM（二尖瓣位 EOAi <0.9）'; }
+    else if (idx <= 1.2) { r.level = 1; r.text = '中度 PPM（二尖瓣位 0.9–1.2）'; }
+    else { r.level = 0; r.text = '无明显 PPM（二尖瓣位 >1.2）'; }
+  }
+  return r;
+}
+
+/**
+ * 容积指数与重构分级（ASE 2015 正常值上限）
+ *
+ *   EDVi 上限：男 74 / 女 61 mL/m²
+ *   ESVi 上限：男 31 / 女 24 mL/m²
+ *   SVi  正常：男 32–58 / 女 29–47 mL/m²
+ * ESVi >45 mL/m² 提示显著收缩功能减低（ICD / 预后评估常用阈值）。
+ */
+function volumeIndices(edv, esv, bsa, female) {
+  if (!(edv > 0) || !(esv > 0)) return {};
+  if (esv >= edv) return { error: 'ESV 不可大于或等于 EDV，请核对' };
+  const sv = edv - esv;
+  const ef = sv / edv * 100;
+  const r = { sv: sv, ef: ef };
+  if (!(bsa > 0)) return r;
+
+  const hiEdv = female ? 61 : 74;
+  const hiEsv = female ? 24 : 31;
+  r.edvi = edv / bsa;
+  r.esvi = esv / bsa;
+  r.svi = sv / bsa;
+  r.hiEdv = hiEdv;
+  r.hiEsv = hiEsv;
+
+  const band = function (v, hi) {
+    if (v <= hi) return '正常';
+    if (v <= hi * 1.2) return '轻度增大';
+    if (v <= hi * 1.5) return '中度增大';
+    return '重度增大';
+  };
+  r.edviText = band(r.edvi, hiEdv);
+  r.esviText = band(r.esvi, hiEsv);
+  r.notes = [];
+  if (r.esvi > 45) r.notes.push('ESVi >45 mL/m²：收缩功能显著减低，注意 ICD / CRT 指征');
+  if (r.svi < 35) r.notes.push('SVi <35 mL/m²：低流量状态，压差与面积判读需谨慎');
+  return r;
+}
+
+/**
+ * 相对室壁应力（RWS）
+ *
+ *   RWS = 0.334 × SBP × LVEDD / [PWT × (1 + PWT / LVEDD)]
+ * 单位 10³ dyn/cm²（kdyne/cm²）。LVEDD、PWT 单位 cm。
+ *   正常约 60–160；>160 提示后负荷偏高（向心性肥厚的代偿对象），
+ *   <60 提示后负荷低（容量负荷 / 扩张型重构）。
+ */
+function relativeWallStress(sbp, lvidd, pwt) {
+  if (!(sbp > 0) || !(lvidd > 0) || !(pwt > 0)) return {};
+  const v = 0.334 * sbp * lvidd / (pwt * (1 + pwt / lvidd));
+  let text;
+  if (v > 160) text = '室壁应力升高（>160）：后负荷偏高，向心性重构的代偿表现';
+  else if (v >= 60) text = '室壁应力在正常范围（60–160）';
+  else text = '室壁应力偏低（<60）：容量负荷 / 扩张性重构';
+  return { rws: v, text: text };
+}
+
+/**
+ * 左室球形指数（舒张末，直径法）
+ *
+ *   SI = 左室短径 / 长径（同一时相）
+ *   ≤0.65 形态正常；0.66–0.75 球形化；>0.75 显著球形化（重构、预后差）。
+ */
+function sphericityIndex(shortD, longL) {
+  if (!(shortD > 0) || !(longL > 0)) return {};
+  if (shortD >= longL) return { error: '短径不应大于或等于长径，请核对测量' };
+  const si = shortD / longL;
+  let text;
+  if (si <= 0.65) text = '形态正常（≤0.65）';
+  else if (si <= 0.75) text = '球形化（0.66–0.75）';
+  else text = '显著球形化（>0.75）：重构明显，预后较差';
+  return { si: si, text: text };
+}
+
+/**
+ * 左房应变三值（储备 / 管道 / 泵）
+ *
+ * 参考范围（WASE 2022 正常值，随年龄性别有差异）：
+ *   LASr（储备）正常约 23–62%，临床常用 >30% 为正常；
+ *   LAScd（管道）约 10–25%；LASct（泵，取绝对值）约 10–20%。
+ * 分级（以 LASr 为主，HFpEF 相关阈值 23%）：
+ *   ≥30 正常；23–30 轻度减低；18–23 中度减低；<18 重度减低。
+ * 一致性：LASr ≈ LAScd + |LASct|，偏差 >5 提示节段 / 时相勾画有问题。
+ *
+ * @param {number} sr 储备应变 %（正值）
+ * @param {number} scd 管道应变 %（正值）
+ * @param {number} sct 泵应变 %（负值或正值，取绝对值）
+ */
+function laStrainTri(sr, scd, sct) {
+  if (!isFinite(sr) && !isFinite(scd) && !isFinite(sct)) return {};
+  const r = {};
+  const abs = function (x) { return (x === undefined || x === null) ? null : Math.abs(x); };
+  if (sr !== undefined && sr !== null) r.sr = Math.abs(sr);
+  if (scd !== undefined && scd !== null) r.scd = abs(scd);
+  if (sct !== undefined && sct !== null) r.sct = abs(sct);
+
+  if (r.sr !== undefined) {
+    if (r.sr >= 30) { r.level = 0; r.srText = '储备功能正常（≥30%）'; }
+    else if (r.sr >= 23) { r.level = 1; r.srText = '轻度减低（23–30%）'; }
+    else if (r.sr >= 18) { r.level = 2; r.srText = '中度减低（18–23%）'; }
+    else { r.level = 3; r.srText = '重度减低（<18%）：左房顺应性差、充盈压多已升高'; }
+  }
+  if (r.scd !== undefined) r.scdText = r.scd < 10 ? '管道功能减低（<10%）' : '管道功能可接受';
+  if (r.sct !== undefined) r.sctText = r.sct < 10 ? '泵功能减低（<10%）' : '泵功能可接受';
+
+  if (r.sr !== undefined && r.scd !== undefined && r.sct !== undefined) {
+    const sum = r.scd + r.sct;
+    r.sum = sum;
+    r.diff = Math.abs(sum - r.sr);
+    r.consistent = r.diff <= 5;
+  }
+  return r;
+}
+
+/**
+ * 升主动脉直径指数
+ *
+ *   指数 = 内径(cm) / BSA(m²)
+ *   ≤1.9 正常；1.9–2.1 边缘；>2.1 扩张；>2.6 显著扩张。
+ * 另按 ASE 2015 绝对上限提示：男 3.6 cm、女 3.3 cm（升主动脉）。
+ *
+ * @param {number} dMm 升主动脉内径 mm
+ * @param {number} bsa m²
+ * @param {boolean} female
+ */
+function aortaIndex(dMm, bsa, female) {
+  if (!(dMm > 0) || !(bsa > 0)) return {};
+  const cm = dMm / 10;
+  const idx = cm / bsa;
+  const hiAbs = female ? 3.3 : 3.6;
+  const r = { cm: cm, index: idx, hiAbs: hiAbs };
+  if (idx <= 1.9) { r.level = 0; r.text = '指数正常（≤1.9 cm/m²）'; }
+  else if (idx <= 2.1) { r.level = 1; r.text = '边缘增宽（1.9–2.1 cm/m²）'; }
+  else if (idx <= 2.6) { r.level = 2; r.text = '扩张（>2.1 cm/m²）'; }
+  else { r.level = 3; r.text = '显著扩张（>2.6 cm/m²），需密切随访 / 遗传性主动脉病筛查'; }
+  r.absText = cm > hiAbs
+    ? '绝对值亦超上限（' + (female ? '女' : '男') + ' ' + hiAbs + ' cm）'
+    : '绝对值未超上限（' + (female ? '女' : '男') + ' ' + hiAbs + ' cm）';
+  return r;
+}
+
+/**
+ * 应变离散度（MDS，6 壁峰值纵向应变的标准差）
+ *
+ * 逐壁输入峰值纵向应变（负值，或直接填绝对值均可），算均值与标准差。
+ * 参考：健康人 6 壁离散度通常 <4–5%；≥5% 提示区域性收缩差异明显
+ * （缺血、淀粉样变、节段性病变、失同步）。
+ * 注意：这是「应变值离散度」，不是时间型机械离散度（MAD，需各节段达峰时间）。
+ *
+ * @param {number[]} vals 峰值纵向应变数组
+ */
+function strainDispersion(vals) {
+  const arr = (vals || []).filter(function (x) { return isFinite(x); })
+    .map(function (x) { return Math.abs(x); });
+  if (arr.length < 3) return {};
+  const n = arr.length;
+  const mean = arr.reduce(function (a, b) { return a + b; }, 0) / n;
+  const varSum = arr.reduce(function (a, b) { return a + (b - mean) * (b - mean); }, 0);
+  const sd = Math.sqrt(varSum / (n - 1));
+  const r = { n: n, mean: mean, sd: sd, min: Math.min.apply(null, arr), max: Math.max.apply(null, arr) };
+  if (sd < 4) r.text = '离散度小（<4%）：各壁收缩较均匀';
+  else if (sd < 5) r.text = '离散度边缘（4–5%）';
+  else r.text = '离散度增大（≥5%）：提示区域性收缩差异，结合节段应变图定位';
+  return r;
+}
+
+/**
+ * 每搏功与功指数（LV stroke work）
+ *
+ *   SW(g·m) = SV(mL) × MAP(mmHg) × 0.0136
+ *   SWi = SW / BSA
+ * 正常 SW 约 60–110 g·m；SWi 约 40–60 g·m/m²。
+ * 提示：真正的「心肌做功 GWI / GCW / GWE」需压力-应变环与专有软件
+ * （GE AFI 等），无法由血压 + GLS 手算，故此处不提供估算值。
+ */
+function strokeWork(svMl, mapMmhg, bsa) {
+  if (!(svMl > 0) || !(mapMmhg > 0)) return {};
+  const sw = svMl * mapMmhg * 0.0136;
+  const r = { sw: sw };
+  if (bsa > 0) r.swi = sw / bsa;
+  if (sw < 60) r.text = '每搏功偏低（<60 g·m）：收缩泵功能或前负荷不足';
+  else if (sw <= 110) r.text = '每搏功正常（60–110 g·m）';
+  else r.text = '每搏功偏高（>110 g·m）：压力或容量负荷增加';
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -1077,6 +1379,19 @@ module.exports = {
   rvReserve,
   tofPr,
   ebsteinIndex,
+  // —— v1.2.4 新增：右心 / 阻力 / 瓣膜定量 / 重构 / 做功 ——
+  paspGrade,
+  rapEstimate,
+  pvrResistance,
+  svrResistance,
+  eoaPpm,
+  volumeIndices,
+  relativeWallStress,
+  sphericityIndex,
+  laStrainTri,
+  aortaIndex,
+  strainDispersion,
+  strokeWork,
   round,
   fmt,
 };

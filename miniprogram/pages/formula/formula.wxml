@@ -33,8 +33,8 @@
              data-idx="{{index}}" bindinput="onInput" placeholder="未填写" />
     </view>
 
-    <!-- 右心评估的附加选项（IVC 塌陷 / PH 征象） -->
-    <block wx:if="{{gid === 'rv'}}">
+    <!-- 右心评估 / 右房压条目的附加选项（IVC 塌陷） -->
+    <block wx:if="{{gid === 'rv' || gid === 'rapv'}}">
       <view class="field">
         <text class="field__label">IVC 吸气塌陷</text>
         <view class="seg">
@@ -43,6 +43,8 @@
                 data-v="{{item.v}}" bindtap="onCollapse">{{item.n}}</view>
         </view>
       </view>
+    </block>
+    <block wx:if="{{gid === 'rv'}}">
       <view class="field">
         <text class="field__label">PH 支持征象（≥2 类）</text>
         <view class="seg">

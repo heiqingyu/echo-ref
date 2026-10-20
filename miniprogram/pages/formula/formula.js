@@ -617,6 +617,189 @@ Page({
       }
       if (r.notes && r.notes.length) parts.push(r.notes.join('；'));
       out = parts.join('；');
+    } else if (gid === 'paspv') {
+      // —— 肺动脉收缩压 PASP ——
+      if (valid(v.ptrv, v.prap)) {
+        const val = calc.pasp(v.ptrv, v.prap);
+        out = 'PASP ≈ ' + calc.fmt(val, 1) + ' mmHg（4×' + calc.fmt(v.ptrv, 2) +
+          '² + ' + calc.fmt(v.prap, 0) + '）→ ' + calc.paspGrade(val).text;
+      }
+    } else if (gid === 'rapv') {
+      // —— 右房压（IVC 法）——
+      const r = calc.rapEstimate(v.rivc, this.data.collapseV);
+      if (r.rap !== undefined) {
+        out = 'RAP ≈ ' + r.rap + ' mmHg · IVC ' + calc.fmt(r.ivc, 0) + ' mm · ' + r.text;
+      }
+    } else if (gid === 'rvfacv') {
+      // —— 右室面积变化分数 ——
+      if (valid(v.feda, v.fesa)) {
+        if (v.fesa >= v.feda) out = 'RVESA 不可大于或等于 RVEDA，请核对';
+        else {
+          const f = calc.fac(v.feda, v.fesa);
+          out = 'FAC ' + calc.fmt(f, 1) + '% · ' +
+            (f >= 35 ? '正常（≥35%）' : f >= 25 ? '轻度减低（25–35%）' : '明显减低（<25%）');
+        }
+      }
+    } else if (gid === 'rcratiov') {
+      // —— TAPSE/PASP 耦联比 ——
+      if (valid(v.ctapse, v.cpasp)) {
+        const r = calc.tapsePasp(v.ctapse, v.cpasp);
+        out = 'TAPSE/PASP = ' + calc.fmt(r.ratio, 2) + ' mm/mmHg · ' + r.text;
+      }
+    } else if (gid === 'pvrv') {
+      // —— 肺血管阻力 PVR ——
+      const r = calc.pvrResistance(v.hmmpap, v.hmpawp, v.hmco);
+      if (r.error) out = r.error;
+      else if (r.wu !== undefined) {
+        out = 'PVR ' + calc.fmt(r.wu) + ' WU（' + calc.fmt(r.dyn, 0) +
+          ' dyn·s·cm⁻⁵，跨瓣压差 ' + calc.fmt(r.grad, 1) + ' mmHg）· ' + r.text;
+      }
+    } else if (gid === 'svrv') {
+      // —— 体循环血管阻力 SVR ——
+      const r = calc.svrResistance(v.smap, v.srap, v.sco, bsa);
+      if (r.dyn !== undefined) {
+        const parts = ['SVR ' + calc.fmt(r.dyn, 0) + ' dyn·s·cm⁻⁵'];
+        if (r.svri !== undefined) parts.push('SVRI ' + calc.fmt(r.svri, 0));
+        parts.push('· ' + r.text);
+        out = parts.join('；');
+      }
+    } else if (gid === 'pisav') {
+      // —— PISA 反流定量 ——
+      if (valid(v.prad, v.pvmax)) {
+        const alias = valid(v.palias) ? v.palias : 40;
+        const r = calc.pisa(v.prad, alias, v.pvmax, valid(v.pvti) ? v.pvti : undefined);
+        const ge = calc.gradeEroa(r.eroa);
+        const parts = ['流量 ' + calc.fmt(r.flow, 1) + ' mL/s', 'EROA ' + calc.fmt(r.eroa, 2) + ' cm²'];
+        let worst = ge.text;
+        if (r.rvol !== undefined) {
+          parts.push('RVol ' + calc.fmt(r.rvol, 0) + ' mL');
+          const gr = calc.gradeRvol(r.rvol);
+          if (gr.level === 'severe') worst = '重度反流';
+          else if (gr.level === 'moderate' && ge.level !== 'severe') worst = '中度反流';
+        }
+        parts.push('→ ' + worst);
+        out = parts.join('；');
+      }
+    } else if (gid === 'avav') {
+      // —— 主动脉瓣面积（连续性方程）——
+      if (valid(v.ald, v.alvti, v.aavti)) {
+        const sv = calc.strokeVolume(v.ald, v.alvti);
+        const ava = calc.avaContinuity(sv, v.aavti);
+        const g = calc.gradeAva(ava);
+        const parts = ['SV ' + calc.fmt(sv, 1) + ' mL', 'AVA ' + calc.fmt(ava, 2) + ' cm²（' + g.text + '）'];
+        if (bsa > 0) {
+          const idx = ava / bsa;
+          parts.push('AVAi ' + calc.fmt(idx, 2) + ' cm²/m²' + (idx <= 0.6 ? '（≤0.6 支持重度）' : ''));
+        }
+        const dvi = calc.dviIndex(v.alvti, v.aavti);
+        if (!dvi.error) parts.push('DVI ' + calc.fmt(dvi.dvi, 2));
+        out = parts.join('；');
+      }
+    } else if (gid === 'mvav') {
+      // —— 二尖瓣面积（PHT 法 / 连续方程）——
+      const parts = [];
+      if (valid(v.mpht)) {
+        const mva = calc.mvaPht(v.mpht);
+        parts.push('MVA ' + calc.fmt(mva, 2) + ' cm²（PHT 法）→ ' + calc.gradeMva(mva).text);
+      }
+      if (valid(v.msv, v.mvvti)) {
+        const m2 = calc.mvaContinuity(v.msv, v.mvvti);
+        parts.push('MVA ' + calc.fmt(m2, 2) + ' cm²（连续方程）→ ' + calc.gradeMva(m2).text);
+      }
+      out = parts.join('；');
+    } else if (gid === 'ppm') {
+      // —— 人工瓣 EOAi 与 PPM ——
+      const r = calc.eoaPpm(v.peoa, bsa, v.ppos);
+      if (r.eoai !== undefined) {
+        out = 'EOAi ' + calc.fmt(r.eoai, 2) + ' cm²/m²（' +
+          (r.pos === 'av' ? '主动脉位' : '二尖瓣位') + '）→ ' + r.text;
+      } else if (valid(v.peoa) && bsa <= 0) {
+        out = '需先在「EF·参考值」页填写身高体重（BSA 为 0 时无法算 EOAi）';
+      }
+    } else if (gid === 'dfun') {
+      // —— 舒张功能分级（四步法）——
+      const f = calc.lvFilling({
+        e: v.dfe === undefined ? null : v.dfe,
+        a: v.dfa === undefined ? null : v.dfa,
+        es: v.dfes === undefined ? null : v.dfes,
+        el: v.dfel === undefined ? null : v.dfel,
+        lavi: v.dflavi === undefined ? null : v.dflavi,
+        trv: v.dftrv === undefined ? null : v.dftrv,
+      });
+      const parts = [];
+      if (f.ea !== undefined) parts.push('E/A ' + calc.fmt(f.ea));
+      if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + calc.fmt(f.avgEe));
+      if (f.count > 0) parts.push('升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
+      else parts.push('升高指标 0 项');
+      if (f.text) parts.push('→ ' + f.text);
+      out = parts.join('；');
+    } else if (gid === 'volidx') {
+      // —— 容积指数与重构分级 ——
+      const r = calc.volumeIndices(v.vedv, v.vesv, bsa, female);
+      if (r.error) out = r.error;
+      else if (r.sv !== undefined) {
+        const parts = ['EF ' + calc.fmt(r.ef, 1) + '%', 'SV ' + calc.fmt(r.sv, 1) + ' mL'];
+        if (r.edvi !== undefined) {
+          parts.push('EDVi ' + calc.fmt(r.edvi, 1) + '（' + r.edviText + '）');
+          parts.push('ESVi ' + calc.fmt(r.esvi, 1) + '（' + r.esviText + '）');
+          parts.push('SVi ' + calc.fmt(r.svi, 1));
+        } else {
+          parts.push('填身高体重后给出 EDVi / ESVi（上限 ' + (female ? '女 61 / 24' : '男 74 / 31') + '）');
+        }
+        if (r.notes && r.notes.length) parts.push(r.notes.join('；'));
+        out = parts.join('；');
+      }
+    } else if (gid === 'rwsv') {
+      // —— 相对室壁应力 ——
+      if (valid(v.rsbp, v.rlvedd, v.rpwt)) {
+        const r = calc.relativeWallStress(v.rsbp, v.rlvedd, v.rpwt);
+        out = 'RWS ' + calc.fmt(r.rws, 0) + ' ×10³ dyn/cm² · ' + r.text;
+      }
+    } else if (gid === 'spher') {
+      // —— 左室球形指数 ——
+      if (valid(v.sdd, v.sld)) {
+        const r = calc.sphericityIndex(v.sdd, v.sld);
+        out = r.error ? r.error : 'SI ' + calc.fmt(r.si, 2) + '（' + calc.fmt(v.sdd, 2) +
+          ' ÷ ' + calc.fmt(v.sld, 2) + '）· ' + r.text;
+      }
+    } else if (gid === 'lastrain') {
+      // —— 左房应变三值 ——
+      const r = calc.laStrainTri(v.lsr, v.lscd, v.lsct);
+      const parts = [];
+      if (r.sr !== undefined) parts.push('LASr ' + calc.fmt(r.sr, 1) + '% · ' + r.srText);
+      if (r.scd !== undefined) parts.push('LAScd ' + calc.fmt(r.scd, 1) + '% · ' + r.scdText);
+      if (r.sct !== undefined) parts.push('LASct ' + calc.fmt(r.sct, 1) + '% · ' + r.sctText);
+      if (r.consistent !== undefined) {
+        parts.push(r.consistent
+          ? '三值自洽（LAScd+|LASct| 偏差 ' + calc.fmt(r.diff, 1) + '）'
+          : '偏差 ' + calc.fmt(r.diff, 1) + '：LASr 与 LAScd+|LASct| 不符，检查勾画与时相');
+      }
+      out = parts.join('；');
+    } else if (gid === 'aortaidx') {
+      // —— 升主动脉直径指数 ——
+      const r = calc.aortaIndex(v.aodim, bsa, female);
+      if (r.index !== undefined) {
+        out = '内径 ' + calc.fmt(r.cm, 1) + ' cm · 指数 ' + calc.fmt(r.index, 2) +
+          ' cm/m² → ' + r.text + '；' + r.absText;
+      } else if (valid(v.aodim) && bsa <= 0) {
+        out = '需先在「EF·参考值」页填写身高体重（BSA 为 0 时无法算指数）';
+      }
+    } else if (gid === 'mdsv') {
+      // —— 应变离散度 MDS ——
+      const r = calc.strainDispersion([v.mds1, v.mds2, v.mds3, v.mds4, v.mds5, v.mds6]);
+      if (r.n) {
+        out = '均值 ' + calc.fmt(r.mean, 1) + '% · SD ' + calc.fmt(r.sd, 1) +
+          '%（范围 ' + calc.fmt(r.min, 1) + '–' + calc.fmt(r.max, 1) + '，n=' + r.n + '）· ' + r.text;
+      }
+    } else if (gid === 'swv') {
+      // —— 每搏功 / 功指数 ——
+      if (valid(v.ssv, v.wmap)) {
+        const r = calc.strokeWork(v.ssv, v.wmap, bsa);
+        const parts = ['SW ' + calc.fmt(r.sw, 1) + ' g·m'];
+        if (r.swi !== undefined) parts.push('SWi ' + calc.fmt(r.swi, 1) + ' g·m/m²');
+        parts.push('· ' + r.text);
+        out = parts.join('；');
+      }
     } else if (gid === 'strain') {
       // —— 应变判读 ——
       const parts = [];
