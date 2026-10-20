@@ -299,7 +299,7 @@ function check(name, ok, detail) {
     check('公式集分组 = 6 个计算组 + 瓣膜 + 8 组评估 + 3 组外链',
       d.groups.join('|') === '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 101 条（52 计算 − 5 瓣膜计算器 + 9 瓣膜 + 32 评估 + 13 外链）', d.items === 101, d.items);
+    check('条目 102 条（53 计算 − 5 瓣膜计算器 + 9 瓣膜 + 32 评估 + 13 外链）', d.items === 102, d.items);
     check('外链 <a> 条目 12 条（专辑入口为按钮，另行校验）', d.links === 12, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -573,6 +573,22 @@ function check(name, ok, detail) {
   o = await outOf('coa');
   check('CoA 3.2 m/s → 41 mmHg + 拖尾征', /41/.test(o) && /拖尾征/.test(o), o);
 
+  // ── v1.3.1 成人主动脉分节段 Z 值 ──
+  await openCalc('aortaz');
+  await fillCalc('aortaz', 'azann', '26');
+  await fillCalc('aortaz', 'azsin', '42');
+  await fillCalc('aortaz', 'azstj', '29');
+  await fillCalc('aortaz', 'azasc', '38');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('aortaz');
+  check('主动脉四段 Z 值 + 最大 Z 3.9 显著扩张',
+    /窦部 Z 3\.9/.test(o) && /显著扩张/.test(o), o);
+  check('主动脉 Z 值附带参考区间', /参考 3–3\.8 cm/.test(o), o);
+  await pickOpt('aortaz', 'azsex', 'f');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('aortaz');
+  check('切女性后参考区间随之变化（2.7–3.5）', /参考 2\.7–3\.5 cm/.test(o), o);
+
   await openCalc('paspv'); // 收尾回到列表
   await backToList();
 
@@ -592,6 +608,24 @@ function check(name, ok, detail) {
   const dd = JSON.parse(det);
   check('发布版可打开评估类详情（CRT）', dd.g[0] === 'crt', det);
   check('详情内表格已渲染', dd.tbl >= 2, dd.tbl);
+
+  // 判读页 ↔ 计算器桥接：主动脉页末块指向公式集
+  await c.evalJs('(function(){var b=document.getElementById("calcBack");if(b)b.click();return 1;})()');
+  await new Promise((r) => setTimeout(r, 300));
+  await c.evalJs(`(function(){
+    var e=[].slice.call(document.querySelectorAll('#calcList .fx-item'))
+      .filter(function(x){return /主动脉疾病/.test(x.textContent);});
+    if (e[0]) e[0].click();
+  })()`);
+  await new Promise((r) => setTimeout(r, 500));
+  const bridgeTxt = await c.evalJs(`(function(){
+    var card=document.querySelector('#calcGroups > .card:not([hidden])');
+    if(!card) return '';
+    var ps=card.querySelectorAll('p, .fx-note');
+    return ps.length? ps[ps.length-1].textContent : card.textContent.slice(-300);
+  })()`);
+  check('主动脉判读页末段为「相关计算（通用量）」', /相关计算（通用量）/.test(bridgeTxt), bridgeTxt.slice(0, 120));
+  check('桥接指向「主动脉分节段 Z 值」', /主动脉分节段 Z 值/.test(bridgeTxt), bridgeTxt.slice(0, 160));
 
   // ── 参考文献：默认折叠，点标题才展开全部（40 条平铺会把目录拉得极长）──
   await c.evalJs('(function(){var b=document.getElementById("calcBack");if(b)b.click();return 1;})()');

@@ -493,7 +493,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirs.map(d => d.title).join('|') ===
       '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 106 条（52 计算 + 9 瓣膜 + 32 评估 + 13 外链）', nItems, 106, 0);
+  check('目录共 107 条（53 计算 + 9 瓣膜 + 32 评估 + 13 外链）', nItems, 107, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[15].items.length, 6, 0);
   check('切面指南 4 条', dirs[16].items.length, 4, 0);
   check('TEE 模拟器 3 条', dirs[17].items.length, 3, 0);
@@ -542,12 +542,12 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('重构组条目齐全',
     ['volidx', 'rwsv', 'spher', 'lastrain', 'aortaidx', 'mdsv', 'swv']
       .every(id => dirs[3].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('计算类条目合计 52 条', dirs.slice(0, 6).reduce((n, d) => n + d.items.length, 0), 52, 0);
+  check('计算类条目合计 53 条', dirs.slice(0, 6).reduce((n, d) => n + d.items.length, 0), 53, 0);
   check('评分与室壁运动 3 条（WMSI / H2FPEF / HFA-PEFF）', dirs[4].items.length, 3, 0);
   check('评分组条目齐全',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirs[4].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('介入尺寸与先心 4 条（TAVR / LAA / McGoon / CoA）', dirs[5].items.length, 4, 0);
+  check('介入尺寸与先心 5 条（TAVR / LAA / McGoon / CoA / 主动脉 Z 值）', dirs[5].items.length, 5, 0);
   check('介入组条目齐全',
     ['tavrsz', 'laasz', 'paidx', 'coa']
       .every(id => dirs[5].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -771,6 +771,16 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   mpCalc2('coa', { coav: 3.2, coaved: 1.2 },
     /峰值压差 41.*拖尾征/, 'CoA 峰值 41mmHg + 拖尾征');
 
+  // —— v1.3.1 成人主动脉分节段 Z 值 ——
+  mpCalc2('aortaz', { azann: 26, azsin: 34, azstj: 29, azasc: 31 },
+    /瓣环 Z 0\.0.*窦部 Z 0\.0.*均在?未超参考上限/, '主动脉四段 Z 0 未超上限');
+  mpCalc2('aortaz', { azsin: 42 },
+    /窦部 Z 3\.9.*显著扩张/, '窦部 42mm → Z 3.9 显著扩张');
+  mpCalc2('aortaz', { azann: 26, azasc: 38 },
+    /升主动脉 Z 3\.4.*升主动脉指数 2\.17.*≥2\.1.*扩张/,
+    '升主动脉 38mm → Z 3.4 + 指数 2.17 扩张');
+  mpCalc2('aortaz', { azann: 24 }, /瓣环 Z 0\.0/, '女性 24mm 瓣环 → Z 0', { azsex: 'f' });
+
   // —— 未知 id 回退 ——
   pgF.onLoad({ id: 'nope' });
   check('未知 id 回退到第一组', pgF.data.gid === 'flow' ? 1 : 0, 1, 0);
@@ -789,6 +799,25 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.refresh();
   check('CRT 结果含 SVi 与 QRS 提示',
     /SVi/.test(pgF.data.out) && /QRS/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  // —— 判读页 ↔ 计算器桥接（结构性解耦）——
+  pgF.onLoad({ id: 'mitral' });
+  pgF.onShow();
+  const lastM = pgF.data.blocks[pgF.data.blocks.length - 1];
+  check('二尖瓣判读页末块为「相关计算（通用量）」',
+    lastM && lastM.text.indexOf('相关计算（通用量）') !== -1 ? 1 : 0, 1, 0);
+  check('桥接指向公式集的瓣膜与舒张定量组',
+    lastM && lastM.text.indexOf('瓣膜与舒张定量') !== -1 ? 1 : 0, 1, 0);
+  pgF.onLoad({ id: 'amyloid' });
+  pgF.onShow();
+  const lastA = pgF.data.blocks[pgF.data.blocks.length - 1];
+  check('淀粉样变判读页指向 RAS 与 MDS',
+    lastA && /RAS/.test(lastA.text) && /应变离散度/.test(lastA.text) ? 1 : 0, 1, 0);
+  pgF.onLoad({ id: 'ie' });
+  pgF.onShow();
+  const lastIe = pgF.data.blocks[pgF.data.blocks.length - 1];
+  check('无对应算法的判读页（感染性心内膜炎）不挂桥接',
+    lastIe && lastIe.text.indexOf('相关计算') === -1 ? 1 : 0, 1, 0);
 
   pgF.onLoad({ id: 'la' });
   pgF.onShow();

@@ -1058,6 +1058,21 @@ Page({
           out = parts.join('；');
         }
       }
+    } else if (gid === 'aortaz') {
+      // —— 主动脉分节段 Z 值 ——
+      if (valid(v.azann) || valid(v.azsin) || valid(v.azstj) || valid(v.azasc)) {
+        const r = calc.aorticZscore(
+          [v.azann, v.azsin, v.azstj, v.azasc], ov.azsex === 'f', bsa);
+        if (r.error) out = r.error;
+        else {
+          const segTxt = r.segs.map(function (s) {
+            return s.sn + ' Z ' + calc.fmt(s.z, 1) + '（参考 ' + s.lo + '–' + s.hi + ' cm）';
+          }).join(' / ');
+          const parts = [segTxt, r.text];
+          if (r.ascIndexText) parts.push(r.ascIndexText);
+          out = parts.join('；');
+        }
+      }
     }
 
     this.setData({ out: out, hasOut: !!out });

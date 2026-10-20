@@ -2364,6 +2364,61 @@ const REFS = [
   },
 ];
 
+/* ══════════════════════════════════════════════════════════════
+   判读页 ↔ 计算器的桥（结构性解耦）
+   ──────────────────────────────────────────────────────────────
+   设计原则：**判读页只放阈值与处理原则，量化公式独立存在于公式集**。
+   这里给每个判读条目挂一行「相关计算（通用量）」，指向公式集里对应的
+   计算器，让用户不必离开判读语境就能找到算法入口。
+   只写真实存在的计算器；没有对应算法的条目（如感染性心内膜炎、
+   Fontan 术后）故意不挂，避免指错路。
+   ══════════════════════════════════════════════════════════════ */
+var CALC_HINTS = {
+  /* 大血管与急症 */
+  aorta: '介入尺寸与先心 · 主动脉分节段 Z 值；重构与心肌功能 · 升主动脉直径指数',
+  pe: '右心与肺循环 · 右室容积指数 RVEDVi/RVESVi；PAPi 肺动脉搏动指数',
+  /* 心肌病变 */
+  amyloid: '重构与心肌功能 · 心尖保留比值 RAS；LVMI 身高^2.7；应变离散度 MDS',
+  hcm: '重构与心肌功能 · LVMI 身高^2.7；左室质量与几何构型；左室球形指数',
+  'rcm-strain': '重构与心肌功能 · 左房应变三值；应变离散度 MDS',
+  /* 心腔与应变 */
+  lv: '血流动力学与心功能 · 左室容积与射血分数；LVOT 每搏量与心排量；M 型三合一',
+  rv: '右心与肺循环 · 右室容积指数 RVEDVi/RVESVi；快速比值 RV/LV',
+  rcoupling: '右心与肺循环 · TAPSE/PASP 耦联比；PAPi 肺动脉搏动指数',
+  rvfail: '右心与肺循环 · 右室面积变化分数 FAC；右室游离壁应变 RVFWS',
+  'rv-strain': '右心与肺循环 · 右室游离壁应变 RVFWS',
+  strain: '重构与心肌功能 · 应变离散度 MDS；左室球形指数',
+  'la-strain': '重构与心肌功能 · 左房应变三值；左房排空分数 LAEF',
+  prosthetic: '瓣膜与舒张定量 · 人工瓣 EOAi 与 PPM；缩流颈宽度 VCW 分级',
+  /* 瓣膜评估 */
+  mitral: '瓣膜与舒张定量 · MVA（PHT 法）；MVA（连续性方程）；Wilkins 二尖瓣形态评分',
+  aortic: '瓣膜与舒张定量 · 主动脉瓣面积（连续性方程）；无量纲指数 DVI；VCW 分级',
+  'lf-lg': '重构与心肌功能 · 每搏功 SW / SWi；血流动力学与心功能 · 有效动脉弹性 Ea',
+  /* 先天性心脏病 */
+  shd: '介入尺寸与先心 · McGoon 比值与 Nakata 指数；血流动力学与心功能 · Qp/Qs',
+  'tof-pr': '右心与肺循环 · 右室容积指数；右室游离壁应变 RVFWS',
+  'pht-rev': '右心与肺循环 · 肺血管阻力 PVR；阻力指数 PVRI / SVRI；舒张期肺动脉压 PADP',
+  /* 负荷与介入 */
+  'stress-echo': '血流动力学与心功能 · 肺动脉收缩压 PASP；右心与肺循环 · PAPi',
+  tavr: '介入尺寸与先心 · TAVR 瓣环尺寸与 oversizing；主动脉分节段 Z 值',
+  'mv-interv': '瓣膜与舒张定量 · MVA（PHT 法）；反流定量（PISA）',
+  'tr-interv': '瓣膜与舒张定量 · 缩流颈宽度 VCW 分级；反流定量（PISA）',
+};
+
+(function attachCalcHints() {
+  BRIEF_SECTIONS.forEach(function (sec) {
+    (sec.items || []).forEach(function (it) {
+      var hint = CALC_HINTS[it.id];
+      if (!hint || !it.blocks || !it.blocks.length) return;
+      it.blocks.push({
+        kind: 'note',
+        text: '**相关计算（通用量）**：公式集 → ' + hint +
+          '。本页给判读阈值，公式集给算法，两者口径一致、可互相印证。',
+      });
+    });
+  });
+})();
+
 module.exports = {
   BRIEF_SECTIONS: BRIEF_SECTIONS,
   LINK_SECTIONS: LINK_SECTIONS,

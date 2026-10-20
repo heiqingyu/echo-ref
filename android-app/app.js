@@ -492,6 +492,11 @@
     { id: 'coa', sec: 'ivs', title: '主动脉缩窄压差与拖尾',
       fields: [['coav', '缩窄处峰值流速', 'm/s'], ['coaved', '舒张末期流速（可选）', 'm/s']],
       note: '压差 = 4 × Vmax²。峰值压差 ≥20 mmHg 提示有血流动力学意义；舒张末期仍有 ≥5 mmHg 压差说明存在持续跨缩窄血流（拖尾征）。新生儿期压差可能不高' },
+    { id: 'aortaz', sec: 'ivs', title: '主动脉分节段 Z 值',
+      opts: [{ k: 'azsex', n: '性别', list: [['m', '男'], ['f', '女']] }],
+      fields: [['azann', '主动脉瓣环', 'mm'], ['azsin', '窦部（Valsalva）', 'mm'],
+        ['azstj', '窦管交界', 'mm'], ['azasc', '近段升主动脉', 'mm']],
+      note: '四个位点可只填测到的。Z 值由站内成人参考区间反推（均值 = 区间中点，SD = 半径 ÷ 1.96），口径与「Z > 2 视为扩张」一致，但不是人群实测 SD，不能与儿童 Z 值或 CT 的 Z 值互换。近段升主动脉另按 BSA 指数化：男 ≥2.1、女 ≥2.0 cm/m² 提示扩张' },
 
     /* ── 瓣膜与舒张定量（sec: vq） ── */
     { id: 'pisav', sec: 'vq', title: '反流定量（PISA）',
@@ -652,6 +657,7 @@
     ras: '心尖段 ÷ 基底段 · ≥1 提示淀粉样变',
     ea: 'ESP ÷ SV · Ees/Ea ≈ SV ÷ ESV',
     coa: '峰值压差 · 舒张末期持续血流',
+    aortaz: '四段 Z 值 · 成人参考区间',
   };
 
   /** 评估类内容（器械支持 / 心腔与应变）与参考文献：来自 extra-data.js，与小程序同源 */
@@ -1741,6 +1747,19 @@
         put('coa', partsOf(parts));
       }
     } else put('coa');
+
+    // 主动脉分节段 Z 值
+    if (has('azann') || has('azsin') || has('azstj') || has('azasc')) {
+      const r = Calc.aorticZscore(
+        [v.azann, v.azsin, v.azstj, v.azasc], calcOpt.azsex === 'f', bsa);
+      if (r.error) put('aortaz', r.error);
+      else {
+        const segTxt = r.segs.map(function (s) {
+          return s.sn + ' Z ' + Calc.fmt(s.z, 1) + '（参考 ' + s.lo + '–' + s.hi + ' cm）';
+        }).join(' / ');
+        put('aortaz', partsOf([segTxt, r.text, r.ascIndexText]));
+      }
+    } else put('aortaz');
 
     // ── 评估类条目（器械支持 / 心腔与应变）──
 
