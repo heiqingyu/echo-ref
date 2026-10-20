@@ -108,7 +108,7 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 7) ok('公式集定义 7 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 5) ok('公式集定义 5 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 const badGroups = CG.GROUPS.filter(g => !g.id || !g.title || !g.fields.length || !g.note);
 if (badGroups.length === 0) ok('各组均含 id/标题/字段/备注');
@@ -145,7 +145,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 12) ok('参考文献 12 条');
+if (EX.REFS.length === 14) ok('参考文献 14 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 
 console.log('\n=== 4f. 切面学习 / 切面指南 / TEE 模拟器（纯外链） ===');
@@ -196,7 +196,7 @@ if (/versionCode=/.test(fs.readFileSync(path.join(ROOT, 'android-app/AndroidMani
 else bad('AndroidManifest 缺 versionCode');
 
 const formulaJs = fs.readFileSync(path.join(MP, 'pages/formula/formula.js'), 'utf8');
-['flow', 'shunt', 'bernoulli', 'atrial', 'pressure', 'rvcalc', 'dias'].forEach(id => {
+['flow', 'shunt', 'bernoulli', 'atrial', 'dias'].forEach(id => {
   if (formulaJs.indexOf("gid === '" + id + "'") !== -1) ok('formula 页含计算分支: ' + id);
   else bad('formula 页缺少计算分支: ' + id);
 });

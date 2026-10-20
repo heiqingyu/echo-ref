@@ -28,12 +28,13 @@ echo.
 echo [v] version %VNAME% (see android-app\VERSION)
 
 echo.
-echo [0/7] build www/index.html and sync to assets...
+echo [0/7] build published site (docs/index.html, valve page stripped) and sync to assets...
 pushd "%HERE%.."
 call node build-www.js
 if errorlevel 1 (popd & goto :fail)
 popd
-copy /y "%HERE%..\www\index.html" "%HERE%assets\index.html" >nul
+REM APK 打包发布版（已裁剪瓣膜页，与线上一致），而非完整 www/index.html
+copy /y "%HERE%..\docs\index.html" "%HERE%assets\index.html" >nul
 if errorlevel 1 goto :fail
 
 echo [1/7] prepare dirs...
