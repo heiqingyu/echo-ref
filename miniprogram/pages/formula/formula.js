@@ -490,6 +490,30 @@ Page({
       if (r.ratio !== undefined) {
         parts.push('RVFWS/PASP ' + calc.fmt(r.ratio, 2) + ' · ' + r.coupling);
       }
+      // 右室收缩储备（低剂量多巴酚丁胺负荷）
+      if (valid(v.rvr0, v.rvr1)) {
+        const rs = calc.rvReserve({
+          rest: v.rvr0, peak: v.rvr1,
+          tapse0: v.rvt0, tapse1: v.rvt1,
+          pasp0: v.rvspasp, pasp1: v.rvp1,
+        });
+        if (rs.text) {
+          parts.push('收缩储备：RVFWS ' + calc.fmt(rs.rest, 1) + '%→' + calc.fmt(rs.peak, 1) +
+            '%（Δ' + (rs.delta >= 0 ? '+' : '') + calc.fmt(rs.delta, 1) + '）· ' + rs.text);
+        }
+        if (rs.tapseDelta !== undefined) {
+          parts.push('TAPSE ' + (rs.tapseDelta >= 0 ? '+' : '') + calc.fmt(rs.tapseDelta, 1) + ' mm（' +
+            (rs.tapseChange >= 0 ? '+' : '') + calc.fmt(rs.tapseChange, 0) + '%）' +
+            (rs.tapseOk ? ' · 支持储备保留' : ' · 未见明显增加'));
+        }
+        if (rs.couplingDelta !== undefined) {
+          parts.push('负荷后耦联 ' + calc.fmt(rs.ratio0, 2) + '→' + calc.fmt(rs.ratio1, 2) +
+            (rs.couplingDelta > 0 ? '（改善）' : rs.couplingDelta < 0 ? '（恶化）' : '（不变）'));
+        }
+        if (rs.afterloadOnly) {
+          parts.push('注意：PASP 升 ' + calc.fmt(rs.dpasp, 0) + ' mmHg 而 RVFWS 未涨，更像后负荷效应而非储备耗竭');
+        }
+      }
       out = parts.join('；');
     } else if (gid === 'rcm-strain') {
       // —— 限制型心肌病 vs 淀粉样变：心尖保留比值 ——
@@ -529,6 +553,23 @@ Page({
         parts.push('PVRI ' + calc.fmt(v.pvrvi) + ' WU·m² · ' +
           (v.pvrvi > 8 ? '显著升高' : v.pvrvi >= 6 ? '灰区' : '可接受'));
       }
+      out = parts.join('；');
+    } else if (gid === 'tof-pr') {
+      // —— 法洛四联症术后 PR：严重度 + PVR 指征 ——
+      const r = calc.tofPr({
+        pridx: v.pridx, prw: v.prw,
+        rvedvi: v.rvedvi, rvesvi: v.rvesvi, rvef: v.rvef, rvotpg: v.rvotpg,
+      });
+      const parts = [];
+      if (r.severityText) {
+        parts.push(r.severityText + (r.discordant ? '（PR 指数与宽度比不一致，取较重档）' : ''));
+      }
+      if (r.pvrIndication) {
+        parts.push('已达 PVR 评估指征');
+      } else if (r.rvesvi !== undefined || r.rvedvi !== undefined || r.rvef !== undefined) {
+        parts.push('尚未达 PVR 容量阈值');
+      }
+      if (r.notes && r.notes.length) parts.push(r.notes.join('；'));
       out = parts.join('；');
     } else if (gid === 'lvad') {
       // —— LVAD：出血道 SV/CO + 泵速判读 ——

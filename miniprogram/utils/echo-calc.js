@@ -864,6 +864,135 @@ function lvadEcho(o) {
   return r;
 }
 
+/**
+ * 右室收缩储备（低剂量多巴酚丁胺负荷下的 RVFWS 反应）
+ *
+ * 方案：多巴酚丁胺 5 → 10 → 20 μg/kg/min，每级 3–5 min；低剂量方案不追求
+ * 目标心率，只要求心率较基线上升 10–20 次/分即可判读（不是缺血负荷试验）。
+ *
+ * 判读（RVFWS 取绝对值比较）：
+ *   ΔRVFWS ≥5 个百分点      → 收缩储备保留
+ *   ΔRVFWS 2–5 个百分点      → 储备边缘（灰区，结合 TAPSE 与 PASP 反应）
+ *   ΔRVFWS <2 或下降         → 收缩储备耗竭（右室已用尽收缩储备）
+ *
+ * 参考：低剂量多巴酚丁胺下 RVFWS 无改善的肺高压 / 右心衰患者预后显著更差；
+ * RVFWS 联合 PASP 的耦联比值变化比单看 RVFWS 更稳。
+ *
+ * 注意：负荷中 PASP 同步上升 >20 mmHg 时，RVFWS 不涨可能只是后负荷效应，
+ * 需看 RVFWS/PASP 比值是否同步改善（couplingDelta）。
+ *
+ * @param {object} o {rest, peak, tapse0, tapse1, pasp0, pasp1} 应变均为负值
+ */
+function rvReserve(o) {
+  // 应变必须是负值（纵向缩短）；正值多为符号习惯不同，不能直接算
+  if (!(o.rest < 0) || !(o.peak < 0)) return {};
+  const s0 = Math.abs(o.rest);
+  const s1 = Math.abs(o.peak);
+  const r = { rest: s0, peak: s1, delta: s1 - s0 };
+  r.relChange = s0 > 0 ? (r.delta / s0) * 100 : undefined;
+
+  if (r.delta >= 5) { r.level = 0; r.text = '收缩储备保留'; }
+  else if (r.delta >= 2) { r.level = 1; r.text = '收缩储备边缘（灰区）'; }
+  else { r.level = 2; r.text = '收缩储备耗竭'; }
+
+  // TAPSE 参照：增加 ≥5 mm 或 ≥20% 支持储备保留
+  if (o.tapse0 > 0 && o.tapse1 > 0) {
+    r.tapseDelta = o.tapse1 - o.tapse0;
+    r.tapseChange = (r.tapseDelta / o.tapse0) * 100;
+    r.tapseOk = r.tapseDelta >= 5 || r.tapseChange >= 20;
+  }
+
+  // PASP 反应与耦联比值变化
+  if (o.pasp0 > 0 && o.pasp1 > 0) {
+    r.dpasp = o.pasp1 - o.pasp0;
+    r.ratio0 = s0 / o.pasp0;
+    r.ratio1 = s1 / o.pasp1;
+    r.couplingDelta = r.ratio1 - r.ratio0;
+    // 后负荷上升明显而应变不涨 → 提示「纯后负荷效应」而非储备不足
+    if (r.dpasp > 20 && r.delta < 5) r.afterloadOnly = true;
+  }
+  return r;
+}
+
+/**
+ * 法洛四联症术后肺动脉瓣反流（PR）：严重度与肺动脉瓣置换（PVR）指征
+ *
+ * TOF 根治（尤其跨瓣环补片）后几乎都存在 PR。超声对 PR 只能半定量，
+ * 真正的容量与功能阈值来自 CMR——所以本函数要求的 RVEDVi / RVESVi / RVEF
+ * 应按 CMR 填报；仅有超声时只作筛查，不下「达到指征」的结论。
+ *
+ * PR 严重度（取两项中较重档）：
+ *   PR 指数（舒张期反流时限 ÷ 舒张期总时限）：≥0.7 重度 / 0.5–0.7 中度 / <0.5 轻度
+ *   反流束宽度 ÷ RVOT 径：≥50% 重度 / 30–50% 中度 / <30% 轻度
+ *
+ * PVR 参考指征（任一条成立）：
+ *   RVESVi >80 mL/m² / RVEDVi >160 mL/m² / RVEF <50%
+ *   + 症状或新发房性心律失常（临床条件，不在本函数内）
+ *
+ * @param {object} o {pridx, prw, rvedvi, rvesvi, rvef, rvotpg}
+ */
+function tofPr(o) {
+  const r = { notes: [] };
+
+  // —— PR 严重度 ——
+  let sev = -1;
+  if (o.pridx > 0) {
+    r.pridx = o.pridx;
+    if (o.pridx >= 0.7) { r.byIdx = 2; r.idxText = 'PR 指数 ≥0.7：重度'; }
+    else if (o.pridx >= 0.5) { r.byIdx = 1; r.idxText = 'PR 指数 0.5–0.7：中度'; }
+    else { r.byIdx = 0; r.idxText = 'PR 指数 <0.5：轻度'; }
+    sev = r.byIdx;
+  }
+  if (o.prw > 0) {
+    r.prw = o.prw;
+    if (o.prw >= 50) { r.byWidth = 2; r.widthText = '反流束/RVOT ≥50%：重度'; }
+    else if (o.prw >= 30) { r.byWidth = 1; r.widthText = '反流束/RVOT 30–50%：中度'; }
+    else { r.byWidth = 0; r.widthText = '反流束/RVOT <30%：轻度'; }
+    sev = sev > r.byWidth ? sev : r.byWidth;
+  }
+  if (sev >= 0) {
+    r.severity = sev;
+    r.severityText = ['轻度 PR', '中度 PR', '重度 PR'][sev];
+    if (r.byIdx !== undefined && r.byWidth !== undefined && r.byIdx !== r.byWidth) {
+      r.discordant = true;
+    }
+  }
+
+  // —— PVR 指征（CMR 阈值）——
+  let ind = 0;
+  if (o.rvesvi > 0) {
+    r.rvesvi = o.rvesvi;
+    if (o.rvesvi > 80) { ind += 1; r.notes.push('RVESVi ' + round(o.rvesvi, 0) + ' >80 mL/m²：达到 PVR 主要容量阈值'); }
+    else if (o.rvesvi >= 70) r.notes.push('RVESVi ' + round(o.rvesvi, 0) + ' mL/m²：接近阈值（70–80），3–6 个月复查');
+  }
+  if (o.rvedvi > 0) {
+    r.rvedvi = o.rvedvi;
+    if (o.rvedvi > 160) { ind += 1; r.notes.push('RVEDVi ' + round(o.rvedvi, 0) + ' >160 mL/m²：支持 PVR'); }
+    else if (o.rvedvi >= 150) r.notes.push('RVEDVi ' + round(o.rvedvi, 0) + ' mL/m²：接近阈值（150–160）');
+  }
+  if (o.rvef > 0) {
+    r.rvef = o.rvef;
+    if (o.rvef < 50) { ind += 1; r.notes.push('RVEF ' + round(o.rvef, 0) + '% <50%：右室收缩功能受损，支持 PVR 评估'); }
+    if (o.rvef < 45 && o.rvesvi > 80) {
+      r.notes.push('RVEF <45% 叠加 RVESVi >80：术后右室功能恢复可能有限，时机已偏晚，需与外科共同决策');
+    }
+  }
+  r.pvrIndication = ind > 0;
+
+  // —— 残余梗阻（补片 / 分支狭窄），跨瓣压差 >40 mmHg 有意义 ——
+  if (o.rvotpg > 0) {
+    r.rvotpg = o.rvotpg;
+    if (o.rvotpg >= 40) { r.notes.push('RVOT 压差 ≥40 mmHg：存在残余梗阻，PVR 前须先处理梗阻'); }
+    else if (o.rvotpg >= 25) r.notes.push('RVOT 压差 25–40 mmHg：轻度残余梗阻，随访');
+  }
+
+  // 重度 PR 但容量未达阈值 → 提示 CMR 随访而非立即干预
+  if (r.severity === 2 && ind === 0 && o.rvesvi > 0) {
+    r.notes.push('重度 PR 而 RV 容量尚未达阈值：可 CMR 每 12–24 个月随访，不必急于 PVR');
+  }
+  return r;
+}
+
 /** 保留小数（dec 缺省 2 位） */
 function round(n, dec) {
   const p = Math.pow(10, dec === undefined ? 2 : dec);
@@ -921,6 +1050,8 @@ module.exports = {
   paspStress,
   shuntGrade,
   lvadEcho,
+  rvReserve,
+  tofPr,
   round,
   fmt,
 };
