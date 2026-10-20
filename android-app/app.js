@@ -550,20 +550,33 @@
 
     // ── 目录 ──
     const hasValvePage = !!$('page-valves');
+    // mergeInto：并入同名组，避免「瓣膜评估」与「瓣膜疾病评估」两个相似组并存
+    const MERGED = {};
+    BRIEF.forEach(function (sec) {
+      if (!sec.mergeInto) return;
+      (MERGED[sec.mergeInto] = MERGED[sec.mergeInto] || []).push(sec);
+    });
     let list = fxGroupHtml('血流动力学与心功能');
     CALC_GROUPS.forEach(function (g) {
       list += fxItemHtml('calc', g.id, g.title, CALC_SUB[g.id] || '');
     });
     list += '</div>';
-    // 瓣膜页只在完整版存在，发布版不列这一组
+    // 瓣膜评估组：完整版含 5 个瓣膜计算器，发布版只有判读条目；
+    // 两种构建里组的位置一致（紧跟血流动力学），不再出现「瓣膜疾病评估」重复组
+    list += fxGroupHtml('瓣膜评估');
     if (hasValvePage) {
-      list += fxGroupHtml('瓣膜评估');
       VALVE_INDEX.forEach(function (v) {
         list += fxItemHtml('valve', v.id, v.title, v.sub);
       });
-      list += '</div>';
     }
+    (MERGED.valve || []).forEach(function (sec) {
+      sec.items.forEach(function (it) {
+        list += fxItemHtml('brief', it.id, it.title, it.sub || '');
+      });
+    });
+    list += '</div>';
     BRIEF.forEach(function (sec) {
+      if (sec.mergeInto) return;
       list += fxGroupHtml(sec.title);
       sec.items.forEach(function (it) {
         list += fxItemHtml('brief', it.id, it.title, it.sub || '');
@@ -838,6 +851,33 @@
       }
       if (has('rvs')) parts.push('RV S′ ' + Calc.fmt(v.rvs, 1) + ' cm/s（正常 >9.5）');
       put('rv', partsOf(parts));
+    }
+
+    // 右室-肺动脉耦联 TAPSE/PASP
+    if (has('tapse', 'paspv')) {
+      const rc = Calc.tapsePasp(v.tapse, v.paspv);
+      put('rcoupling', 'TAPSE/PASP = ' + Calc.fmt(rc.ratio, 2) + ' mm/mmHg · ' + rc.text);
+    } else put('rcoupling');
+
+    // 左室充盈压综合判读
+    {
+      const r = Calc.lvFilling({
+        e: v.dge === undefined ? null : v.dge,
+        a: v.dga === undefined ? null : v.dga,
+        es: v.dges === undefined ? null : v.dges,
+        el: v.dgel === undefined ? null : v.dgel,
+        lavi: v.dglavi === undefined ? null : v.dglavi,
+        trv: v.dgtrv === undefined ? null : v.dgtrv,
+      });
+      const parts = [];
+      if (r.ea !== undefined) parts.push('E/A ' + Calc.fmt(r.ea));
+      if (r.avgEe !== undefined) parts.push('平均 E/e′ ' + Calc.fmt(r.avgEe));
+      if (r.count > 0) parts.push('升高指标 ' + r.count + ' 项（' + r.crit.join('、') + '）');
+      else if (r.avgEe !== undefined || v.dglavi !== undefined || v.dgtrv !== undefined) {
+        parts.push('升高指标 0 项');
+      }
+      if (r.text) parts.push('→ ' + r.text);
+      put('dias-grade', partsOf(parts));
     }
 
     // 心肌应变判读

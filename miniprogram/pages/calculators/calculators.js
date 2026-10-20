@@ -40,13 +40,18 @@ function buildSections() {
   });
 
   EX.BRIEF_SECTIONS.forEach(function (s) {
-    sections.push({
-      id: s.id,
-      title: s.title,
-      items: s.items.map(function (it) {
-        return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };
-      }),
+    const items = s.items.map(function (it) {
+      return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };
     });
+    // mergeInto：并入同名组（如「瓣膜评估」计算器组），不另起一个组
+    if (s.mergeInto) {
+      const host = sections.filter(function (x) { return x.id === s.mergeInto; })[0];
+      if (host) {
+        host.items = host.items.concat(items);
+        return;
+      }
+    }
+    sections.push({ id: s.id, title: s.title, items: items });
   });
 
   // 切面学习与 TEE 模拟器：纯链接条目（不嵌图片，点击复制链接）
