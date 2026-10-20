@@ -467,18 +467,22 @@
     return null;
   }
 
-  /** 目录：分组标题 + 列表开标签 */
-  function fxGroupHtml(title) {
-    return '<div class="fx-group">' + esc(title) + '</div><div class="fx-list">';
+  /** 目录：分组标题 + 分组说明（可选） + 列表开标签 */
+  function fxGroupHtml(title, note) {
+    let h = '<div class="fx-group">' + esc(title) + '</div>';
+    if (note) h += '<div class="fx-gnote">' + esc(note) + '</div>';
+    return h + '<div class="fx-list">';
   }
 
   /** 目录条目：kind = calc / brief / valve / link
-   *  link 为纯外链条目：渲染成 <a target="_blank">，不加载任何图片或 iframe */
+   *  link 为纯外链条目：渲染成 <a target="_blank">，不加载任何图片或 iframe
+   *  url 为 .mp4 时用 ▶ 标识，点击由浏览器直接播放 */
   function fxItemHtml(kind, id, title, sub, url) {
+    const isVid = /\.mp4(\?|$)/i.test(url || '');
     const inner = '<span class="fx-item__main">' +
       '<span class="fx-item__n">' + esc(title) + '</span>' +
       '<span class="fx-item__d">' + esc(sub) + '</span>' +
-      '</span><span class="fx-item__a">›</span>';
+      '</span><span class="fx-item__a">' + (isVid ? '▶' : '›') + '</span>';
     if (kind === 'link') {
       return '<a class="fx-item" href="' + esc(url || '#') +
         '" target="_blank" rel="noopener noreferrer">' + inner + '</a>';
@@ -609,7 +613,7 @@
       list += '</div>';
     });
     LINKS.forEach(function (sec) {
-      list += fxGroupHtml(sec.title);
+      list += fxGroupHtml(sec.title, sec.note);
       sec.items.forEach(function (it) {
         list += fxItemHtml('link', it.id, it.title, it.sub || '', it.url);
       });
@@ -620,6 +624,8 @@
     $('calcList').querySelectorAll('.fx-item').forEach(function (el) {
       el.addEventListener('click', function () {
         const kind = el.dataset.kind;
+        // 外链条目渲染为 <a>，没有 data-kind：交给浏览器默认跳转（新窗口播放 / 打开原站）
+        if (!kind) return;
         if (kind === 'valve') {
           switchTab('valves');
           switchValve(el.dataset.id);

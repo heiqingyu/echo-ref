@@ -405,10 +405,10 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('card__title">参考文献') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 39 条', EXD.REFS.length, 39, 0);
+  check('参考文献 40 条', EXD.REFS.length, 40, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
-  check('文献编号连续 R1–R39',
-    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37,R38,R39' ? 1 : 0, 1, 0);
+  check('文献编号连续 R1–R40',
+    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37,R38,R39,R40' ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
 
@@ -476,26 +476,31 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 12 个大组', dirs.length, 12, 0);
+  check('公式集分 13 个大组', dirs.length, 13, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|负荷与功能试验|介入 TEE 评估|切面学习（视频）|实用超声规范化检查与操作（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 59 条（11 计算 + 9 瓣膜 + 27 评估 + 12 外链）', nItems, 59, 0);
+  check('目录共 84 条（11 计算 + 9 瓣膜 + 27 评估 + 37 外链）', nItems, 84, 0);
   check('切面学习 5 条', dirs[9].items.length, 5, 0);
-  check('切面指南 4 条', dirs[10].items.length, 4, 0);
-  check('TEE 模拟器 3 条', dirs[11].items.length, 3, 0);
+  check('书籍视频 25 条（第三章心血管系统 1–25）', dirs[10].items.length, 25, 0);
+  check('切面指南 4 条', dirs[11].items.length, 4, 0);
+  check('TEE 模拟器 3 条', dirs[12].items.length, 3, 0);
   check('外链条目为 link 类型',
     dirs[9].items.every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+  check('书籍视频均为 mp4 且标记为 video',
+    dirs[10].items.every(i => i.kind === 'link' && /\.mp4$/.test(i.url) && i.video === true) ? 1 : 0, 1, 0);
+  check('书籍视频分组带书籍出处说明',
+    /王辉/.test(dirs[10].note || '') && /978-7-5189-8028-4/.test(dirs[10].note || '') ? 1 : 0, 1, 0);
   check('TTE 经胸切面为直达交互链接',
     dirs[9].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含速查表 / 指南条目',
     dirs[9].items.some(i => i.id === 'tee-cheat') &&
-    dirs[10].items.some(i => i.id === 'guide-tte-cn') &&
-    dirs[10].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
+    dirs[11].items.some(i => i.id === 'guide-tte-cn') &&
+    dirs[11].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
   check('模拟器含 CT2TEE / TEE Simulator 图谱',
-    dirs[11].items.some(i => /ct2tee/.test(i.url)) &&
-    dirs[11].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[12].items.some(i => /ct2tee/.test(i.url)) &&
+    dirs[12].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   check('器械支持 3 条（CRT / LAD / LVAD）', dirs[2].items.length, 3, 0);
   check('器械支持含 CRT 同步化',
     dirs[2].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);

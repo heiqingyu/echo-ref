@@ -1,0 +1,27 @@
+<view class="page-wrap">
+
+  <view class="card">
+    <view class="card__title">{{title || '视频'}}</view>
+    <view class="card__desc">《实用超声规范化检查与操作》第三章配套动图 · 点击画面播放</view>
+
+    <video wx:if="{{url}}"
+           class="vid"
+           src="{{url}}"
+           autoplay="{{true}}"
+           controls="{{true}}"
+           object-fit="contain"
+           show-center-play-btn="{{true}}"
+           enable-progress-gesture="{{true}}"
+           play-btn-position="center"
+           binderror="onError"></video>
+
+    <view wx:if="{{errText}}" class="vid__err">{{errText}}</view>
+
+    <view class="vid__act" bindtap="onCopy">复制视频直链</view>
+  </view>
+
+  <view class="note">
+    视频版权归原出版方与作者所有，本工具仅作学习索引，不存储、不转码任何视频文件。
+  </view>
+
+</view>

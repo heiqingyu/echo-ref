@@ -1,0 +1,29 @@
+/* 站内视频播放页 */
+
+.vid {
+  width: 100%;
+  height: 420rpx;
+  margin-top: 16rpx;
+  border-radius: 12rpx;
+  background: #000;
+}
+
+.vid__err {
+  margin-top: 16rpx;
+  padding: 14rpx 18rpx;
+  border-radius: 10rpx;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 24rpx;
+}
+
+.vid__act {
+  margin-top: 20rpx;
+  padding: 20rpx 0;
+  text-align: center;
+  border-radius: 12rpx;
+  background: #eef4ff;
+  color: #2563eb;
+  font-size: 27rpx;
+  font-weight: 600;
+}
