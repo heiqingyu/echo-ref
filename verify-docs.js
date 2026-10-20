@@ -296,10 +296,10 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 4 个计算组 + 瓣膜 + 8 组评估 + 3 组外链',
-      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器',
+    check('公式集分组 = 6 个计算组 + 瓣膜 + 8 组评估 + 3 组外链',
+      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 78 条（29 计算 − 5 瓣膜计算器 + 36 评估 + 13 外链，其中专辑入口 1 条）', d.items === 78, d.items);
+    check('条目 101 条（52 计算 − 5 瓣膜计算器 + 9 瓣膜 + 32 评估 + 13 外链）', d.items === 101, d.items);
     check('外链 <a> 条目 12 条（专辑入口为按钮，另行校验）', d.links === 12, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -389,6 +389,189 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 300));
   o = await outOf('lastrain');
   check('左房应变三值自洽', /LASr/.test(o) && /自洽/.test(o), o);
+
+  // ── v1.2.8 新增两组：评分与室壁运动 / 介入尺寸与先心 ──
+  check('目录出现「评分与室壁运动」「介入尺寸与先心」两组',
+    newGroupTitles.indexOf('评分与室壁运动') !== -1 &&
+    newGroupTitles.indexOf('介入尺寸与先心') !== -1, newGroupTitles);
+
+  // 选项组点击（性别 / 心律 / 节段总数 …）
+  const pickOpt = async (gid, key, val) => {
+    await c.evalJs(`(function(){
+      var box=document.querySelector('#calcGroups .card[data-g="${gid}"]');
+      var seg=box&&box.querySelector('.seg[data-opt="${key}"]');
+      var it=seg&&seg.querySelector('.seg__i[data-v="${val}"]');
+      if(it) it.click();
+    })()`);
+    await new Promise((r) => setTimeout(r, 200));
+  };
+
+  await openCalc('mtype');
+  await fillCalc('mtype', 'mtdd', '50');
+  await fillCalc('mtype', 'mtds', '32');
+  await fillCalc('mtype', 'mtepss', '8');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('mtype');
+  check('M 型 50/32 → FS 36% / Teichholz EF 65.4%',
+    /FS 36\.0%/.test(o) && /EF 65\.4%/.test(o), o);
+  check('M 型 EPSS 8 判增大', /EPSS/.test(o) && /增大/.test(o), o);
+
+  await openCalc('wmsi');
+  await fillCalc('wmsi', 'wn1', '12');
+  await fillCalc('wmsi', 'wn2', '3');
+  await fillCalc('wmsi', 'wn3', '1');
+  await fillCalc('wmsi', 'wn4', '1');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('wmsi');
+  check('WMSI 25÷17 → 1.47 轻度', /1\.47/.test(o) && /轻度异常/.test(o), o);
+
+  await openCalc('h2fpef');
+  await pickOpt('h2fpef', 'haf', '1');
+  await pickOpt('h2fpef', 'hbp', '1');
+  await fillCalc('h2fpef', 'hbmi', '31');
+  await fillCalc('h2fpef', 'hage', '65');
+  await fillCalc('h2fpef', 'hee', '10');
+  await fillCalc('h2fpef', 'hpasp', '40');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('h2fpef');
+  check('H2FPEF 全阳性 → 9 分高可能', /9 分/.test(o) && /可能性高/.test(o), o);
+  check('H2FPEF 列出计分项', /计分项/.test(o) && /心房颤动/.test(o), o);
+
+  await openCalc('hfapeff');
+  await fillCalc('hfapeff', 'hlavi', '42');
+  await fillCalc('hfapeff', 'hee2', '16');
+  await fillCalc('hfapeff', 'hbnp', '600');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('hfapeff');
+  check('HFA-PEFF 三类相加 6 分', /6 分/.test(o) && /形态 2/.test(o), o);
+
+  await openCalc('tavrsz');
+  await fillCalc('tavrsz', 'tcirc', '75');
+  await fillCalc('tavrsz', 'tarea', '420');
+  await fillCalc('tavrsz', 'tnom', '26');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('tavrsz');
+  check('TAVR 周长 75 → 导出 23.9mm、oversizing 26.4%',
+    /23\.9/.test(o) && /26\.4%/.test(o), o);
+
+  await openCalc('laasz');
+  await fillCalc('laasz', 'lzmax', '24');
+  await fillCalc('laasz', 'lzmin', '19');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('laasz');
+  check('LAA 24mm → 推荐 27mm', /27 mm/.test(o), o);
+
+  // ── v1.2.9 第二批：右心与肺循环 ──
+  await openCalc('papi');
+  await fillCalc('papi', 'pispap', '40');
+  await fillCalc('papi', 'pidpap', '20');
+  await fillCalc('papi', 'pirap', '15');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('papi');
+  check('PAPi (40−20)/15 → 1.33 失耦联', /1\.33/.test(o) && /失耦联/.test(o), o);
+
+  await openCalc('rvdvdt');
+  await fillCalc('rvdvdt', 'rdt', '25');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('rvdvdt');
+  check('RV dP/dt Δt25 → 480 mmHg/s', /480/.test(o), o);
+
+  await openCalc('residx');
+  await fillCalc('residx', 'ripvr', '6');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('residx');
+  check('PVRI 6 WU × BSA → 指数化结果', /PVRI 1[0-9]\./.test(o), o);
+
+  // ── v1.3.0 第三批：瓣膜与舒张细节 ──
+  await openCalc('wilkins');
+  await fillCalc('wilkins', 'wk1', '2');
+  await fillCalc('wilkins', 'wk2', '2');
+  await fillCalc('wilkins', 'wk3', '2');
+  await fillCalc('wilkins', 'wk4', '2');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('wilkins');
+  check('Wilkins 四面 2 分 → 8 分适合 PBMV', /8/.test(o) && /PBMV/.test(o), o);
+
+  await openCalc('vcw');
+  await fillCalc('vcw', 'vcwv', '4');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('vcw');
+  check('VCW 4mm（MR 默认）→ 中度', /MR/.test(o) && /中度/.test(o), o);
+  await fillCalc('vcw', 'vcwv', '6');
+  await pickOpt('vcw', 'vsite', 'ar');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('vcw');
+  check('VCW 6mm 切到 AR → 判重度', /AR/.test(o) && /重度/.test(o), o);
+
+  await openCalc('rf');
+  await fillCalc('rf', 'rfvol', '60');
+  await fillCalc('rf', 'rfsv', '86');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('rf');
+  check('RF 60/86 → 69.8% 重度', /69\.8%/.test(o) && /重度/.test(o), o);
+
+  await openCalc('mvac');
+  await fillCalc('mvac', 'mvd', '2.0');
+  await fillCalc('mvac', 'mvlvti', '20');
+  await fillCalc('mvac', 'mvmvti', '8');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('mvac');
+  check('MVA 连续性方程 2.0/20/8 → 7.85', /7\.85/.test(o), o);
+
+  await openCalc('laef');
+  await fillCalc('laef', 'lavmax', '80');
+  await fillCalc('laef', 'lavmin', '40');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('laef');
+  check('LAEF 80/40 → 50% 保留', /50\.0%/.test(o) && /保留/.test(o), o);
+
+  await openCalc('quickratio');
+  await fillCalc('quickratio', 'qla', '40');
+  await fillCalc('quickratio', 'qao', '32');
+  await fillCalc('quickratio', 'qrv', '40');
+  await fillCalc('quickratio', 'qlv', '50');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('quickratio');
+  check('LA/Ao 1.25 增大 / RV/LV 0.80 扩大',
+    /1\.25/.test(o) && /0\.80/.test(o) && /扩大/.test(o), o);
+
+  await openCalc('lvmih');
+  await fillCalc('lvmih', 'lhmass', '200');
+  await fillCalc('lvmih', 'lhheight', '170');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('lvmih');
+  check('LVMI 身高^2.7 200/170 → 47.7', /47\.7/.test(o), o);
+
+  // ── v1.3.0 第四批：先心 / 心肌 / 耦联 ──
+  await openCalc('paidx');
+  await fillCalc('paidx', 'prpa', '10');
+  await fillCalc('paidx', 'plpa', '10');
+  await fillCalc('paidx', 'pdao', '12');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('paidx');
+  check('McGoon 1.67 判发育不足', /1\.67/.test(o) && /不足/.test(o), o);
+
+  await openCalc('ras');
+  await fillCalc('ras', 'rasap', '-18');
+  await fillCalc('ras', 'rasba', '-9');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('ras');
+  check('RAS 2.00 存在心尖保留', /2\.00/.test(o) && /心尖保留/.test(o), o);
+
+  await openCalc('ea');
+  await fillCalc('ea', 'eaesp', '100');
+  await fillCalc('ea', 'easv', '70');
+  await fillCalc('ea', 'eaesv', '50');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('ea');
+  check('Ea 1.43 / Ees-Ea 1.40', /1\.43/.test(o) && /1\.40/.test(o), o);
+
+  await openCalc('coa');
+  await fillCalc('coa', 'coav', '3.2');
+  await fillCalc('coa', 'coaved', '1.2');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('coa');
+  check('CoA 3.2 m/s → 41 mmHg + 拖尾征', /41/.test(o) && /拖尾征/.test(o), o);
 
   await openCalc('paspv'); // 收尾回到列表
   await backToList();

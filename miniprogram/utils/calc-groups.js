@@ -204,6 +204,209 @@ const GROUPS = [
     note: '正常 800–1200 dyn·s·cm⁻⁵；有 BSA 时同出 SVRI（1600–2400）。<800 见于分布性休克 / 分流，>1200 提示后负荷升高',
   },
 
+  /* ══ v1.2.9 第二批：右心与肺循环补全 ══ */
+  {
+    id: 'rvvol',
+    sec: 'right',
+    title: '右室容积指数 RVEDVi / RVESVi',
+    sub: '按性别分档 · 右室扩大与 ARVC 随访',
+    fields: [
+      { k: 'rvedv', n: 'RV 舒张末容积', u: 'mL' },
+      { k: 'rvesv', n: 'RV 收缩末容积（可选）', u: 'mL' },
+    ],
+    note: 'RVEDVi 上限男 87 / 女 75 mL/m²；RVESVi 上限男 44 / 女 35 mL/m²（ASE 右心指南）。右室扩大而左室正常时注意 ARVC、房间隔缺损、肺高压；随访必须同一方法（3D 或 2D 面积长度法）',
+  },
+  {
+    id: 'rvfws',
+    sec: 'right',
+    title: '右室游离壁应变 RVFWS',
+    sub: '三节段均值 · |均值| <20% 提示减低',
+    fields: [
+      { k: 'rfb', n: '基底段', u: '%' },
+      { k: 'rfm', n: '中间段', u: '%' },
+      { k: 'rfa', n: '心尖段', u: '%' },
+    ],
+    note: 'RVFWS 正常 |均值| ≥20%（即 ≤ −20%）。右室纵向功能常先于 TAPSE、FAC 下降；填负数更符合习惯（如 −24）。仅填一到两段也能算，但三段齐全更可靠',
+  },
+  {
+    id: 'papi',
+    sec: 'right',
+    title: 'PAPi 肺动脉搏动指数',
+    sub: '(sPAP − dPAP) ÷ RAP · <1.85 失耦联',
+    fields: [
+      { k: 'pispap', n: '肺动脉收缩压 sPAP', u: 'mmHg' },
+      { k: 'pidpap', n: '肺动脉舒张压 dPAP', u: 'mmHg' },
+      { k: 'pirap', n: '右房压 RAP', u: 'mmHg' },
+    ],
+    note: 'PAPi = (sPAP − dPAP) / RAP，反映右室与肺循环的耦联。<1.85 提示失耦联，肺高压与心衰患者预后差；>2.0 相对保留。RAP 必须先由 IVC 估出',
+  },
+  {
+    id: 'pdap',
+    sec: 'right',
+    title: '舒张期肺动脉压 PADP',
+    sub: '4 × V(PR 舒张末)² + RAP',
+    fields: [
+      { k: 'pdprv', n: 'PR 舒张末期流速', u: 'm/s' },
+      { k: 'pdrap', n: '右房压 RAP', u: 'mmHg' },
+    ],
+    note: 'PADP = 4 × V² + RAP，正常 8–15 mmHg。平均肺动脉压条目（mpap）用 PR 峰值速度算平均压，本条算的是舒张末压，两者互补',
+  },
+  {
+    id: 'residx',
+    sec: 'right',
+    title: '阻力指数 PVRI / SVRI',
+    sub: 'PVR、SVR 按 BSA 指数化',
+    fields: [
+      { k: 'ripvr', n: 'PVR（可选）', u: 'WU' },
+      { k: 'risvr', n: 'SVR（可选）', u: 'dyn·s·cm⁻⁵' },
+    ],
+    note: 'PVRI = PVR × BSA，正常 3–5 WU·m²，>5 提示肺血管阻力显著升高（先心手术决策关键）；SVRI = SVR × BSA，正常 1970–2390 dyn·s·cm⁻⁵·m²。体型差异大时必须指数化',
+  },
+  {
+    id: 'rvdvdt',
+    sec: 'right',
+    title: '右室 dP/dt',
+    sub: 'TR 反流谱 1→2 m/s 的 Δt · <400 减低',
+    fields: [
+      { k: 'rdt', n: '1→2 m/s 时间差 Δt', u: 'ms' },
+    ],
+    note: '两点的压差差为 4×2² − 4×1² = 12 mmHg，故 dP/dt = 12 ÷ Δt(s)，单位 mmHg/s。<400 提示右室收缩功能减低（同左心 dP/dt 需 >1000）',
+  },
+
+  /* ══ v1.3.0 第三批：瓣膜与舒张细节 ══ */
+  {
+    id: 'wilkins',
+    sec: 'vq',
+    title: 'Wilkins 二尖瓣形态评分',
+    sub: '4 项各 1–4 分 · ≤8 适合 PBMV',
+    fields: [
+      { k: 'wk1', n: '瓣叶厚度', u: '分' },
+      { k: 'wk2', n: '瓣叶钙化', u: '分' },
+      { k: 'wk3', n: '瓣叶活动度', u: '分' },
+      { k: 'wk4', n: '瓣下增厚', u: '分' },
+    ],
+    note: '四项各 1–4 分（1 最轻、4 最重），总分 4–16。≤8 分提示瓣膜形态尚好、适合经皮球囊二尖瓣成形（PBMV）；>8 分优先外科。评分受操作者主观影响，建议由有经验的医师复核',
+  },
+  {
+    id: 'vcw',
+    sec: 'vq',
+    title: '缩流颈宽度 VCW 分级',
+    sub: 'MR / TR：<3 轻 · 3–6.9 中 · ≥7 重',
+    opts: [
+      { k: 'vsite', n: '瓣膜', list: [['mr', 'MR 二尖瓣'], ['ar', 'AR 主动脉瓣'], ['tr', 'TR 三尖瓣']] },
+    ],
+    fields: [
+      { k: 'vcwv', n: '缩流颈宽度', u: 'mm' },
+    ],
+    note: 'MR / TR 阈值：<3 轻度、3–6.9 中度、≥7 重度；AR 阈值更低：<3 轻度、3–5.9 中度、≥6 重度。VCW 是一线半定量指标，受仪器设置与血流动力学影响，重度判读应与 PISA、反流分数互相印证',
+  },
+  {
+    id: 'rf',
+    sec: 'vq',
+    title: '反流分数 RF',
+    sub: 'RVol ÷ SV · 轻 <30 中 30–49 重 ≥50',
+    fields: [
+      { k: 'rfvol', n: '反流量 RVol', u: 'mL' },
+      { k: 'rfsv', n: '每搏量 SV', u: 'mL' },
+    ],
+    note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷',
+  },
+  {
+    id: 'mvac',
+    sec: 'vq',
+    title: '二尖瓣面积（连续性方程法）',
+    sub: 'MVA = SV ÷ 二尖瓣 VTI',
+    fields: [
+      { k: 'mvd', n: 'LVOT 直径', u: 'cm' },
+      { k: 'mvlvti', n: 'LVOT VTI', u: 'cm' },
+      { k: 'mvmvti', n: '二尖瓣 VTI', u: 'cm' },
+    ],
+    note: 'MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV，与 PHT 法互为校核：连续性方程不受心率与合并反流影响，房颤时更可靠；PHT 法在合并 AR 或重度钙化时失真',
+  },
+  {
+    id: 'laef',
+    sec: 'recon',
+    title: '左房排空分数 LAEF',
+    sub: 'LAEF 与 LA 扩张指数',
+    fields: [
+      { k: 'lavmax', n: 'LA 最大容积', u: 'mL' },
+      { k: 'lavmin', n: 'LA 最小容积', u: 'mL' },
+    ],
+    note: 'LAEF = (LAVmax − LAVmin) / LAVmax，正常 ≥50%；扩张指数 = (LAVmax − LAVmin) / LAVmin。LAEF 减低提示左房机械功能受损，房颤消融前后与 HFpEF 评估常用',
+  },
+  {
+    id: 'quickratio',
+    sec: 'hemo',
+    title: '快速比值：LA/Ao · RV/LV',
+    sub: '床头最常用的两个半定量比值',
+    fields: [
+      { k: 'qla', n: '左房内径 LA', u: 'mm' },
+      { k: 'qao', n: '主动脉根部 Ao', u: 'mm' },
+      { k: 'qrv', n: '右室舒张末内径 RV', u: 'mm' },
+      { k: 'qlv', n: '左室舒张末内径 LV', u: 'mm' },
+    ],
+    note: 'LA/Ao ≤1.1 正常，>1.1 提示左房增大；RV/LV >0.6 提示右室扩大（>1.0 高度提示右心负荷过重）。两单位同组一致即可，不必换算',
+  },
+  {
+    id: 'lvmih',
+    sec: 'recon',
+    title: 'LVMI 身高^2.7（肥胖适用）',
+    sub: 'de Simone 指数 · 男 >50 女 >47',
+    fields: [
+      { k: 'lhmass', n: '左室质量 LV Mass', u: 'g' },
+      { k: 'lhheight', n: '身高', u: 'cm' },
+    ],
+    note: 'LVMI = Mass / 身高(m)^2.7，男 >50、女 >47 g/m^2.7 提示左室肥厚。肥胖患者按 BSA 指数化会低估肥厚程度，此时应改用身高^2.7',
+  },
+
+  /* ══ v1.3.0 第四批：先心 / 心肌 / 耦联 ══ */
+  {
+    id: 'paidx',
+    sec: 'ivs',
+    title: 'McGoon 比值与 Nakata 指数',
+    sub: '肺动脉发育 · 先心根治可行性',
+    fields: [
+      { k: 'prpa', n: '右肺动脉 RPA', u: 'mm' },
+      { k: 'plpa', n: '左肺动脉 LPA', u: 'mm' },
+      { k: 'pdao', n: '膈肌水平降主动脉（可选）', u: 'mm' },
+    ],
+    note: 'McGoon = (RPA + LPA) ÷ 降主动脉，≥1.8 可考虑根治（>2.0 更理想）；Nakata = 左右肺动脉截面积之和 ÷ BSA（需身高体重），≥150 mm²/m² 可考虑根治。新生儿与术后随访必须用同一口径',
+  },
+  {
+    id: 'ras',
+    sec: 'recon',
+    title: '心尖保留比值 RAS',
+    sub: '心尖段 ÷ 基底段 · ≥1 提示淀粉样变',
+    fields: [
+      { k: 'rasap', n: '心尖段平均应变', u: '%' },
+      { k: 'rasba', n: '基底段平均应变', u: '%' },
+    ],
+    note: 'RAS = |心尖段均值| ÷ |基底段均值|。≥1 提示相对心尖保留，是心肌淀粉样变的典型表现（需结合左室壁增厚、心电图低电压、其他征象）；典型淀粉样变多为 2.0 以上',
+  },
+  {
+    id: 'ea',
+    sec: 'hemo',
+    title: '有效动脉弹性 Ea / Ees-Ea 耦联',
+    sub: 'ESP ÷ SV · Ees/Ea ≈ SV ÷ ESV',
+    fields: [
+      { k: 'eaesp', n: '收缩末压 ESP', u: 'mmHg' },
+      { k: 'easv', n: '每搏量 SV', u: 'mL' },
+      { k: 'eaesv', n: '收缩末容积 ESV', u: 'mL' },
+    ],
+    note: 'Ea = ESP / SV（mmHg/mL）；单点 Ees ≈ ESP / ESV，故 Ees/Ea = SV / ESV。常见区间 0.8–1.5，心衰时降低。单点法仅作趋势参考，不能替代压力-容积环',
+  },
+  {
+    id: 'coa',
+    sec: 'ivs',
+    title: '主动脉缩窄压差与拖尾',
+    sub: '峰值压差 · 舒张末期持续血流',
+    fields: [
+      { k: 'coav', n: '缩窄处峰值流速', u: 'm/s' },
+      { k: 'coaved', n: '舒张末期流速（可选）', u: 'm/s' },
+    ],
+    note: '压差 = 4 × Vmax²。峰值压差 ≥20 mmHg 提示有血流动力学意义；舒张末期仍有 ≥5 mmHg 压差说明存在持续跨缩窄血流（拖尾征）。新生儿期压差可能不高，需结合形态与左室肥厚',
+  },
+
   /* ══════════════════════════════════════════════════════════
      瓣膜与舒张定量（sec: 'vq'）
      ══════════════════════════════════════════════════════════ */
@@ -356,6 +559,101 @@ const GROUPS = [
     ],
     note: 'SW(g·m) = SV × MAP × 0.0136，正常 60–110；SWi = SW/BSA。心肌做功 GWI/GCW/GWE 需压力-应变环与专有软件，无法由血压 + GLS 手算',
   },
+
+  /* ══ v1.2.8 第一批：M 型 / 评分体系 / 介入尺寸 ══ */
+  {
+    id: 'mtype',
+    sec: 'hemo',
+    title: 'M 型三合一：FS · Teichholz EF · EPSS',
+    sub: '缩短分数 · 立方公式 EF · 二尖瓣 EPSS',
+    fields: [
+      { k: 'mtdd', n: 'LVIDd（舒张末内径）', u: 'mm' },
+      { k: 'mtds', n: 'LVIDs（收缩末内径）', u: 'mm' },
+      { k: 'mtepss', n: 'EPSS（可选）', u: 'mm' },
+    ],
+    note: 'FS = (LVIDd − LVIDs)/LVIDd；Teichholz：V = 7D³/(2.4+D)（D 取 cm），EF = (EDV−ESV)/EDV。EPSS <7 mm 正常，>12 mm 提示 EF 显著减低。M 型受取样线偏斜与节段性室壁运动异常影响，图像条件允许时以 Simpson 双平面为准',
+  },
+  {
+    id: 'wmsi',
+    sec: 'score',
+    title: 'WMSI 室壁运动积分',
+    sub: '按分值节段个数录入 · 1.0 正常 · ≥1.7 提示大面积缺血',
+    opts: [
+      { k: 'wseg', n: '节段总数', list: [['17', '17 节段（推荐）'], ['16', '16 节段']] },
+    ],
+    fields: [
+      { k: 'wn1', n: '正常（1 分）节段数', u: '个' },
+      { k: 'wn2', n: '运动减弱（2 分）', u: '个' },
+      { k: 'wn3', n: '无运动（3 分）', u: '个' },
+      { k: 'wn4', n: '反常运动（4 分）', u: '个' },
+      { k: 'wn5', n: '室壁瘤（5 分）', u: '个' },
+    ],
+    note: 'WMSI = (1·n1 + 2·n2 + 3·n3 + 4·n4 + 5·n5) ÷ 节段总数。按各类节段的个数录入，比逐段填 17 个格子快且不易漏段；与「节段划分」页对照定位。1.0 正常，1.0–1.5 轻度，1.5–1.7 中度，≥1.7 提示大面积缺血且预后差',
+  },
+  {
+    id: 'h2fpef',
+    sec: 'score',
+    title: 'H2FPEF 评分',
+    sub: 'BMI · 房颤 · 年龄 · 降压药 · E/e′ · PASP → 0–9 分',
+    opts: [
+      { k: 'haf', n: '心房颤动', list: [['0', '无'], ['1', '有']] },
+      { k: 'hbp', n: '降压药种数', list: [['0', '0–1 种'], ['1', '≥2 种']] },
+    ],
+    fields: [
+      { k: 'hbmi', n: 'BMI', u: 'kg/m²' },
+      { k: 'hage', n: '年龄', u: '岁' },
+      { k: 'hee', n: 'E/e′', u: '' },
+      { k: 'hpasp', n: 'PASP', u: 'mmHg' },
+    ],
+    note: '加权评分：BMI >30 计 2 分，心房颤动 3 分，年龄 >60 岁 1 分，≥2 种降压药 1 分，E/e′ >9 计 1 分，PASP >35 mmHg 计 1 分。≥6 分 HFpEF 可能性高，≤1 分可能性低，2–5 分需负荷超声或侵入性血流动力学',
+  },
+  {
+    id: 'hfapeff',
+    sec: 'score',
+    title: 'HFA-PEFF 评分',
+    sub: '形态学 / 功能学 / 生物标志物 三类取最高后相加',
+    opts: [
+      { k: 'hsex', n: '性别', list: [['m', '男性'], ['f', '女性']] },
+      { k: 'haf2', n: '心律', list: [['0', '窦性心律'], ['1', '心房颤动']] },
+    ],
+    fields: [
+      { k: 'hlavi', n: 'LAVi', u: 'mL/m²' },
+      { k: 'hlvmi', n: 'LVMI', u: 'g/m²' },
+      { k: 'hrwt', n: 'RWT', u: '' },
+      { k: 'hpasp2', n: 'PASP', u: 'mmHg' },
+      { k: 'hee2', n: 'E/e′', u: '' },
+      { k: 'hes', n: '间隔 e′', u: 'cm/s' },
+      { k: 'hel', n: '侧壁 e′', u: 'cm/s' },
+      { k: 'htrv', n: 'TR Vmax', u: 'm/s' },
+      { k: 'hgls', n: 'GLS（绝对值）', u: '%' },
+      { k: 'hbnp', n: 'NT-proBNP', u: 'pg/mL' },
+    ],
+    note: '三类各取最高分后相加（0–6）。形态学：LAVi ≥34 计 1、≥40 计 2；LVMI 男 >115/149、女 >95/122 计 1/2；RWT >0.42 计 1；PASP >35 计 1。功能学：E/e′ 9–14 计 1、≥15 计 2；e′ 减低计 1；TR Vmax >2.8 计 1；GLS <16% 计 1。标志物按窦律/房颤分档。≥5 分支持 HFpEF，2–4 分需进一步检查',
+  },
+  {
+    id: 'tavrsz',
+    sec: 'ivs',
+    title: 'TAVR 瓣环尺寸与 oversizing',
+    sub: '周长/面积导出直径 · 面积 oversizing 判读',
+    fields: [
+      { k: 'tcirc', n: '瓣环周长', u: 'mm' },
+      { k: 'tarea', n: '瓣环面积', u: 'mm²' },
+      { k: 'tnom', n: '拟用标称直径', u: 'mm' },
+    ],
+    note: '周长导出直径 = C/π；面积导出直径 = 2√(A/π)；面积 oversizing = (标称面积/实测面积 − 1)×100%。自膨胀瓣常见目标 10–20%，球囊扩张瓣 −10% ~ +5%。具体型号按厂商说明书与术者经验核定',
+  },
+  {
+    id: 'laasz',
+    sec: 'ivs',
+    title: '左心耳封堵尺寸推荐',
+    sub: '着陆区最大径 → 推荐型号 · 深度与椭圆度提示',
+    fields: [
+      { k: 'lzmax', n: '着陆区最大径', u: 'mm' },
+      { k: 'lzmin', n: '着陆区最小径（可选）', u: 'mm' },
+      { k: 'lzdepth', n: '着陆区深度（可选）', u: 'mm' },
+    ],
+    note: '按着陆区最大径 × 1.08 上取整落到常规型号（17/20/24/27/31/35 mm）。长短径比 >1.3 提示椭圆度大；深度不足时考虑小一号。常用于 Watchman FLX 类器械，其他产品按各自说明书',
+  },
 ];
 
 /**
@@ -369,6 +667,8 @@ const CALC_SECTIONS = [
   { id: 'right', title: '右心与肺循环' },
   { id: 'vq', title: '瓣膜与舒张定量' },
   { id: 'recon', title: '重构与心肌功能' },
+  { id: 'score', title: '评分与室壁运动' },
+  { id: 'ivs', title: '介入尺寸与先心' },
 ];
 
 /** IVC 塌陷选项 */

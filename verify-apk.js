@@ -54,11 +54,11 @@ const html = fs.readFileSync(WWW, 'utf8');
 // ★ APK 打包源 = docs/index.html（4 页签）。用户明确：不要「瓣膜评估」单独页，
 //   它的判读条目本来就在公式集的「瓣膜评估」组里；只有 5 个瓣膜计算器依赖该页。
 //   但「节段划分」（室壁划分）必须保留 —— 这是之前 app 内容比小程序少的原因。
-check('www 完整版体积 < 520 KB', Buffer.byteLength(html, 'utf8') < 520 * 1024, true);
+check('www 完整版体积 < 560 KB', Buffer.byteLength(html, 'utf8') < 560 * 1024, true);
 check('docs 发布版存在（APK 打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 470 KB', Buffer.byteLength(dh, 'utf8') < 470 * 1024, true);
+  check('docs 发布版体积 < 510 KB', Buffer.byteLength(dh, 'utf8') < 510 * 1024, true);
   check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
 }
@@ -477,6 +477,54 @@ check('参考文献列表初始折叠（#calcRefList 带 hidden）',
 check('折叠态样式已内联（.refs-hd--open 箭头旋转）',
   html.indexOf('.refs-hd--open .refs-hd__a') !== -1, true);
 check('折叠开关逻辑已内联（toggleRefs）', html.indexOf('function toggleRefs') !== -1, true);
+/* v1.2.8 第一批：M 型 / 评分体系 / 介入尺寸 */
+check('含 6 个新计算器（mtype / wmsi / h2fpef / hfapeff / tavrsz / laasz）',
+  ['mtype', 'wmsi', 'h2fpef', 'hfapeff', 'tavrsz', 'laasz'].every(function (id) {
+    return html.indexOf("id: '" + id + "'") !== -1;
+  }), true);
+check('新增两个计算组（评分与室壁运动 / 介入尺寸与先心）',
+  html.indexOf("id: 'score', title: '评分与室壁运动'") !== -1 &&
+  html.indexOf("id: 'ivs', title: '介入尺寸与先心'") !== -1, true);
+check('引擎函数已内联（mModeTriple / wmsiIndex / h2fpefScore / hfaPeffScore / tavrSizing / laaSize）',
+  ['function mModeTriple', 'function wmsiIndex', 'function h2fpefScore',
+   'function hfaPeffScore', 'function tavrSizing', 'function laaSize']
+    .every(function (k) { return html.indexOf(k) !== -1; }), true);
+check('选项组渲染已内联（optsHtml + .seg[data-opt]）',
+  html.indexOf('function optsHtml') !== -1 &&
+  html.indexOf("querySelectorAll('.seg[data-opt]')") !== -1, true);
+check('评分条目带选项组（H2FPEF 房颤 / 降压药）',
+  html.indexOf("{ k: 'haf', n: '心房颤动'") !== -1 &&
+  html.indexOf("{ k: 'hbp', n: '降压药种数'") !== -1, true);
+/* v1.2.9 第二批：右心与肺循环 */
+check('含 6 个右心新计算器（rvvol / rvfws / papi / pdap / residx / rvdvdt）',
+  ['rvvol', 'rvfws', 'papi', 'pdap', 'residx', 'rvdvdt'].every(function (id) {
+    return html.indexOf("id: '" + id + "'") !== -1;
+  }), true);
+check('右心引擎函数已内联（rvVolumeIndex / rvFreeWallStrain / pulmonaryPulseIndex / resistanceIndices / rvDpDt）',
+  ['function rvVolumeIndex', 'function rvFreeWallStrain', 'function pulmonaryPulseIndex',
+   'function pulmonaryDiastolicPressure', 'function resistanceIndices', 'function rvDpDt']
+    .every(function (k) { return html.indexOf(k) !== -1; }), true);
+/* v1.3.0 第三批：瓣膜与舒张细节 */
+check('含 7 个新计算器（wilkins / vcw / rf / mvac / laef / quickratio / lvmih）',
+  ['wilkins', 'vcw', 'rf', 'mvac', 'laef', 'quickratio', 'lvmih'].every(function (id) {
+    return html.indexOf("id: '" + id + "'") !== -1;
+  }), true);
+check('第三批引擎函数已内联（wilkinsScore / vcwGrade / regurgFraction / laEmptying / quickRatios / lvmHeightIndex）',
+  ['function wilkinsScore', 'function vcwGrade', 'function regurgFraction',
+   'function laEmptying', 'function quickRatios', 'function lvmHeightIndex']
+    .every(function (k) { return html.indexOf(k) !== -1; }), true);
+check('VCW 条目带瓣膜选项组（MR / AR / TR）',
+  html.indexOf("{ k: 'vsite', n: '瓣膜'") !== -1 &&
+  html.indexOf("['mr', 'MR 二尖瓣']") !== -1, true);
+/* v1.3.0 第四批：先心 / 心肌 / 耦联 */
+check('含 4 个新计算器（paidx / ras / ea / coa）',
+  ['paidx', 'ras', 'ea', 'coa'].every(function (id) {
+    return html.indexOf("id: '" + id + "'") !== -1;
+  }), true);
+check('第四批引擎函数已内联（paIndex / apicalSparing / ventriculoArterial / coarctationEcho）',
+  ['function paIndex', 'function apicalSparing', 'function ventriculoArterial',
+   'function coarctationEcho']
+    .every(function (k) { return html.indexOf(k) !== -1; }), true);
 check('首页已无延展阅读卡片', html.indexOf('page-index') < html.indexOf('id="extLinks"'), true);
 check('评估内容块样式已内联', html.indexOf('.fx-tbl__c {') !== -1, true);
 check('参考文献样式已内联', html.indexOf('.ref-item__zh {') !== -1, true);
