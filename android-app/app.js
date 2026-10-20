@@ -398,8 +398,9 @@
       fields: [['prv', '肺动脉反流峰速 Vmax', 'm/s'], ['mrap', '右房压 RAP', 'mmHg']],
       note: 'mPAP = 4 × PR Vmax² + RAP；>25 mmHg 符合肺高压。也可用 Mahan 近似 0.61 × sPAP + 2' },
     { id: 'shunt', title: 'Qp/Qs 肺体循环血流比',
-      fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm']],
-      note: '使用上方 LVOT 的 SV 作为体循环流量；反流、多处梗阻会影响结果' },
+      fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm'],
+        ['ld', 'LVOT 直径（体循环）', 'cm'], ['lvti', 'LVOT VTI（体循环）', 'cm']],
+      note: 'Qp/Qs = (π·d_RVOT²/4 × VTI_RVOT) ÷ (π·d_LVOT²/4 × VTI_LVOT)；>2.0 大量分流、1.5–2.0 中等量、<1.0 提示净右向左' },
     { id: 'bernoulli', title: '简化伯努利压差',
       fields: [['v2', '远端峰速 V₂', 'm/s'], ['v1', '近端峰速 V₁（可选）', 'm/s']],
       note: 'ΔP = 4(V₂² − V₁²)；缺省 V₁ 按 0 处理。瓣膜狭窄 / 反流定量见「瓣膜评估」页' },
@@ -436,7 +437,7 @@
     dvi: 'LVOT VTI ÷ 主动脉瓣 VTI',
     tei: '等容时间之和 ÷ 射血时间',
     mpap: '舒张期肺动脉反流法',
-    shunt: '分流方向与分流量',
+    shunt: '分流方向与分流量分级',
     bernoulli: 'ΔP = 4(V₂² − V₁²)',
     atrial: 'LAVI · RAVI',
     dias: 'E/A · 平均 E/e′',
@@ -766,8 +767,11 @@
     // shunt
     if (has('rd', 'rvti', 'ld', 'lvti')) {
       const qs = Calc.strokeVolume(v.ld, v.lvti);
-      if (qs > 0) put('shunt', 'Qp/Qs = ' + Calc.fmt(Calc.strokeVolume(v.rd, v.rvti) / qs));
-      else put('shunt');
+      const qp = Calc.strokeVolume(v.rd, v.rvti);
+      if (qs > 0) {
+        const g = Calc.shuntGrade(qp, qs);
+        put('shunt', 'Qp/Qs = ' + Calc.fmt(g.ratio) + ' · ' + g.text);
+      } else put('shunt');
     } else put('shunt');
 
     // bernoulli
@@ -1031,7 +1035,92 @@
         parts.push('EF 变化 ' + (d >= 0 ? '+' : '') + Calc.fmt(d, 1) + '% · ' +
           (d >= 5 ? '收缩储备正常' : '收缩储备不足（提示多支病变 / 预后不良）'));
       }
+      // 肺动脉收缩压运动反应
+      if (has('dksp0', 'dksp1')) {
+        const p = Calc.paspStress({ rest: v.dksp0, peak: v.dksp1 });
+        if (p.text) {
+          parts.push('PASP ' + Calc.fmt(v.dksp0, 0) + '→' + Calc.fmt(v.dksp1, 0) +
+            ' mmHg（Δ' + Calc.fmt(p.delta, 0) + '）· ' + p.text);
+        }
+      }
       put('stress-echo', partsOf(parts));
+    }
+
+    // 右室应变与 RVFWS 细化
+    {
+      const r = Calc.rvStrain({
+        base: v.rvsb, mid: v.rvsm, apex: v.rvsa, sep: v.rvssep, pasp: v.rvspasp,
+      });
+      const parts = [];
+      if (r.avg !== undefined) {
+        parts.push('RVFWS ' + Calc.fmt(r.avg, 1) + '% → ' + r.gradeText);
+        parts.push(r.gradText);
+      }
+      if (r.rvgls !== undefined) {
+        parts.push('RVGLS ' + Calc.fmt(r.rvgls, 1) + '%' +
+          (r.sepLower ? '（室间隔受累更重，提示双室受累）' : ''));
+      }
+      if (r.ratio !== undefined) {
+        parts.push('RVFWS/PASP ' + Calc.fmt(r.ratio, 2) + ' · ' + r.coupling);
+      }
+      put('rv-strain', partsOf(parts));
+    }
+
+    // 限制型心肌病 vs 淀粉样变：心尖保留比值
+    {
+      const r = Calc.rcmStrain({
+        base: v.rcmb, mid: v.rcmm, apex: v.rcma,
+        endo: v.rcmendo, epi: v.rcmepi,
+      });
+      const parts = [];
+      if (r.rar !== undefined) {
+        parts.push('RAR ' + Calc.fmt(r.rar, 2) + '（GLS ' + Calc.fmt(-r.gls, 1) + '%）→ ' + r.text);
+      }
+      if (r.transGrad !== undefined) {
+        parts.push('心内膜/心外膜 ' + Calc.fmt(r.transGrad, 2) +
+          (r.gradLost ? ' · 梯度消失（支持浸润性病变）' : ' · 梯度保留'));
+      }
+      put('rcm-strain', partsOf(parts));
+    }
+
+    // 先心病分流：Qp/Qs 分级
+    {
+      const r = (has('shqp', 'shqs') ? Calc.shuntGrade(v.shqp, v.shqs) : {});
+      put('shd', r.text ? 'Qp/Qs = ' + Calc.fmt(r.ratio) + ' · ' + r.text : '');
+    }
+
+    // 分流性肺高压的可手术性
+    {
+      const parts = [];
+      if (has('pvrv')) {
+        const pvr = v.pvrv;
+        if (v.pvrqp !== undefined && v.pvrqp < 1.0) {
+          parts.push('Qp/Qs ' + Calc.fmt(v.pvrqp) + '：净右向左分流，倾向禁忌关闭');
+        }
+        if (pvr > 8) parts.push('PVR ' + Calc.fmt(pvr) + ' WU：多属不可逆，禁忌关闭');
+        else if (pvr >= 5) parts.push('PVR ' + Calc.fmt(pvr) + ' WU：灰区，需急性血管反应试验或靶向治疗后复评');
+        else parts.push('PVR ' + Calc.fmt(pvr) + ' WU：阻力尚可，可考虑关闭');
+      }
+      if (has('pvrvi')) {
+        parts.push('PVRI ' + Calc.fmt(v.pvrvi) + ' WU·m² · ' +
+          (v.pvrvi > 8 ? '显著升高' : v.pvrvi >= 6 ? '灰区' : '可接受'));
+      }
+      put('pht-rev', partsOf(parts));
+    }
+
+    // LVAD 超声要点
+    {
+      const r = Calc.lvadEcho({
+        d: v.lvadd, vti: v.lvadvti, hr: v.lvadhr,
+        lvedd: v.lvadlv, avOpen: v.lvadav, tapse: v.lvadtp,
+      });
+      const parts = [];
+      if (r.sv !== undefined) {
+        parts.push('出血道 SV ' + Calc.fmt(r.sv, 1) + ' mL');
+        if (r.co !== undefined) parts.push('CO ' + Calc.fmt(r.co) + ' L/min');
+      }
+      if (r.notes && r.notes.length) parts.push(r.notes.join('；'));
+      put('lvad', partsOf(parts));
     }
 
     // 三尖瓣反流五级严重度

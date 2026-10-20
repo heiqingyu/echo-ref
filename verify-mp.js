@@ -405,10 +405,10 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('card__title">参考文献') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 33 条', EXD.REFS.length, 33, 0);
+  check('参考文献 37 条', EXD.REFS.length, 37, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
-  check('文献编号连续 R1–R33',
-    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33' ? 1 : 0, 1, 0);
+  check('文献编号连续 R1–R37',
+    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37' ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
 
@@ -476,33 +476,35 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 11 个大组', dirs.length, 11, 0);
+  check('公式集分 12 个大组', dirs.length, 12, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|负荷与功能试验|介入 TEE 评估|切面学习（视频）|切面指南|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 53 条（11 血流动力学 + 9 瓣膜 + 21 评估 + 12 外链）', nItems, 53, 0);
-  check('切面学习 5 条', dirs[8].items.length, 5, 0);
-  check('切面指南 4 条', dirs[9].items.length, 4, 0);
-  check('TEE 模拟器 3 条', dirs[10].items.length, 3, 0);
+  check('目录共 58 条（11 计算 + 9 瓣膜 + 26 评估 + 12 外链）', nItems, 58, 0);
+  check('切面学习 5 条', dirs[9].items.length, 5, 0);
+  check('切面指南 4 条', dirs[10].items.length, 4, 0);
+  check('TEE 模拟器 3 条', dirs[11].items.length, 3, 0);
   check('外链条目为 link 类型',
-    dirs[8].items.every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+    dirs[9].items.every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('TTE 经胸切面为直达交互链接',
-    dirs[8].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[9].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含速查表 / 指南条目',
-    dirs[8].items.some(i => i.id === 'tee-cheat') &&
-    dirs[9].items.some(i => i.id === 'guide-tte-cn') &&
-    dirs[9].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
+    dirs[9].items.some(i => i.id === 'tee-cheat') &&
+    dirs[10].items.some(i => i.id === 'guide-tte-cn') &&
+    dirs[10].items.some(i => i.id === 'guide-tee-28') ? 1 : 0, 1, 0);
   check('模拟器含 CT2TEE / TEE Simulator 图谱',
-    dirs[10].items.some(i => /ct2tee/.test(i.url)) &&
-    dirs[10].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
-  check('器械支持 2 条（CRT / LAD）', dirs[2].items.length, 2, 0);
+    dirs[11].items.some(i => /ct2tee/.test(i.url)) &&
+    dirs[11].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+  check('器械支持 3 条（CRT / LAD / LVAD）', dirs[2].items.length, 3, 0);
   check('器械支持含 CRT 同步化',
     dirs[2].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
   check('器械支持含 LAD 参数',
     dirs[2].items.some(i => i.id === 'la') ? 1 : 0, 1, 0);
-  check('心腔与应变 10 条', dirs[3].items.length, 10, 0);
-  ['lv', 'rv', 'rcoupling', 'rvfail', 'strain', 'la-strain', 'peri', 'cp-rm', 'prosthetic', 'ctrcd'].forEach(id => {
+  check('器械支持含 LVAD 超声评估',
+    dirs[2].items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
+  check('心腔与应变 11 条', dirs[3].items.length, 11, 0);
+  ['lv', 'rv', 'rcoupling', 'rvfail', 'rv-strain', 'strain', 'la-strain', 'peri', 'cp-rm', 'prosthetic', 'ctrcd'].forEach(id => {
     check('心腔与应变含 ' + id,
       dirs[3].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
@@ -516,8 +518,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   });
   check('不存在重复的「瓣膜疾病评估」分组',
     dirs.filter(s => s.title.indexOf('瓣膜疾病') !== -1).length === 0 ? 1 : 0, 1, 0);
-  check('心肌病变 2 条（HCM / 淀粉样变）', dirs[4].items.length, 2, 0);
-  ['hcm', 'amyloid'].forEach(id => {
+  check('心肌病变 3 条（HCM / 淀粉样变 / 应变鉴别）', dirs[4].items.length, 3, 0);
+  ['hcm', 'amyloid', 'rcm-strain'].forEach(id => {
     check('心肌病变含 ' + id,
       dirs[4].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
@@ -526,13 +528,18 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('大血管与急症含 ' + id,
       dirs[5].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('负荷与功能试验 1 条（运动负荷超声）', dirs[6].items.length, 1, 0);
+  check('先天性心脏病 2 条（分流判读 / 可手术性）', dirs[6].items.length, 2, 0);
+  ['shd', 'pht-rev'].forEach(id => {
+    check('先天性心脏病含 ' + id,
+      dirs[6].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+  });
+  check('负荷与功能试验 1 条（运动负荷超声）', dirs[7].items.length, 1, 0);
   check('负荷试验含 stress-echo',
-    dirs[6].items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
-  check('介入 TEE 评估 3 条（三尖瓣 / 二尖瓣 / TAVR）', dirs[7].items.length, 3, 0);
+    dirs[7].items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
+  check('介入 TEE 评估 3 条（三尖瓣 / 二尖瓣 / TAVR）', dirs[8].items.length, 3, 0);
   ['tr-interv', 'mv-interv', 'tavr'].forEach(id => {
     check('介入 TEE 评估含 ' + id,
-      dirs[7].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirs[8].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
 
@@ -634,6 +641,87 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.data.inputs[0].value = '-22';
   pgF.refresh();
   check('GLS -22% 判为正常', /正常/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  // —— v1.1.0 新增：右室应变 / 心尖保留 / 分流 / 可手术性 / LVAD / 负荷 PASP ——
+  check('右室应变条目已注册',
+    !!require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'))
+      .BRIEF_SECTIONS.reduce((a, s) => a.concat(s.items.map(i => i.id)), []).includes('rv-strain') ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'rv-strain' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '-12';
+  pgF.data.inputs[1].value = '-14';
+  pgF.data.inputs[2].value = '-19';
+  pgF.refresh();
+  check('RVFWS 三段平均 -15% 判轻度减低',
+    /RVFWS -15\.0%/.test(pgF.data.out) && /轻度减低/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('基底-心尖反向梯度被识别',
+    /反向梯度/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  pgF.data.inputs[4].value = '45';   // PASP
+  pgF.refresh();
+  check('RVFWS/PASP 比值 0.33 判临界',
+    /0\.33/.test(pgF.data.out) && /临界/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'rcm-strain' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '-8';
+  pgF.data.inputs[1].value = '-8';
+  pgF.data.inputs[2].value = '-16';
+  pgF.refresh();
+  check('RAR 1.00 → 心尖保留阳性',
+    /RAR 1\.00/.test(pgF.data.out) && /淀粉样变/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  pgF.data.inputs[0].value = '-16';
+  pgF.data.inputs[1].value = '-17';
+  pgF.refresh();
+  check('RAR 0.48 → 不支持心尖保留',
+    /不支持心尖保留/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'shd' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '6.0';
+  pgF.data.inputs[1].value = '3.0';
+  pgF.refresh();
+  check('Qp/Qs 2.0 → 大量分流',
+    /Qp\/Qs = 2\.00/.test(pgF.data.out) && /大量分流/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  pgF.data.inputs[0].value = '2.4';
+  pgF.refresh();
+  check('Qp/Qs 0.8 → 警惕艾森曼格',
+    /艾森曼格/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'pht-rev' });
+  pgF.onShow();
+  pgF.data.inputs[1].value = '9';
+  pgF.refresh();
+  check('PVR 9 WU → 禁忌关闭',
+    /不可逆/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  pgF.data.inputs[1].value = '6';
+  pgF.refresh();
+  check('PVR 6 WU → 灰区需复评',
+    /灰区/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'lvad' });
+  pgF.onShow();
+  pgF.data.inputs[0].value = '1.6';
+  pgF.data.inputs[1].value = '22';
+  pgF.data.inputs[2].value = '80';
+  pgF.data.inputs[3].value = '28';
+  pgF.data.inputs[4].value = '3';
+  pgF.refresh();
+  check('LVAD 出血道 SV 44.2 mL / CO 3.54',
+    /44\.2 mL/.test(pgF.data.out) && /3\.54/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('LVAD LVEDD 28 → 抽吸高危',
+    /抽吸高危/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('LVAD 主动脉瓣持续关闭 → 淤滞风险',
+    /持续关闭/.test(pgF.data.out) && /血栓/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  pgF.onLoad({ id: 'stress-echo' });
+  pgF.onShow();
+  check('负荷超声输入项 7 个（含两个 PASP）', pgF.data.inputs.length, 7, 0);
+  pgF.data.inputs[5].value = '30';
+  pgF.data.inputs[6].value = '62';
+  pgF.refresh();
+  check('PASP 30→62 判运动诱发肺高压',
+    /运动诱发肺高压/.test(pgF.data.out) ? 1 : 0, 1, 0);
 }
 
 console.log(`\n${'='.repeat(46)}`);
