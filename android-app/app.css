@@ -1368,3 +1368,78 @@ html, body {
   background: #fef2f2;
   color: #b91c1c;
 }
+
+/* ── 组名快速跳转（目录很长，横向滑动点一下锚到该组） ── */
+.fx-nav {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fx-nav__c {
+  flex: none;
+  padding: 5px 11px;
+  font-size: 11px;
+  color: var(--sub);
+  background: #f1f3f6;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.fx-nav__c:active,
+.fx-nav__c:hover {
+  color: #fff;
+  background: var(--brand);
+}
+
+.fx-group {
+  scroll-margin-top: 56px;
+}
+
+/* 文献直链（官方 / 免费 PDF，点开即下载） */
+.ref-dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.ref-dl__i {
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border: 1px solid #dbe6ff;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.ref-dl__i:hover {
+  background: #dbe6ff;
+}
+
+/* 「相关计算」胶囊：点了直接进对应计算器 */
+.chiprow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.chip {
+  padding: 4px 11px;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border: 1px solid #dbe6ff;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: #dbe6ff;
+}

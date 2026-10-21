@@ -200,6 +200,38 @@
   line-height: 1.5;
 }
 
+/* ── 组名快速跳转（目录很长，横向滑动定位） ── */
+.fx-nav {
+  width: 100%;
+  white-space: nowrap;
+  margin: 0 0 12rpx;
+  padding: 2rpx 0;
+}
+
+.fx-nav__i {
+  display: inline-flex;
+  gap: 12rpx;
+  padding: 2rpx 4rpx;
+}
+
+.fx-nav__c {
+  flex: none;
+  padding: 10rpx 22rpx;
+  font-size: 23rpx;
+  color: #4b5563;
+  background: #f1f3f6;
+  border-radius: 999rpx;
+}
+
+.fx-nav__c--on {
+  color: #fff;
+  background: #2563eb;
+}
+
+.fx-nav__c--tap {
+  background: #dbe6ff;
+}
+
 /* 文献直链胶囊：点一下复制链接（ASE 官方 PDF / 中文 PDF / 免费全文） */
 .ref-dl {
   display: flex;

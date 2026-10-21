@@ -86,6 +86,47 @@ function gradeMva(mva) {
 }
 
 /**
+ * 二尖瓣面积：PHT 法与连续性方程同屏对照（MS 判读页 / 公式集共用一套）
+ *
+ * 两法结果不一致时**不给平均值**——差异本身就是信息（节律、AR、钙化、图像质量），
+ * 所以这里只报差值与提示，让用户回到图像找原因。
+ *
+ * @param {number} phtMs    压力减半时间 PHT（ms），无则传 null
+ * @param {number} lvotD    LVOT 直径（cm）
+ * @param {number} lvotVti  LVOT VTI（cm）
+ * @param {number} mvVti    二尖瓣 VTI（cm）
+ * @returns {{pht?:number, phtText?:string, cont?:number, contText?:string,
+ *            sv?:number, diff?:number, diffText?:string, method:string}}
+ */
+function mvaBoth(phtMs, lvotD, lvotVti, mvVti) {
+  var ok = function (x) { return typeof x === 'number' && isFinite(x) && x > 0; };
+  var r = { method: '' };
+  var hasPht = ok(phtMs);
+  var hasCont = ok(lvotD) && ok(lvotVti) && ok(mvVti);
+
+  if (hasPht) {
+    r.pht = mvaPht(phtMs);
+    r.phtText = gradeMva(r.pht).text;
+  }
+  if (hasCont) {
+    r.sv = strokeVolume(lvotD, lvotVti);
+    r.cont = mvaContinuity(r.sv, mvVti);
+    r.contText = gradeMva(r.cont).text;
+  }
+  if (hasPht && hasCont) {
+    r.diff = Math.abs(r.pht - r.cont);
+    r.method = 'both';
+    // 两法差 >0.3 cm² 已超出测量误差范围，先怀疑前提（节律 / AR / 钙化）而不是取平均
+    r.diffText = r.diff > 0.3
+      ? '两法差 ' + r.diff.toFixed(2) + ' cm²（>0.3，超出测量误差）→ 回到图像找原因：节律是否窦性、有无主动脉瓣反流、瓣叶是否重度钙化，不要取平均'
+      : '两法差 ' + r.diff.toFixed(2) + ' cm²（≤0.3，互相印证）';
+  } else {
+    r.method = hasPht ? 'pht' : (hasCont ? 'cont' : '');
+  }
+  return r;
+}
+
+/**
  * PISA 法二尖瓣反流：流量、EROA、RVol
  * radius cm；aliasVa cm/s；regV m/s（内部转 cm/s）；regVti cm
  */
@@ -1117,19 +1158,27 @@ function svrResistance(map, rap, co, bsa) {
  * @param {number} bsa m²
  * @param {number} pos 1=主动脉位 2=二尖瓣位
  */
-function eoaPpm(eoa, bsa, pos) {
+function eoaPpm(eoa, bsa, pos, bmi) {
   if (!(eoa > 0) || !(bsa > 0)) return {};
   const idx = eoa / bsa;
   const av = pos !== 2;
-  const r = { eoai: idx, pos: av ? 'av' : 'mv' };
-  if (av) {
-    if (idx < 0.85) { r.level = 2; r.text = '重度 PPM（主动脉位 EOAi <0.85）'; }
-    else if (idx <= 1.0) { r.level = 1; r.text = '中度 PPM（主动脉位 0.85–1.0）'; }
-    else { r.level = 0; r.text = '无明显 PPM（主动脉位 >1.0）'; }
+  // ★ R17（ASE 2024 人工瓣心血管影像指南）Table 7：BMI ≥30 kg/m² 时切点下调
+  const obese = (typeof bmi === 'number' && isFinite(bmi) && bmi >= 30);
+  const cut = av
+    ? (obese ? { sev: 0.55, mod: 0.70 } : { sev: 0.65, mod: 0.85 })
+    : (obese ? { sev: 0.75, mod: 1.00 } : { sev: 0.90, mod: 1.20 });
+  const site = av ? '主动脉位' : '二尖瓣位';
+  const r = { eoai: idx, pos: av ? 'av' : 'mv', obese: obese };
+  if (idx <= cut.sev) {
+    r.level = 2;
+    r.text = '重度 PPM（' + site + ' EOAi ≤' + cut.sev + (obese ? '，BMI≥30 口径' : '') + '）';
+  } else if (idx <= cut.mod) {
+    r.level = 1;
+    r.text = '中度 PPM（' + site + ' ' + cut.sev + '–' + cut.mod +
+      (obese ? '，BMI≥30 口径' : '') + '）';
   } else {
-    if (idx < 0.9) { r.level = 2; r.text = '重度 PPM（二尖瓣位 EOAi <0.9）'; }
-    else if (idx <= 1.2) { r.level = 1; r.text = '中度 PPM（二尖瓣位 0.9–1.2）'; }
-    else { r.level = 0; r.text = '无明显 PPM（二尖瓣位 >1.2）'; }
+    r.level = 0;
+    r.text = '无明显 PPM（' + site + ' >' + cut.mod + (obese ? '，BMI≥30 口径' : '') + '）';
   }
   return r;
 }
@@ -2099,6 +2148,7 @@ module.exports = {
   gradeAva,
   mvaPht,
   mvaContinuity,
+  mvaBoth,
   gradeMva,
   pisa,
   gradeEroa,
