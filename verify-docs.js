@@ -312,11 +312,11 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 7 个计算组 + 瓣膜 + 14 组评估 + 3 组外链',
-      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器|瓣膜解剖教学',
+    check('公式集分组 = 7 个计算组 + 瓣膜 + 14 组评估 + 2 组外链',
+      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 132 条（62 计算 − 5 瓣膜计算器 + 10 瓣膜 + 47 评估 + 18 外链）', d.items === 132, d.items);
-    check('外链 <a> 条目 18 条（切面 8 + 瓣膜教学 10）', d.links === 18, d.links);
+    check('条目 122 条（62 计算 − 5 瓣膜计算器 + 10 瓣膜 + 47 评估 + 8 外链）', d.items === 122, d.items);
+    check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
     check('专辑二级视图容器存在', d.albumView, true);
@@ -864,18 +864,18 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 400));
   check('page-valveana 可见',
     (await c.evalJs('!document.getElementById("page-valveana").hidden')) === true);
-  check('ValveSvg 视图数 = 7',
-    (await c.evalJs('window.ValveSvg.VALVE_VIEWS.length')) === 7);
+  check('ValveSvg 视图数 = 8',
+    (await c.evalJs('window.ValveSvg.VALVE_VIEWS.length')) === 8);
   const vaFilled = await c.evalJs(
     '[...document.querySelectorAll(".wallsvg-box[id^=va-]")]' +
     '.filter(function(e){return e.querySelector("svg");}).length');
-  check('7 张示意图全部已渲染 SVG', vaFilled === 7, vaFilled);
+  check('8 张示意图全部已渲染 SVG', vaFilled === 8, vaFilled);
   check('示意图含可点击分区标记',
     (await c.evalJs('document.querySelectorAll("#page-valveana g[data-part]").length')) > 0);
   check('色块按钮存在',
     (await c.evalJs('document.querySelectorAll("#page-valveana [data-vap]").length')) > 0);
-  check('教学资源条目 = 10',
-    (await c.evalJs('document.querySelectorAll("#page-valveana .va-lesson").length')) === 10);
+  check('瓣膜解剖页不再单列教学资源（与切面学习/模拟器重复）',
+    (await c.evalJs('document.querySelectorAll("#page-valveana .va-lesson").length')) === 0);
 
   console.log('\n【四】控制台');
   const errs = c.logs.filter((l) => l.indexOf('EXCEPTION') === 0 ||
