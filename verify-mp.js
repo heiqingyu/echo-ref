@@ -402,7 +402,7 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
   check('calculators.wxss 含 .extlink 样式',
     calcWxss.indexOf('.extlink {') !== -1 ? 1 : 0, 1, 0);
 
-  // 参考文献区（默认折叠：40 条平铺会把页面拉得极长）
+  // 参考文献区（默认折叠：49 条平铺会把页面拉得极长）
   check('公式集页含参考文献区（折叠头）',
     calcWxml.indexOf('refs-hd') !== -1 && calcWxml.indexOf('参考文献') !== -1 ? 1 : 0, 1, 0);
   check('参考文献默认折叠（refsOpen 初值 false）',
@@ -417,10 +417,10 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 48 条', EXD.REFS.length, 48, 0);
+  check('参考文献 49 条', EXD.REFS.length, 49, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
-  check('文献编号连续 R1–R48',
-    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37,R38,R39,R40,R41,R42,R43,R44,R45,R46,R47,R48' ? 1 : 0, 1, 0);
+  check('文献编号连续 R1–R49',
+    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37,R38,R39,R40,R41,R42,R43,R44,R45,R46,R47,R48,R49' ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
   // 文献直链：只放「点开就能看」的官方/免费 PDF，需要登录的一律不挂
@@ -1153,6 +1153,17 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('运动员心脏：13–16 mm 灰区声明', athTxt.indexOf('13–16 mm') !== -1 ? 1 : 0, 1, 0);
   check('运动员心脏：超声正常不能排除离子通道病',
     athTxt.indexOf('离子通道病') !== -1 ? 1 : 0, 1, 0);
+
+  // 感染性心内膜炎：Duke-ISCVID 2023 标准（R49，v1.3.5 新增）
+  const ieTxt = briefText('ie');
+  check('IE：Duke-ISCVID 2023 主要标准 + 「新发」口径',
+    ieTxt.indexOf('Duke-ISCVID 2023') !== -1 && ieTxt.indexOf('新发的瓣膜反流') !== -1 ? 1 : 0, 1, 0);
+  check('IE：PET/CT 植入 >3 个月才算主要标准',
+    ieTxt.indexOf('>3 个月才算') !== -1 ? 1 : 0, 1, 0);
+  check('IE：确诊 / 可能 / 排除三档齐全',
+    ['确诊 IE', '可能 IE', '排除 IE'].every(function (k) { return ieTxt.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);
+  check('IE：术中直视为 2023 新增主要标准',
+    ieTxt.indexOf('术中直视（2023 新增）') !== -1 ? 1 : 0, 1, 0);
 
   // 性别按 profile 预填（避免每次手点）
   gData23.profile.sex = 'female';

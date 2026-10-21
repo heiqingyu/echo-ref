@@ -307,7 +307,7 @@ function check(name, ok, detail) {
     check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
-    check('参考文献 48 条', d.refs === 48, d.refs);
+    check('参考文献 49 条', d.refs === 49, d.refs);
     check('延展阅读卡片在公式集页', d.ext, true);
   }
 
@@ -643,7 +643,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 48 条', /48/.test(ri.cnt), refsInit);
+  check('折叠头显示 49 条', /49/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -661,7 +661,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 48 条', ro.hidden === false && ro.n === 48 && ro.h > 0, refsOpen);
+  check('点击后展开全部 49 条', ro.hidden === false && ro.n === 49 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 

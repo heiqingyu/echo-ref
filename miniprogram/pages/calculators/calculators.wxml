@@ -20,14 +20,12 @@
     没有匹配「{{kw}}」的条目
   </view>
 
-  <!-- 组名快速跳转：页面很长，横向滑动点一下直接定位到该组 -->
-  <scroll-view wx:if="{{navGroups.length}}" class="fx-nav" scroll-x enhanced show-scrollbar="{{false}}">
-    <view class="fx-nav__i">
-      <view wx:for="{{navGroups}}" wx:key="id" wx:for-item="ng"
-            class="fx-nav__c {{ng.id === curGroup ? 'fx-nav__c--on' : ''}}"
-            data-id="{{ng.id}}" hover-class="fx-nav__c--tap" bindtap="onJumpGroup">{{ng.title}}</view>
-    </view>
-  </scroll-view>
+  <!-- 组名快速跳转：平铺全部组名一眼看全（目录很长，点一下直接定位到该组） -->
+  <view wx:if="{{navGroups.length}}" class="fx-nav">
+    <view wx:for="{{navGroups}}" wx:key="id" wx:for-item="ng"
+          class="fx-nav__c {{ng.id === curGroup ? 'fx-nav__c--on' : ''}}"
+          data-id="{{ng.id}}" hover-class="fx-nav__c--tap" bindtap="onJumpGroup">{{ng.title}}</view>
+  </view>
 
   <block wx:for="{{sections}}" wx:key="id" wx:for-item="sec">
     <view class="fx-group" id="g-{{sec.id}}">{{sec.title}}</view>

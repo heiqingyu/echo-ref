@@ -200,18 +200,14 @@
   line-height: 1.5;
 }
 
-/* ── 组名快速跳转（目录很长，横向滑动定位） ── */
+/* ── 组名快速跳转（平铺全部组名，不再横向滑动） ── */
 .fx-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
   width: 100%;
-  white-space: nowrap;
   margin: 18rpx 0 12rpx;
   padding: 4rpx 0;
-}
-
-.fx-nav__i {
-  display: inline-flex;
-  gap: 12rpx;
-  padding: 2rpx 4rpx;
 }
 
 .fx-nav__c {

@@ -1169,14 +1169,13 @@ html, body {
   margin-top: 6px;
 }
 
-/* ── 组名快速跳转（目录很长，横向滑动点一下锚到该组） ── */
+/* ── 组名快速跳转（目录很长，平铺全部组名一眼看全，不再横向拖动） ── */
 .fx-nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow-x: auto;
   margin: 14px 0 6px;
   padding: 2px;
-  -webkit-overflow-scrolling: touch;
 }
 
 .fx-nav__c {
