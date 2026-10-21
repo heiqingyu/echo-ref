@@ -2400,6 +2400,107 @@ const BRIEF_SECTIONS = [
     ],
   },
   {
+    id: 'contrast',
+    title: '造影与特殊检查',
+    items: [
+      {
+        id: 'contrast-echo',
+        title: '超声造影（CEUS）规范与判读',
+        sub: '适应证 · MI 与机器设置 · 制剂剂量 · EBD 手法 · 判读 · 安全性',
+        source: ['R50', 'R51'],
+        blocks: [
+          { kind: 'h', text: '一、什么时候该做造影' },
+          { kind: 'text', text: '造影不是「图像不好就做」这么简单。FDA 批准的**心脏适应证只有两个**：**LVO（左室腔显影）**与 **EBD（心内膜边界显示）**，用在经胸图像技术欠佳时。心肌灌注（MCE）至今**未获 FDA 批准**用于心脏诊断，做了也不能写成「诊断冠心病」。' },
+          {
+            kind: 'table',
+            heads: ['场景', '造影能解决什么'],
+            rows: [
+              ['经胸图像欠佳', '「图像欠佳」有明确定义：**三个心尖切面中任一有 2 个以上连续节段显示不清**（R51）——满足这条才值得做造影'],
+              ['急诊胸痛、拟诊 ACS', '节段运动正常者 24 小时不良事件率仅 **0.4%**；节段运动异常者早期事件风险高 **6 倍**。造影把「有没有节段异常」这个关键问题答清楚'],
+              ['心尖部占位', '心尖血栓 vs 假性瘤（后者与心肌连续、有颈、有血流灌注）、心尖型 HCM vs 心肌致密化不全'],
+              ['心腔内团块性质', '血栓 / 黏液瘤 / 赘生物——造影显示无灌注（血栓）或富血流（血管性肿物）'],
+              ['右向左分流', '**振荡盐水**（不是造影剂）做右心造影，配合 Valsalva 查 PFO / ASD'],
+              ['多普勒信号不足', '增强多普勒信号（Definity / Optison 适应证含 Doppler），瓣膜狭窄反流定量时血流不佳可用'],
+            ],
+          },
+          { kind: 'note', text: '**造影最实用的场景是心尖**——心尖段最容易显示不清，又最容易长血栓、出现假性瘤和心尖型 HCM，是「造不造影差别最大」的地方。', warn: true },
+
+          { kind: 'h', text: '二、机器设置：MI 决定成败' },
+          {
+            kind: 'table',
+            heads: ['MI 级别', '数值', '用途与代价'],
+            rows: [
+              ['极低 MI（very low）', '< 0.2', '微泡信号最强、组织抑制最干净，**实时极低 MI 是首选**；但只有部分厂商有这套软件'],
+              ['低 MI（low）', '< 0.3', '低 MI 谐波成像，全厂商可用；**对比度偏低、心尖部易出现漩涡（swirling）、不能做灌注**'],
+              ['中等 MI（intermediate）', '0.3 – 0.5', '造影专用，不做普通诊断'],
+              ['高 MI（high）', '> 0.5', '**会打碎微泡**——只在负荷灌注时用 3–10 帧的「flash」来清除心肌内对比剂，测再充盈速度'],
+            ],
+          },
+          { kind: 'note', text: '**MI 调太高，微泡会当场被超声能量打碎**，图像反而变差。灌注成像时用间歇触发（flash）做「推注—清除—再充盈」三步。', warn: true },
+
+          { kind: 'h', text: '三、制剂与剂量' },
+          {
+            kind: 'table',
+            heads: ['制剂', '微泡直径 μm', '气体 / 外壳', '适应证'],
+            rows: [
+              ['Levovist', '2.0–3.0（2.0–8.0）', '空气 / 脂质', 'LVO + 多普勒'],
+              ['Optison', '4.7（1.0–10.0）', '全氟丙烷 / 人血白蛋白', 'LVO + EBD + 多普勒'],
+              ['Definity', '1.5（1.0–10.0）', '全氟丙烷 / 磷脂', 'LVO + EBD + 多普勒'],
+              ['SonoVue', '2.5（1.0–10.0）', '六氟化硫 / 磷脂', 'LVO + 多普勒（欧洲与国内常用）'],
+              ['CARDIOsphere', '4.0（3.0–5.0）', '氮气 / 可降解聚合物双层', 'MCE（灌注）'],
+              ['Imagify', '2.0', '十氟丁烷 / 合成聚合物', 'LVO + MCE'],
+            ],
+          },
+          { kind: 'text', text: '**团注剂量（R51 技师操作指南）**：Definity 一支用 8.5 mL 生理盐水稀释后取 **0.5 mL**；或 Optison 原液 **0.3 mL**。两种都用后接约 3 mL 生理盐水、10 秒推完冲管。' },
+          { kind: 'note', text: '**团注会造成左室腔严重衰减**（图像发白），需要时间消散。所以做 LVO 更推荐**连续灌注**（3–5 mL、5–10 秒推完）——图像均匀稳定，不受衰减干扰。', warn: true },
+
+          { kind: 'h', text: '四、EBD 增敏三招（振荡盐水）' },
+          {
+            kind: 'table',
+            heads: ['手法', '具体做法', '原理'],
+            rows: [
+              ['加血 10%', '10% 血 + 10% 空气 + 80% 生理盐水', '产生更小、更集中的微泡'],
+              ['咳嗽 / Valsalva / 腹压', '在**右房完全显影时**做', '短暂升高右房压，制造右房→左房压力梯度'],
+              ['股静脉注射', '改从股静脉注入', '下腔静脉血流冲向房间隔；上腔静脉血流冲向三尖瓣'],
+            ],
+          },
+          { kind: 'text', text: '基础配方：**8 mL 生理盐水加 0.5 mL 空气**，用两个注射器通过三通反复快速对推起泡。**右向左分流阳性者应在右房显影时**做 Valsalva 释放或咳嗽，晚几拍出现气泡是正常的；**若结果阴性但临床仍怀疑，要用血-盐水-空气混合液或改进时机重做一次**——一次阴性不等于真的没有分流。' },
+          { kind: 'note', text: '**TEE 做振荡盐水**：采集要在盐水进入右房**之前**开始，并在对比剂出现后**至少连续记录 10 个心动周期**；同时直接观察并记录卵圆窝与原发隔的部位、大小（这是 PFO 解剖分型，介入前必需）。', warn: true },
+
+          { kind: 'h', text: '五、判读要点' },
+          {
+            kind: 'table',
+            heads: ['看什么', '怎么看'],
+            rows: [
+              ['心内膜边界（EBD）', '造影后心内膜轮廓清晰，**心尖漩涡（swirling）消失**即说明心尖段被看清了'],
+              ['心尖血栓 vs 假性瘤', '**血栓：无灌注**（对比剂不进入）；**假性瘤：颈部有血流灌注、与心肌连续、彩色可见血流进出**'],
+              ['心尖型 HCM vs 心肌致密化不全', '前者心肌有灌注、房室沟沟槽内仍有灌注；后者心肌致密无灌注、沟槽内正常'],
+              ['心肌灌注', '静息时正常再充盈应在 **4 秒内**完成，负荷时应在 **2 秒内**完成'],
+              ['右向左分流', '微泡进入左心房的**时相**是关键：静息即出现提示 ASD / PFO 持续分流；Valsalva 释放后出现提示 PFO；数个心动周期后才出现提示肺内分流'],
+            ],
+          },
+          { kind: 'note', text: '**心尖漩涡**（apical swirling）是低 MI 谐波成像的典型伪影：对比剂在左室心尖部翻卷，显得心尖显影不清。它不是病变——**换成实时极低 MI 技术可以避免**，看到漩涡不要误判成心尖血栓。', warn: true },
+
+          { kind: 'h', text: '六、安全性：比率低，但要有准备' },
+          {
+            kind: 'table',
+            heads: ['项目', '数据 / 要求'],
+            rows: [
+              ['危及生命的过敏反应', '约 **1/10,000**；多为补体介导的类过敏（anaphylactoid），非 IgE 介导'],
+              ['死亡率', '6 年 **200 万**剂量的上市后监测中，死亡率约 **1/500,000**'],
+              ['绝对禁忌', '**右向左分流**（除非本次目的就是做 EBD）；**perflutren 过敏**；**动脉内注射**'],
+              ['需监护 30 分钟', '**肺动脉高压**（程度不限）或**心肺状态不稳定**者：给药后监测生命体征、心电图与血氧 30 分钟'],
+              ['相对注意', '严重心律失常、心衰、肝衰；既往超声造影剂过敏史'],
+            ],
+          },
+          { kind: 'text', text: '**科里必须常备**：肾上腺素、激素、抗组胺药与抢救车；R51 明确要求**急救包每月检查一次有效期**。造影全程应有能处理严重过敏反应经验的医师在场或可即时呼叫。' },
+          { kind: 'note', text: '**造影后要不要观察、要观察多久，取决于基础病而不是造影剂本身**：肺动脉高压与不稳定心肺状态者才需要 30 分钟监护；其余患者不常规要求监护——但**过敏反应多发生在给药后即刻**，注射时床旁不能离人。', warn: true },
+        ],
+        note: '造影的完整链条是「**为什么做（适应证）→ MI 调多少（机器）→ 怎么打（剂量与手法）→ 看到什么（判读）→ 出事怎么办（安全）**」。技师环节最容易翻车的是两点：**MI 调太高把微泡打碎**，以及**右向左分流阳性时Valsalva 时机没掐准**（晚了就只能看到肺内分流，误判为没有 PFO）。',
+      },
+    ],
+  },
+  {
     id: 'report',
     title: '报告与质控',
     items: [
@@ -3060,6 +3161,27 @@ const REFS = [
     use: 'ie 判读页的诊断标准表：超声 / 心脏 CT / PET/CT / 术中直视各自算哪一级',
     dl: [
       { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10681650/pdf/ciad271.pdf' },
+    ],
+  },
+  {
+    id: 'R50',
+    zh: '超声造影剂临床应用 ASE 共识声明',
+    en: 'Mulvagh SL, Otto CM, Bierman SM, et al. ASE Consensus Statement on Clinical Application of Ultrasonic Contrast Agents in Echocardiography',
+    where: 'J Am Soc Echocardiogr, 2008, 20(11): 1321–1334',
+    use: 'contrast-echo 判读页：制剂与适应证（LVO / EBD）、禁忌证、30 分钟监护与安全性数据',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/ASE-Consensus-Statement-on-Clinical-App-of-Ultrasonic-Contrast-Agents-in-Echo.pdf' },
+    ],
+  },
+  {
+    id: 'R51',
+    zh: '心脏超声技师造影检查操作指南（2014 聚焦更新）',
+    en: 'Porter TR, Abdelmalek SA, Michell JR, et al. Guidelines for the Cardiac Sonographer in the Performance of Contrast Echocardiography: A Focused Update from the American Society of Echocardiography',
+    where: 'J Am Soc Echocardiogr, 2014, 27(7): 797–810',
+    use: 'contrast-echo 判读页：MI 分级与机器设置、团注剂量、EBD 增敏三招、TEE 采集 10 个心动周期、图像欠佳的判定标准',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2014_Contrast-Sonography.pdf' },
+      { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/Constrast-Performance-Guidelines-for-Cardiac-Sonographers_Chinese.pdf' },
     ],
   },
 ];
