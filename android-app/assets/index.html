@@ -47,6 +47,24 @@ html, body {
   overscroll-behavior-y: none;
 }
 
+/* ────────── 「关于本页」说明块（只在公式集页末尾出现一次） ────────── */
+
+.pubnote {
+  margin: 20px 0 8px;
+  padding: 14px 16px;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--sub);
+  background: #fbfcfe;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.pubnote b {
+  color: var(--text);
+  font-weight: 600;
+}
+
 /* ────────── 顶栏 ────────── */
 .appbar {
   position: fixed;
@@ -1209,6 +1227,46 @@ html, body {
   scroll-margin-top: 56px;
 }
 
+/* 条目内小节导航（长条目定位用） */
+.fx-nav--sec {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border: 1px solid #e8ecf2;
+  border-radius: 10px;
+}
+
+.fx-nav--sec .fx-nav__c {
+  font-size: 11.5px;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border: 1px solid #dbe6ff;
+}
+
+.fx-nav--sec .fx-nav__c:hover,
+.fx-nav--sec .fx-nav__c:active {
+  color: #fff;
+  background: var(--brand);
+}
+
+/* 小节标题锚点：点击跳转时留出顶栏高度 */
+.fx-h {
+  scroll-margin-top: 56px;
+}
+
+/* 行内加粗（正文里的 **重点**） */
+.fx-text b,
+.fx-note b,
+.fx-formula b,
+.fx-h b {
+  font-weight: 700;
+  color: #111827;
+}
+
+.fx-note b {
+  color: #78350f;
+}
+
 /* 文献直链（官方 / 免费 PDF，点开即下载） */
 .ref-dl {
   display: flex;
@@ -1273,19 +1331,6 @@ html, body {
 
 <!-- ══════════ 内容区 ══════════ -->
 <main class="main" id="main">
-
-  <div class="pubnote">
-    <b>关于本页</b><br>
-    本页为个人整理的心脏超声（TTE）参考速查工具，四个页签：<b>EF·参考值</b>（M 型 / 二维 EF 计算、
-    成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>节段划分</b>（ASE 17 节段模型与冠脉供血）、
-    <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（57 个计算器 + 45 条评估清单，按 21 个主题分组，
-    含二尖瓣狭窄 PMBV 适合度流程、人工瓣、超声造影、危急值清单与报告标准化）。
-    公式集目录顶部有组名跳转条，点一下直接定位到对应分组；切面学习视频为第三方站点的文字链接，
-    本工具不加载其任何内容。「切面指南」已并入参考文献（53 条，其中 42 条附 ASE 官方 / 免费 PDF 直链，
-    点开即可下载；各详情页底部标注该条目使用的文献编号）。
-    <b>本页内容为自行整理，非任何学会或机构的官方产品</b>，仅供医学教育与速查使用；
-    参考值需结合患者体型、血流状态及测量方法，<b>不能单凭一个指标作出诊断</b>。
-  </div>
 
   <!-- ───── Tab1 EF·参考值 ───── -->
   <section class="page" id="page-index">
@@ -1426,7 +1471,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.3.9</div>
+    <div class="verline">心脏超声参考值 · v1.3.10</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1482,11 +1527,25 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.3.9</div>
+      <div class="verline">心脏超声参考值 · v1.3.10</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
+
+      <div class="pubnote">
+    <b>关于本页</b><br>
+    本页为个人整理的心脏超声（TTE）参考速查工具，四个页签：<b>EF·参考值</b>（M 型 / 二维 EF 计算、
+    成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>节段划分</b>（ASE 17 节段模型与冠脉供血）、
+    <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（57 个计算器 + 45 条评估清单，按 21 个主题分组，
+    含二尖瓣狭窄 PMBV 适合度流程、人工瓣、超声造影、危急值清单与报告标准化）。
+    公式集目录顶部有组名跳转条，点一下直接定位到对应分组；长条目详情页顶部另有小节导航。
+    切面学习视频为第三方站点的文字链接，本工具不加载其任何内容。
+    「切面指南」已并入参考文献（53 条，其中 42 条附 ASE 官方 / 免费 PDF 直链，
+    点开即可下载；各详情页底部标注该条目使用的文献编号）。
+    <b>本页内容为自行整理，非任何学会或机构的官方产品</b>，仅供医学教育与速查使用；
+    参考值需结合患者体型、血流状态及测量方法，<b>不能单凭一个指标作出诊断</b>。
+  </div>
     </div>
 
     <!-- 视图二：单个公式详情 -->
@@ -5479,6 +5538,63 @@ function utf8ToBase64(str) {
 })();
 
 
+/* ── 引擎：inline-md.js（由小程序源码自动抽取，勿手改）── */
+(function () {
+/**
+ * 行内标记解析（**加粗**）—— 小程序与网页/APK 共用
+ *
+ * 背景：正文数据（extra-data.js / calc-groups.js）里大量使用 Markdown 风格的
+ * `**加粗**` 来强调关键结论。以前两端都直接原样输出，于是屏幕上出现
+ * 字面量 `**`，非常刺眼（用户 2026-10-21 反馈）。
+ *
+ * 做法：把一段文本切成若干片段，每段带一个 b 标记（是否加粗）。
+ *   - 小程序：<text class="fx-b">…</text>  逐段渲染
+ *   - 网页：  段落拼成 <b>…</b>
+ *
+ * 只处理 `**成对加粗**`，不处理 *斜体*（正文里 `*` 多是数学乘号或
+ * 「☆」类符号，处理容易误伤）。
+ *
+ * 单个未闭合的 `**` 会被当作普通文字保留，不会吞掉后面的内容。
+ */
+function parseInline(text) {
+  const s = (text === null || text === undefined) ? '' : String(text);
+  if (s.indexOf('**') === -1) return [{ t: s, b: false }];
+
+  const out = [];
+  let rest = s;
+  while (rest.length) {
+    const i = rest.indexOf('**');
+    if (i === -1) { out.push({ t: rest, b: false }); break; }
+    if (i > 0) out.push({ t: rest.slice(0, i), b: false });
+    const j = rest.indexOf('**', i + 2);
+    if (j === -1) {
+      // 落单的 ** 当普通文字
+      out.push({ t: rest.slice(i), b: false });
+      break;
+    }
+    out.push({ t: rest.slice(i + 2, j), b: true });
+    rest = rest.slice(j + 2);
+  }
+  return out.length ? out : [{ t: '', b: false }];
+}
+
+/**
+ * 网页端用：把文本转成 HTML（先转义，再把加粗段包成 <b>）
+ * 依赖调用方提供的 esc，避免本文件重复实现转义规则
+ */
+function inlineHtml(text, esc) {
+  return parseInline(text).map(function (seg) {
+    const t = esc(seg.t);
+    return seg.b ? '<b>' + t + '</b>' : t;
+  }).join('');
+}
+
+  window.InlineMd = {
+    parseInline: parseInline,
+    inlineHtml: inlineHtml,
+  };
+})();
+
 /* ── 引擎：extra-data.js（由小程序源码自动抽取，勿手改）── */
 (function () {
 /**
@@ -9101,6 +9217,106 @@ var CALC_LINKS = {
 
   let currentTab = 'index';
 
+  /**
+   * ── 视图栈（history） ──
+   *
+   * 用户 2026-10-21 反馈：「在公式集里点击返回就直接退出页面 / APP，
+   * 不是返回上一页」。
+   *
+   * 根因：本页是单页应用，切换视图只改 hidden 属性，从不写 history，
+   * 于是 WebView 的 canGoBack() 恒为 false —— APK 的返回键
+   * （MainActivity.onKeyDown）无处可退，只能退出 APP；
+   * 浏览器的后退键同理，会直接离开站点。
+   *
+   * 做法：用 location.hash 记录当前视图（进入详情时写一次），
+   * 返回时 history.back()，再由 hashchange / popstate 把界面还原。
+   *
+   * ★ 为什么用 hash 而不是 history.pushState：
+   *   APK 里页面是 file:///android_asset/index.html，file:// 是 opaque origin，
+   *   pushState 会抛 SecurityError（已 try/catch 兜底，但那样就没历史了）。
+   *   改 hash 在 file:// 下照常创建历史条目，WebView.canGoBack() 会变 true，
+   *   APK 返回键就能正确回退。
+   *
+   * ★ hash 前缀用 "/"，与目录页的组名锚点（#g-xxx）不冲突。
+   */
+  let viewStack = [];     // 已进入的子视图栈
+  let lastHash = null;    // 已处理过的 hash（用于去重 + 抑制自己写的变更）
+
+  /** 视图状态 → hash */
+  function viewHash(v) {
+    if (v.type === 'calc') return '#/calc/' + encodeURIComponent(v.id);
+    if (v.type === 'album') return '#/album/' + encodeURIComponent(v.sec) + '/' + encodeURIComponent(v.id);
+    return '#/calc';
+  }
+
+  /** hash → 视图状态（不是本应用的视图 hash 就返回 null） */
+  function parseHash() {
+    const h = location.hash || '';
+    if (h.indexOf('#/') !== 0) return null;
+    const parts = h.slice(2).split('/');
+    if (parts[0] === 'calc' && parts[1]) {
+      return { type: 'calc', id: decodeURIComponent(parts[1]) };
+    }
+    if (parts[0] === 'album' && parts[1] && parts[2]) {
+      return { type: 'album', sec: decodeURIComponent(parts[1]), id: decodeURIComponent(parts[2]) };
+    }
+    return { type: 'calcIndex' };
+  }
+
+  /**
+   * 进入子视图：写一次 hash，产生一条历史条目
+   * 先把 lastHash 记成新值，随后到来的 hashchange 因「值没变」而被跳过
+   */
+  function pushView(v) {
+    const h = viewHash(v);
+    if ((location.hash || '') === h) return;   // 同一视图，不重复压栈
+    viewStack.push(v);
+    lastHash = h;
+    location.hash = h;
+  }
+
+  /**
+   * 退出子视图
+   *
+   * 两件事同时做：
+   *   1) 立刻还原界面（用户点了返回按钮就该马上变，不能等异步的 hashchange）
+   *   2) history.back() 退掉那条历史条目，让 APK / 浏览器返回键也能退
+   * 随后到来的 popstate / hashchange 会再还原一次同样的界面（幂等，无副作用）
+   */
+  function popView() {
+    restoreCalcIndex();
+    if (viewStack.length) history.back();
+  }
+
+  /** 按视图状态还原界面 */
+  function restoreView(v) {
+    if (!v) v = { type: 'calcIndex' };
+    if (v.type === 'calc') {
+      switchTab('calc');
+      openCalcGroup(v.id, true);
+    } else if (v.type === 'album') {
+      switchTab('calc');
+      openAlbum(v.sec, v.id, true);
+    } else {
+      restoreCalcIndex();
+    }
+  }
+
+  /**
+   * 导航事件（popstate 与 hashchange 都会触发，用 lastHash 去重）
+   * file:// 下部分 WebView 只派发其中一个，两个都监听更稳
+   */
+  function onNavEvent() {
+    const h = location.hash || '';
+    if (h === lastHash) return;    // 已处理过（popstate + hashchange 双触发）
+    lastHash = h;
+    if (viewStack.length) viewStack.pop();
+    restoreView(parseHash());
+  }
+
+  window.addEventListener('hashchange', onNavEvent);
+  window.addEventListener('popstate', onNavEvent);
+
   function switchTab(name) {
     if (!TAB_TITLE[name]) return;
     currentTab = name;
@@ -9115,7 +9331,9 @@ var CALC_LINKS = {
 
     // 切页时刷新数据
     if (name === 'peds') renderPeds();
-    if (name === 'calc') { closeCalcGroup(); renderCalc(); }
+    // 切到公式集页时重置为目录视图（直接还原界面，不动 history：
+    // 切页签不是「往上一层」，不该触发返回）
+    if (name === 'calc') { restoreCalcIndex(); renderCalc(); }
     if (name === 'index') renderIndex();
 
     window.scrollTo(0, 0);
@@ -9783,13 +10001,27 @@ var CALC_LINKS = {
       inner + '</button>';
   }
 
-  /** 评估类内容块 → HTML（与小程序 formula 页渲染一致） */
+  /**
+   * 评估类内容块 → HTML（与小程序 formula 页渲染一致）
+   *
+   * ★ 正文里的 **加粗** 要转成 <b>，否则屏幕上出现字面量 ** （用户 2026-10-21 反馈）。
+   *   解析器 InlineMd 与小程序共用同一份（miniprogram/utils/inline-md.js）。
+   * ★ 返回 { html, toc }：toc 是小节标题清单，长条目用它做顶部导航。
+   */
   function blocksHtml(blocks) {
     let h = '';
+    const toc = [];
+    let secIdx = -1;
     (blocks || []).forEach(function (b) {
-      if (b.kind === 'h') { h += '<div class="fx-h">' + esc(b.text) + '</div>'; return; }
+      if (b.kind === 'h') {
+        secIdx += 1;
+        const id = 'sec-' + secIdx;
+        toc.push({ id: id, t: String(b.text || '').replace(/\*\*/g, '') });
+        h += '<div class="fx-h" id="' + id + '">' + mdInline(b.text) + '</div>';
+        return;
+      }
       if (b.kind === 'note') {
-        h += '<div class="fx-note">' + esc(b.text) + '</div>';
+        h += '<div class="fx-note">' + mdInline(b.text) + '</div>';
         if (b.links && b.links.length) {
           h += '<div class="chiprow">';
           b.links.forEach(function (id) {
@@ -9801,7 +10033,7 @@ var CALC_LINKS = {
         }
         return;
       }
-      if (b.kind === 'formula') { h += '<div class="fx-formula">' + esc(b.text) + '</div>'; return; }
+      if (b.kind === 'formula') { h += '<div class="fx-formula">' + mdInline(b.text) + '</div>'; return; }
       if (b.kind === 'table') {
         h += '<div class="fx-tbl fx-tbl--' + b.heads.length + '">';
         h += '<div class="fx-tbl__r fx-tbl__r--h">';
@@ -9815,9 +10047,22 @@ var CALC_LINKS = {
         h += '</div>';
         return;
       }
-      h += '<div class="fx-text">' + esc(b.text) + '</div>';
+      h += '<div class="fx-text">' + mdInline(b.text) + '</div>';
     });
-    return h;
+    return { html: h, toc: toc };
+  }
+
+  /**
+   * 条目内小节导航（长条目定位用）
+   * 只在 2 个以上小节时才出，避免短条目多一行无用胶囊。
+   */
+  function tocHtml(toc) {
+    if (!toc || toc.length < 2) return '';
+    let h = '<div class="fx-nav fx-nav--sec">';
+    toc.forEach(function (s) {
+      h += '<a class="fx-nav__c" href="#' + s.id + '" data-sec="' + s.id + '">' + esc(s.t) + '</a>';
+    });
+    return h + '</div>';
   }
 
   /** 详情页底部的本条目引用 */
@@ -10122,7 +10367,7 @@ var CALC_LINKS = {
   }
 
   /** 打开专辑：在公式集 Tab 内的第三个视图列出全部切面 */
-  function openAlbum(secId, itemId) {
+  function openAlbum(secId, itemId, fromHistory) {
     const alb = albumOf(secId, itemId);
     if (!alb) return;
     const sec = LINKS.filter(function (s) { return s.id === secId; })[0];
@@ -10158,14 +10403,12 @@ var CALC_LINKS = {
     if ($('calcAlbum')) $('calcAlbum').hidden = false;
     if ($('appbarTitle')) $('appbarTitle').textContent = alb.title;
     window.scrollTo(0, 0);
+    if (!fromHistory) pushView({ type: 'album', sec: secId, id: itemId });
   }
 
   /** 从专辑回到目录 */
   function closeAlbum() {
-    if ($('calcAlbum')) $('calcAlbum').hidden = true;
-    if ($('calcIndex')) $('calcIndex').hidden = false;
-    if ($('appbarTitle')) $('appbarTitle').textContent = TAB_TITLE.calc;
-    window.scrollTo(0, 0);
+    popView();
   }
 
   function buildCalcInputs() {
@@ -10186,16 +10429,18 @@ var CALC_LINKS = {
       if (g.opts) html += optsHtml(g.opts);
       // 右房压条目需要 IVC 塌陷选项（与右心评估条目共用同一条状态）
       if (g.id === 'rapv') html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse);
-      html += '<div class="note">' + esc(g.note) + '</div>' +
+      html += '<div class="note">' + mdInline(g.note) + '</div>' +
         '<div class="calc-out" id="calcOut-' + g.id + '">' +
         '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div></div>';
     });
 
     BRIEF.forEach(function (sec) {
       sec.items.forEach(function (it) {
+        const bl = blocksHtml(it.blocks);
         html += '<div class="card" data-g="' + it.id + '" hidden>' +
           '<div class="card__t">' + esc(it.title) + '</div>' +
-          blocksHtml(it.blocks);
+          tocHtml(bl.toc) +
+          bl.html;
         if (it.fields && it.fields.length) {
           html += fieldsHtml(it.fields);
           if (it.id === 'rv') {
@@ -10207,7 +10452,7 @@ var CALC_LINKS = {
           html += '<div class="calc-out" id="calcOut-' + it.id + '">' +
             '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div>';
         }
-        if (it.note) html += '<div class="note">' + esc(it.note) + '</div>';
+        if (it.note) html += '<div class="note">' + mdInline(it.note) + '</div>';
         html += briefRefsHtml(it.source) + '</div>';
       });
     });
@@ -10227,6 +10472,18 @@ var CALC_LINKS = {
     // 「相关计算」胶囊：点了直接进对应计算器
     $('calcGroups').querySelectorAll('.chip[data-jump]').forEach(function (c) {
       c.addEventListener('click', function () { openCalcGroup(c.dataset.jump); });
+    });
+    // 条目内小节导航：点胶囊滚到对应小节（与目录页组名跳转条同一套交互）
+    $('calcGroups').querySelectorAll('.fx-nav--sec .fx-nav__c').forEach(function (a) {
+      a.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        const id = a.dataset.sec;
+        const target = id ? document.getElementById(id) : null;
+        if (!target) return;
+        // 顶栏是 fixed 的，滚动后要留出高度，否则标题被盖住
+        const top = target.getBoundingClientRect().top + window.pageYOffset - 56;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      });
     });
     // 绑定动态生成的分段选择器
     $('calcGroups').querySelectorAll('.seg').forEach(function (seg) {
@@ -10253,8 +10510,11 @@ var CALC_LINKS = {
     });
   }
 
-  /** 打开某条目（计算公式或评估内容） */
-  function openCalcGroup(id) {
+  /**
+   * 打开某条目（计算公式或评估内容）
+   * fromHistory=true 表示由 popstate 触发，不再重复 push
+   */
+  function openCalcGroup(id, fromHistory) {
     const g = calcGroupOf(id);
     const b = briefOf(id);
     if (!g && !b) return;
@@ -10267,15 +10527,21 @@ var CALC_LINKS = {
     $('appbarTitle').textContent = g ? g.title : b.title;
     renderCalc();
     window.scrollTo(0, 0);
+    if (!fromHistory) pushView({ type: 'calc', id: id });
   }
 
-  /** 回到公式集目录 */
-  function closeCalcGroup() {
+  /** 回到公式集目录（界面还原，不动 history） */
+  function restoreCalcIndex() {
     if ($('calcIndex')) $('calcIndex').hidden = false;
     if ($('calcDetail')) $('calcDetail').hidden = true;
     if ($('calcAlbum')) $('calcAlbum').hidden = true;
     $('appbarTitle').textContent = TAB_TITLE.calc;
     window.scrollTo(0, 0);
+  }
+
+  /** 回到公式集目录（用户点了「返回公式集」按钮） */
+  function closeCalcGroup() {
+    popView();
   }
 
   if ($('calcBack')) $('calcBack').addEventListener('click', closeCalcGroup);
@@ -11625,6 +11891,19 @@ var CALC_LINKS = {
       .replace(/"/g, '&quot;');
   }
 
+  /**
+   * 行内标记：**加粗** → <b>加粗</b>
+   * 解析器 InlineMd 来自 miniprogram/utils/inline-md.js（构建时注入），
+   * 与小程序端同一份实现，两端表现一致。
+   */
+  function mdInline(s) {
+    if (s === null || s === undefined) return '';
+    if (window.InlineMd && window.InlineMd.inlineHtml) {
+      return window.InlineMd.inlineHtml(s, esc);
+    }
+    return esc(s);
+  }
+
   /* ── 节段划分页：节段选中 ↔ 所有切面及牛眼图同步高亮 ── */
 
   const SEG_TERR = {
@@ -11681,6 +11960,14 @@ var CALC_LINKS = {
     buildPedsInputs();
     renderPeds();
     renderCalc();
+
+    // 带 hash 打开（如刷新页面 / 从分享链接进来）→ 恢复到对应视图
+    const v0 = parseHash();
+    if (v0 && v0.type !== 'calcIndex') {
+      switchTab('calc');
+      restoreView(v0);
+      viewStack.push(v0);
+    }
 
     // 节段划分页：渲染示意图 + 点击联动（事件委托，SVG 每次选中后整体重绘）
     renderSegAll();

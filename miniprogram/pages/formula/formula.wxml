@@ -6,11 +6,21 @@
       BSA {{bsaText}} m²（来自「EF·参考值」页）· 按{{sexLabel}}参考区间判读 · 留空跳过
     </view>
 
+    <!-- 条目内小节导航：长条目滚到中间容易迷路，点胶囊直接定位到该节 -->
+    <view wx:if="{{toc.length}}" class="fx-nav">
+      <view wx:for="{{toc}}" wx:key="id" wx:for-item="sec"
+            class="fx-nav__c {{curSec === sec.id ? 'fx-nav__c--on' : ''}}"
+            data-id="{{sec.id}}" hover-class="fx-nav__c--tap" bindtap="onJumpSec">{{sec.t}}</view>
+    </view>
+
     <!-- 评估类内容（extra-data）或计算条目的评分细则表（calc-groups 的 blocks） -->
     <block wx:if="{{blocks.length > 0}}">
       <block wx:for="{{blocks}}" wx:key="index" wx:for-item="b">
 
-        <view wx:if="{{b.kind === 'h'}}" class="fx-h">{{b.text}}</view>
+        <view wx:if="{{b.kind === 'h'}}" class="fx-h" id="sec-{{b.secIdx}}">
+          <text wx:for="{{b.segs}}" wx:key="index" wx:for-item="sg"
+                class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
+        </view>
 
         <view wx:elif="{{b.kind === 'table'}}" class="vtbl vtbl--{{b.cols}}">
           <view class="vtbl__r vtbl__r--h">
@@ -22,15 +32,24 @@
         </view>
 
         <block wx:elif="{{b.kind === 'note'}}">
-          <view class="fx-note">{{b.text}}</view>
+          <view class="fx-note">
+            <text wx:for="{{b.segs}}" wx:key="index" wx:for-item="sg"
+                  class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
+          </view>
           <!-- 相关计算：点了直接进对应计算器，性别与 BSA 由 profile 自带 -->
           <view wx:if="{{b.links.length}}" class="chiprow">
             <view wx:for="{{b.links}}" wx:key="id" class="chip"
                   data-id="{{item.id}}" bindtap="onJump">{{item.n}} ›</view>
           </view>
         </block>
-        <view wx:elif="{{b.kind === 'formula'}}" class="fx-formula">{{b.text}}</view>
-        <view wx:else class="fx-text">{{b.text}}</view>
+        <view wx:elif="{{b.kind === 'formula'}}" class="fx-formula">
+          <text wx:for="{{b.segs}}" wx:key="index" wx:for-item="sg"
+                class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
+        </view>
+        <view wx:else class="fx-text">
+          <text wx:for="{{b.segs}}" wx:key="index" wx:for-item="sg"
+                class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
+        </view>
       </block>
     </block>
 
