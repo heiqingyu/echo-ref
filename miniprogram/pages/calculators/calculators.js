@@ -21,6 +21,7 @@ const EXTRA = [
       { kind: 'valve', id: 'ms', title: 'MS 二尖瓣狭窄', sub: 'MVA · PHT · 平均压差' },
       { kind: 'valve', id: 'mr', title: 'MR 二尖瓣反流', sub: 'EROA · RVol · 反流分级' },
       { kind: 'valve', id: 'tr', title: 'TR 三尖瓣反流', sub: 'EROA · RVol · PASP' },
+      { kind: 'valveana', id: 'valveana', title: '瓣膜解剖示意图', sub: '分区 · 分叶 · 分段 · TTE/TEE 标准切面' },
     ],
   },
 ];
@@ -281,6 +282,8 @@ Page({
     }
     if (d.kind === 'valve') {
       wx.navigateTo({ url: '/pages/valves/valves?tab=' + d.id });
+    } else if (d.kind === 'valveana') {
+      wx.navigateTo({ url: '/pages/valveana/valveana' });
     } else {
       wx.navigateTo({ url: '/pages/formula/formula?id=' + d.id });
     }

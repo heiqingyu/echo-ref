@@ -27,7 +27,7 @@ const OUT = path.join(ROOT, 'www', 'index.html');
  *   上一轮裁剪把节段页一起删了，用户新装后找不到「室壁划分」。
  *   现仅裁掉「瓣膜评估」一页（转自教材的内容）。
  */
-const PUBLIC_TABS = ['index', 'segments', 'peds', 'calc'];
+const PUBLIC_TABS = ['index', 'peds', 'segments', 'valveana', 'calc'];
 
 /**
  * 版本号单一来源：android-app/VERSION 第一行
@@ -90,6 +90,8 @@ const coreSrc = wrapEngine(path.join(MP, 'utils', 'echo-core.js'), 'Core');
 const pedsSrc = wrapEngine(path.join(MP, 'utils', 'peds-zscore.js'), 'Peds');
 const calcSrc = wrapEngine(path.join(MP, 'utils', 'echo-calc.js'), 'Calc');
 const segSrc = wrapEngine(path.join(MP, 'utils', 'segment-svg.js'), 'SegSvg');
+// 瓣膜解剖示意图（分区 / 分叶 / 分段），与小程序同源
+const valveSvgSrc = wrapEngine(path.join(MP, 'utils', 'valve-svg.js'), 'ValveSvg');
 const valveSrc = wrapEngine(path.join(MP, 'utils', 'valve-calc.js'), 'ValveCalc');
 // 行内标记解析（**加粗**）—— 小程序与网页共用同一份，避免两端表现不一致
 const mdSrc = wrapEngine(path.join(MP, 'utils', 'inline-md.js'), 'InlineMd');
@@ -186,6 +188,82 @@ function buildSegPage() {
 }
 
 const SEG_HTML = buildSegPage();
+
+/* ---------- 1b-2. 瓣膜解剖页（分区 / 分叶 / 分段示意图） ---------- */
+
+/**
+ * 瓣膜解剖页：与节段划分页同一套范式
+ *   - 示意图由 ValveSvg 运行时渲染进 va-* 容器
+ *   - 下方色块按钮选择解剖分区 → 全部视图同步高亮
+ *   - 瓣膜组：主动脉瓣 / 二尖瓣 / 三尖瓣 / 肺动脉瓣
+ */
+const VALVE_SVG = require(path.join(MP, 'utils', 'valve-svg.js'));
+const EXTRA_DATA = require(path.join(MP, 'utils', 'extra-data.js'));
+
+function buildValveAnaPage() {
+  const order = ['主动脉瓣', '二尖瓣', '三尖瓣', '肺动脉瓣'];
+  const byGroup = {};
+  VALVE_SVG.VALVE_VIEWS.forEach((v) => {
+    if (!byGroup[v.group]) byGroup[v.group] = [];
+    byGroup[v.group].push(v);
+  });
+
+  const groups = order.map((g) => {
+    const views = byGroup[g] || [];
+    if (!views.length) return '';
+    const cards = views.map((v) => {
+      const chips = v.parts.map((id) => {
+        const p = VALVE_SVG.PART_INDEX[id];
+        return '<button class="segchip" data-vap="' + id + '" style="--c:' + (p ? p.color : '#64748b') +
+          '" aria-label="' + escHtml(p ? p.name : id) + '">' + escHtml(p ? p.abbr : id) + '</button>';
+      }).join('');
+      return '<div class="wall-card"><div class="wall-card__t">' + escHtml(v.title) +
+        '</div><div class="wall-card__s">' + escHtml(v.sub) +
+        '</div><div class="wallsvg-box" id="va-' + v.id + '"></div>' +
+        '<div class="wall-group"><span class="wall-group__l">解剖分区</span>' +
+        '<span class="wall-chips">' + chips + '</span></div></div>';
+    }).join('\n      ');
+
+    return '<div class="card"><div class="card__t">' + escHtml(g) + '</div>' +
+      '<div class="card__d">' + views.length + ' 个标准切面示意</div>\n      ' + cards + '</div>';
+  }).join('\n    ');
+
+  // 教学资源（视频 + 交互教学站）
+  const lessons = (EXTRA_DATA.LINK_SECTIONS || [])
+    .filter((s) => s.id === 'valveana')
+    .map((s) => s.items || [])
+    .reduce((a, b) => a.concat(b), [])
+    .map((it) => {
+      const isVideo = /\.mp4(\?|$)/i.test(it.url || '');
+      return '<div class="va-lesson"><div class="va-lesson__t">' + escHtml(it.title) +
+        '<span class="va-lesson__b">' + (isVideo ? '视频' : '教学站') + '</span></div>' +
+        '<div class="va-lesson__s">' + escHtml(it.sub || '') + '</div>' +
+        '<a class="va-lesson__go" href="' + escHtml(it.url) + '" target="_blank" rel="noopener">' +
+        (isVideo ? '▶ 打开视频' : '打开教学站') + '</a></div>';
+    }).join('\n    ');
+
+  return `  <!-- ───── Tab 瓣膜解剖 ───── -->
+  <section class="page" id="page-valveana" hidden>
+    <div class="card">
+      <div class="card__t">瓣膜分区 · 分叶 · 分段</div>
+      <div class="card__d">按标准屏幕方位示意，实际以解剖标志核实。点击下方色块按钮，它会在所有示意图中同步高亮同一解剖结构；再次点击取消。</div>
+      <div class="hi-line hi-line--sel" id="vaSelInfo" hidden></div>
+    </div>
+    ${groups}
+    <div class="note">主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC。TTE 短轴按钟面位判读（12 点前壁），TEE 短轴 30–60° 的屏幕方位与 TTE 不同，务必以冠状动脉开口和左心房位置核实。</div>
+    <div class="note">二尖瓣分叶：前叶 P1–P3、后叶 A1–A3。交界区为 P1–A1 与 P3–A3。前叶瓣口面积约占 60%，后叶约 40%。四腔心切面只能分辨前叶 / 后叶大系，精确分叶需 TEE 60° 交界切面。</div>
+    <div class="note">三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心显示隔叶与前叶，后叶需胸骨旁短轴右室流入道切面。</div>
+    <div class="note">肺动脉瓣为三个半月瓣，不单独命名，也没有冠状窦对应关系。</div>
+    <div class="card">
+      <div class="card__t">瓣膜教学视频与交互教学</div>
+      <div class="card__d">视频与交互教学站均为免登录可直接打开的地址，点击在新标签页打开。</div>
+      ${lessons}
+    </div>
+    <div class="note note--warn">本页为教学示意图，不替代真实超声图像；示意图仅标注解剖分区与切面关系，测量与判读请回看「公式集 → 瓣膜评估」条目的定量标准。</div>
+  </section>`;
+}
+
+const VALVEANA_HTML = buildValveAnaPage();
 
 /* ---------- 1c. 瓣膜页（AS / AR / MS / MR / TR，内容来自 valve-data.js） ---------- */
 
@@ -560,6 +638,8 @@ ${VALVE_HTML}
 
 ${SEG_HTML}
 
+${VALVEANA_HTML}
+
   <!-- ───── Tab5 儿童 Z 值 ───── -->
   <section class="page" id="page-peds" hidden>
     <div class="card">
@@ -690,11 +770,14 @@ ${SEG_HTML}
   <div class="tab" data-tab="valves">
     <span class="tab__i">◇</span><span class="tab__t">瓣膜评估</span>
   </div>
+  <div class="tab" data-tab="peds">
+    <span class="tab__i">◎</span><span class="tab__t">儿童 Z 值</span>
+  </div>
   <div class="tab" data-tab="segments">
     <span class="tab__i">◭</span><span class="tab__t">节段划分</span>
   </div>
-  <div class="tab" data-tab="peds">
-    <span class="tab__i">◎</span><span class="tab__t">儿童 Z 值</span>
+  <div class="tab" data-tab="valveana">
+    <span class="tab__i">❖</span><span class="tab__t">瓣膜解剖</span>
   </div>
 
   <div class="tab" data-tab="calc">
@@ -710,6 +793,8 @@ ${pedsSrc}
 ${calcSrc}
 
 ${segSrc}
+
+${valveSvgSrc}
 
 ${valveSrc}
 
@@ -927,9 +1012,17 @@ function buildPublicHtml() {
       if (out.indexOf(s) === -1) throw new Error('发布版：节段划分页依赖缺失 ' + s);
     });
 
+  // 5b2c) 瓣膜解剖页必须存在（分区 / 分叶 / 分段示意图 + 教学资源）
+  ['id="page-valveana"', 'data-tab="valveana"',
+   'window.ValveSvg', 'renderValveAna', 'ValveSvg.VALVE_VIEWS', 'data-vap', 'data-part',
+   '.va-lesson__go', '瓣膜分区 · 分叶 · 分段']
+    .forEach((s) => {
+      if (out.indexOf(s) === -1) throw new Error('发布版：瓣膜解剖页依赖缺失 ' + s);
+    });
+
   // 5b) 结构完整性自检：切块/删行容易把 HTML 骨架带掉，必须逐项确认
   ['</style>', '</head>', '<body', '</body>', '</html>', '<nav class="tabbar" id="tabbar"',
-   'id="page-index"', 'id="page-segments"', 'id="page-peds"', 'id="page-calc"']
+   'id="page-index"', 'id="page-segments"', 'id="page-peds"', 'id="page-valveana"', 'id="page-calc"']
     .forEach((s) => {
       if (out.indexOf(s) === -1) throw new Error('发布版：结构缺失 ' + s);
     });

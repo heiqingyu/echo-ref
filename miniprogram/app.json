@@ -5,6 +5,7 @@
     "pages/formula/formula",
     "pages/valves/valves",
     "pages/segments/segments",
+    "pages/valveana/valveana",
     "pages/pediatric/pediatric",
     "pages/album/album",
     "pages/video/video"
@@ -23,8 +24,8 @@
     "borderStyle": "black",
     "list": [
       { "pagePath": "pages/index/index", "text": "EF·参考值" },
-      { "pagePath": "pages/segments/segments", "text": "节段划分" },
       { "pagePath": "pages/pediatric/pediatric", "text": "儿童 Z 值" },
+      { "pagePath": "pages/segments/segments", "text": "节段划分" },
       { "pagePath": "pages/calculators/calculators", "text": "公式集" }
     ]
   },

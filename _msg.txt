@@ -1,26 +1,12 @@
-v1.3.12 计算器说明补全 + 随访与术中评估 + 特殊临床场景
+v1.3.13：新增瓣膜解剖页（分区/分叶/分段 TTE/TEE 示意图 + 教学资源），页签顺序调整
 
-内容补全
-- 新增 miniprogram/utils/calc-notes.js：62 个计算器逐条补「临床意义 /
-  参考标准（正常值与分级阈值）/ 判读要点与常见陷阱」，网页端由
-  build-www.js 注入为 window.CalcNotes，两端共用一份，不再手写两份
-- 小程序 formula 页与网页详情页在输入项之前渲染这三节，并进入小节导航
-
-新增内容
-- 引擎新增 aorticGrowthRate / prostheticValveFunction / coronaryFlowReserve
-- 新增计算组「随访与术中评估」：主动脉扩张增长率、人工瓣术后跨瓣血流、冠脉血流储备
-- 新增评估组「特殊临床场景」：应激性心肌病（Takotsubo）、睡眠呼吸暂停与心衰、
-  心肌做功指数解读、ECMO 支持下的超声监测
-- 参考文献增至 62 条（新增 R59–R62）
-
-一致性
-- 键名冲突修正：人工瓣条目的 pvmax/pmean 改为 fupvmax/fupmean（网页 calcVal 全局共享）
-- verify-mp.js 分组断言由硬编码下标改为按 id 定位，新增分组不会再错位
-- 体积阈值随真实内容增长上调：www < 780 KB，docs < 730 KB
-
-校验：project 207 / calc 349 / peds 92 / mp 459 / docs 125 / apk 381 全部通过
-APK：EchoRef-v1.3.12.apk（versionCode 35，签名与 v1.3.11 一致，可覆盖安装）
-
-发布辅助
-- 新增 upload-mp.bat：用户双击即可完成小程序 islogin + upload 全流程
-  （沙箱内 GUI 进程会被杀，IDE 必须由用户手动启动）
+- 页签顺序：儿童 Z 值调到「节段划分」之前（小程序 / 网页 / APK 三端同步）
+- 新增 miniprogram/utils/valve-svg.js：7 张瓣膜解剖示意图生成器（单一真相源，两端共用）
+  主动脉瓣 TTE/TEE 短轴、二尖瓣分叶与瓣口面积、二尖瓣 TTE 四腔心、
+  二尖瓣 TEE 60° 交界切面、三尖瓣 TTE 四腔心、肺动脉瓣 TTE 短轴
+- 新增 miniprogram/pages/valveana/：小程序瓣膜解剖页，点击色块全页联动高亮
+- 新增 10 条瓣膜教学资源（5 段 mp4 动图 + 5 个交互教学站）到 extra-data.js
+- 网页/APK：新增「瓣膜解剖」页签，app.js 增加 renderValveAna 与事件委托
+- 修复：网页端示意图空白（ValveSvg.v.fn 误写为引擎属性访问）
+- 修复：小程序 dataset 布尔值取回为字符串 'false' 导致非视频资源误判为视频
+- 校验：verify-mp / verify-docs / verify-calc / verify-peds / verify-project / verify-apk 全绿

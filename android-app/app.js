@@ -41,8 +41,9 @@
     index: 'EF·参考值',
     calc: '公式集',
     valves: '瓣膜评估',
-    segments: '节段划分',
     peds: '儿童 Z 值',
+    segments: '节段划分',
+    valveana: '瓣膜解剖',
   };
 
   let currentTab = 'index';
@@ -165,6 +166,7 @@
     // 切页签不是「往上一层」，不该触发返回）
     if (name === 'calc') { restoreCalcIndex(); renderCalc(); }
     if (name === 'valves') renderValves();
+    if (name === 'valveana') renderValveAna();
     if (name === 'index') renderIndex();
 
     window.scrollTo(0, 0);
@@ -2961,6 +2963,31 @@
   }
 
 /*<<<END-CUT:seg>>>*/
+
+  /* ══════════════════════════════════════════════════════════
+     瓣膜解剖页：解剖分区选中 ↔ 所有示意图同步高亮
+     ══════════════════════════════════════════════════════════ */
+
+  let selValvePart = null;   // 选中的解剖分区（如 lcc / a2 / sep）
+
+  function renderValveAna() {
+    if (!window.ValveSvg) return;
+    window.ValveSvg.VALVE_VIEWS.forEach(function (v) {
+      const el = $('va-' + v.id);
+      if (el) el.innerHTML = v.fn({ sel: selValvePart });
+    });
+
+    document.querySelectorAll('#page-valveana [data-vap]').forEach(function (c) {
+      c.classList.toggle('segchip--on', c.dataset.vap === selValvePart);
+    });
+
+    const info = $('vaSelInfo');
+    if (info) {
+      info.hidden = !selValvePart;
+      info.textContent = selValvePart ? ValveSvg.partInfoText(selValvePart) : '';
+    }
+  }
+
   /* ══════════════════════════════════════════════════════════
      启动
      ══════════════════════════════════════════════════════════ */
@@ -2990,6 +3017,7 @@
     // 节段划分页：渲染示意图 + 点击联动（事件委托，SVG 每次选中后整体重绘）
     /*<<<PUBLIC-CUT:segclick>>>*/
     renderSegAll();
+    renderValveAna();
     document.addEventListener('click', function (e) {
       const segEl = e.target.closest('#page-segments g[data-seg]');
       if (segEl) {
@@ -3011,6 +3039,23 @@
       if (terr) {
         segHi = segHi === terr.dataset.terr ? '' : terr.dataset.terr;
         renderSegAll();
+      }
+    });
+
+    // 瓣膜解剖页：点击分区色块 / 按钮 → 所有示意图同步高亮
+    document.addEventListener('click', function (e) {
+      const partEl = e.target.closest('#page-valveana g[data-part]');
+      if (partEl) {
+        const id = partEl.dataset.part;
+        selValvePart = selValvePart === id ? null : id;
+        renderValveAna();
+        return;
+      }
+      const chip = e.target.closest('#page-valveana [data-vap]');
+      if (chip) {
+        const id = chip.dataset.vap;
+        selValvePart = selValvePart === id ? null : id;
+        renderValveAna();
       }
     });
     /*<<<END-CUT:segclick>>>*/
