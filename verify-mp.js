@@ -417,10 +417,10 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 52 条', EXD.REFS.length, 52, 0);
+  check('参考文献 53 条', EXD.REFS.length, 53, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
-  check('文献编号连续 R1–R52',
-    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37,R38,R39,R40,R41,R42,R43,R44,R45,R46,R47,R48,R49,R50,R51,R52' ? 1 : 0, 1, 0);
+  check('文献编号连续 R1–R53',
+    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37,R38,R39,R40,R41,R42,R43,R44,R45,R46,R47,R48,R49,R50,R51,R52,R53' ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
   // 文献直链：只放「点开就能看」的官方/免费 PDF，需要登录的一律不挂
@@ -516,24 +516,24 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 20 个大组（切面指南并入文献 + 报告与质控 + 造影与特殊检查 + 有创操作与介入超声）', dirs.length, 20, 0);
+  check('公式集分 21 个大组（… + 有创操作与介入超声 + 伪影识别与规避）', dirs.length, 21, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 115 条（57 计算 + 10 瓣膜 + 44 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 115, 0);
-  check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[18].items.length, 6, 0);
-  check('TEE 模拟器 3 条', dirs[19].items.length, 3, 0);
+  check('目录共 116 条（57 计算 + 10 瓣膜 + 45 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 116, 0);
+  check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[19].items.length, 6, 0);
+  check('TEE 模拟器 3 条', dirs[20].items.length, 3, 0);
   check('操作规范专辑排在切面学习第一条',
-    dirs[18].items[0] && dirs[18].items[0].kind === 'album' && dirs[18].items[0].id === 'bookvid' ? 1 : 0, 1, 0);
+    dirs[19].items[0] && dirs[19].items[0].kind === 'album' && dirs[19].items[0].id === 'bookvid' ? 1 : 0, 1, 0);
   check('专辑标题为「实用超声规范化检查与操作（视频）」',
-    dirs[18].items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
+    dirs[19].items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
   check('外链条目为 link 类型（专辑除外）',
-    dirs[18].items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+    dirs[19].items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
-    dirs[18].items[0] && dirs[18].items[0].count === 25 ? 1 : 0, 1, 0);
+    dirs[19].items[0] && dirs[19].items[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进目录数据（省 setData）',
-    dirs[18].items[0] && dirs[18].items[0].children === undefined ? 1 : 0, 1, 0);
+    dirs[19].items[0] && dirs[19].items[0].children === undefined ? 1 : 0, 1, 0);
   check('专辑条目带书籍出处说明',
     (function () {
       const EXv = require('./miniprogram/utils/extra-data.js');
@@ -541,9 +541,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       return /王辉/.test(it.note || '') && /978-7-5189-8028-4/.test(it.note || '') ? 1 : 0;
     })(), 1, 0);
   check('TTE 经胸切面为直达交互链接',
-    dirs[18].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[19].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含 TEE 速查表',
-    dirs[18].items.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
+    dirs[19].items.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
   // 原「切面指南」4 条 ASE 官方 PDF 已并入参考文献（R11 中/英、R12、R41）
   check('切面指南已并入参考文献（不在目录里单列）',
     dirs.every(d => d.title !== '切面指南') ? 1 : 0, 1, 0);
@@ -560,10 +560,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('R41 含 TEE 介入筛查官方 PDF 直链',
     EXL.REFS.filter(x => x.id === 'R41')[0].dl.some(d => /PIIS0894731721005940\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
   check('模拟器含 CT2TEE / TEE Simulator 图谱',
-    dirs[19].items.some(i => /ct2tee/.test(i.url)) &&
-    dirs[19].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[20].items.some(i => /ct2tee/.test(i.url)) &&
+    dirs[20].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
-  check('血流动力学与心功能 15 条（含 M 型三合一、快速比值、Ea、VTI 比）', dirs[0].items.length, 15, 0);
+  check('血流动力学与心功能 14 条（含 M 型三合一、快速比值、Ea、VTI 比；dias 已移至舒张功能定量）', dirs[0].items.length, 14, 0);
   check('右心与肺循环 13 条（PASP / RAP / FAC / TAPSE-PASP / PVR / SVR + 第二批 6 条 + 肺高压可能性）',
     dirs[1].items.length, 13, 0);
   check('右心第二批条目齐全（rvvol / rvfws / papi / pdap / residx / rvdvdt）',
@@ -572,17 +572,18 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('右心组条目齐全',
     ['paspv', 'rapv', 'rvfacv', 'rcratiov', 'pvrv', 'svrv']
       .every(id => dirs[1].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('瓣膜与舒张定量 9 条（MVA 两法已合并为 1 条）',
-    dirs[2].items.length, 9, 0);
-  check('瓣膜定量组条目齐全',
-    ['pisav', 'avav', 'mva', 'ppm', 'dfun']
+  check('舒张功能定量 3 条（基础比值 dias + E/Vp + 四步法分级）',
+    dirs[2].items.length, 3, 0);
+  check('舒张功能定量组条目齐全（dias / evp / dfun）',
+    ['dias', 'evp', 'dfun']
       .every(id => dirs[2].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('重构与心肌功能 12 条（容积 / RWS / 球形 / 左房应变 / 主动脉 / MDS / 每搏功 + LAEF / LVMI 身高^2.7 / RAS + 左房僵硬 / NC/C）',
     dirs[3].items.length, 12, 0);
   check('重构组条目齐全',
     ['volidx', 'rwsv', 'spher', 'lastrain', 'aortaidx', 'mdsv', 'swv']
       .every(id => dirs[3].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('计算类条目合计 57 条（MVA 合并后 -1）', dirs.slice(0, 6).reduce((n, d) => n + d.items.length, 0), 57, 0);
+  check('计算类条目合计 50 条（6 个计算组；另 7 条瓣膜通用计算在瓣膜评估组，合计仍 57）',
+    dirs.slice(0, 6).reduce((n, d) => n + d.items.length, 0), 50, 0);
   check('评分与室壁运动 3 条（WMSI / H2FPEF / HFA-PEFF）', dirs[4].items.length, 3, 0);
   check('评分组条目齐全',
     ['wmsi', 'h2fpef', 'hfapeff']
@@ -593,7 +594,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       .every(id => dirs[5].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('第三四批条目齐全',
     ['wilkins', 'vcw', 'rf', 'mva', 'laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
-      .every(id => ['0', '1', '2', '3', '4', '5'].some(k => dirs[+k].items.some(i => i.id === id)))
+      .every(id => ['0', '1', '2', '3', '4', '5', '6'].some(k => dirs[+k].items.some(i => i.id === id)))
       ? 1 : 0, 1, 0);
   check('器械支持 3 条（CRT / LAD / LVAD）', dirs[7].items.length, 3, 0);
   check('器械支持含 CRT 同步化',
@@ -608,7 +609,13 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       dirs[8].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 5 个瓣膜计算器 + 4 条判读（合并为一组，不再有「瓣膜疾病评估」）
-  check('瓣膜评估组合并为 10 条（5 计算器 + 5 判读）', dirs[6].items.length, 10, 0);
+  check('瓣膜评估组合并为 17 条（5 专用计算器 + 7 通用计算 + 5 判读）', dirs[6].items.length, 17, 0);
+  check('瓣膜评估组含 7 条瓣膜通用计算（wilkins / vcw / rf / mva / pisav / avav / ppm）',
+    ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
+      .every(id => dirs[6].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('瓣膜通用计算不再出现在舒张功能定量组',
+    ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
+      .every(id => !dirs[2].items.some(i => i.id === id)) ? 1 : 0, 1, 0);
   check('瓣膜评估组含 5 个瓣膜计算器入口',
     ['as', 'ar', 'ms', 'mr', 'tr'].every(id => dirs[6].items.some(i => i.id === id && i.kind === 'valve')) ? 1 : 0, 1, 0);
   ['mitral', 'aortic', 'lf-lg', 'ie'].forEach(id => {
@@ -649,6 +656,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('造影与特殊检查含 contrast-echo',
     dirs[15].items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
   check('有创操作与介入超声 1 条（超声引导有创操作）', dirs[16].items.length, 1, 0);
+  check('伪影识别与规避 1 条（超声伪影指南）', dirs[17].items.length, 1, 0);
+  check('伪影识别与规避含 artifact-guide',
+    dirs[17].items.some(i => i.id === 'artifact-guide' && i.kind === 'brief') ? 1 : 0, 1, 0);
+
   check('有创操作与介入超声含 echo-interv',
     dirs[16].items.some(i => i.id === 'echo-interv' && i.kind === 'brief') ? 1 : 0, 1, 0);
   check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
@@ -857,8 +868,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const lastM = pgF.data.blocks[pgF.data.blocks.length - 1];
   check('二尖瓣判读页末块为「相关计算（通用量）」',
     lastM && lastM.text.indexOf('相关计算（通用量）') !== -1 ? 1 : 0, 1, 0);
-  check('桥接指向公式集的瓣膜与舒张定量组',
-    lastM && lastM.text.indexOf('瓣膜与舒张定量') !== -1 ? 1 : 0, 1, 0);
+  check('桥接指向公式集的瓣膜评估组',
+    lastM && lastM.text.indexOf('瓣膜评估') !== -1 ? 1 : 0, 1, 0);
   pgF.onLoad({ id: 'amyloid' });
   pgF.onShow();
   const lastA = pgF.data.blocks[pgF.data.blocks.length - 1];
@@ -1230,6 +1241,29 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('R52 含 ASE 官方 PDF 与中文版 PDF 直链',
     R52dl.length === 2 && R52dl.some(function (d) { return /2009_Echo-Guided-Interventions\.pdf$/.test(d.u); }) &&
       R52dl.some(function (d) { return /Chinese\.pdf$/.test(d.u) && d.t === '中文 PDF'; }) ? 1 : 0, 1, 0);
+
+  // 超声伪影指南（R53，v1.3.9 新增）
+  const agTxt = briefText('artifact-guide');
+  check('伪影页：按机器假设分类的框架',
+    ['混响', '镜像', '声影', '侧瓣', '混叠'].every(function (k) { return agTxt.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);
+  check('伪影页：升主动脉混响 44–55% 的发生率',
+    agTxt.indexOf('44%') !== -1 && agTxt.indexOf('55%') !== -1 ? 1 : 0, 1, 0);
+  check('伪影页：壁滤波 150 Hz / 350 Hz 参考值',
+    agTxt.indexOf('150 Hz') !== -1 && agTxt.indexOf('350 Hz') !== -1 ? 1 : 0, 1, 0);
+  check('伪影页：Nyquist 极限与 PW 混叠阈值',
+    agTxt.indexOf('Nyquist') !== -1 && agTxt.indexOf('1.5') !== -1 ? 1 : 0, 1, 0);
+  check('伪影页：侧瓣伪影的三条识别特征',
+    agTxt.indexOf('对称') !== -1 && agTxt.indexOf('跨越解剖边界') !== -1 ? 1 : 0, 1, 0);
+  check('伪影页：3D 单心动周期采集消除拼接伪影',
+    agTxt.indexOf('单心动周期') !== -1 && agTxt.indexOf('拼接') !== -1 ? 1 : 0, 1, 0);
+  check('伪影页：B 线来自 ring-down 而非混响',
+    agTxt.indexOf('ring-down') !== -1 ? 1 : 0, 1, 0);
+  pgF.onLoad({ id: 'artifact-guide' });
+  pgF.onShow();
+  check('伪影页：参考文献挂 R53',
+    (pgF.data.refs || []).map(function (r) { return r.id; }).join(',') === 'R53' ? 1 : 0, 1, 0);
+  check('R53 含 ASE 官方免费全文 PDF 直链',
+    EXDCE.REFS.filter(function (r) { return r.id === 'R53'; })[0].dl.some(function (d) { return /PIIS0894731726000386\.pdf$/.test(d.u); }) ? 1 : 0, 1, 0);
 
   // 性别按 profile 预填（避免每次手点）
   gData23.profile.sex = 'female';
