@@ -417,10 +417,10 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 51 条', EXD.REFS.length, 51, 0);
+  check('参考文献 52 条', EXD.REFS.length, 52, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
-  check('文献编号连续 R1–R51',
-    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37,R38,R39,R40,R41,R42,R43,R44,R45,R46,R47,R48,R49,R50,R51' ? 1 : 0, 1, 0);
+  check('文献编号连续 R1–R52',
+    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37,R38,R39,R40,R41,R42,R43,R44,R45,R46,R47,R48,R49,R50,R51,R52' ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
   // 文献直链：只放「点开就能看」的官方/免费 PDF，需要登录的一律不挂
@@ -516,24 +516,24 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 19 个大组（切面指南并入文献 + 报告与质控 + 造影与特殊检查）', dirs.length, 19, 0);
+  check('公式集分 20 个大组（切面指南并入文献 + 报告与质控 + 造影与特殊检查 + 有创操作与介入超声）', dirs.length, 20, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 114 条（57 计算 + 10 瓣膜 + 43 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 114, 0);
-  check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[17].items.length, 6, 0);
-  check('TEE 模拟器 3 条', dirs[18].items.length, 3, 0);
+  check('目录共 115 条（57 计算 + 10 瓣膜 + 44 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 115, 0);
+  check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[18].items.length, 6, 0);
+  check('TEE 模拟器 3 条', dirs[19].items.length, 3, 0);
   check('操作规范专辑排在切面学习第一条',
-    dirs[17].items[0] && dirs[17].items[0].kind === 'album' && dirs[17].items[0].id === 'bookvid' ? 1 : 0, 1, 0);
+    dirs[18].items[0] && dirs[18].items[0].kind === 'album' && dirs[18].items[0].id === 'bookvid' ? 1 : 0, 1, 0);
   check('专辑标题为「实用超声规范化检查与操作（视频）」',
-    dirs[17].items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
+    dirs[18].items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
   check('外链条目为 link 类型（专辑除外）',
-    dirs[17].items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+    dirs[18].items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
-    dirs[17].items[0] && dirs[17].items[0].count === 25 ? 1 : 0, 1, 0);
+    dirs[18].items[0] && dirs[18].items[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进目录数据（省 setData）',
-    dirs[17].items[0] && dirs[17].items[0].children === undefined ? 1 : 0, 1, 0);
+    dirs[18].items[0] && dirs[18].items[0].children === undefined ? 1 : 0, 1, 0);
   check('专辑条目带书籍出处说明',
     (function () {
       const EXv = require('./miniprogram/utils/extra-data.js');
@@ -541,9 +541,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       return /王辉/.test(it.note || '') && /978-7-5189-8028-4/.test(it.note || '') ? 1 : 0;
     })(), 1, 0);
   check('TTE 经胸切面为直达交互链接',
-    dirs[17].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[18].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含 TEE 速查表',
-    dirs[17].items.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
+    dirs[18].items.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
   // 原「切面指南」4 条 ASE 官方 PDF 已并入参考文献（R11 中/英、R12、R41）
   check('切面指南已并入参考文献（不在目录里单列）',
     dirs.every(d => d.title !== '切面指南') ? 1 : 0, 1, 0);
@@ -560,8 +560,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('R41 含 TEE 介入筛查官方 PDF 直链',
     EXL.REFS.filter(x => x.id === 'R41')[0].dl.some(d => /PIIS0894731721005940\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
   check('模拟器含 CT2TEE / TEE Simulator 图谱',
-    dirs[18].items.some(i => /ct2tee/.test(i.url)) &&
-    dirs[18].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[19].items.some(i => /ct2tee/.test(i.url)) &&
+    dirs[19].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
   check('血流动力学与心功能 15 条（含 M 型三合一、快速比值、Ea、VTI 比）', dirs[0].items.length, 15, 0);
   check('右心与肺循环 13 条（PASP / RAP / FAC / TAPSE-PASP / PVR / SVR + 第二批 6 条 + 肺高压可能性）',
@@ -648,6 +648,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('造影与特殊检查 1 条（超声造影 CEUS）', dirs[15].items.length, 1, 0);
   check('造影与特殊检查含 contrast-echo',
     dirs[15].items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
+  check('有创操作与介入超声 1 条（超声引导有创操作）', dirs[16].items.length, 1, 0);
+  check('有创操作与介入超声含 echo-interv',
+    dirs[16].items.some(i => i.id === 'echo-interv' && i.kind === 'brief') ? 1 : 0, 1, 0);
   check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
 
   // 跳转
@@ -1199,6 +1202,34 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       R51dl.some(function (d) { return /Chinese\.pdf$/.test(d.u) && d.t === '中文 PDF'; }) ? 1 : 0, 1, 0);
   check('R50 含 ASE 共识声明官方 PDF 直链',
     EXDCE.REFS.filter(function (r) { return r.id === 'R50'; })[0].dl.some(function (d) { return /Ultrasonic-Contrast-Agents/.test(d.u); }) ? 1 : 0, 1, 0);
+
+  // 超声引导下有创操作（R52 指南，v1.3.7 新增）
+  const eiTxt = briefText('echo-interv');
+  check('介入页：12 类操作对照表含房间隔穿刺 / PMBV / 房间隔封堵 / LAA 封堵 / 活检',
+    ['房间隔穿刺', 'PMBV', '房间隔封堵', 'LAA 封堵', '心肌与血管内活检'].every(function (k) { return eiTxt.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);
+  check('介入页：心包穿刺成功率 97% 与并发症率 1.2% / 3.2%',
+    eiTxt.indexOf('97%') !== -1 && eiTxt.indexOf('1.2%') !== -1 && eiTxt.indexOf('3.2%') !== -1 ? 1 : 0, 1, 0);
+  check('介入页：心包穿刺拔管标准 24 小时内 <25 mL',
+    eiTxt.indexOf('25 mL') !== -1 ? 1 : 0, 1, 0);
+  check('介入页：心肌活检可取右室心尖与游离壁',
+    eiTxt.indexOf('右室心尖') !== -1 && eiTxt.indexOf('游离壁') !== -1 ? 1 : 0, 1, 0);
+  check('介入页：ICE 风险含心包填塞与心脏穿孔',
+    eiTxt.indexOf('心脏穿孔') !== -1 && eiTxt.indexOf('心包填塞') !== -1 ? 1 : 0, 1, 0);
+  check('介入页：TEE 盲区（升主动脉 / 气管声影）',
+    eiTxt.indexOf('TEE 盲区') !== -1 ? 1 : 0, 1, 0);
+  check('介入页：酒精消融需术中超声造影定位穿支',
+    eiTxt.indexOf('超声造影') !== -1 && eiTxt.indexOf('穿支') !== -1 ? 1 : 0, 1, 0);
+  check('介入页：ICE 引导房间隔穿刺的帐篷征（tenting）',
+    eiTxt.indexOf('帐篷') !== -1 ? 1 : 0, 1, 0);
+  // 参考文献挂 R52
+  pgF.onLoad({ id: 'echo-interv' });
+  pgF.onShow();
+  check('介入页：参考文献挂 R52',
+    (pgF.data.refs || []).map(function (r) { return r.id; }).join(',') === 'R52' ? 1 : 0, 1, 0);
+  const R52dl = (EXDCE.REFS.filter(function (r) { return r.id === 'R52'; })[0].dl || []);
+  check('R52 含 ASE 官方 PDF 与中文版 PDF 直链',
+    R52dl.length === 2 && R52dl.some(function (d) { return /2009_Echo-Guided-Interventions\.pdf$/.test(d.u); }) &&
+      R52dl.some(function (d) { return /Chinese\.pdf$/.test(d.u) && d.t === '中文 PDF'; }) ? 1 : 0, 1, 0);
 
   // 性别按 profile 预填（避免每次手点）
   gData23.profile.sex = 'female';

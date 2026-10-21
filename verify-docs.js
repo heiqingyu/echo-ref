@@ -296,10 +296,10 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 6 个计算组 + 瓣膜 + 10 组评估 + 2 组外链',
-      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|报告与质控|切面学习（视频）|TEE 模拟器',
+    check('公式集分组 = 6 个计算组 + 瓣膜 + 11 组评估 + 2 组外链',
+      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|报告与质控|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 109 条（57 计算 − 5 瓣膜计算器 + 9 瓣膜 + 39 评估 + 9 外链）', d.items === 109, d.items);
+    check('条目 110 条（57 计算 − 5 瓣膜计算器 + 9 瓣膜 + 40 评估 + 9 外链）', d.items === 110, d.items);
     check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -307,7 +307,7 @@ function check(name, ok, detail) {
     check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
-    check('参考文献 51 条', d.refs === 51, d.refs);
+    check('参考文献 52 条', d.refs === 52, d.refs);
     check('延展阅读卡片在公式集页', d.ext, true);
   }
 
@@ -643,7 +643,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 51 条', /51/.test(ri.cnt), refsInit);
+  check('折叠头显示 52 条', /52/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -661,7 +661,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 51 条', ro.hidden === false && ro.n === 51 && ro.h > 0, refsOpen);
+  check('点击后展开全部 52 条', ro.hidden === false && ro.n === 52 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 
