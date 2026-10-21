@@ -20,3 +20,7 @@ v1.3.12 计算器说明补全 + 随访与术中评估 + 特殊临床场景
 
 校验：project 207 / calc 349 / peds 92 / mp 459 / docs 125 / apk 381 全部通过
 APK：EchoRef-v1.3.12.apk（versionCode 35，签名与 v1.3.11 一致，可覆盖安装）
+
+发布辅助
+- 新增 upload-mp.bat：用户双击即可完成小程序 islogin + upload 全流程
+  （沙箱内 GUI 进程会被杀，IDE 必须由用户手动启动）
