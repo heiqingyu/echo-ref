@@ -99,6 +99,8 @@ const mdSrc = wrapEngine(path.join(MP, 'utils', 'inline-md.js'), 'InlineMd');
 const extraSrc = wrapEngine(path.join(MP, 'utils', 'extra-data.js'), 'ExtraData');
 // 计算器说明（临床意义 / 参考标准 / 判读要点），与小程序同源
 const notesSrc = wrapEngine(path.join(MP, 'utils', 'calc-notes.js'), 'CalcNotes');
+// 本地资料清单（docs/materials/ 扫描生成）：只存 URL，不影响体积
+const materialsSrc = wrapEngine(path.join(MP, 'utils', 'materials.js'), 'Materials');
 
 /* ---------- 1b. 节段划分页（构建时生成骨架，示意图由 SegSvg 运行时渲染） ---------- */
 
@@ -195,13 +197,13 @@ const SEG_HTML = buildSegPage();
  * 瓣膜解剖页：与节段划分页同一套范式
  *   - 示意图由 ValveSvg 运行时渲染进 va-* 容器
  *   - 下方色块按钮选择解剖分区 → 全部视图同步高亮
- *   - 瓣膜组：主动脉瓣 / 二尖瓣 / 三尖瓣 / 肺动脉瓣
+ *   - 瓣膜组：主动脉瓣 / 二尖瓣 / 三尖瓣
  */
 const VALVE_SVG = require(path.join(MP, 'utils', 'valve-svg.js'));
 const EXTRA_DATA = require(path.join(MP, 'utils', 'extra-data.js'));
 
 function buildValveAnaPage() {
-  const order = ['主动脉瓣', '二尖瓣', '三尖瓣', '肺动脉瓣'];
+  const order = ['主动脉瓣', '二尖瓣', '三尖瓣'];
   const byGroup = {};
   VALVE_SVG.VALVE_VIEWS.forEach((v) => {
     if (!byGroup[v.group]) byGroup[v.group] = [];
@@ -240,8 +242,7 @@ function buildValveAnaPage() {
     ${groups}
     <div class="note">主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC，三叶闭合时铺满整个瓣口。TTE 短轴按钟面位判读（前壁在 12 点）；TEE 短轴 30–60° 与 TTE <b>上下颠倒</b>（探头在左房后方），LCC 在右上、NCC 在左上并紧邻房间隔、RCC 在下方靠近 RVOT，冠脉开口约在 2 点（左冠）与 6 点（右冠）。</div>
     <div class="note">二尖瓣分叶（Carpentier–ASE/SCA 命名）：<b>前叶 A1–A3</b>（贴主动脉瓣侧）、<b>后叶 P1–P3</b>（贴左室后壁侧）。P1 邻前外侧交界、P3 邻后内侧交界；A1 与 P1、A3 与 P3 分别在两侧相邻。后叶附着约 2/3 瓣环、前叶约 1/3，但前叶更长，两叶面积大致相当。四腔心只显示 A2 与 P2，精确分叶需 TEE 45–60° 交界切面（左 P3 · 中 A2 · 右 P1）。</div>
-    <div class="note">三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心显示隔叶与前叶，后叶需胸骨旁短轴右室流入道切面；隔叶附着点比二尖瓣前叶更靠近心尖（Ebstein 畸形时显著下移）。</div>
-    <div class="note">肺动脉瓣为三个半月瓣（前瓣 / 右瓣 / 左瓣），铺满瓣环，但没有无冠窦命名与冠状动脉开口。</div>
+    <div class="note">三尖瓣三个瓣叶：前叶、隔叶、后叶。ME 四腔心看隔叶＋前叶（隔叶附着点比二尖瓣前叶更靠近心尖，Ebstein 畸形时显著下移）；TEE 60–75° 右室流入-流出道看后叶（屏幕左、贴 RV 游离壁）＋前叶（屏幕右、贴主动脉瓣）；TEE 经胃底短轴（约 30°）是唯一能同屏看全三叶的 2D 切面——隔叶在屏幕右侧靠左室、后叶近场、前叶远场。</div>
     <div class="note note--warn">本页为教学示意图，不替代真实超声图像；示意图仅标注解剖分区与切面关系，测量与判读请回看「公式集 → 瓣膜评估」条目的定量标准。</div>
   </section>`;
 }
@@ -786,6 +787,7 @@ ${mdSrc}
 ${extraSrc}
 
 ${notesSrc}
+${materialsSrc}
 
 ${js}
 </script>

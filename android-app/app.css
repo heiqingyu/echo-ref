@@ -1345,6 +1345,36 @@ html, body {
   background: #dbe6ff;
 }
 
+/* ══════════════ 回到顶部（公式集等长页面，2026-10-21） ══════════════ */
+.totop {
+  position: fixed;
+  right: 18px;
+  bottom: 86px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #dbe3ec;
+  background: rgba(255, 255, 255, .96);
+  color: #2563eb;
+  font-size: 20px;
+  line-height: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, .16);
+  cursor: pointer;
+  z-index: 60;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.totop--on { display: flex; }
+.totop:active { transform: scale(.94); }
+
+@media (min-width: 720px) {
+  .totop { right: calc(50% - 400px); }
+}
+
 /* ★ 以上公式集样式（.fx-nav / .fx-group / .ref-dl / .chip 等）必须留在
    下面「已裁掉的瓣膜专页」注释块之前：build-www.js 的 stripCssBlock 会把
    那个标记到 </style> 之间整段删掉（发布版不带瓣膜页 CSS）。

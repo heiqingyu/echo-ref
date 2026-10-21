@@ -534,6 +534,15 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('目录共 128 条（62 计算 + 11 瓣膜 + 51 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 128, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
+  // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
+  check('公式集已接入「回到顶部」（onPageScroll + onToTop）',
+    typeof pgA.onPageScroll === 'function' && typeof pgA.onToTop === 'function' ? 1 : 0, 1, 0);
+  pgA.onPageScroll({ scrollTop: 1200 });
+  check('滚动 1200px 后 showTop=true', pgA.data.showTop === true ? 1 : 0, 1, 0);
+  pgA.onPageScroll({ scrollTop: 100 });
+  check('回到顶部后 showTop=false', pgA.data.showTop === false ? 1 : 0, 1, 0);
+  check('没有本地资料时不出现「本地资料」分组',
+    dirs.some(function (d) { return d.id === 'materials'; }) ? 0 : 1, 1, 0);
   check('操作规范专辑排在切面学习第一条',
     dirViews.items[0] && dirViews.items[0].kind === 'album' && dirViews.items[0].id === 'bookvid' ? 1 : 0, 1, 0);
   check('专辑标题为「实用超声规范化检查与操作（视频）」',
@@ -1335,7 +1344,7 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('视图数 = 8（主动脉瓣 2 / 二尖瓣 3 / 三尖瓣 2 / 肺动脉瓣 1）', VS.VALVE_VIEWS.length, 8, 0);
   check('视图 id 齐全',
     VS.VALVE_VIEWS.map(function (v) { return v.id; }).join(',') ===
-    'avTteSax,avTeeSax,mvArea,mvTteA4c,mvTeeCommissural,tvTte,tvSax,pv' ? 1 : 0, 1, 0);
+    'avTteSax,avTeeSax,mvArea,mvTteA4c,mvTeeCommissural,tvTte,tvTeeRvin,tvTeeTgsax' ? 1 : 0, 1, 0);
   check('主动脉瓣 3 分区（rcc/lcc/ncc）', VS.AV_CUSPS.length, 3, 0);
   check('二尖瓣 6 分段（p1–p3/a1–a3）', VS.MV_SEGMENTS.length, 6, 0);
   check('三尖瓣 3 瓣叶', VS.TV_LEAFLETS.length, 3, 0);
@@ -1352,7 +1361,12 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
 
   // —— 页面 ——
   pgV.onLoad();
-  check('页面按瓣膜分组（4 组）', pgV.data.groups.length, 4, 0);
+  check('页面按瓣膜分组（3 组：主动脉瓣 / 二尖瓣 / 三尖瓣）', pgV.data.groups.length, 3, 0);
+  check('肺动脉瓣视图已删除',
+    VS.VALVE_VIEWS.some(function (v) { return v.id === 'pv'; }) ? 0 : 1, 1, 0);
+  check('三尖瓣 3 张视图（四腔心 + TEE 流入流出道 + TEE 经胃底短轴）',
+    VS.VALVE_VIEWS.filter(function (v) { return v.group === '三尖瓣'; }).length, 3, 0);
+
   check('瓣膜解剖页不再单列教学资源（与切面学习/模拟器重复）',
     pgV.data.lessons === undefined ? 1 : 0, 1, 0);
   const allImgs = pgV.data.groups.reduce(function (n, g) { return n + g.views.length; }, 0);

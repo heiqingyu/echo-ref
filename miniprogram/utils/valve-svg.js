@@ -27,7 +27,6 @@ const PALETTE = {
   a1: '#2563eb', a2: '#3b82f6', a3: '#6366f1',           // 二尖瓣 前叶 A1–A3
   p1: '#d97706', p2: '#f59e0b', p3: '#f97316',           // 二尖瓣 后叶 P1–P3
   ant: '#2563eb', sep: '#0f9d58', post: '#d97706',        // 三尖瓣：前叶/隔叶/后叶
-  pv: '#7c3aed',                                       // 肺动脉瓣
 };
 
 /** 主动脉瓣三叶（TTE 短轴屏幕方位：RCC 上、LCC 右下、NCC 左下） */
@@ -366,48 +365,62 @@ function tvTteSvg(opts) {
 }
 
 /**
- * 三尖瓣 TTE 胸骨旁短轴（右室流入道切面）：三个瓣叶同屏
- * 隔叶紧邻室间隔（屏幕左下）、前叶靠前（上方）、后叶靠后（右）。
+ * TEE 食管中段右室流入-流出道切面（ME RV inflow-outflow，60–75°）
+ *
+ * 依据：TEE 该切面「后叶位于屏幕左侧、附着于右室游离壁；
+ * 前叶紧邻主动脉瓣。（Aneskey《Tricuspid and Pulmonic Valves》）」
+ * 同屏还可见 RA（近场）、RV（远场）、主动脉瓣与 RVOT。
  */
-function tvSaxSvg(opts) {
+function tvTeeRvinSvg(opts) {
   const sel = (opts && opts.sel) || null;
-  const cx = 212, cy = 204, R = 124;
   let n = '';
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="158" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="140" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>';
-  n += part('ant', cuspPath(cx, cy, R, -150, -30), dimColor(PALETTE.ant, sel, 'ant'), sel, '前叶',
-    ...pt(cx, cy, 80, -90), 14);
-  n += part('post', cuspPath(cx, cy, R, -30, 90), dimColor(PALETTE.post, sel, 'post'), sel, '后叶',
-    ...pt(cx, cy, 80, 30), 14);
-  n += part('sep', cuspPath(cx, cy, R, 90, 210), dimColor(PALETTE.sep, sel, 'sep'), sel, '隔叶',
-    ...pt(cx, cy, 80, 150), 14);
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="12" fill="#fff" stroke="#94a3b8" stroke-width="2"/>';
-  n += lab(cx, cy - 172, '前（近场）：RV 前壁', 13, '#64748b');
-  n += lab(cx, cy + 186, '后：RV 下壁', 13, '#64748b');
-  n += lab(cx, cy + 210, '右室流入道短轴：隔叶贴室间隔（左下）', 11, '#94a3b8');
-  return svgWrap(n, '0 0 424 440', '三尖瓣 TTE 短轴三叶示意图');
+  // 右房（近场，上）
+  n += chamber('M88 198 L310 206 C310 96 200 58 122 78 C96 86 88 132 88 198 Z');
+  n += lab(196, 132, 'RA（近场）', 15);
+  // 右室（远场，下）—— 与右房共用瓣环线
+  n += chamber('M88 198 L310 206 C332 300 330 392 300 432 C220 454 120 442 90 410 C78 340 82 260 88 198 Z');
+  n += lab(198, 344, 'RV（远场）', 16);
+  // 主动脉瓣 + 右室流出道（屏幕右侧）
+  n += ell(370, 118, 42, 38);
+  n += lab(370, 124, '主动脉瓣', 11, '#64748b');
+  n += chamber('M334 46 Q404 30 448 58 L446 88 Q394 68 334 82 Z', '#f1f4f8');
+  n += lab(394, 40, 'RVOT', 11, '#94a3b8');
+  // 三尖瓣瓣环（与两腔室共用边界）
+  n += '<path d="M96 199 L305 206" stroke="#94a3b8" stroke-width="2"/>';
+  // 后叶（左，贴右室游离壁）、前叶（右，贴主动脉瓣）
+  n += leaflet('post', 156, 200, 46, 46, 1, '后叶', sel, 14);
+  n += leaflet('ant', 268, 205, 42, 42, 1, '前叶', sel, 14);
+  n += lab(240, 498, 'TEE 60–75° 右室流入-流出道：左＝后叶（贴 RV 游离壁）· 右＝前叶（贴主动脉瓣）', 12, '#94a3b8');
+  n += lab(240, 520, '隔叶在此切面看不到，需 ME 四腔心', 11, '#94a3b8');
+  return svgWrap(n, '0 0 480 552', '三尖瓣 TEE 右室流入流出道分叶示意图');
 }
 
-/* ══════════════════════════════════════════════════════════
-   ④ 肺动脉瓣
-   ══════════════════════════════════════════════════════════ */
-
-/** TTE 胸骨旁短轴：三个半月瓣（前瓣 / 左瓣 / 右瓣），铺满瓣环 */
-function pvSvg(opts) {
+/**
+ * TEE 经胃底三尖瓣短轴（TG SAX，约 30°）
+ *
+ * 依据：该切面是唯一能同时显示三个瓣叶的 2D 切面；
+ * 「隔叶在屏幕右侧（靠左室），前叶在左侧远场、后叶在左侧近场」
+ * （Aneskey；PMC5494426 图 9 同）。
+ */
+function tvTeeTgsaxSvg(opts) {
   const sel = (opts && opts.sel) || null;
-  const cx = 212, cy = 202, R = 116;
+  const cx = 212, cy = 206, R = 122;
   let n = '';
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="150" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="132" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>';
-  // 三叶各 120°，同属 pv（不单独命名）
-  [[-150, -30], [-30, 90], [90, 210]].forEach(function (c) {
-    n += part('pv', cuspPath(cx, cy, R, c[0], c[1]), dimColor(PALETTE.pv, sel, 'pv'), sel, '', 0, 0);
-  });
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="11" fill="#fff" stroke="#94a3b8" stroke-width="2"/>';
-  n += lab(cx, cy - 166, '肺动脉瓣环（TTE 胸骨旁短轴）', 14, '#94a3b8');
-  n += lab(cx, cy + 176, '三个半月瓣：前瓣 / 右瓣 / 左瓣，铺满瓣环', 13, '#7c3aed');
-  n += lab(cx, cy + 200, '与主动脉瓣不同：无冠窦命名、无冠状动脉开口', 12, '#94a3b8');
-  return svgWrap(n, '0 0 424 420', '肺动脉瓣示意图');
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="156" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="138" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>';
+  // 隔叶在右（靠左室）、前叶左下方（远场）、后叶左上方（近场）
+  n += part('sep', cuspPath(cx, cy, R, -60, 60), dimColor(PALETTE.sep, sel, 'sep'), sel, '隔叶',
+    ...pt(cx, cy, 78, 0), 14);
+  n += part('ant', cuspPath(cx, cy, R, 60, 180), dimColor(PALETTE.ant, sel, 'ant'), sel, '前叶',
+    ...pt(cx, cy, 78, 120), 14);
+  n += part('post', cuspPath(cx, cy, R, 180, 300), dimColor(PALETTE.post, sel, 'post'), sel, '后叶',
+    ...pt(cx, cy, 78, 240), 14);
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="12" fill="#fff" stroke="#94a3b8" stroke-width="2"/>';
+  n += lab(cx, cy - 170, '近场（上）', 12, '#94a3b8');
+  n += lab(cx, cy + 182, '远场（下）', 12, '#94a3b8');
+  n += lab(cx, cy + 210, 'TEE 经胃底短轴（约 30°）：唯一能同屏看全三个瓣叶的 2D 切面', 11, '#94a3b8');
+  n += lab(cx, cy + 232, '隔叶在右（靠左室）· 后叶近场 · 前叶远场', 11, '#94a3b8');
+  return svgWrap(n, '0 0 424 470', '三尖瓣 TEE 经胃底短轴三叶示意图');
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -464,20 +477,20 @@ const VALVE_VIEWS = [
     fn: tvTteSvg,
   },
   {
-    id: 'tvSax',
+    id: 'tvTeeRvin',
     group: '三尖瓣',
-    title: '三尖瓣 · TTE 短轴（右室流入道）',
-    sub: '三个瓣叶同屏：隔叶靠室间隔、前叶靠前壁、后叶靠下壁',
-    parts: ['ant', 'sep', 'post'],
-    fn: tvSaxSvg,
+    title: '三尖瓣 · TEE 右室流入-流出道 60–75°',
+    sub: '左＝后叶（贴右室游离壁）· 右＝前叶（贴主动脉瓣）；隔叶需四腔心',
+    parts: ['post', 'ant'],
+    fn: tvTeeRvinSvg,
   },
   {
-    id: 'pv',
-    group: '肺动脉瓣',
-    title: '肺动脉瓣 · TTE 胸骨旁短轴',
-    sub: '前瓣 / 左瓣 / 右瓣三个半月瓣，铺满瓣环',
-    parts: ['pv'],
-    fn: pvSvg,
+    id: 'tvTeeTgsax',
+    group: '三尖瓣',
+    title: '三尖瓣 · TEE 经胃底短轴 约 30°',
+    sub: '唯一能同屏看全三叶的 2D 切面：隔叶在右（靠左室）· 后叶近场 · 前叶远场',
+    parts: ['sep', 'ant', 'post'],
+    fn: tvTeeTgsaxSvg,
   },
 ];
 
@@ -485,7 +498,6 @@ const VALVE_VIEWS = [
 const PART_INDEX = (function () {
   const m = {};
   AV_CUSPS.concat(MV_SEGMENTS, TV_LEAFLETS).forEach(function (p) { m[p.id] = p; });
-  m.pv = { id: 'pv', name: '肺动脉瓣', abbr: 'PA', color: PALETTE.pv };
   return m;
 })();
 
@@ -547,8 +559,8 @@ module.exports = {
   mvTteA4cSvg,
   mvTeeCommissuralSvg,
   tvTteSvg,
-  tvSaxSvg,
-  pvSvg,
+  tvTeeRvinSvg,
+  tvTeeTgsaxSvg,
   viewsOfPart,
   partInfoText,
   utf8ToBase64,
