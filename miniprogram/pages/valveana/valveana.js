@@ -1,5 +1,4 @@
 const VS = require('../../utils/valve-svg.js');
-const EX = require('../../utils/extra-data.js');
 
 /**
  * 瓣膜解剖页：瓣叶分区 / 分叶 / 分段的 TTE/TEE 示意图
@@ -17,22 +16,11 @@ Page({
     cur: 'av',
     sel: null,
     selInfo: '',
-    lessons: [],
   },
 
   onLoad() {
-    // 瓣膜解剖教学资源（视频 + 交互教学站）
-    const sec = (EX.LINK_SECTIONS || []).filter(function (s) { return s.id === 'valveana'; })[0];
-    const lessons = (sec ? sec.items : []).map(function (it) {
-      return {
-        id: it.id,
-        title: it.title,
-        sub: it.sub || '',
-        url: it.url,
-        video: /\.mp4(\?|$)/i.test(it.url || ''),
-      };
-    });
-    this.setData({ lessons: lessons });
+    // ★ 用户 2026-10-21：教学视频与交互教学站与「切面学习 / TEE 模拟器」重复，
+    //   本页不再单列，只保留分区示意图。
     this.rebuild();
   },
 
@@ -82,21 +70,4 @@ Page({
     this.rebuild();
   },
 
-  /** 教学资源：mp4 走站内播放页，其余复制链接到浏览器 */
-  onLesson(e) {
-    const d = e.currentTarget.dataset;
-    // ★ 小程序 dataset 里的布尔值取出来是字符串 'true'/'false'，不能直接当布尔用
-    const isVideo = d.video === true || d.video === 'true' || d.video === 1;
-    if (isVideo) {
-      wx.navigateTo({
-        url: '/pages/video/video?url=' + encodeURIComponent(d.url) +
-          '&title=' + encodeURIComponent(d.title || ''),
-      });
-      return;
-    }
-    wx.setClipboardData({
-      data: d.url,
-      success() { wx.showToast({ title: '链接已复制', icon: 'none' }); },
-    });
-  },
 });

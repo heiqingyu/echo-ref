@@ -1714,7 +1714,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.3.13</div>
+    <div class="verline">心脏超声参考值 · v1.3.14</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1770,7 +1770,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.3.13</div>
+      <div class="verline">心脏超声参考值 · v1.3.14</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -1903,34 +1903,21 @@ html, body {
       <div class="hi-line hi-line--sel" id="vaSelInfo" hidden></div>
     </div>
     <div class="card"><div class="card__t">主动脉瓣</div><div class="card__d">2 个标准切面示意</div>
-      <div class="wall-card"><div class="wall-card__t">主动脉瓣 · TTE 胸骨旁短轴</div><div class="wall-card__s">三叶分区（钟面位）· 右冠叶 RCC / 左冠叶 LCC / 无冠叶 NCC</div><div class="wallsvg-box" id="va-avTteSax"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="rcc" style="--c:#2563eb" aria-label="右冠叶">RCC</button><button class="segchip" data-vap="lcc" style="--c:#0f9d58" aria-label="左冠叶">LCC</button><button class="segchip" data-vap="ncc" style="--c:#d97706" aria-label="无冠叶">NCC</button></span></div></div>
-      <div class="wall-card"><div class="wall-card__t">主动脉瓣 · TEE 短轴 30–60°</div><div class="wall-card__s">同样三叶，但屏幕方位与 TTE 相反，注意冠脉开口位置</div><div class="wallsvg-box" id="va-avTeeSax"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="rcc" style="--c:#2563eb" aria-label="右冠叶">RCC</button><button class="segchip" data-vap="lcc" style="--c:#0f9d58" aria-label="左冠叶">LCC</button><button class="segchip" data-vap="ncc" style="--c:#d97706" aria-label="无冠叶">NCC</button></span></div></div></div>
+      <div class="wall-card"><div class="wall-card__t">主动脉瓣 · TTE 胸骨旁短轴</div><div class="wall-card__s">三叶铺满瓣口（各 120°）· RCC 在上（近 RVOT）/ LCC 右下 / NCC 左下（靠房间隔）</div><div class="wallsvg-box" id="va-avTteSax"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="rcc" style="--c:#2563eb" aria-label="右冠叶">RCC</button><button class="segchip" data-vap="lcc" style="--c:#0f9d58" aria-label="左冠叶">LCC</button><button class="segchip" data-vap="ncc" style="--c:#d97706" aria-label="无冠叶">NCC</button></span></div></div>
+      <div class="wall-card"><div class="wall-card__t">主动脉瓣 · TEE 短轴 30–60°</div><div class="wall-card__s">与 TTE 上下颠倒：LCC 右上 / NCC 左上（紧邻房间隔）/ RCC 下方（近 RVOT）</div><div class="wallsvg-box" id="va-avTeeSax"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="rcc" style="--c:#2563eb" aria-label="右冠叶">RCC</button><button class="segchip" data-vap="lcc" style="--c:#0f9d58" aria-label="左冠叶">LCC</button><button class="segchip" data-vap="ncc" style="--c:#d97706" aria-label="无冠叶">NCC</button></span></div></div></div>
     <div class="card"><div class="card__t">二尖瓣</div><div class="card__d">3 个标准切面示意</div>
-      <div class="wall-card"><div class="wall-card__t">二尖瓣 · 分叶与瓣口面积</div><div class="wall-card__s">前叶 P1–P3 约占 60%，后叶 A1–A3 约占 40%</div><div class="wallsvg-box" id="va-mvArea"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="p1" style="--c:#2563eb" aria-label="前叶 P1">P1</button><button class="segchip" data-vap="p2" style="--c:#3b82f6" aria-label="前叶 P2">P2</button><button class="segchip" data-vap="p3" style="--c:#6366f1" aria-label="前叶 P3">P3</button><button class="segchip" data-vap="a1" style="--c:#d97706" aria-label="后叶 A1">A1</button><button class="segchip" data-vap="a2" style="--c:#f59e0b" aria-label="后叶 A2">A2</button><button class="segchip" data-vap="a3" style="--c:#f97316" aria-label="后叶 A3">A3</button></span></div></div>
-      <div class="wall-card"><div class="wall-card__t">二尖瓣 · TTE 四腔心</div><div class="wall-card__s">可见前叶 P1–P3 与后叶中段 A2</div><div class="wallsvg-box" id="va-mvTteA4c"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="p1" style="--c:#2563eb" aria-label="前叶 P1">P1</button><button class="segchip" data-vap="p2" style="--c:#3b82f6" aria-label="前叶 P2">P2</button><button class="segchip" data-vap="p3" style="--c:#6366f1" aria-label="前叶 P3">P3</button><button class="segchip" data-vap="a2" style="--c:#f59e0b" aria-label="后叶 A2">A2</button></span></div></div>
-      <div class="wall-card"><div class="wall-card__t">二尖瓣 · TEE 60° 交界切面</div><div class="wall-card__s">commissural view，同时看清 P1、A2、P3 与两个交界</div><div class="wallsvg-box" id="va-mvTeeCommissural"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="p1" style="--c:#2563eb" aria-label="前叶 P1">P1</button><button class="segchip" data-vap="a2" style="--c:#f59e0b" aria-label="后叶 A2">A2</button><button class="segchip" data-vap="p3" style="--c:#6366f1" aria-label="前叶 P3">P3</button></span></div></div></div>
-    <div class="card"><div class="card__t">三尖瓣</div><div class="card__d">1 个标准切面示意</div>
-      <div class="wall-card"><div class="wall-card__t">三尖瓣 · TTE 四腔心</div><div class="wall-card__s">可见隔叶与前叶；后叶需胸骨旁短轴右室流入道切面</div><div class="wallsvg-box" id="va-tvTte"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="ant" style="--c:#2563eb" aria-label="前叶">前叶</button><button class="segchip" data-vap="sep" style="--c:#0f9d58" aria-label="隔叶">隔叶</button></span></div></div></div>
+      <div class="wall-card"><div class="wall-card__t">二尖瓣 · 分叶与瓣口面积</div><div class="wall-card__s">前叶 A1–A3（贴主动脉瓣侧）· 后叶 P1–P3（贴后壁侧）；A1 与 P1、A3 与 P3 分别相邻于两侧交界</div><div class="wallsvg-box" id="va-mvArea"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="a1" style="--c:#2563eb" aria-label="前叶 A1">A1</button><button class="segchip" data-vap="a2" style="--c:#3b82f6" aria-label="前叶 A2">A2</button><button class="segchip" data-vap="a3" style="--c:#6366f1" aria-label="前叶 A3">A3</button><button class="segchip" data-vap="p1" style="--c:#d97706" aria-label="后叶 P1">P1</button><button class="segchip" data-vap="p2" style="--c:#f59e0b" aria-label="后叶 P2">P2</button><button class="segchip" data-vap="p3" style="--c:#f97316" aria-label="后叶 P3">P3</button></span></div></div>
+      <div class="wall-card"><div class="wall-card__t">二尖瓣 · TTE 心尖四腔心</div><div class="wall-card__s">只分辨大系：A2（室间隔侧）与 P2（侧壁侧）</div><div class="wallsvg-box" id="va-mvTteA4c"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="a2" style="--c:#3b82f6" aria-label="前叶 A2">A2</button><button class="segchip" data-vap="p2" style="--c:#f59e0b" aria-label="后叶 P2">P2</button></span></div></div>
+      <div class="wall-card"><div class="wall-card__t">二尖瓣 · TEE 45–60° 交界切面</div><div class="wall-card__s">屏幕方位：左 P3 · 中 A2 · 右 P1；A2 属前叶在远场，显示更长</div><div class="wallsvg-box" id="va-mvTeeCommissural"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="p3" style="--c:#f97316" aria-label="后叶 P3">P3</button><button class="segchip" data-vap="a2" style="--c:#3b82f6" aria-label="前叶 A2">A2</button><button class="segchip" data-vap="p1" style="--c:#d97706" aria-label="后叶 P1">P1</button></span></div></div></div>
+    <div class="card"><div class="card__t">三尖瓣</div><div class="card__d">2 个标准切面示意</div>
+      <div class="wall-card"><div class="wall-card__t">三尖瓣 · TTE 心尖四腔心</div><div class="wall-card__s">显示隔叶（靠室间隔）与前叶；后叶需短轴右室流入道切面</div><div class="wallsvg-box" id="va-tvTte"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="sep" style="--c:#0f9d58" aria-label="隔叶">隔叶</button><button class="segchip" data-vap="ant" style="--c:#2563eb" aria-label="前叶">前叶</button></span></div></div>
+      <div class="wall-card"><div class="wall-card__t">三尖瓣 · TTE 短轴（右室流入道）</div><div class="wall-card__s">三个瓣叶同屏：隔叶靠室间隔、前叶靠前壁、后叶靠下壁</div><div class="wallsvg-box" id="va-tvSax"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="ant" style="--c:#2563eb" aria-label="前叶">前叶</button><button class="segchip" data-vap="sep" style="--c:#0f9d58" aria-label="隔叶">隔叶</button><button class="segchip" data-vap="post" style="--c:#d97706" aria-label="后叶">后叶</button></span></div></div></div>
     <div class="card"><div class="card__t">肺动脉瓣</div><div class="card__d">1 个标准切面示意</div>
-      <div class="wall-card"><div class="wall-card__t">肺动脉瓣 · TTE 胸骨旁短轴</div><div class="wall-card__s">三个半月瓣，不单独命名</div><div class="wallsvg-box" id="va-pv"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="pv" style="--c:#7c3aed" aria-label="肺动脉瓣">PA</button></span></div></div></div>
-    <div class="note">主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC。TTE 短轴按钟面位判读（12 点前壁），TEE 短轴 30–60° 的屏幕方位与 TTE 不同，务必以冠状动脉开口和左心房位置核实。</div>
-    <div class="note">二尖瓣分叶：前叶 P1–P3、后叶 A1–A3。交界区为 P1–A1 与 P3–A3。前叶瓣口面积约占 60%，后叶约 40%。四腔心切面只能分辨前叶 / 后叶大系，精确分叶需 TEE 60° 交界切面。</div>
-    <div class="note">三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心显示隔叶与前叶，后叶需胸骨旁短轴右室流入道切面。</div>
-    <div class="note">肺动脉瓣为三个半月瓣，不单独命名，也没有冠状窦对应关系。</div>
-    <div class="card">
-      <div class="card__t">瓣膜教学视频与交互教学</div>
-      <div class="card__d">视频与交互教学站均为免登录可直接打开的地址，点击在新标签页打开。</div>
-      <div class="va-lesson"><div class="va-lesson__t">二尖瓣口彩色多普勒<span class="va-lesson__b">视频</span></div><div class="va-lesson__s">实用超声规范化检查与操作 · 动图 3-1-41</div><a class="va-lesson__go" href="https://image.medonhand.com/E03DACD18D37A094/3-1-41.mp4" target="_blank" rel="noopener">▶ 打开视频</a></div>
-    <div class="va-lesson"><div class="va-lesson__t">三尖瓣口血流<span class="va-lesson__b">视频</span></div><div class="va-lesson__s">实用超声规范化检查与操作 · 动图 3-1-43</div><a class="va-lesson__go" href="https://image.medonhand.com/E03DACD18D37A094/3-1-43.mp4" target="_blank" rel="noopener">▶ 打开视频</a></div>
-    <div class="va-lesson"><div class="va-lesson__t">主动脉瓣口血流<span class="va-lesson__b">视频</span></div><div class="va-lesson__s">实用超声规范化检查与操作 · 动图 3-1-45</div><a class="va-lesson__go" href="https://image.medonhand.com/E03DACD18D37A094/3-1-45.mp4" target="_blank" rel="noopener">▶ 打开视频</a></div>
-    <div class="va-lesson"><div class="va-lesson__t">肺动脉瓣口彩色多普勒<span class="va-lesson__b">视频</span></div><div class="va-lesson__s">实用超声规范化检查与操作 · 动图 3-1-47</div><a class="va-lesson__go" href="https://image.medonhand.com/E03DACD18D37A094/3-1-47.mp4" target="_blank" rel="noopener">▶ 打开视频</a></div>
-    <div class="va-lesson"><div class="va-lesson__t">心尖四腔心组织多普勒<span class="va-lesson__b">视频</span></div><div class="va-lesson__s">实用超声规范化检查与操作 · 动图 3-1-48</div><a class="va-lesson__go" href="https://image.medonhand.com/E03DACD18D37A094/3-1-48.mp4" target="_blank" rel="noopener">▶ 打开视频</a></div>
-    <div class="va-lesson"><div class="va-lesson__t">TEE 标准 20 视图（中文）<span class="va-lesson__b">教学站</span></div><div class="va-lesson__s">多伦多大学 PIE · 含主动脉瓣短轴与二尖瓣交界切面</div><a class="va-lesson__go" href="https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/standardViewsHTML5/TEE-HTML5-SV-CH/" target="_blank" rel="noopener">打开教学站</a></div>
-    <div class="va-lesson"><div class="va-lesson__t">TTE 经胸标准切面<span class="va-lesson__b">教学站</span></div><div class="va-lesson__s">多伦多大学 PIE · 胸骨旁短轴 / 心尖切面对照</div><a class="va-lesson__go" href="https://pie.med.utoronto.ca/TTE/TTE_content/assets/applications/TTE-HTML5-SV/index.html" target="_blank" rel="noopener">打开教学站</a></div>
-    <div class="va-lesson"><div class="va-lesson__t">TEE 标准视图速查表<span class="va-lesson__b">教学站</span></div><div class="va-lesson__s">探头角度 · 平面 · 对应结构 · 可打印</div><a class="va-lesson__go" href="https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/TEE-cheat-sheet/index.htm" target="_blank" rel="noopener">打开教学站</a></div>
-    <div class="va-lesson"><div class="va-lesson__t">多伦多 TEE 交互模拟器<span class="va-lesson__b">教学站</span></div><div class="va-lesson__s">逐个标准切面过一遍，含瓣叶命名对照</div><a class="va-lesson__go" href="https://pie.med.utoronto.ca/tee/TEE_content/assets/applications/teeSimulation/index.html" target="_blank" rel="noopener">打开教学站</a></div>
-    <div class="va-lesson"><div class="va-lesson__t">CT2TEE 在线模拟器<span class="va-lesson__b">教学站</span></div><div class="va-lesson__s">CT 重建驱动 · 旋转 / 俯仰 / 成角操控</div><a class="va-lesson__go" href="https://www.ct2tee.agh.edu.pl/" target="_blank" rel="noopener">打开教学站</a></div>
-    </div>
+      <div class="wall-card"><div class="wall-card__t">肺动脉瓣 · TTE 胸骨旁短轴</div><div class="wall-card__s">前瓣 / 左瓣 / 右瓣三个半月瓣，铺满瓣环</div><div class="wallsvg-box" id="va-pv"></div><div class="wall-group"><span class="wall-group__l">解剖分区</span><span class="wall-chips"><button class="segchip" data-vap="pv" style="--c:#7c3aed" aria-label="肺动脉瓣">PA</button></span></div></div></div>
+    <div class="note">主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC，三叶闭合时铺满整个瓣口。TTE 短轴按钟面位判读（前壁在 12 点）；TEE 短轴 30–60° 与 TTE <b>上下颠倒</b>（探头在左房后方），LCC 在右上、NCC 在左上并紧邻房间隔、RCC 在下方靠近 RVOT，冠脉开口约在 2 点（左冠）与 6 点（右冠）。</div>
+    <div class="note">二尖瓣分叶（Carpentier–ASE/SCA 命名）：<b>前叶 A1–A3</b>（贴主动脉瓣侧）、<b>后叶 P1–P3</b>（贴左室后壁侧）。P1 邻前外侧交界、P3 邻后内侧交界；A1 与 P1、A3 与 P3 分别在两侧相邻。后叶附着约 2/3 瓣环、前叶约 1/3，但前叶更长，两叶面积大致相当。四腔心只显示 A2 与 P2，精确分叶需 TEE 45–60° 交界切面（左 P3 · 中 A2 · 右 P1）。</div>
+    <div class="note">三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心显示隔叶与前叶，后叶需胸骨旁短轴右室流入道切面；隔叶附着点比二尖瓣前叶更靠近心尖（Ebstein 畸形时显著下移）。</div>
+    <div class="note">肺动脉瓣为三个半月瓣（前瓣 / 右瓣 / 左瓣），铺满瓣环，但没有无冠窦命名与冠状动脉开口。</div>
     <div class="note note--warn">本页为教学示意图，不替代真实超声图像；示意图仅标注解剖分区与切面关系，测量与判读请回看「公式集 → 瓣膜评估」条目的定量标准。</div>
   </section>
 
@@ -6181,41 +6168,47 @@ function utf8ToBase64(str) {
  * 仿 segment-svg.js 的模式：小程序端转 data URI 给 <image>，
  * 网页端直接输出 SVG 字符串插入 DOM。
  *
- * 内容涵盖（用户需求「瓣叶分区、分叶、分段的 TTE/TEE 示意图」）：
- *   ① 主动脉瓣三叶分区（TTE 短轴钟面位 / TEE 短轴 30–60°）
- *   ② 二尖瓣分叶（TTE 四腔心 / TEE 60° 交界切面 / 瓣口面积占比）
- *   ③ 三尖瓣三个瓣叶（TTE 四腔心）
- *   ④ 肺动脉瓣（TTE 胸骨旁短轴）
+ * ★ 解剖方位依据（2026-10-21 按指南逐条核对后重画）：
+ *   - EAE/EACVI《Recommendations for transoesophageal echocardiography: update 2010》：
+ *     TEE 主动脉瓣短轴「LCC 位于右上三分之一、NCC 位于左上三分之一、
+ *     RCC 位于下方（偏前）」，并明确指出该切面「像是一个上下颠倒的
+ *     胸骨旁主动脉瓣短轴切面」。冠脉开口约在 2 点（左冠）与 6 点（右冠）。
+ *   - 中国《超声医学专科能力建设专用初级教材》：TEE 短轴「左冠瓣位于后方（近场）
+ *     并在图像右侧，无冠瓣靠近房间隔，右冠瓣位于前方（远场）靠近 RVOT」。
+ *   - 二尖瓣命名：前叶 = A1/A2/A3（Anterior），后叶 = P1/P2/P3（Posterior）
+ *     （此前版本把 A/P 弄反了，本轮修正）。
+ *   - TEE 二尖瓣交界切面（ME MC）：左边 P3、中间 A2、右边 P1。
+ *   - 四腔心：主要显示 A2 与 P2。
  *
  * 交互：点击色块 → 各视图同步高亮同一解剖结构（opts.sel）
  */
 
-/** 各瓣膜分区配色 */
+/** 各瓣膜分区配色：前叶系（A）蓝、后叶系（P）橙 */
 const PALETTE = {
-  rcc: '#2563eb',   // 右冠叶
-  lcc: '#0f9d58',   // 左冠叶
-  ncc: '#d97706',   // 无冠叶
-  p1: '#2563eb', p2: '#3b82f6', p3: '#6366f1',           // 二尖瓣前叶
-  a1: '#d97706', a2: '#f59e0b', a3: '#f97316',           // 二尖瓣后叶
+  rcc: '#2563eb',   // 主动脉瓣 右冠叶
+  lcc: '#0f9d58',   // 主动脉瓣 左冠叶
+  ncc: '#d97706',   // 主动脉瓣 无冠叶
+  a1: '#2563eb', a2: '#3b82f6', a3: '#6366f1',           // 二尖瓣 前叶 A1–A3
+  p1: '#d97706', p2: '#f59e0b', p3: '#f97316',           // 二尖瓣 后叶 P1–P3
   ant: '#2563eb', sep: '#0f9d58', post: '#d97706',        // 三尖瓣：前叶/隔叶/后叶
   pv: '#7c3aed',                                       // 肺动脉瓣
 };
 
-/** 主动脉瓣三叶命名与位置（TTE 短轴钟面位） */
+/** 主动脉瓣三叶（TTE 短轴屏幕方位：RCC 上、LCC 右下、NCC 左下） */
 const AV_CUSPS = [
   { id: 'rcc', name: '右冠叶', abbr: 'RCC', color: PALETTE.rcc },
   { id: 'lcc', name: '左冠叶', abbr: 'LCC', color: PALETTE.lcc },
   { id: 'ncc', name: '无冠叶', abbr: 'NCC', color: PALETTE.ncc },
 ];
 
-/** 二尖瓣分叶：前叶 P1–P3、后叶 A1–A3 */
+/** 二尖瓣分叶：★ 前叶 = A1–A3（大，约 60% 瓣口面积）、后叶 = P1–P3（约 40%） */
 const MV_SEGMENTS = [
-  { id: 'p1', name: '前叶 P1', abbr: 'P1', color: PALETTE.p1 },
-  { id: 'p2', name: '前叶 P2', abbr: 'P2', color: PALETTE.p2 },
-  { id: 'p3', name: '前叶 P3', abbr: 'P3', color: PALETTE.p3 },
-  { id: 'a1', name: '后叶 A1', abbr: 'A1', color: PALETTE.a1 },
-  { id: 'a2', name: '后叶 A2', abbr: 'A2', color: PALETTE.a2 },
-  { id: 'a3', name: '后叶 A3', abbr: 'A3', color: PALETTE.a3 },
+  { id: 'a1', name: '前叶 A1', abbr: 'A1', color: PALETTE.a1 },
+  { id: 'a2', name: '前叶 A2', abbr: 'A2', color: PALETTE.a2 },
+  { id: 'a3', name: '前叶 A3', abbr: 'A3', color: PALETTE.a3 },
+  { id: 'p1', name: '后叶 P1', abbr: 'P1', color: PALETTE.p1 },
+  { id: 'p2', name: '后叶 P2', abbr: 'P2', color: PALETTE.p2 },
+  { id: 'p3', name: '后叶 P3', abbr: 'P3', color: PALETTE.p3 },
 ];
 
 /** 三尖瓣三个瓣叶 */
@@ -6249,6 +6242,21 @@ function wedge(cx, cy, ri, ro, a, b) {
     ' A' + ro + ' ' + ro + ' 0 ' + large + ' 1 ' + f1(p2[0]) + ' ' + f1(p2[1]) +
     ' L' + f1(p3[0]) + ' ' + f1(p3[1]) +
     ' A' + ri + ' ' + ri + ' 0 ' + large + ' 0 ' + f1(p4[0]) + ' ' + f1(p4[1]) + ' Z';
+}
+
+/**
+ * 半月瓣：外缘贴瓣环、内缘向中心鼓的扇形瓣叶
+ * ★ 三叶各占 120°，拼起来正好铺满整个瓣口（覆盖 100%，不留空隙）
+ */
+function cuspPath(cx, cy, R, a0, a1) {
+  const p1 = pt(cx, cy, R, a0);
+  const p2 = pt(cx, cy, R, a1);
+  const mid = (a0 + a1) / 2;
+  const cp = pt(cx, cy, R * 0.16, mid);
+  const large = (a1 - a0) > 180 ? 1 : 0;
+  return 'M' + f1(p1[0]) + ' ' + f1(p1[1]) +
+    ' A' + R + ' ' + R + ' 0 ' + large + ' 1 ' + f1(p2[0]) + ' ' + f1(p2[1]) +
+    ' Q' + f1(cp[0]) + ' ' + f1(cp[1]) + ' ' + f1(p1[0]) + ' ' + f1(p1[1]) + ' Z';
 }
 
 function lab(x, y, t, size, color, weight) {
@@ -6325,69 +6333,77 @@ function leaflet(id, x, y, w, h, s, text, sel, fs) {
    ══════════════════════════════════════════════════════════ */
 
 /**
- * TTE 胸骨旁短轴（主动脉瓣水平）钟面位
- * 三叶呈 Y 形闭合；右冠叶约 1–2 点、左冠叶约 4–5 点、无冠叶约 8–10 点
+ * TTE 胸骨旁短轴（主动脉瓣水平）
+ * 近场在屏幕上方 = RVOT（前）；远场在下方 = LA（后）。
+ * RCC 靠 RVOT → 屏幕上方；LCC 靠肺动脉（患者左后）→ 屏幕右下；
+ * NCC 靠房间隔（患者右后）→ 屏幕左下。三叶各 120°，铺满瓣口。
  */
 function avTteSaxSvg(opts) {
   const sel = (opts && opts.sel) || null;
-  const cx = 210, cy = 210;
+  const cx = 212, cy = 202, R = 130;
   let n = '';
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="152" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="120" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>';
-  // 三叶各占一个窦（120° 一块），中心闭合点
-  const a0 = -118, a1 = -62, a2 = -58, a3 = 2, a4 = 8, a5 = 128, a6 = 172, a7 = -172;
-  n += part('rcc', wedge(cx, cy, 14, 120, a0, a1), dimColor(PALETTE.rcc, sel, 'rcc'), sel, 'RCC',
-    ...pt(cx, cy, 74, (a0 + a1) / 2));
-  n += part('lcc', wedge(cx, cy, 14, 120, a2, a3), dimColor(PALETTE.lcc, sel, 'lcc'), sel, 'LCC',
-    ...pt(cx, cy, 74, (a2 + a3) / 2));
-  n += part('ncc', wedge(cx, cy, 14, 120, a4, a5), dimColor(PALETTE.ncc, sel, 'ncc'), sel, 'NCC',
-    ...pt(cx, cy, 74, (a4 + a5) / 2));
-  // 闭合的三条交线（Y 形）
-  const Y = [[-90, -30], [30, 90], [150, 210]];
-  Y.forEach(function (seg) {
-    const p1 = pt(cx, cy, 118, seg[0]);
-    const p2 = pt(cx, cy, 14, seg[1]);
-    n += '<path d="M' + f1(p1[0]) + ' ' + f1(p1[1]) + ' L' + f1(p2[0]) + ' ' + f1(p2[1]) +
-      '" stroke="#ffffff" stroke-width="3"/>';
+  // 主动脉根部 / 窦壁
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="164" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="146" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>';
+  // 三叶（各 120°，覆盖 100%）
+  n += part('rcc', cuspPath(cx, cy, R, -150, -30), dimColor(PALETTE.rcc, sel, 'rcc'), sel, 'RCC',
+    ...pt(cx, cy, 82, -90));
+  n += part('lcc', cuspPath(cx, cy, R, -30, 90), dimColor(PALETTE.lcc, sel, 'lcc'), sel, 'LCC',
+    ...pt(cx, cy, 82, 34));
+  n += part('ncc', cuspPath(cx, cy, R, 90, 210), dimColor(PALETTE.ncc, sel, 'ncc'), sel, 'NCC',
+    ...pt(cx, cy, 82, 146));
+  // 三个交界点（对合线交汇处）
+  [-150, -30, 90].forEach(function (a) {
+    const p = pt(cx, cy, R, a);
+    n += '<circle cx="' + f1(p[0]) + '" cy="' + f1(p[1]) + '" r="3.5" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>';
   });
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="13" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>';
-  // 冠状动脉开口：RCA 起自右冠窦、LCA 起自左冠窦
-  n += labL(cx + 96, cy - 118, 'RCA 开口', 13, '#dc2626');
-  n += labL(cx + 92, cy + 128, 'LCA 开口', 13, '#dc2626');
-  n += lab(cx, cy - 164, '前壁（前）', 14, '#94a3b8');
-  n += lab(cx, cy + 176, '后壁（后）', 14, '#94a3b8');
-  n += lab(cx, 246, 'LVOT', 15, '#94a3b8');
-  return svgWrap(n, '0 0 420 420', '主动脉瓣 TTE 短轴三叶分区示意图');
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="12" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>';
+  // 冠脉开口：RCA 起自右冠窦（前），LCA 起自左冠窦（左后）
+  const rca = pt(cx, cy, 146, -132);
+  const lca = pt(cx, cy, 146, 34);
+  n += '<circle cx="' + f1(rca[0]) + '" cy="' + f1(rca[1]) + '" r="7" fill="#dc2626" stroke="#fff" stroke-width="2"/>';
+  n += '<circle cx="' + f1(lca[0]) + '" cy="' + f1(lca[1]) + '" r="7" fill="#dc2626" stroke="#fff" stroke-width="2"/>';
+  n += lab(cx, cy - 178, '前（近场）：RVOT', 14, '#64748b');
+  n += lab(cx, cy + 186, '后（远场）：LA', 14, '#64748b');
+  n += lab(cx, cy + 212, '三叶各 120°，铺满整个瓣口；NCC 邻房间隔、RCC 邻 RVOT', 11, '#94a3b8');
+  n += lab(cx, cy + 234, '红点 = 冠脉开口：RCA 起自右冠窦 · LCA 起自左冠窦', 11, '#dc2626');
+  return svgWrap(n, '0 0 424 470', '主动脉瓣 TTE 短轴三叶分区示意图');
 }
 
 /**
- * TEE 短轴 30–60°：主动脉瓣三叶（屏幕方位与 TTE 不同）
+ * TEE 食管中段短轴 30–60°（ME AV SAX）
+ * ★ 与 TTE 上下颠倒：探头在左房后方，近场（屏幕上方）是 LA，
+ *   远场（下方）才是 RVOT。故 RCC 在下方、LCC 右上、NCC 左上。
+ *   依据 EAE 2010 TEE 指南；冠脉开口约 2 点（左冠）、6 点（右冠）。
  */
 function avTeeSaxSvg(opts) {
   const sel = (opts && opts.sel) || null;
-  const cx = 210, cy = 205;
+  const cx = 212, cy = 202, R = 130;
   let n = '';
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="142" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="112" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>';
-  // TEE 视角：右冠叶在屏幕左上、左冠叶在右上、无冠叶在下方
-  n += part('rcc', wedge(cx, cy, 14, 112, -142, -82), dimColor(PALETTE.rcc, sel, 'rcc'), sel, 'RCC',
-    ...pt(cx, cy, 70, -112));
-  n += part('lcc', wedge(cx, cy, 14, 112, -78, -18), dimColor(PALETTE.lcc, sel, 'lcc'), sel, 'LCC',
-    ...pt(cx, cy, 70, -48));
-  n += part('ncc', wedge(cx, cy, 14, 112, -14, 106), dimColor(PALETTE.ncc, sel, 'ncc'), sel, 'NCC',
-    ...pt(cx, cy, 70, 46));
-  const Y = [[-112, -52], [8, 68], [128, 188]];
-  Y.forEach(function (seg) {
-    const p1 = pt(cx, cy, 110, seg[0]);
-    const p2 = pt(cx, cy, 14, seg[1]);
-    n += '<path d="M' + f1(p1[0]) + ' ' + f1(p1[1]) + ' L' + f1(p2[0]) + ' ' + f1(p2[1]) +
-      '" stroke="#ffffff" stroke-width="3"/>';
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="164" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="146" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>';
+  // LCC 右上、NCC 左上、RCC 下方 —— 与 TTE 上下颠倒
+  n += part('lcc', cuspPath(cx, cy, R, -90, 30), dimColor(PALETTE.lcc, sel, 'lcc'), sel, 'LCC',
+    ...pt(cx, cy, 82, -30));
+  n += part('rcc', cuspPath(cx, cy, R, 30, 150), dimColor(PALETTE.rcc, sel, 'rcc'), sel, 'RCC',
+    ...pt(cx, cy, 82, 90));
+  n += part('ncc', cuspPath(cx, cy, R, 150, 270), dimColor(PALETTE.ncc, sel, 'ncc'), sel, 'NCC',
+    ...pt(cx, cy, 82, 210));
+  [-90, 30, 150].forEach(function (a) {
+    const p = pt(cx, cy, R, a);
+    n += '<circle cx="' + f1(p[0]) + '" cy="' + f1(p[1]) + '" r="3.5" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>';
   });
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="13" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>';
-  n += lab(cx, cy - 152, 'TEE 30–60° 短轴', 15, '#94a3b8');
-  n += lab(cx, cy + 164, 'LA（近场，在屏幕下方）', 14, '#94a3b8');
-  n += lab(cx, cy + 190, '冠脉开口位置与 TTE 相反，须以解剖标志核实', 12, '#dc2626');
-  return svgWrap(n, '0 0 420 410', '主动脉瓣 TEE 短轴三叶分区示意图');
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="12" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>';
+  // 冠脉开口：约 2 点（LCA，位于 LCC）、6 点（RCA，位于 RCC）
+  const lca = pt(cx, cy, 146, -60);
+  const rca = pt(cx, cy, 146, 90);
+  n += '<circle cx="' + f1(lca[0]) + '" cy="' + f1(lca[1]) + '" r="7" fill="#dc2626" stroke="#fff" stroke-width="2"/>';
+  n += '<circle cx="' + f1(rca[0]) + '" cy="' + f1(rca[1]) + '" r="7" fill="#dc2626" stroke="#fff" stroke-width="2"/>';
+  n += lab(cx, cy - 178, '后（近场）：LA', 14, '#64748b');
+  n += lab(cx, cy + 186, '前（远场）：RVOT', 14, '#64748b');
+  n += lab(cx, cy + 212, '与 TTE 上下颠倒：近场是左房、远场才是 RVOT；NCC 紧邻房间隔', 11, '#94a3b8');
+  n += lab(cx, cy + 234, '红点 = 冠脉开口（左冠约 2 点 · 右冠约 6 点）', 11, '#dc2626');
+  return svgWrap(n, '0 0 424 470', '主动脉瓣 TEE 短轴三叶分区示意图');
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -6395,8 +6411,8 @@ function avTeeSaxSvg(opts) {
    ══════════════════════════════════════════════════════════ */
 
 /**
- * TTE 四腔心：二尖瓣前叶 / 后叶大系
- * 房室瓣环在左房与左室交界处 ≈ y450；前叶在屏幕右上（P 系），后叶在左下（A 系）
+ * TTE 心尖四腔心：只分辨前叶 / 后叶大系
+ * 四腔心主要显示 A2（靠室间隔侧）与 P2（靠侧壁侧）。
  */
 function mvTteA4cSvg(opts) {
   const sel = (opts && opts.sel) || null;
@@ -6410,72 +6426,88 @@ function mvTteA4cSvg(opts) {
   // 左室腔（心尖朝上）
   n += ell(lvCx, lvCy, rx, ry);
   // 瓣环平面
-  const VY = 450;
-  // 前叶 P（向心尖方向鼓 = 向上，s = -1），沿室间隔侧 P3 → P1
-  n += leaflet('p3', 330, VY - 2, 44, 40, -1, 'P3', sel, 16);
-  n += leaflet('p2', 362, VY - 34, 40, 36, -1, 'P2', sel, 16);
-  n += leaflet('p1', 330, VY - 66, 36, 30, -1, 'P1', sel, 16);
-  // 后叶 A2（向左室后壁方向鼓 = 向下）
-  n += leaflet('a2', 258, VY + 6, 42, 36, 1, 'A2', sel, 16);
+  const VY = 452;
+  // 前叶 A2：靠室间隔侧（屏幕左侧），较长；后叶 P2：靠侧壁侧，较短
+  n += leaflet('a2', 270, VY, 46, 56, -1, 'A2', sel, 16);
+  n += leaflet('p2', 350, VY, 36, 36, -1, 'P2', sel, 16);
   n += lab(300, 300, 'LV', 19);
   n += lab(196, 414, 'TV', 14);
-  n += lab(300, 66, '心尖', 14, '#94a3b8');
-  n += lab(240, 552, '四腔心只能分辨前叶 / 后叶大系，精确分叶需 TEE 交界切面', 13, '#94a3b8');
-  return svgWrap(n, '0 0 480 566', '二尖瓣 TTE 四腔心分叶示意图');
+  n += lab(300, 40, '心尖', 14, '#94a3b8');
+  n += lab(240, 552, '四腔心只显示 A2 与 P2；精确分叶需 TEE 交界切面', 12, '#94a3b8');
+  return svgWrap(n, '0 0 480 578', '二尖瓣 TTE 四腔心分叶示意图');
 }
 
 /**
- * TEE 60° 交界切面（commissural view）：同屏可见 P1、A2、P3 与两个交界
+ * TEE 二尖瓣交界切面（ME MC，45–60°，即常说的 commissural view）
+ * ★ 屏幕方位：左 = P3、中 = A2、右 = P1（见《超声医学专科能力建设专用初级教材》）
+ * A2 属前叶，位于远场，故较长、垂向 LV；P3 / P1 属后叶，位于近场。
  */
 function mvTeeCommissuralSvg(opts) {
   const sel = (opts && opts.sel) || null;
   let n = '';
   // 左房（近场，上方）
-  n += chamber('M116 34 Q240 2 364 34 L358 132 Q240 104 122 132 Z');
-  n += lab(240, 74, 'LA（近场）', 15);
+  n += ell(240, 104, 126, 62);
+  n += lab(240, 110, 'LA（近场）', 15);
   // 左室（远场，下方）
-  n += ell(240, 380, 132, 112);
-  n += lab(240, 386, 'LV（远场）', 16);
-  // 瓣环平面 ≈ y200；三个叶段沿同一条线排开
-  const VY = 196;
-  n += leaflet('p1', 138, VY, 46, 36, -1, 'P1', sel);
-  n += leaflet('a2', 240, VY - 4, 46, 38, -1, 'A2', sel);
-  n += leaflet('p3', 342, VY, 46, 36, -1, 'P3', sel);
+  n += ell(240, 402, 138, 116);
+  n += lab(240, 408, 'LV（远场）', 16);
+  // 瓣环平面
+  const VY = 212;
+  n += '<path d="M92 ' + VY + ' L388 ' + VY + '" stroke="#cbd5e1" stroke-width="2"/>';
+  // P3（左）、A2（中，较长）、P1（右）
+  n += leaflet('p3', 146, VY, 48, 38, 1, 'P3', sel, 15);
+  n += leaflet('a2', 240, VY, 50, 64, 1, 'A2', sel, 16);
+  n += leaflet('p1', 334, VY, 48, 38, 1, 'P1', sel, 15);
   // 两个交界（虚线）
-  n += '<path d="M184 190 L184 224" stroke="#dc2626" stroke-width="3" stroke-dasharray="5 4"/>';
-  n += '<path d="M296 190 L296 224" stroke="#dc2626" stroke-width="3" stroke-dasharray="5 4"/>';
-  n += lab(184, 240, '交界', 12, '#dc2626');
-  n += lab(296, 240, '交界', 12, '#dc2626');
-  n += lab(240, 140, 'TEE 60° 交界切面', 15, '#94a3b8');
-  n += lab(240, 520, '前叶 P 在近场呈弧形，后叶 A2 位于远场中部', 13, '#94a3b8');
-  return svgWrap(n, '0 0 480 536', '二尖瓣 TEE 交界切面分叶示意图');
+  n += '<path d="M192 ' + (VY - 12) + ' L192 ' + (VY + 36) + '" stroke="#dc2626" stroke-width="3" stroke-dasharray="5 4"/>';
+  n += '<path d="M288 ' + (VY - 12) + ' L288 ' + (VY + 36) + '" stroke="#dc2626" stroke-width="3" stroke-dasharray="5 4"/>';
+  n += lab(192, VY + 56, '交界', 12, '#dc2626');
+  n += lab(288, VY + 56, '交界', 12, '#dc2626');
+  n += lab(240, 22, 'TEE 45–60° 交界切面（ME MC）', 13, '#94a3b8');
+  n += lab(240, 540, '左 P3 · 中 A2 · 右 P1（A2 在远场，显示更长）', 12, '#94a3b8');
+  return svgWrap(n, '0 0 480 556', '二尖瓣 TEE 交界切面分叶示意图');
 }
 
 /**
- * 二尖瓣叶分区面积示意（前叶 vs 后叶），用于「分区」概念
+ * 二尖瓣叶分区示意（瓣口正面观 / 3D 外科视角，主动脉瓣在上）
+ *
+ * ★ Carpentier–ASE/SCA 命名：前叶 = A1/A2/A3，后叶 = P1/P2/P3。
+ *   P1 邻前外侧交界（本图左侧）、P2 居中、P3 邻后内侧交界（本图右侧）；
+ *   A1/A3 分别位于 P1/P3 的正对面 → A1 与 P1、A3 与 P3 在两侧相邻。
+ *   瓣环附着：后叶约占 2/3 周径、前叶约 1/3；但前叶自瓣环到游离缘更长
+ *   （约为后叶两倍），故两叶面积大致相当（前叶略大，常引作 60%:40%）。
  */
 function mvAreaSvg(opts) {
   const sel = (opts && opts.sel) || null;
+  const cx = 212, cy = 208, R = 128, ri = 14;
   let n = '';
-  const cx = 210, cy = 200;
-  n += part('p1', wedge(cx, cy, 16, 130, -172, -128), dimColor(PALETTE.p1, sel, 'p1'), sel, 'P1', ...pt(cx, cy, 82, -150));
-  n += part('p2', wedge(cx, cy, 16, 130, -128, -52), dimColor(PALETTE.p2, sel, 'p2'), sel, 'P2', ...pt(cx, cy, 82, -90));
-  n += part('p3', wedge(cx, cy, 16, 130, -52, -8), dimColor(PALETTE.p3, sel, 'p3'), sel, 'P3', ...pt(cx, cy, 82, -30));
-  n += part('a1', wedge(cx, cy, 16, 130, 8, 82), dimColor(PALETTE.a1, sel, 'a1'), sel, 'A1', ...pt(cx, cy, 82, 45));
-  n += part('a2', wedge(cx, cy, 16, 130, 82, 148), dimColor(PALETTE.a2, sel, 'a2'), sel, 'A2', ...pt(cx, cy, 82, 115));
-  n += part('a3', wedge(cx, cy, 16, 130, 148, 188), dimColor(PALETTE.a3, sel, 'a3'), sel, 'A3', ...pt(cx, cy, 82, 168));
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="14" fill="#fff" stroke="#94a3b8" stroke-width="2"/>';
-  n += lab(cx, cy - 148, '前叶（蓝）≈ 60% 瓣口面积', 15, '#2563eb');
-  n += lab(cx, cy + 158, '后叶（橙）≈ 40% 瓣口面积', 15, '#d97706');
-  n += lab(cx, cy + 186, '交界区：P1–A1 / P3–A3', 13, '#dc2626');
-  return svgWrap(n, '0 0 420 430', '二尖瓣叶分区面积示意图');
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="146" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
+  // 上 = 前叶（A1 左 / A2 中 / A3 右）；下 = 后叶（P3 右 / P2 中 / P1 左）
+  const segs = [
+    ['a1', 180, 240], ['a2', 240, 300], ['a3', 300, 360],
+    ['p3', 0, 60], ['p2', 60, 120], ['p1', 120, 180],
+  ];
+  segs.forEach(function (s) {
+    const mid = (s[1] + s[2]) / 2;
+    n += part(s[0], wedge(cx, cy, ri, R, s[1], s[2]),
+      dimColor(PALETTE[s[0]], sel, s[0]), sel, s[0].toUpperCase(), ...pt(cx, cy, 88, mid));
+  });
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="13" fill="#fff" stroke="#94a3b8" stroke-width="2"/>';
+  // 两个交界的虚线分隔（A1/P1 左侧、A3/P3 右侧）
+  n += '<path d="M' + (cx - R) + ' ' + cy + ' L' + (cx + R) + ' ' + cy + '" stroke="#dc2626" stroke-width="0" />';
+  n += lab(cx, cy - 162, '前叶 A1–A3（贴主动脉瓣侧）', 15, '#2563eb');
+  n += lab(cx, cy + 174, '后叶 P1–P3（贴左室后壁侧）', 15, '#d97706');
+  n += lab(cx, cy + 206, '左＝前外侧交界（A1｜P1）　右＝后内侧交界（A3｜P3）', 12, '#dc2626');
+  n += lab(cx, cy + 230, '后叶附着约 2/3 瓣环、前叶约 1/3；但前叶更长，两叶面积大致相当', 11, '#94a3b8');
+  n += lab(cx, cy + 250, 'TEE 45–60° 交界切面与此图左右相反（左 P3 / 右 P1）', 11, '#94a3b8');
+  return svgWrap(n, '0 0 424 480', '二尖瓣叶分区示意图');
 }
 
 /* ══════════════════════════════════════════════════════════
    ③ 三尖瓣瓣叶
    ══════════════════════════════════════════════════════════ */
 
-/** TTE 四腔心：三尖瓣隔叶（靠室间隔）+ 前叶 */
+/** TTE 心尖四腔心：显示隔叶（靠室间隔）+ 前叶；后叶需短轴 */
 function tvTteSvg(opts) {
   const sel = (opts && opts.sel) || null;
   let n = '';
@@ -6485,46 +6517,61 @@ function tvTteSvg(opts) {
   n += ell(140, 492, 70, 42) + lab(140, 498, 'RA', 19);
   n += ell(lvCx, 492, 82, 42) + lab(lvCx, 498, 'LA', 19);
   n += ell(lvCx, lvCy, 100, 190);
-  // 三尖瓣：位于 RA/RV 交界 ≈ y440，隔叶靠室间隔（右），前叶靠前壁/游离壁（左）
-  const VY = 440;
-  n += leaflet('sep', 180, VY, 38, 34, -1, '隔叶', sel, 15);
-  n += leaflet('ant', 124, VY - 32, 36, 28, -1, '前叶', sel, 15);
+  // 三尖瓣：位于 RA/RV 交界，隔叶靠室间隔（右），前叶靠游离壁（左）
+  const VY = 442;
+  n += leaflet('sep', 184, VY, 36, 46, -1, '隔叶', sel, 14);
+  n += leaflet('ant', 118, VY, 40, 40, -1, '前叶', sel, 14);
+  n += lab(222, VY + 62, '室间隔', 10, '#94a3b8');
   n += lab(300, 300, 'LV', 19);
   n += lab(150, 414, 'TV', 14);
-  n += lab(300, 66, '心尖', 14, '#94a3b8');
-  n += lab(240, 552, '后叶需胸骨旁短轴右室流入道切面，四腔心不显示', 13, '#94a3b8');
-  return svgWrap(n, '0 0 480 566', '三尖瓣 TTE 四腔心瓣叶示意图');
+  n += lab(300, 40, '心尖', 14, '#94a3b8');
+  n += lab(240, 552, '隔叶附着点更靠近心尖（Ebstein 时下移）；后叶需短轴切面', 12, '#94a3b8');
+  return svgWrap(n, '0 0 480 578', '三尖瓣 TTE 四腔心瓣叶示意图');
+}
+
+/**
+ * 三尖瓣 TTE 胸骨旁短轴（右室流入道切面）：三个瓣叶同屏
+ * 隔叶紧邻室间隔（屏幕左下）、前叶靠前（上方）、后叶靠后（右）。
+ */
+function tvSaxSvg(opts) {
+  const sel = (opts && opts.sel) || null;
+  const cx = 212, cy = 204, R = 124;
+  let n = '';
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="158" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="140" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>';
+  n += part('ant', cuspPath(cx, cy, R, -150, -30), dimColor(PALETTE.ant, sel, 'ant'), sel, '前叶',
+    ...pt(cx, cy, 80, -90), 14);
+  n += part('post', cuspPath(cx, cy, R, -30, 90), dimColor(PALETTE.post, sel, 'post'), sel, '后叶',
+    ...pt(cx, cy, 80, 30), 14);
+  n += part('sep', cuspPath(cx, cy, R, 90, 210), dimColor(PALETTE.sep, sel, 'sep'), sel, '隔叶',
+    ...pt(cx, cy, 80, 150), 14);
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="12" fill="#fff" stroke="#94a3b8" stroke-width="2"/>';
+  n += lab(cx, cy - 172, '前（近场）：RV 前壁', 13, '#64748b');
+  n += lab(cx, cy + 186, '后：RV 下壁', 13, '#64748b');
+  n += lab(cx, cy + 210, '右室流入道短轴：隔叶贴室间隔（左下）', 11, '#94a3b8');
+  return svgWrap(n, '0 0 424 440', '三尖瓣 TTE 短轴三叶示意图');
 }
 
 /* ══════════════════════════════════════════════════════════
    ④ 肺动脉瓣
    ══════════════════════════════════════════════════════════ */
 
+/** TTE 胸骨旁短轴：三个半月瓣（前瓣 / 左瓣 / 右瓣），铺满瓣环 */
 function pvSvg(opts) {
   const sel = (opts && opts.sel) || null;
+  const cx = 212, cy = 202, R = 116;
   let n = '';
-  const cx = 210, cy = 205;
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="122" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="96" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>';
-  // 三个独立的半月瓣（瓣叶呈弧形，彼此不相连）
-  const cusps = [[-120, -60], [0, 60], [120, 180]];
-  cusps.forEach(function (c) {
-    const p1 = pt(cx, cy, 96, c[0]);
-    const p2 = pt(cx, cy, 96, c[1]);
-    const mid = pt(cx, cy, 52, (c[0] + c[1]) / 2);
-    const mid2 = pt(cx, cy, 80, (c[0] + c[1]) / 2);
-    n += part('pv',
-      'M' + f1(p1[0]) + ' ' + f1(p1[1]) +
-      ' Q' + f1(mid[0]) + ' ' + f1(mid[1]) + ' ' + f1(p2[0]) + ' ' + f1(p2[1]) +
-      ' Q' + f1(mid2[0]) + ' ' + f1(mid2[1]) +
-      ' ' + f1(p1[0]) + ' ' + f1(p1[1]) + ' Z',
-      dimColor(PALETTE.pv, sel, 'pv'), sel, '', 0, 0);
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="150" fill="#eef1f5" stroke="#94a3b8" stroke-width="2"/>';
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="132" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>';
+  // 三叶各 120°，同属 pv（不单独命名）
+  [[-150, -30], [-30, 90], [90, 210]].forEach(function (c) {
+    n += part('pv', cuspPath(cx, cy, R, c[0], c[1]), dimColor(PALETTE.pv, sel, 'pv'), sel, '', 0, 0);
   });
-  n += '<circle cx="' + cx + '" cy="' + cy + '" r="10" fill="#fff" stroke="#94a3b8" stroke-width="2"/>';
-  n += lab(cx, cy - 136, '肺动脉瓣环（TTE 胸骨旁短轴）', 15, '#94a3b8');
-  n += lab(cx, cy + 148, '三个半月瓣，不单独命名', 14, '#7c3aed');
-  n += lab(cx, cy + 172, '与主动脉瓣不同，无冠窦命名', 12, '#94a3b8');
-  return svgWrap(n, '0 0 420 410', '肺动脉瓣示意图');
+  n += '<circle cx="' + cx + '" cy="' + cy + '" r="11" fill="#fff" stroke="#94a3b8" stroke-width="2"/>';
+  n += lab(cx, cy - 166, '肺动脉瓣环（TTE 胸骨旁短轴）', 14, '#94a3b8');
+  n += lab(cx, cy + 176, '三个半月瓣：前瓣 / 右瓣 / 左瓣，铺满瓣环', 13, '#7c3aed');
+  n += lab(cx, cy + 200, '与主动脉瓣不同：无冠窦命名、无冠状动脉开口', 12, '#94a3b8');
+  return svgWrap(n, '0 0 424 420', '肺动脉瓣示意图');
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -6536,7 +6583,7 @@ const VALVE_VIEWS = [
     id: 'avTteSax',
     group: '主动脉瓣',
     title: '主动脉瓣 · TTE 胸骨旁短轴',
-    sub: '三叶分区（钟面位）· 右冠叶 RCC / 左冠叶 LCC / 无冠叶 NCC',
+    sub: '三叶铺满瓣口（各 120°）· RCC 在上（近 RVOT）/ LCC 右下 / NCC 左下（靠房间隔）',
     parts: ['rcc', 'lcc', 'ncc'],
     fn: avTteSaxSvg,
   },
@@ -6544,7 +6591,7 @@ const VALVE_VIEWS = [
     id: 'avTeeSax',
     group: '主动脉瓣',
     title: '主动脉瓣 · TEE 短轴 30–60°',
-    sub: '同样三叶，但屏幕方位与 TTE 相反，注意冠脉开口位置',
+    sub: '与 TTE 上下颠倒：LCC 右上 / NCC 左上（紧邻房间隔）/ RCC 下方（近 RVOT）',
     parts: ['rcc', 'lcc', 'ncc'],
     fn: avTeeSaxSvg,
   },
@@ -6552,39 +6599,47 @@ const VALVE_VIEWS = [
     id: 'mvArea',
     group: '二尖瓣',
     title: '二尖瓣 · 分叶与瓣口面积',
-    sub: '前叶 P1–P3 约占 60%，后叶 A1–A3 约占 40%',
-    parts: ['p1', 'p2', 'p3', 'a1', 'a2', 'a3'],
+    sub: '前叶 A1–A3（贴主动脉瓣侧）· 后叶 P1–P3（贴后壁侧）；A1 与 P1、A3 与 P3 分别相邻于两侧交界',
+    parts: ['a1', 'a2', 'a3', 'p1', 'p2', 'p3'],
     fn: mvAreaSvg,
   },
   {
     id: 'mvTteA4c',
     group: '二尖瓣',
-    title: '二尖瓣 · TTE 四腔心',
-    sub: '可见前叶 P1–P3 与后叶中段 A2',
-    parts: ['p1', 'p2', 'p3', 'a2'],
+    title: '二尖瓣 · TTE 心尖四腔心',
+    sub: '只分辨大系：A2（室间隔侧）与 P2（侧壁侧）',
+    parts: ['a2', 'p2'],
     fn: mvTteA4cSvg,
   },
   {
     id: 'mvTeeCommissural',
     group: '二尖瓣',
-    title: '二尖瓣 · TEE 60° 交界切面',
-    sub: 'commissural view，同时看清 P1、A2、P3 与两个交界',
-    parts: ['p1', 'a2', 'p3'],
+    title: '二尖瓣 · TEE 45–60° 交界切面',
+    sub: '屏幕方位：左 P3 · 中 A2 · 右 P1；A2 属前叶在远场，显示更长',
+    parts: ['p3', 'a2', 'p1'],
     fn: mvTeeCommissuralSvg,
   },
   {
     id: 'tvTte',
     group: '三尖瓣',
-    title: '三尖瓣 · TTE 四腔心',
-    sub: '可见隔叶与前叶；后叶需胸骨旁短轴右室流入道切面',
-    parts: ['ant', 'sep'],
+    title: '三尖瓣 · TTE 心尖四腔心',
+    sub: '显示隔叶（靠室间隔）与前叶；后叶需短轴右室流入道切面',
+    parts: ['sep', 'ant'],
     fn: tvTteSvg,
+  },
+  {
+    id: 'tvSax',
+    group: '三尖瓣',
+    title: '三尖瓣 · TTE 短轴（右室流入道）',
+    sub: '三个瓣叶同屏：隔叶靠室间隔、前叶靠前壁、后叶靠下壁',
+    parts: ['ant', 'sep', 'post'],
+    fn: tvSaxSvg,
   },
   {
     id: 'pv',
     group: '肺动脉瓣',
     title: '肺动脉瓣 · TTE 胸骨旁短轴',
-    sub: '三个半月瓣，不单独命名',
+    sub: '前瓣 / 左瓣 / 右瓣三个半月瓣，铺满瓣环',
     parts: ['pv'],
     fn: pvSvg,
   },
@@ -6598,29 +6653,22 @@ const PART_INDEX = (function () {
   return m;
 })();
 
-/** 分区 id → 出现在哪些视图（用于说明文字） */
+/** 某分区出现在哪些视图里 */
 function viewsOfPart(id) {
-  const out = [];
-  VALVE_VIEWS.forEach(function (v) {
-    if (v.parts.indexOf(id) >= 0) out.push(v.title);
-  });
-  return out;
+  return VALVE_VIEWS.filter(function (v) {
+    return v.parts.indexOf(id) !== -1;
+  }).map(function (v) { return v.title; });
 }
 
-/** 点击分区后的说明文字 */
+/** 分区说明文本：名称（缩写）｜ 见于：… */
 function partInfoText(id) {
   const p = PART_INDEX[id];
   if (!p) return '';
-  const views = viewsOfPart(id);
-  return p.name + '（' + p.abbr + '）' + (views.length ? ' ｜ 见于：' + views.join('、') : '');
+  return p.name + '（' + p.abbr + '） ｜ 见于：' + viewsOfPart(id).join('、');
 }
 
-/* ══════════════════════════════════════════════════════════
-   导出
-   ══════════════════════════════════════════════════════════ */
-
 /**
- * 简易 UTF-8 base64（小程序端 image 组件用 data URI）
+ * UTF-8 → Base64（小程序 <image src="data:image/svg+xml;base64,...">）
  *
  * ★ 必须在本地定义，不能写成 `require('./segment-svg.js').utf8ToBase64`：
  *   build-www.js 的 wrapEngine 用静态分析提取 module.exports 的成员名，
@@ -6659,6 +6707,7 @@ function utf8ToBase64(str) {
     f1: f1,
     pt: pt,
     wedge: wedge,
+    cuspPath: cuspPath,
     lab: lab,
     labL: labL,
     chamber: chamber,
@@ -6674,6 +6723,7 @@ function utf8ToBase64(str) {
     mvTeeCommissuralSvg: mvTeeCommissuralSvg,
     mvAreaSvg: mvAreaSvg,
     tvTteSvg: tvTteSvg,
+    tvSaxSvg: tvSaxSvg,
     pvSvg: pvSvg,
     VALVE_VIEWS: VALVE_VIEWS,
     PART_INDEX: PART_INDEX,
@@ -10463,81 +10513,6 @@ const LINK_SECTIONS = [
     ],
   },
 
-  /**
-   * 瓣膜解剖教学资源（供「瓣膜解剖示意图」页使用）
-   *
-   * 分两类：
-   *   - video：书里现成的瓣膜动图（mp4 直链），小程序走站内播放页
-   *   - link ：多伦多 TEE/TTE 交互教学站，复制到浏览器打开
-   *
-   * 全部为免登录、可直接打开的地址。
-   */
-  {
-    id: 'valveana',
-    title: '瓣膜解剖教学',
-    items: [
-      {
-        id: 'va-mv-color',
-        title: '二尖瓣口彩色多普勒',
-        sub: '实用超声规范化检查与操作 · 动图 3-1-41',
-        url: BV_BASE + '3-1-41.mp4',
-      },
-      {
-        id: 'va-tv-flow',
-        title: '三尖瓣口血流',
-        sub: '实用超声规范化检查与操作 · 动图 3-1-43',
-        url: BV_BASE + '3-1-43.mp4',
-      },
-      {
-        id: 'va-av-flow',
-        title: '主动脉瓣口血流',
-        sub: '实用超声规范化检查与操作 · 动图 3-1-45',
-        url: BV_BASE + '3-1-45.mp4',
-      },
-      {
-        id: 'va-pv-color',
-        title: '肺动脉瓣口彩色多普勒',
-        sub: '实用超声规范化检查与操作 · 动图 3-1-47',
-        url: BV_BASE + '3-1-47.mp4',
-      },
-      {
-        id: 'va-td',
-        title: '心尖四腔心组织多普勒',
-        sub: '实用超声规范化检查与操作 · 动图 3-1-48',
-        url: BV_BASE + '3-1-48.mp4',
-      },
-      {
-        id: 'va-tee-sv',
-        title: 'TEE 标准 20 视图（中文）',
-        sub: '多伦多大学 PIE · 含主动脉瓣短轴与二尖瓣交界切面',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/standardViewsHTML5/TEE-HTML5-SV-CH/',
-      },
-      {
-        id: 'va-tte-sv',
-        title: 'TTE 经胸标准切面',
-        sub: '多伦多大学 PIE · 胸骨旁短轴 / 心尖切面对照',
-        url: 'https://pie.med.utoronto.ca/TTE/TTE_content/assets/applications/TTE-HTML5-SV/index.html',
-      },
-      {
-        id: 'va-tee-cheat',
-        title: 'TEE 标准视图速查表',
-        sub: '探头角度 · 平面 · 对应结构 · 可打印',
-        url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/TEE-cheat-sheet/index.htm',
-      },
-      {
-        id: 'va-tee-sim',
-        title: '多伦多 TEE 交互模拟器',
-        sub: '逐个标准切面过一遍，含瓣叶命名对照',
-        url: 'https://pie.med.utoronto.ca/tee/TEE_content/assets/applications/teeSimulation/index.html',
-      },
-      {
-        id: 'va-ct2tee',
-        title: 'CT2TEE 在线模拟器',
-        sub: 'CT 重建驱动 · 旋转 / 俯仰 / 成角操控',
-        url: 'https://www.ct2tee.agh.edu.pl/',
-      },
-    ],
-  },
 ];
 
 /** 全部引用文献（公式集目录页底部统一列出） */

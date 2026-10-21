@@ -228,20 +228,8 @@ function buildValveAnaPage() {
       '<div class="card__d">' + views.length + ' 个标准切面示意</div>\n      ' + cards + '</div>';
   }).join('\n    ');
 
-  // 教学资源（视频 + 交互教学站）
-  const lessons = (EXTRA_DATA.LINK_SECTIONS || [])
-    .filter((s) => s.id === 'valveana')
-    .map((s) => s.items || [])
-    .reduce((a, b) => a.concat(b), [])
-    .map((it) => {
-      const isVideo = /\.mp4(\?|$)/i.test(it.url || '');
-      return '<div class="va-lesson"><div class="va-lesson__t">' + escHtml(it.title) +
-        '<span class="va-lesson__b">' + (isVideo ? '视频' : '教学站') + '</span></div>' +
-        '<div class="va-lesson__s">' + escHtml(it.sub || '') + '</div>' +
-        '<a class="va-lesson__go" href="' + escHtml(it.url) + '" target="_blank" rel="noopener">' +
-        (isVideo ? '▶ 打开视频' : '打开教学站') + '</a></div>';
-    }).join('\n    ');
-
+  // ★ 用户 2026-10-21：教学视频与交互教学站与「切面学习 / TEE 模拟器」两组重复，
+  //   整组移除；书里的瓣膜动图仍在整本书专辑里，教学站仍在下面两组里。
   return `  <!-- ───── Tab 瓣膜解剖 ───── -->
   <section class="page" id="page-valveana" hidden>
     <div class="card">
@@ -250,15 +238,10 @@ function buildValveAnaPage() {
       <div class="hi-line hi-line--sel" id="vaSelInfo" hidden></div>
     </div>
     ${groups}
-    <div class="note">主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC。TTE 短轴按钟面位判读（12 点前壁），TEE 短轴 30–60° 的屏幕方位与 TTE 不同，务必以冠状动脉开口和左心房位置核实。</div>
-    <div class="note">二尖瓣分叶：前叶 P1–P3、后叶 A1–A3。交界区为 P1–A1 与 P3–A3。前叶瓣口面积约占 60%，后叶约 40%。四腔心切面只能分辨前叶 / 后叶大系，精确分叶需 TEE 60° 交界切面。</div>
-    <div class="note">三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心显示隔叶与前叶，后叶需胸骨旁短轴右室流入道切面。</div>
-    <div class="note">肺动脉瓣为三个半月瓣，不单独命名，也没有冠状窦对应关系。</div>
-    <div class="card">
-      <div class="card__t">瓣膜教学视频与交互教学</div>
-      <div class="card__d">视频与交互教学站均为免登录可直接打开的地址，点击在新标签页打开。</div>
-      ${lessons}
-    </div>
+    <div class="note">主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC，三叶闭合时铺满整个瓣口。TTE 短轴按钟面位判读（前壁在 12 点）；TEE 短轴 30–60° 与 TTE <b>上下颠倒</b>（探头在左房后方），LCC 在右上、NCC 在左上并紧邻房间隔、RCC 在下方靠近 RVOT，冠脉开口约在 2 点（左冠）与 6 点（右冠）。</div>
+    <div class="note">二尖瓣分叶（Carpentier–ASE/SCA 命名）：<b>前叶 A1–A3</b>（贴主动脉瓣侧）、<b>后叶 P1–P3</b>（贴左室后壁侧）。P1 邻前外侧交界、P3 邻后内侧交界；A1 与 P1、A3 与 P3 分别在两侧相邻。后叶附着约 2/3 瓣环、前叶约 1/3，但前叶更长，两叶面积大致相当。四腔心只显示 A2 与 P2，精确分叶需 TEE 45–60° 交界切面（左 P3 · 中 A2 · 右 P1）。</div>
+    <div class="note">三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心显示隔叶与前叶，后叶需胸骨旁短轴右室流入道切面；隔叶附着点比二尖瓣前叶更靠近心尖（Ebstein 畸形时显著下移）。</div>
+    <div class="note">肺动脉瓣为三个半月瓣（前瓣 / 右瓣 / 左瓣），铺满瓣环，但没有无冠窦命名与冠状动脉开口。</div>
     <div class="note note--warn">本页为教学示意图，不替代真实超声图像；示意图仅标注解剖分区与切面关系，测量与判读请回看「公式集 → 瓣膜评估」条目的定量标准。</div>
   </section>`;
 }
@@ -1012,10 +995,10 @@ function buildPublicHtml() {
       if (out.indexOf(s) === -1) throw new Error('发布版：节段划分页依赖缺失 ' + s);
     });
 
-  // 5b2c) 瓣膜解剖页必须存在（分区 / 分叶 / 分段示意图 + 教学资源）
+  // 5b2c) 瓣膜解剖页必须存在（分区 / 分叶 / 分段示意图）
   ['id="page-valveana"', 'data-tab="valveana"',
    'window.ValveSvg', 'renderValveAna', 'ValveSvg.VALVE_VIEWS', 'data-vap', 'data-part',
-   '.va-lesson__go', '瓣膜分区 · 分叶 · 分段']
+   '瓣膜分区 · 分叶 · 分段']
     .forEach((s) => {
       if (out.indexOf(s) === -1) throw new Error('发布版：瓣膜解剖页依赖缺失 ' + s);
     });
