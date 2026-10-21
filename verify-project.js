@@ -129,18 +129,19 @@ const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
 if (calcSecIds.join('/') === 'hemo/right/vq/recon/score/ivs')
   ok('计算组 6 个（血流动力学 / 右心肺循环 / 瓣膜舒张 / 重构心肌 / 评分与室壁运动 / 介入尺寸与先心）');
 else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
-const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1);
-if (!badSec.length) ok('57 条公式的 sec 归属均合法');
+const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1 && g.sec !== 'valve');
+if (!badSec.length) ok('57 条公式的 sec 归属均合法（含 valve 瓣膜评估组）');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
 const nVq = CG.GROUPS.filter(g => g.sec === 'vq').length;
+const nValveCalc = CG.GROUPS.filter(g => g.sec === 'valve').length;
 const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
 const nScore = CG.GROUPS.filter(g => g.sec === 'score').length;
 const nIvs = CG.GROUPS.filter(g => g.sec === 'ivs').length;
-if (nHemo === 15 && nRight === 13 && nVq === 9 && nRecon === 12 && nScore === 3 && nIvs === 5)
-  ok('分组条目数 15 / 13 / 9 / 12 / 3 / 5（MVA 两法已合并为 1 条）');
-else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs].join('/'));
+if (nHemo === 14 && nRight === 13 && nVq === 3 && nRecon === 12 && nScore === 3 && nIvs === 5 && nValveCalc === 7)
+  ok('分组条目数 14 / 13 / 3 / 12 / 3 / 5 + 瓣膜评估 7（瓣膜通用计算已并入瓣膜评估组）');
+else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs, nValveCalc].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
 const SHARED_KEYS = { ld: 1, lvti: 1 };
@@ -174,10 +175,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 12) ok('评估内容 12 个分组（… + 造影与特殊检查 + 有创操作与介入超声 + 报告与质控）');
+if (EX.BRIEF_SECTIONS.length === 13) ok('评估内容 13 个分组（… + 有创操作与介入超声 + 伪影识别与规避 + 报告与质控）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr,contrast-echo,echo-interv,report-std') ok('评估条目 = 44 条（… + 超声造影 1 + 有创操作 1 + 报告与质控 1）');
+if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr,contrast-echo,echo-interv,artifact-guide,report-std') ok('评估条目 = 45 条（… + 超声造影 1 + 有创操作 1 + 伪影 1 + 报告与质控 1）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -191,7 +192,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 52) ok('参考文献 52 条');
+if (EX.REFS.length === 53) ok('参考文献 53 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：只挂官方/免费可直连的 PDF，需登录下载的坚决不挂
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -534,8 +535,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
     : bad('桥接文案格式不一致');
 
   // 桥接里点名的「组」必须是公式集里真实存在的 6 个计算组
-  const GROUPS6 = ['血流动力学与心功能', '右心与肺循环', '瓣膜与舒张定量',
-    '重构与心肌功能', '评分与室壁运动', '介入尺寸与先心'];
+  const GROUPS6 = ['血流动力学与心功能', '右心与肺循环', '舒张功能定量',
+    '重构与心肌功能', '评分与室壁运动', '介入尺寸与先心', '瓣膜评估'];
   const body = function (t) {
     return t.replace(/^\*\*相关计算（通用量）\*\*：公式集 → /, '')
       .replace(/。本页给判读阈值.*$/, '');

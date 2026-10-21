@@ -56,6 +56,19 @@ function buildSections() {
     sections.push({ id: s.id, title: s.title, items: s.items });
   });
 
+  // ★ 瓣膜通用计算（calc-groups.js 里 sec: 'valve'）并入「瓣膜评估」组，
+  //   紧跟在 5 个瓣膜专用计算器之后 —— 瓣膜相关的量都收在一组里，
+  //   不用在「舒张功能定量」和「瓣膜评估」之间来回跳。
+  const valveHost = sections.filter(function (x) { return x.id === 'valve'; })[0];
+  if (valveHost) {
+    const valveCalc = CG.GROUPS.filter(function (g) {
+      return g.sec === 'valve';
+    }).map(function (g) {
+      return { kind: 'calc', id: g.id, title: g.title, sub: g.sub || '' };
+    });
+    valveHost.items = valveHost.items.concat(valveCalc);
+  }
+
   EX.BRIEF_SECTIONS.forEach(function (s) {
     const items = s.items.map(function (it) {
       return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };

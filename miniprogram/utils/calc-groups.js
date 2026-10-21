@@ -143,6 +143,7 @@ const GROUPS = [
     id: 'dias',
     title: '舒张功能基础比值',
     sub: 'E/A · 平均 E/e′',
+    sec: 'vq',
     fields: [
       { k: 'e', n: 'E 峰', u: 'cm/s' },
       { k: 'a', n: 'A 峰', u: 'cm/s' },
@@ -295,7 +296,7 @@ const GROUPS = [
   /* ══ v1.3.0 第三批：瓣膜与舒张细节 ══ */
   {
     id: 'wilkins',
-    sec: 'vq',
+    sec: 'valve',
     title: 'Wilkins 二尖瓣形态评分',
     sub: '4 项 × 1–4 分 · ≤8 适合 PBMV',
     fields: [
@@ -309,7 +310,7 @@ const GROUPS = [
   },
   {
     id: 'vcw',
-    sec: 'vq',
+    sec: 'valve',
     title: '缩流颈宽度 VCW 分级',
     sub: 'MR / TR：<3 轻 · 3–6.9 中 · ≥7 重',
     opts: [
@@ -322,7 +323,7 @@ const GROUPS = [
   },
   {
     id: 'rf',
-    sec: 'vq',
+    sec: 'valve',
     title: '反流分数 RF',
     sub: 'RVol ÷ SV · 轻 <30 中 30–49 重 ≥50',
     fields: [
@@ -335,7 +336,7 @@ const GROUPS = [
     // ★ 2026-10-21 合并：原 mvav（PHT）/ mvac（连续性方程）两条合一，
     //   同一屏出两个结果并给出差值，MS 判读页内嵌的也是这一套（mvaBoth）
     id: 'mva',
-    sec: 'vq',
+    sec: 'valve',
     title: '二尖瓣面积 MVA（两法对照）',
     sub: 'PHT 法 + 连续性方程，同屏出结果',
     fields: [
@@ -513,7 +514,7 @@ const GROUPS = [
      ══════════════════════════════════════════════════════════ */
   {
     id: 'pisav',
-    sec: 'vq',
+    sec: 'valve',
     title: '反流定量（PISA）',
     sub: 'EROA · RVol · 反流分级',
     fields: [
@@ -526,7 +527,7 @@ const GROUPS = [
   },
   {
     id: 'avav',
-    sec: 'vq',
+    sec: 'valve',
     title: '主动脉瓣面积（连续性方程）',
     sub: 'AVA · AVAi · DVI',
     fields: [
@@ -538,7 +539,7 @@ const GROUPS = [
   },
   {
     id: 'ppm',
-    sec: 'vq',
+    sec: 'valve',
     title: '人工瓣 EOAi 与 PPM',
     sub: '有效开口面积指数 · 患者-瓣膜不匹配',
     fields: [
@@ -755,7 +756,7 @@ const GROUPS = [
 const CALC_SECTIONS = [
   { id: 'hemo', title: '血流动力学与心功能' },
   { id: 'right', title: '右心与肺循环' },
-  { id: 'vq', title: '瓣膜与舒张定量' },
+  { id: 'vq', title: '舒张功能定量' },
   { id: 'recon', title: '重构与心肌功能' },
   { id: 'score', title: '评分与室壁运动' },
   { id: 'ivs', title: '介入尺寸与先心' },

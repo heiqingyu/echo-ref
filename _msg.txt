@@ -1,32 +1,50 @@
-v1.3.7：新增「超声引导下有创操作」判读条目 + R52 参考文献
+v1.3.9：目录重组（瓣膜通用计算并入瓣膜评估）+ 新增「超声伪影识别与规避」判读条目
 
-内容（29 个 block，8 节）
-- 三模态分工：TTE（便携/免麻醉，DTI 必备）vs TEE（分辨率最高，但主动脉弓
-  与升主动脉因气管声影是 TEE 盲区）vs ICE（不用全麻、不需额外超声医师，
-  房颤消融与房间隔封堵已是很多中心的成像标准）
-- 12 类操作 × 三模态对照表（原文 Table 1，完整搬入）：
-  房间隔穿刺 / PMBV / ASD·VSD·PFO 封堵 / 酒精消融 / 经皮二尖瓣修复 /
-  左室辅助装置 / 经导管 TAVR / 房间隔造口 / 左心耳 LAA 封堵 /
-  心肌与血管内活检 / 先心病介入 / 主动脉内支架
-- 心包穿刺：成功引流或解除填塞率 97%，主要并发症 1.2%、轻微并发症 3.2%；
-  选点/带鞘针/震荡盐水确认/24 h 内 <25 mL 拔管/心肌破裂与主动脉夹层慎用
-- 心肌活检：可取右室心尖与游离壁，减少同点反复咬取造成的纤维化标本
-- 房间隔封堵：封堵器一放就挡成像，房间隔下缘（IVC 上方）看不全，成人中心
-  基本用 TEE 或 ICE；ICE 的卵圆窝帐篷征（tenting）+ 盐水微泡确认
-- 酒精室间隔消融：术中心肌超声造影定位穿支是成败关键
-- ICE 风险清单 5 类（血管/心脏穿孔与心包填塞/心律失常/血栓栓塞/神经麻痹）
-- 新趋势：3D TEE 重建、腔内超声 + 电磁导航、经皮缘对缘修复的 5 步引导
+一、目录重组（v1.3.8 阶段内容合并入本次提交）
+- 「瓣膜与舒张定量」拆开：瓣膜相关 7 条通用计算
+  （wilkins / vcw / rf / mva / pisav / avav / ppm）从 sec:'vq' 改为 sec:'valve'，
+  并入「瓣膜评估」组
+- 「瓣膜与舒张定量」组更名为「舒张功能定量」，仅保留 3 条
+  （dias 舒张功能基础比值 / evp / dfun 四步法）
+- dias 由无 sec（默认 hemo）显式改归 sec:'vq'
+- 组分布：hemo 14 / right 13 / vq 3 / recon 12 / score 3 / ivs 5 / valve 7 = 57 个计算器（总数不变）
+- 两端实现：
+  · 小程序 calculators.js 在 EXTRA（瓣膜组）之后把 sec==='valve' 的
+    7 条 calc 条目 concat 进瓣膜组
+  · 网页 android-app/app.js 在 VALVE_INDEX 之后追加同样的 7 条
+  · calc-groups.js 与 app.js 的 CALC_GROUPS 两份手写副本同步 sec 字段
+- extra-data.js 的 CALC_HINTS 7 处组名同步（「瓣膜与舒张定量」→「瓣膜评估」，
+  「diastolic」→「舒张功能定量」），并修正 aortic / bav 中 DVI 的归属组
 
-R52 = Silvestry FE 等，JASE 2009;22(3):207-236，附 ASE 官方 PDF + 官方中文版 PDF
+二、新增判读条目「超声伪影识别与规避（2026 ASE 指南）」（44 个 block / 7 节）
+- 分类框架：按「被打破的机器假设」归类，而非按伪影名称
+- 轴向伪影：简单混响、升主动脉混响（44–55% 的检查都有，最易误判为 A 型夹层）、
+  复杂混响彗星尾、镜像、声影与增强、速度位移（脂肪房间隔）
+- 侧向伪影：折射、波束宽度、侧瓣（三条识别特征）
+- 多普勒伪影：overgain / undergain / 壁滤波 150 Hz vs 350 Hz /
+  混叠（Nyquist = PRF/2）/ 镜像频谱 / 频谱增宽
+- 彩色多普勒三坑：侧瓣 color splay、blooming、twinkling
+- 3D 与造影特有伪影：stitching / dropout / 模糊 / 衰减 / swirling
+- 收尾「看到什么 → 先想哪个伪影 → 怎么验证」速查表
+- 判读页分入新分组「伪影识别与规避」（插在 intervention 与 report 之间）
 
-数据变化
-- REFS 51 -> 52（带直链 40 -> 41）
-- 评估分组 11 -> 12；评估条目 43 -> 44
-- 公式集目录 19 -> 20 个大组、114 -> 115 条
-- 版本 1.3.6 -> 1.3.7，versionCode 29 -> 30
+三、新增参考文献 R53
+- Saric M, Sadeghpour A, Alizade L, et al. Recommendations for the
+  Identification and Mitigation of Cardiac Ultrasound Artifacts: A Guideline
+  from the American Society of Echocardiography
+- J Am Soc Echocardiogr, 2026, 39(5): 434–470
+- 附 ASE 官方免费全文 PDF 直链
 
-同步
-- 清理前期文献调研遗留的 99 个未跟踪临时文件（.bin/.html/.pdf/脚本），仓库根目录恢复干净
+四、数据与版本
+- REFS 52 → 53 条（其中 42 条附直链）
+- 评估清单分组 12 → 13 组，条目 44 → 45 条
+- 公式集 57 个计算器 + 45 条评估清单，按 21 个主题分组
+- 版本 1.3.8 → 1.3.9，versionCode 32
 
-校验全绿：project 205 / calc 335 / peds 92 / mp 437 / docs 102 / apk 381
-小程序 v1.3.7 已上传（626.0 KB）
+五、三端状态
+- 网页：node build-www.js 重建 www/（647.7 KB）与 docs/（600.0 KB）
+- APK：docs/index.html 同步至 android-app/assets/index.html（cmp 字节一致），
+  build-apk.bat 打包通过 → android-app/dist/EchoRef.apk
+  （versionName 1.3.9 / versionCode 32）
+- 小程序：cli.bat upload 成功（1.3.9，638.6 KB）
+- 六项校验全绿：project 205 / calc 335 / peds 92 / mp 451 / docs 103 / apk 381

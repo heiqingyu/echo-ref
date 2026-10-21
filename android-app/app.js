@@ -407,7 +407,7 @@
     { id: 'atrial', title: '心房容积指数',
       fields: [['lav', '左房容积', 'mL'], ['rav', '右房容积', 'mL']],
       note: '容积 ÷ BSA；LAVI 正常 ≤34 mL/m²；右房正常值需匹配测量方法' },
-    { id: 'dias', title: '舒张功能基础比值',
+    { id: 'dias', sec: 'vq', title: '舒张功能基础比值',
       fields: [['e', 'E 峰', 'cm/s'], ['a', 'A 峰', 'cm/s'], ['es', '间隔 e′', 'cm/s'], ['el', '侧壁 e′', 'cm/s']],
       note: 'E/e′ <8 左房压正常，>14 升高，8–14 为灰区；完整分级需结合 LAVI、肺静脉等' },
 
@@ -462,18 +462,18 @@
       note: 'TR Vmax ≤2.8 无征象 → 低；≤2.8 有征象 或 2.9–3.4 无征象 → 中；2.9–3.4 有征象 或 >3.4 → 高。右心征象指 RV/LV >1、室间隔变平 / 矛盾运动、RVOT AT <105 ms、右房面积 >18 cm²、IVC >21 mm 不塌陷、收缩期切迹。超声只给「可能性」，确诊必须右心导管' },
 
     /* ── v1.3.0 第三批：瓣膜与舒张细节 ── */
-    { id: 'wilkins', sec: 'vq', title: 'Wilkins 二尖瓣形态评分',
+    { id: 'wilkins', sec: 'valve', title: 'Wilkins 二尖瓣形态评分',
       fields: [['wk1', '瓣叶厚度', '分'], ['wk2', '瓣叶钙化', '分'],
         ['wk3', '瓣叶活动度', '分'], ['wk4', '瓣下增厚', '分']],
       note: '四项各 1–4 分（1 最轻、4 最重），总分 4–16。≤8 分提示形态尚好、适合经皮球囊二尖瓣成形（PBMV）；>8 分优先外科。评分受主观影响，建议由有经验医师复核' },
-    { id: 'vcw', sec: 'vq', title: '缩流颈宽度 VCW 分级',
+    { id: 'vcw', sec: 'valve', title: '缩流颈宽度 VCW 分级',
       opts: [{ k: 'vsite', n: '瓣膜', list: [['mr', 'MR 二尖瓣'], ['ar', 'AR 主动脉瓣'], ['tr', 'TR 三尖瓣']] }],
       fields: [['vcwv', '缩流颈宽度', 'mm']],
       note: 'MR / TR：<3 轻度、3–6.9 中度、≥7 重度；AR：<3 轻度、3–5.9 中度、≥6 重度。VCW 受仪器设置与血流动力学影响，重度判读应与 PISA、反流分数互相印证' },
-    { id: 'rf', sec: 'vq', title: '反流分数 RF',
+    { id: 'rf', sec: 'valve', title: '反流分数 RF',
       fields: [['rfvol', '反流量 RVol', 'mL'], ['rfsv', '每搏量 SV', 'mL']],
       note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷' },
-    { id: 'mva', sec: 'vq', title: '二尖瓣面积 MVA（两法对照）',
+    { id: 'mva', sec: 'valve', title: '二尖瓣面积 MVA（两法对照）',
       fields: [['mpht', '① 压力减半时间 PHT', 'ms'], ['mvd', '② LVOT 直径', 'cm'],
         ['mvlvti', '② LVOT VTI', 'cm'], ['mvmvti', '② 二尖瓣 VTI', 'cm']],
       note: '① PHT 法 MVA = 220/PHT，要求窦性心律、无明显主动脉瓣反流，房颤 / AR / 重度钙化 / 术后会失真；② 连续性方程 MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV，不受心率与反流影响，房颤 / AR 时首选。分级：>1.5 轻度、1.0–1.5 中度、<1.0 重度。两法差 >0.3 cm² 时回到图像找原因，不要取平均' },
@@ -511,15 +511,15 @@
         ['azstj', '窦管交界', 'mm'], ['azasc', '近段升主动脉', 'mm']],
       note: '四个位点可只填测到的。Z 值由站内成人参考区间反推（均值 = 区间中点，SD = 半径 ÷ 1.96），口径与「Z > 2 视为扩张」一致，但不是人群实测 SD，不能与儿童 Z 值或 CT 的 Z 值互换。近段升主动脉另按 BSA 指数化：男 ≥2.1、女 ≥2.0 cm/m² 提示扩张' },
 
-    /* ── 瓣膜与舒张定量（sec: vq） ── */
-    { id: 'pisav', sec: 'vq', title: '反流定量（PISA）',
+    /* ── 舒张功能定量（sec: vq） ── */
+    { id: 'pisav', sec: 'valve', title: '反流定量（PISA）',
       fields: [['prad', 'PISA 半球半径 r', 'cm'], ['palias', 'Nyquist 速度（默认 40）', 'cm/s'],
         ['pvmax', '反流峰速 Vmax', 'm/s'], ['pvti', '反流 VTI', 'cm']],
       note: '流量 = 2πr²×Nyquist；EROA = 流量 ÷ Vmax(cm/s)；RVol = EROA × VTI。MR：EROA ≥0.4 / RVol ≥60 为重度' },
-    { id: 'avav', sec: 'vq', title: '主动脉瓣面积（连续性方程）',
+    { id: 'avav', sec: 'valve', title: '主动脉瓣面积（连续性方程）',
       fields: [['ald', 'LVOT 直径', 'cm'], ['alvti', 'LVOT VTI', 'cm'], ['aavti', '主动脉瓣 VTI', 'cm']],
       note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；AVAi ≤0.6 为重度；DVI ≤0.25 支持重度 AS' },
-    { id: 'ppm', sec: 'vq', title: '人工瓣 EOAi 与 PPM',
+    { id: 'ppm', sec: 'valve', title: '人工瓣 EOAi 与 PPM',
       fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', ''],
         ['pbmi', 'BMI（可选；≥30 用肥胖切点）', 'kg/m²']],
       note: 'EOAi = EOA/BSA。R17（ASE 2024）：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65；二尖瓣位 正常 >1.2、中度 1.2–0.91、重度 ≤0.90（cm²/m²）。BMI ≥30 时整体下调：主动脉位 0.70 / 0.70–0.56 / ≤0.55，二尖瓣位 1.0 / 1.0–0.76 / ≤0.75' },
@@ -596,7 +596,7 @@
   const CALC_SECTIONS = [
     { id: 'hemo', title: '血流动力学与心功能' },
     { id: 'right', title: '右心与肺循环' },
-    { id: 'vq', title: '瓣膜与舒张定量' },
+    { id: 'vq', title: '舒张功能定量' },
     { id: 'recon', title: '重构与心肌功能' },
     { id: 'score', title: '评分与室壁运动' },
     { id: 'ivs', title: '介入尺寸与先心' },
@@ -913,13 +913,20 @@
       });
     });
 
-    // 瓣膜评估组：完整版含 5 个瓣膜计算器，发布版只有判读条目
+    // 瓣膜评估组：完整版含 5 个瓣膜计算器，发布版没有瓣膜页只有通用计算与判读条目
     const valveItems = [];
     if (hasValvePage) {
       VALVE_INDEX.forEach(function (v) {
         valveItems.push({ kind: 'valve', id: v.id, title: v.title, sub: v.sub });
       });
     }
+    // ★ 瓣膜通用计算（sec: 'valve'）并入瓣膜组，紧跟瓣膜专用计算器之后
+    //   —— 与小程序 calculators.js 的顺序严格一致
+    CALC_GROUPS.filter(function (g) {
+      return g.sec === 'valve';
+    }).forEach(function (g) {
+      valveItems.push({ kind: 'calc', id: g.id, title: g.title, sub: CALC_SUB[g.id] || '' });
+    });
     (MERGED.valve || []).forEach(function (sec) {
       sec.items.forEach(function (it) {
         valveItems.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
@@ -1418,7 +1425,7 @@
       } else put('svrv');
     }
 
-    // ── 瓣膜与舒张定量 ──
+    // ── 舒张功能定量 ──
     // PISA
     if (has('prad', 'pvmax')) {
       const alias = has('palias') ? v.palias : 40;
