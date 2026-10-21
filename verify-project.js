@@ -174,10 +174,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 10) ok('评估内容 10 个分组（… + 报告与质控）');
+if (EX.BRIEF_SECTIONS.length === 11) ok('评估内容 11 个分组（… + 造影与特殊检查 + 报告与质控）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr,report-std') ok('评估条目 = 42 条（… + 报告与质控 1）');
+if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr,contrast-echo,report-std') ok('评估条目 = 43 条（… + 超声造影 1 + 报告与质控 1）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -191,7 +191,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 49) ok('参考文献 49 条');
+if (EX.REFS.length === 51) ok('参考文献 51 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：只挂官方/免费可直连的 PDF，需登录下载的坚决不挂
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -664,6 +664,34 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
   (cvRows.length >= 5 && !cvMiss.length)
     ? ok('危急值清单 ' + cvRows.length + ' 条，含' + cvNeed.join(' / '))
     : bad('危急值清单异常（' + cvRows.length + ' 行，缺 ' + cvMiss.join(',') + '）');
+
+  // 11.9 超声造影条目：适应证限定 LVO/EBD、MI 分级、剂量、EBD 三招、安全性数据
+  const ce = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'contrast')[0]
+    .items.filter(i => i.id === 'contrast-echo')[0];
+  if (ce) {
+    const ceText = JSON.stringify(ce.blocks || []);
+    const ceNeed = [
+      /LVO/, /EBD/, /0\.2/, /0\.3/, /0\.5/, /Definity/, /Optison/,
+      /Valsalva/, /10 个心动周期/, /10,000/, /500,000/, /30 分钟/,
+    ];
+    const ceMiss = ceNeed.filter(re => !re.test(ceText));
+    (!ceMiss.length)
+      ? ok('超声造影条目含适应证 / MI 分级 / 剂量 / EBD 手法 / 安全性要点')
+      : bad('超声造影条目缺：' + ceMiss.map(String).join(','));
+    // 三招表：加血 / 咳嗽 Valsalva / 股静脉
+    const ceTb = (ce.blocks || []).filter(b => b.kind === 'table' &&
+      (b.heads || []).join('|') === '手法|具体做法|原理')[0];
+    const ceRows = (ceTb && ceTb.rows) || [];
+    (ceRows.length >= 3 && /加血/.test(ceRows[0][0]) && /股静脉/.test(ceRows[2][0]))
+      ? ok('EBD 增敏三招齐全（加血 10% / 咳嗽 Valsalva / 股静脉）')
+      : bad('EBD 增敏三招异常：' + JSON.stringify(ceRows.map(r => r[0])));
+    // 引用必须是 R50 / R51
+    (ce.source.join(',') === 'R50,R51')
+      ? ok('超声造影条目引用 R50（共识声明）+ R51（技师指南）')
+      : bad('超声造影条目引用异常：' + ce.source.join(','));
+  } else {
+    bad('超声造影条目 contrast-echo 缺失');
+  }
 }
 
 console.log('\n' + '='.repeat(50));
