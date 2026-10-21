@@ -47,6 +47,106 @@
 
   let currentTab = 'index';
 
+  /**
+   * ── 视图栈（history） ──
+   *
+   * 用户 2026-10-21 反馈：「在公式集里点击返回就直接退出页面 / APP，
+   * 不是返回上一页」。
+   *
+   * 根因：本页是单页应用，切换视图只改 hidden 属性，从不写 history，
+   * 于是 WebView 的 canGoBack() 恒为 false —— APK 的返回键
+   * （MainActivity.onKeyDown）无处可退，只能退出 APP；
+   * 浏览器的后退键同理，会直接离开站点。
+   *
+   * 做法：用 location.hash 记录当前视图（进入详情时写一次），
+   * 返回时 history.back()，再由 hashchange / popstate 把界面还原。
+   *
+   * ★ 为什么用 hash 而不是 history.pushState：
+   *   APK 里页面是 file:///android_asset/index.html，file:// 是 opaque origin，
+   *   pushState 会抛 SecurityError（已 try/catch 兜底，但那样就没历史了）。
+   *   改 hash 在 file:// 下照常创建历史条目，WebView.canGoBack() 会变 true，
+   *   APK 返回键就能正确回退。
+   *
+   * ★ hash 前缀用 "/"，与目录页的组名锚点（#g-xxx）不冲突。
+   */
+  let viewStack = [];     // 已进入的子视图栈
+  let lastHash = null;    // 已处理过的 hash（用于去重 + 抑制自己写的变更）
+
+  /** 视图状态 → hash */
+  function viewHash(v) {
+    if (v.type === 'calc') return '#/calc/' + encodeURIComponent(v.id);
+    if (v.type === 'album') return '#/album/' + encodeURIComponent(v.sec) + '/' + encodeURIComponent(v.id);
+    return '#/calc';
+  }
+
+  /** hash → 视图状态（不是本应用的视图 hash 就返回 null） */
+  function parseHash() {
+    const h = location.hash || '';
+    if (h.indexOf('#/') !== 0) return null;
+    const parts = h.slice(2).split('/');
+    if (parts[0] === 'calc' && parts[1]) {
+      return { type: 'calc', id: decodeURIComponent(parts[1]) };
+    }
+    if (parts[0] === 'album' && parts[1] && parts[2]) {
+      return { type: 'album', sec: decodeURIComponent(parts[1]), id: decodeURIComponent(parts[2]) };
+    }
+    return { type: 'calcIndex' };
+  }
+
+  /**
+   * 进入子视图：写一次 hash，产生一条历史条目
+   * 先把 lastHash 记成新值，随后到来的 hashchange 因「值没变」而被跳过
+   */
+  function pushView(v) {
+    const h = viewHash(v);
+    if ((location.hash || '') === h) return;   // 同一视图，不重复压栈
+    viewStack.push(v);
+    lastHash = h;
+    location.hash = h;
+  }
+
+  /**
+   * 退出子视图
+   *
+   * 两件事同时做：
+   *   1) 立刻还原界面（用户点了返回按钮就该马上变，不能等异步的 hashchange）
+   *   2) history.back() 退掉那条历史条目，让 APK / 浏览器返回键也能退
+   * 随后到来的 popstate / hashchange 会再还原一次同样的界面（幂等，无副作用）
+   */
+  function popView() {
+    restoreCalcIndex();
+    if (viewStack.length) history.back();
+  }
+
+  /** 按视图状态还原界面 */
+  function restoreView(v) {
+    if (!v) v = { type: 'calcIndex' };
+    if (v.type === 'calc') {
+      switchTab('calc');
+      openCalcGroup(v.id, true);
+    } else if (v.type === 'album') {
+      switchTab('calc');
+      openAlbum(v.sec, v.id, true);
+    } else {
+      restoreCalcIndex();
+    }
+  }
+
+  /**
+   * 导航事件（popstate 与 hashchange 都会触发，用 lastHash 去重）
+   * file:// 下部分 WebView 只派发其中一个，两个都监听更稳
+   */
+  function onNavEvent() {
+    const h = location.hash || '';
+    if (h === lastHash) return;    // 已处理过（popstate + hashchange 双触发）
+    lastHash = h;
+    if (viewStack.length) viewStack.pop();
+    restoreView(parseHash());
+  }
+
+  window.addEventListener('hashchange', onNavEvent);
+  window.addEventListener('popstate', onNavEvent);
+
   function switchTab(name) {
     if (!TAB_TITLE[name]) return;
     currentTab = name;
@@ -61,7 +161,9 @@
 
     // 切页时刷新数据
     if (name === 'peds') renderPeds();
-    if (name === 'calc') { closeCalcGroup(); renderCalc(); }
+    // 切到公式集页时重置为目录视图（直接还原界面，不动 history：
+    // 切页签不是「往上一层」，不该触发返回）
+    if (name === 'calc') { restoreCalcIndex(); renderCalc(); }
     if (name === 'valves') renderValves();
     if (name === 'index') renderIndex();
 
@@ -734,13 +836,27 @@
       inner + '</button>';
   }
 
-  /** 评估类内容块 → HTML（与小程序 formula 页渲染一致） */
+  /**
+   * 评估类内容块 → HTML（与小程序 formula 页渲染一致）
+   *
+   * ★ 正文里的 **加粗** 要转成 <b>，否则屏幕上出现字面量 ** （用户 2026-10-21 反馈）。
+   *   解析器 InlineMd 与小程序共用同一份（miniprogram/utils/inline-md.js）。
+   * ★ 返回 { html, toc }：toc 是小节标题清单，长条目用它做顶部导航。
+   */
   function blocksHtml(blocks) {
     let h = '';
+    const toc = [];
+    let secIdx = -1;
     (blocks || []).forEach(function (b) {
-      if (b.kind === 'h') { h += '<div class="fx-h">' + esc(b.text) + '</div>'; return; }
+      if (b.kind === 'h') {
+        secIdx += 1;
+        const id = 'sec-' + secIdx;
+        toc.push({ id: id, t: String(b.text || '').replace(/\*\*/g, '') });
+        h += '<div class="fx-h" id="' + id + '">' + mdInline(b.text) + '</div>';
+        return;
+      }
       if (b.kind === 'note') {
-        h += '<div class="fx-note">' + esc(b.text) + '</div>';
+        h += '<div class="fx-note">' + mdInline(b.text) + '</div>';
         if (b.links && b.links.length) {
           h += '<div class="chiprow">';
           b.links.forEach(function (id) {
@@ -752,7 +868,7 @@
         }
         return;
       }
-      if (b.kind === 'formula') { h += '<div class="fx-formula">' + esc(b.text) + '</div>'; return; }
+      if (b.kind === 'formula') { h += '<div class="fx-formula">' + mdInline(b.text) + '</div>'; return; }
       if (b.kind === 'table') {
         h += '<div class="fx-tbl fx-tbl--' + b.heads.length + '">';
         h += '<div class="fx-tbl__r fx-tbl__r--h">';
@@ -766,9 +882,22 @@
         h += '</div>';
         return;
       }
-      h += '<div class="fx-text">' + esc(b.text) + '</div>';
+      h += '<div class="fx-text">' + mdInline(b.text) + '</div>';
     });
-    return h;
+    return { html: h, toc: toc };
+  }
+
+  /**
+   * 条目内小节导航（长条目定位用）
+   * 只在 2 个以上小节时才出，避免短条目多一行无用胶囊。
+   */
+  function tocHtml(toc) {
+    if (!toc || toc.length < 2) return '';
+    let h = '<div class="fx-nav fx-nav--sec">';
+    toc.forEach(function (s) {
+      h += '<a class="fx-nav__c" href="#' + s.id + '" data-sec="' + s.id + '">' + esc(s.t) + '</a>';
+    });
+    return h + '</div>';
   }
 
   /** 详情页底部的本条目引用 */
@@ -1073,7 +1202,7 @@
   }
 
   /** 打开专辑：在公式集 Tab 内的第三个视图列出全部切面 */
-  function openAlbum(secId, itemId) {
+  function openAlbum(secId, itemId, fromHistory) {
     const alb = albumOf(secId, itemId);
     if (!alb) return;
     const sec = LINKS.filter(function (s) { return s.id === secId; })[0];
@@ -1109,14 +1238,12 @@
     if ($('calcAlbum')) $('calcAlbum').hidden = false;
     if ($('appbarTitle')) $('appbarTitle').textContent = alb.title;
     window.scrollTo(0, 0);
+    if (!fromHistory) pushView({ type: 'album', sec: secId, id: itemId });
   }
 
   /** 从专辑回到目录 */
   function closeAlbum() {
-    if ($('calcAlbum')) $('calcAlbum').hidden = true;
-    if ($('calcIndex')) $('calcIndex').hidden = false;
-    if ($('appbarTitle')) $('appbarTitle').textContent = TAB_TITLE.calc;
-    window.scrollTo(0, 0);
+    popView();
   }
 
   function buildCalcInputs() {
@@ -1137,16 +1264,18 @@
       if (g.opts) html += optsHtml(g.opts);
       // 右房压条目需要 IVC 塌陷选项（与右心评估条目共用同一条状态）
       if (g.id === 'rapv') html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse);
-      html += '<div class="note">' + esc(g.note) + '</div>' +
+      html += '<div class="note">' + mdInline(g.note) + '</div>' +
         '<div class="calc-out" id="calcOut-' + g.id + '">' +
         '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div></div>';
     });
 
     BRIEF.forEach(function (sec) {
       sec.items.forEach(function (it) {
+        const bl = blocksHtml(it.blocks);
         html += '<div class="card" data-g="' + it.id + '" hidden>' +
           '<div class="card__t">' + esc(it.title) + '</div>' +
-          blocksHtml(it.blocks);
+          tocHtml(bl.toc) +
+          bl.html;
         if (it.fields && it.fields.length) {
           html += fieldsHtml(it.fields);
           if (it.id === 'rv') {
@@ -1158,7 +1287,7 @@
           html += '<div class="calc-out" id="calcOut-' + it.id + '">' +
             '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div>';
         }
-        if (it.note) html += '<div class="note">' + esc(it.note) + '</div>';
+        if (it.note) html += '<div class="note">' + mdInline(it.note) + '</div>';
         html += briefRefsHtml(it.source) + '</div>';
       });
     });
@@ -1178,6 +1307,18 @@
     // 「相关计算」胶囊：点了直接进对应计算器
     $('calcGroups').querySelectorAll('.chip[data-jump]').forEach(function (c) {
       c.addEventListener('click', function () { openCalcGroup(c.dataset.jump); });
+    });
+    // 条目内小节导航：点胶囊滚到对应小节（与目录页组名跳转条同一套交互）
+    $('calcGroups').querySelectorAll('.fx-nav--sec .fx-nav__c').forEach(function (a) {
+      a.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        const id = a.dataset.sec;
+        const target = id ? document.getElementById(id) : null;
+        if (!target) return;
+        // 顶栏是 fixed 的，滚动后要留出高度，否则标题被盖住
+        const top = target.getBoundingClientRect().top + window.pageYOffset - 56;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      });
     });
     // 绑定动态生成的分段选择器
     $('calcGroups').querySelectorAll('.seg').forEach(function (seg) {
@@ -1204,8 +1345,11 @@
     });
   }
 
-  /** 打开某条目（计算公式或评估内容） */
-  function openCalcGroup(id) {
+  /**
+   * 打开某条目（计算公式或评估内容）
+   * fromHistory=true 表示由 popstate 触发，不再重复 push
+   */
+  function openCalcGroup(id, fromHistory) {
     const g = calcGroupOf(id);
     const b = briefOf(id);
     if (!g && !b) return;
@@ -1218,15 +1362,21 @@
     $('appbarTitle').textContent = g ? g.title : b.title;
     renderCalc();
     window.scrollTo(0, 0);
+    if (!fromHistory) pushView({ type: 'calc', id: id });
   }
 
-  /** 回到公式集目录 */
-  function closeCalcGroup() {
+  /** 回到公式集目录（界面还原，不动 history） */
+  function restoreCalcIndex() {
     if ($('calcIndex')) $('calcIndex').hidden = false;
     if ($('calcDetail')) $('calcDetail').hidden = true;
     if ($('calcAlbum')) $('calcAlbum').hidden = true;
     $('appbarTitle').textContent = TAB_TITLE.calc;
     window.scrollTo(0, 0);
+  }
+
+  /** 回到公式集目录（用户点了「返回公式集」按钮） */
+  function closeCalcGroup() {
+    popView();
   }
 
   if ($('calcBack')) $('calcBack').addEventListener('click', closeCalcGroup);
@@ -2664,6 +2814,19 @@
       .replace(/"/g, '&quot;');
   }
 
+  /**
+   * 行内标记：**加粗** → <b>加粗</b>
+   * 解析器 InlineMd 来自 miniprogram/utils/inline-md.js（构建时注入），
+   * 与小程序端同一份实现，两端表现一致。
+   */
+  function mdInline(s) {
+    if (s === null || s === undefined) return '';
+    if (window.InlineMd && window.InlineMd.inlineHtml) {
+      return window.InlineMd.inlineHtml(s, esc);
+    }
+    return esc(s);
+  }
+
 /*<<<PUBLIC-CUT:seg>>>*/
   /* ── 节段划分页：节段选中 ↔ 所有切面及牛眼图同步高亮 ── */
 
@@ -2723,6 +2886,14 @@
     renderPeds();
     renderCalc();
     renderValves();
+
+    // 带 hash 打开（如刷新页面 / 从分享链接进来）→ 恢复到对应视图
+    const v0 = parseHash();
+    if (v0 && v0.type !== 'calcIndex') {
+      switchTab('calc');
+      restoreView(v0);
+      viewStack.push(v0);
+    }
 
     // 节段划分页：渲染示意图 + 点击联动（事件委托，SVG 每次选中后整体重绘）
     /*<<<PUBLIC-CUT:segclick>>>*/

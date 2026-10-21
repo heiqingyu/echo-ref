@@ -3,6 +3,7 @@ REM ============================================================
 REM  EchoRef APK build script (no Gradle, pure command line)
 REM  Usage: build-apk.bat
 REM  Output: dist\EchoRef.apk (signed, ready to install)
+REM          ..\EchoRef-v<version>.apk (same file, version-stamped copy in repo root)
 REM  NOTE: keep this file ASCII-only (GBK console garbles UTF-8)
 REM ============================================================
 setlocal enabledelayedexpansion
@@ -102,9 +103,19 @@ if not exist "%HERE%keystore.jks" (
 call "%BT%\apksigner.bat" sign --ks "%HERE%keystore.jks" --ks-key-alias echoref --ks-pass pass:%KS_PASS% --key-pass pass:%KS_PASS% --out "%DIST%\EchoRef.apk" "%BUILD%\unsigned.apk"
 if errorlevel 1 goto :fail
 
+REM Copy the signed APK to the repo root with a version-stamped name
+REM (e.g. EchoRef-v1.3.10.apk) so it is easy to find, and drop older ones
+REM so the root always holds exactly the latest build.
+REM NOTE: done by Node (finalize-apk.js) instead of cmd copy/for/del:
+REM   cmd's `for /f` + `dir /b` + `del` is unreliable when driven from
+REM   Git Bash, and copy dropped the .apk extension from the target name.
+node "%HERE%finalize-apk.js"
+if errorlevel 1 goto :fail
+
 echo.
 echo ============================================
 echo  BUILD OK: %DIST%EchoRef.apk  (v%VNAME%)
+echo  COPY: %HERE%..\EchoRef-v%VNAME%.apk
 echo ============================================
 exit /b 0
 

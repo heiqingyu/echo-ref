@@ -37,6 +37,24 @@ html, body {
   overscroll-behavior-y: none;
 }
 
+/* ────────── 「关于本页」说明块（只在公式集页末尾出现一次） ────────── */
+
+.pubnote {
+  margin: 20px 0 8px;
+  padding: 14px 16px;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--sub);
+  background: #fbfcfe;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.pubnote b {
+  color: var(--text);
+  font-weight: 600;
+}
+
 /* ────────── 顶栏 ────────── */
 .appbar {
   position: fixed;
@@ -1197,6 +1215,46 @@ html, body {
 
 .fx-group {
   scroll-margin-top: 56px;
+}
+
+/* 条目内小节导航（长条目定位用） */
+.fx-nav--sec {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border: 1px solid #e8ecf2;
+  border-radius: 10px;
+}
+
+.fx-nav--sec .fx-nav__c {
+  font-size: 11.5px;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border: 1px solid #dbe6ff;
+}
+
+.fx-nav--sec .fx-nav__c:hover,
+.fx-nav--sec .fx-nav__c:active {
+  color: #fff;
+  background: var(--brand);
+}
+
+/* 小节标题锚点：点击跳转时留出顶栏高度 */
+.fx-h {
+  scroll-margin-top: 56px;
+}
+
+/* 行内加粗（正文里的 **重点**） */
+.fx-text b,
+.fx-note b,
+.fx-formula b,
+.fx-h b {
+  font-weight: 700;
+  color: #111827;
+}
+
+.fx-note b {
+  color: #78350f;
 }
 
 /* 文献直链（官方 / 免费 PDF，点开即下载） */

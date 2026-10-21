@@ -1,50 +1,25 @@
-v1.3.9：目录重组（瓣膜通用计算并入瓣膜评估）+ 新增「超声伪影识别与规避」判读条目
+v1.3.10 网页/APK 体验修复 + 公式集返回栈与小节导航
 
-一、目录重组（v1.3.8 阶段内容合并入本次提交）
-- 「瓣膜与舒张定量」拆开：瓣膜相关 7 条通用计算
-  （wilkins / vcw / rf / mva / pisav / avav / ppm）从 sec:'vq' 改为 sec:'valve'，
-  并入「瓣膜评估」组
-- 「瓣膜与舒张定量」组更名为「舒张功能定量」，仅保留 3 条
-  （dias 舒张功能基础比值 / evp / dfun 四步法）
-- dias 由无 sec（默认 hemo）显式改归 sec:'vq'
-- 组分布：hemo 14 / right 13 / vq 3 / recon 12 / score 3 / ivs 5 / valve 7 = 57 个计算器（总数不变）
-- 两端实现：
-  · 小程序 calculators.js 在 EXTRA（瓣膜组）之后把 sec==='valve' 的
-    7 条 calc 条目 concat 进瓣膜组
-  · 网页 android-app/app.js 在 VALVE_INDEX 之后追加同样的 7 条
-  · calc-groups.js 与 app.js 的 CALC_GROUPS 两份手写副本同步 sec 字段
-- extra-data.js 的 CALC_HINTS 7 处组名同步（「瓣膜与舒张定量」→「瓣膜评估」，
-  「diastolic」→「舒张功能定量」），并修正 aortic / bav 中 DVI 的归属组
+【用户反馈的四项】
+1. 网页与 APK 每个页签顶部都有「关于本页」，刷屏影响阅读
+   → 全部移除，只在公式集页末尾保留一处（build-www.js 的 insertPubnote）
+2. 正文里大量 **加粗** 标记被原样输出成字面量 **
+   → 新建两端共用 miniprogram/utils/inline-md.js（parseInline / inlineHtml）
+     小程序端按片段切 <text> 渲染，网页端包 <b>；只处理成对 **，不误伤数学乘号
+3. 公式集里点返回直接退出页面/APP，而不是返回上一页
+   → 根因：单页应用从不写 history，WebView.canGoBack() 恒为 false
+     改为用 location.hash 记录视图（#/calc/xxx），返回时 history.back()
+     file:// 下 pushState 会抛 SecurityError，故用 hash
+     popView() 先同步还原界面再后退，按钮路径与系统返回键行为一致
+4. 公式集点进去的长条目没有小节导航
+   → 45 个评估条目全部含 ≥2 个小节，全部加上胶囊式小节导航 + 锚点跳转
 
-二、新增判读条目「超声伪影识别与规避（2026 ASE 指南）」（44 个 block / 7 节）
-- 分类框架：按「被打破的机器假设」归类，而非按伪影名称
-- 轴向伪影：简单混响、升主动脉混响（44–55% 的检查都有，最易误判为 A 型夹层）、
-  复杂混响彗星尾、镜像、声影与增强、速度位移（脂肪房间隔）
-- 侧向伪影：折射、波束宽度、侧瓣（三条识别特征）
-- 多普勒伪影：overgain / undergain / 壁滤波 150 Hz vs 350 Hz /
-  混叠（Nyquist = PRF/2）/ 镜像频谱 / 频谱增宽
-- 彩色多普勒三坑：侧瓣 color splay、blooming、twinkling
-- 3D 与造影特有伪影：stitching / dropout / 模糊 / 衰减 / swirling
-- 收尾「看到什么 → 先想哪个伪影 → 怎么验证」速查表
-- 判读页分入新分组「伪影识别与规避」（插在 intervention 与 report 之间）
+【构建链路修复】
+- build-apk.bat 的「复制 APK 到仓库根目录」段改由 android-app/finalize-apk.js 承担
+  原因：cmd 的 copy + for /f + dir + del 在 Git Bash 驱动下不稳定
+  （两次运行报不同错误，且 copy 会吞掉目标名的 .apk 扩展名）
+- 构建产物根目录固定为 EchoRef-v<版本>.apk，并自动清理旧版本
 
-三、新增参考文献 R53
-- Saric M, Sadeghpour A, Alizade L, et al. Recommendations for the
-  Identification and Mitigation of Cardiac Ultrasound Artifacts: A Guideline
-  from the American Society of Echocardiography
-- J Am Soc Echocardiogr, 2026, 39(5): 434–470
-- 附 ASE 官方免费全文 PDF 直链
-
-四、数据与版本
-- REFS 52 → 53 条（其中 42 条附直链）
-- 评估清单分组 12 → 13 组，条目 44 → 45 条
-- 公式集 57 个计算器 + 45 条评估清单，按 21 个主题分组
-- 版本 1.3.8 → 1.3.9，versionCode 32
-
-五、三端状态
-- 网页：node build-www.js 重建 www/（647.7 KB）与 docs/（600.0 KB）
-- APK：docs/index.html 同步至 android-app/assets/index.html（cmp 字节一致），
-  build-apk.bat 打包通过 → android-app/dist/EchoRef.apk
-  （versionName 1.3.9 / versionCode 32）
-- 小程序：cli.bat upload 成功（1.3.9，638.6 KB）
-- 六项校验全绿：project 205 / calc 335 / peds 92 / mp 451 / docs 103 / apk 381
+【校验】
+verify-project 206 / verify-calc 335 / verify-peds 92
+verify-mp 451 / verify-docs 121 / verify-apk 381 —— 全部通过

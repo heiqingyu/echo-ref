@@ -57,6 +57,41 @@
   line-height: 1.4;
 }
 
+/* 行内加粗（正文里的 **重点**） */
+.fx-b {
+  font-weight: 700;
+  color: #111827;
+}
+
+/* ── 条目内小节导航（长条目定位用） ── */
+.fx-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin: 16rpx 0 6rpx;
+}
+
+.fx-nav__c {
+  max-width: 100%;
+  padding: 8rpx 18rpx;
+  font-size: 22rpx;
+  line-height: 1.35;
+  color: #6b7280;
+  background: #f1f3f6;
+  border-radius: 999rpx;
+  white-space: nowrap;
+}
+
+.fx-nav__c--on {
+  color: #ffffff;
+  background: #2563eb;
+}
+
+.fx-nav__c--tap {
+  background: #dbe6ff;
+  color: #2563eb;
+}
+
 .fx-text {
   font-size: 25rpx;
   color: #374151;

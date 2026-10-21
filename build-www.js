@@ -42,6 +42,7 @@ const APP_VERSION = (function () {
   }
 })();
 
+
 /* ---------- 1. 抽取引擎源码 ---------- */
 
 /** 把 CommonJS 模块转成浏览器可用的 IIFE，挂到 window[globalName] */
@@ -90,6 +91,8 @@ const pedsSrc = wrapEngine(path.join(MP, 'utils', 'peds-zscore.js'), 'Peds');
 const calcSrc = wrapEngine(path.join(MP, 'utils', 'echo-calc.js'), 'Calc');
 const segSrc = wrapEngine(path.join(MP, 'utils', 'segment-svg.js'), 'SegSvg');
 const valveSrc = wrapEngine(path.join(MP, 'utils', 'valve-calc.js'), 'ValveCalc');
+// 行内标记解析（**加粗**）—— 小程序与网页共用同一份，避免两端表现不一致
+const mdSrc = wrapEngine(path.join(MP, 'utils', 'inline-md.js'), 'InlineMd');
 // 公式集「评估类内容 + 参考文献」数据（纯数据，与小程序同源）
 const extraSrc = wrapEngine(path.join(MP, 'utils', 'extra-data.js'), 'ExtraData');
 
@@ -267,6 +270,45 @@ const js = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
 // 网页图标：64px PNG 内嵌为 data URI，避免额外请求（也让 file:// 打开时能显示）
 const FAVICON_DATA = 'data:image/png;base64,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';
 
+
+
+/* ══════════════════════════════════════════════════════════
+   发布版：仅保留 PUBLIC_TABS 三个页签 + 对应引擎，去掉转载内容
+   ══════════════════════════════════════════════════════════ */
+
+/**
+ * 「关于本页」说明块
+ *
+ * ★ 2026-10-21：用户反馈它原来出现在每个页签顶部（点击哪里都有），
+ *   严重影响阅读体验。改为**只在公式集页最后放一处**，其余页签一律不显示。
+ *   www 完整版与 docs 发布版共用这一份，保证两端一致。
+ */
+const PUBNOTE_HTML = `<div class="pubnote">
+    <b>关于本页</b><br>
+    本页为个人整理的心脏超声（TTE）参考速查工具，四个页签：<b>EF·参考值</b>（M 型 / 二维 EF 计算、
+    成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>节段划分</b>（ASE 17 节段模型与冠脉供血）、
+    <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（57 个计算器 + 45 条评估清单，按 21 个主题分组，
+    含二尖瓣狭窄 PMBV 适合度流程、人工瓣、超声造影、危急值清单与报告标准化）。
+    公式集目录顶部有组名跳转条，点一下直接定位到对应分组；长条目详情页顶部另有小节导航。
+    切面学习视频为第三方站点的文字链接，本工具不加载其任何内容。
+    「切面指南」已并入参考文献（53 条，其中 42 条附 ASE 官方 / 免费 PDF 直链，
+    点开即可下载；各详情页底部标注该条目使用的文献编号）。
+    <b>本页内容为自行整理，非任何学会或机构的官方产品</b>，仅供医学教育与速查使用；
+    参考值需结合患者体型、血流状态及测量方法，<b>不能单凭一个指标作出诊断</b>。
+  </div>`;
+
+/**
+ * 把「关于本页」插到公式集页（#page-calc）末尾
+ * 锚点是公式集页最后的「公式来源」说明块 —— 插在它之后即为整页最末。
+ */
+function insertPubnote(src) {
+  const anchor = 'Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。\n      </div>\n    </div>';
+  if (src.indexOf(anchor) === -1) throw new Error('未找到公式集末尾锚点');
+  return src.replace(anchor, anchor.replace(
+    '      </div>\n    </div>',
+    '      </div>\n\n      ' + PUBNOTE_HTML + '\n    </div>'
+  ));
+}
 
 const html = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -669,6 +711,8 @@ ${segSrc}
 
 ${valveSrc}
 
+${mdSrc}
+
 ${extraSrc}
 
 ${js}
@@ -677,13 +721,23 @@ ${js}
 </html>
 `;
 
-fs.writeFileSync(OUT, html, 'utf8');
-const kb = (Buffer.byteLength(html, 'utf8') / 1024).toFixed(1);
+const wwwHtml = insertPubnote(html);
+fs.writeFileSync(OUT, wwwHtml, 'utf8');
+const kb = (Buffer.byteLength(wwwHtml, 'utf8') / 1024).toFixed(1);
 console.log('✅ 已生成 ' + path.relative(ROOT, OUT) + '  (' + kb + ' KB)');
 
 /* ══════════════════════════════════════════════════════════
    发布版：仅保留 PUBLIC_TABS 三个页签 + 对应引擎，去掉转载内容
    ══════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════
+   发布版：仅保留 PUBLIC_TABS 三个页签 + 对应引擎，去掉转载内容
+   ══════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════
+   发布版：仅保留 PUBLIC_TABS 三个页签 + 对应引擎，去掉转载内容
+   ══════════════════════════════════════════════════════════ */
+
 
 /**
  * 按 section 的开闭标签配对，删掉指定 id 的整段（含其后紧跟的换行）。
@@ -881,25 +935,8 @@ function buildPublicHtml() {
     throw new Error('发布版：页签数 ' + nTab + ' ≠ ' + PUBLIC_TABS.length);
   }
 
-  // 6) 顶部说明改为发布版口径 + 免责声明
-  // 标题保持简短（用户要求线上只显示「心脏超声参考值」），不在此处加长
-  out = out.replace(
-    '<main class="main" id="main">',
-    `<main class="main" id="main">
-
-  <div class="pubnote">
-    <b>关于本页</b><br>
-    本页为个人整理的心脏超声（TTE）参考速查工具，四个页签：<b>EF·参考值</b>（M 型 / 二维 EF 计算、
-    成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>节段划分</b>（ASE 17 节段模型与冠脉供血）、
-    <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（57 个计算器 + 45 条评估清单，按 21 个主题分组，
-    含二尖瓣狭窄 PMBV 适合度流程、人工瓣、超声造影、危急值清单与报告标准化）。
-    公式集目录顶部有组名跳转条，点一下直接定位到对应分组；切面学习视频为第三方站点的文字链接，
-    本工具不加载其任何内容。「切面指南」已并入参考文献（53 条，其中 42 条附 ASE 官方 / 免费 PDF 直链，
-    点开即可下载；各详情页底部标注该条目使用的文献编号）。
-    <b>本页内容为自行整理，非任何学会或机构的官方产品</b>，仅供医学教育与速查使用；
-    参考值需结合患者体型、血流状态及测量方法，<b>不能单凭一个指标作出诊断</b>。
-  </div>`
-  );
+  // 6) 「关于本页」说明块：只在公式集页末尾放一处（用户 2026-10-21 反馈）
+  out = insertPubnote(out);
 
   return out;
 }

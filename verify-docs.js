@@ -325,6 +325,119 @@ function check(name, ok, detail) {
     check('延展阅读卡片在公式集页', d.ext, true);
   }
 
+  // ── v1.3.10 新增：4 项体验修复的断言 ──
+  console.log('\n【三·a】体验修复：关于本页位置 / 加粗解析 / 返回栈 / 小节导航');
+  {
+    // ① 「关于本页」只在公式集页末尾出现一次，其余页签一律没有
+    const pn = await c.evalJs(`(function () {
+      var all = document.querySelectorAll('.pubnote');
+      var inCalc = document.querySelectorAll('#page-calc .pubnote').length;
+      var inIndex = document.querySelectorAll('#page-index .pubnote').length;
+      var inSeg = document.querySelectorAll('#page-segments .pubnote').length;
+      var inPeds = document.querySelectorAll('#page-peds .pubnote').length;
+      // 是否在 main 的最前面（旧版位置：main 顶部）
+      var main = document.getElementById('main');
+      var firstEl = main ? main.firstElementChild : null;
+      var atTop = !!(firstEl && firstEl.classList.contains('pubnote'));
+      // 是否位于公式集页最后一个卡片之后
+      var calcSec = document.getElementById('page-calc');
+      var lastCard = calcSec ? calcSec.querySelector('.card:last-of-type') : null;
+      var pnEl = calcSec ? calcSec.querySelector('.pubnote') : null;
+      var atEnd = !!(pnEl && lastCard &&
+        (pnEl.compareDocumentPosition(lastCard) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
+      return JSON.stringify({ total: all.length, inCalc: inCalc, inIndex: inIndex,
+        inSeg: inSeg, inPeds: inPeds, atTop: atTop, atEnd: atEnd,
+        txt: (pnEl || {}).textContent || '' });
+    })()`);
+    const p = JSON.parse(pn);
+    check('「关于本页」全页只有 1 处', p.total === 1, p.total);
+    check('「关于本页」在公式集页内', p.inCalc === 1, p.inCalc);
+    check('「关于本页」不在 EF·参考值页', p.inIndex === 0, p.inIndex);
+    check('「关于本页」不在节段划分页', p.inSeg === 0, p.inSeg);
+    check('「关于本页」不在儿童 Z 值页', p.inPeds === 0, p.inPeds);
+    check('「关于本页」已从页面顶部移走', p.atTop === false, p.atTop);
+    check('「关于本页」位于公式集页末尾', p.atEnd === true, p.atEnd);
+    check('「关于本页」含免责声明', /非任何学会|不能单凭/.test(p.txt), p.txt.slice(0, 60));
+
+    // ② **加粗** 解析：引擎已注入，且渲染结果不含字面量 **
+    const md = await c.evalJs(`(function () {
+      return JSON.stringify({
+        hasEngine: typeof window.InlineMd === 'object',
+        hasParse: !!(window.InlineMd && window.InlineMd.parseInline),
+        sample: window.InlineMd && window.InlineMd.parseInline
+          ? window.InlineMd.parseInline('前**重点**后') : []
+      });
+    })()`);
+    const m = JSON.parse(md);
+    check('InlineMd 引擎已注入网页版', m.hasEngine === true, m.hasEngine);
+    check('InlineMd.parseInline 可用', m.hasParse === true, m.hasParse);
+    check('解析器把 **重点** 切成加粗片段',
+      Array.isArray(m.sample) && m.sample.length === 3 &&
+      m.sample[1].b === true && m.sample[1].t === '重点',
+      JSON.stringify(m.sample));
+
+    // ②b 打开一个长条目，确认详情里没有字面量 **，且有 <b> 标签
+    const lit = await c.evalJs(`(function () {
+      var btn = document.querySelector('#calcList .fx-item[data-kind="brief"]');
+      if (!btn) return JSON.stringify({ skip: true });
+      btn.click();
+      var card = document.querySelector('#calcGroups > .card:not([hidden])');
+      if (!card) return JSON.stringify({ skip: true });
+      var txt = card.textContent || '';
+      var html = card.innerHTML || '';
+      return JSON.stringify({
+        literal: txt.indexOf('**') >= 0 ? txt.slice(txt.indexOf('**') - 20, txt.indexOf('**') + 20) : '',
+        bold: card.querySelectorAll('b').length,
+        toc: card.querySelectorAll('.fx-nav--sec .fx-nav__c').length,
+        anchors: card.querySelectorAll('.fx-h[id^="sec-"]').length
+      });
+    })()`);
+    const L = JSON.parse(lit);
+    if (L.skip) {
+      check('详情页可打开（用于验证加粗与导航）', false, '未找到 brief 条目');
+    } else {
+      check('详情正文不再出现字面量 **', L.literal === '', L.literal);
+      check('详情正文已渲染 <b> 加粗', L.bold > 0, L.bold);
+      check('长条目顶部有小节导航胶囊', L.toc >= 2, L.toc);
+      check('小节标题带锚点 id（可跳转）', L.anchors >= 2, L.anchors);
+    }
+
+    // ③ 返回栈：进入详情后 hash 变化，返回能回到目录（不是退出页面）
+    const hist = await c.evalJs(`(function () {
+      var before = location.hash;
+      var idx = document.getElementById('calcIndex');
+      var detail = document.getElementById('calcDetail');
+      return JSON.stringify({ before: before, hash: location.hash });
+    })()`);
+    const H = JSON.parse(hist);
+    check('进入详情后 URL 带视图 hash（返回键可回退）',
+      /^#\/calc\//.test(H.hash), H.hash);
+
+    // 点「返回公式集」按钮后应回到目录视图
+    const back = await c.evalJs(`(function () {
+      var b = document.getElementById('calcBack');
+      if (!b) return JSON.stringify({ skip: true });
+      b.click();
+      return JSON.stringify({
+        indexVisible: !document.getElementById('calcIndex').hidden,
+        detailHidden: document.getElementById('calcDetail').hidden
+      });
+    })()`);
+    const B = JSON.parse(back);
+    if (B.skip) {
+      check('「返回公式集」按钮存在', false, '未找到 #calcBack');
+    } else {
+      check('点「返回公式集」回到目录视图',
+        B.indexVisible === true && B.detailHidden === true,
+        JSON.stringify(B));
+      // history.back() 是异步的，hash 退回要等一拍
+      await new Promise((r) => setTimeout(r, 250));
+      const bh = await c.evalJs(`JSON.stringify({ hash: location.hash })`);
+      const BH = JSON.parse(bh);
+      check('返回后 hash 回到目录', BH.hash === '#/calc' || BH.hash === '', BH.hash);
+    }
+  }
+
   // ── v1.2.4 新增计算器：端到端点开 + 填值 + 读结果 ──
   console.log('\n【三·b】新增计算器端到端（右心 / 瓣膜 / 舒张 / 重构）');
   const backToList = async () => {

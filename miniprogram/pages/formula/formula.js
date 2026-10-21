@@ -10,6 +10,7 @@
 const CG = require('../../utils/calc-groups.js');
 const EX = require('../../utils/extra-data.js');
 const calc = require('../../utils/echo-calc.js');
+const MD = require('../../utils/inline-md.js');
 const app = getApp();
 
 /** 在评估类内容里按 id 找条目 */
@@ -23,11 +24,19 @@ function findBrief(id) {
 
 /** blocks → 视图模型（表格列数由表头决定） */
 function toBlocks(blocks) {
+  let secIdx = -1;
   return (blocks || []).map(function (b) {
     if (b.kind === 'table') {
       return { kind: 'table', heads: b.heads, rows: b.rows, cols: b.heads.length, warn: !!b.warn };
     }
     const o = { kind: b.kind, text: b.text, warn: !!b.warn };
+    // 行内标记：**加粗** 拆成片段，渲染时用 <text class="fx-b"> 包裹
+    o.segs = MD.parseInline(b.text);
+    // 小节标题带锚点序号，供小节导航跳转（id="sec-N"）
+    if (b.kind === 'h') {
+      secIdx += 1;
+      o.secIdx = secIdx;
+    }
     // 桥接块带的计算器 id → 标题，渲染成可点胶囊
     if (b.links && b.links.length) {
       o.links = b.links.map(function (id) {
@@ -36,6 +45,23 @@ function toBlocks(blocks) {
       });
     }
     return o;
+  });
+}
+
+/**
+ * 条目内小节导航
+ *
+ * 长条目（判读类）动辄几十屏，滚到中间就找不到北了。
+ * 这里从 blocks 里抽出所有 kind:'h' 的小标题，做成一排胶囊，
+ * 点一下直接滚到那一节（与目录页的组名跳转条同一套交互）。
+ *
+ * 只在有 2 个以上小节时才出，避免短条目多一行无用胶囊。
+ */
+function buildToc(blocks) {
+  const hs = (blocks || []).filter(function (b) { return b.kind === 'h'; });
+  if (hs.length < 2) return [];
+  return hs.map(function (b, i) {
+    return { id: 'sec-' + i, t: String(b.text || '').replace(/\*\*/g, '') };
   });
 }
 
@@ -59,6 +85,8 @@ Page({
     out: '',
     hasOut: false,
     isReference: false,
+    toc: [],
+    curSec: '',
   },
 
   onLoad(query) {
@@ -76,6 +104,7 @@ Page({
         title: brief.title,
         note: brief.note || '',
         blocks: toBlocks(brief.blocks),
+        toc: buildToc(brief.blocks),
         refs: (brief.source || []).map(function (rid) {
           const r = EX.REFS.filter(function (x) { return x.id === rid; })[0];
           return r ? { id: r.id, zh: r.zh, where: r.where } : null;
@@ -113,6 +142,7 @@ Page({
         title: g.title,
         note: g.note,
         blocks: toBlocks(g.blocks || []),
+        toc: buildToc(g.blocks || []),
         refs: [],
         inputs: inputs,
         opts: opts,
@@ -176,6 +206,28 @@ Page({
       ? e.currentTarget.dataset.id : '';
     if (!id) return;
     wx.navigateTo({ url: '/pages/formula/formula?id=' + id });
+  },
+
+  /**
+   * 点小节导航胶囊 → 滚到该小节
+   * 用选择查询拿元素相对视口的位置 + 当前滚动量，算出目标 scrollTop
+   * （与目录页 onJumpGroup 同一套算法：wx.pageScrollTo 的 selector 分支不稳）
+   */
+  onJumpSec(e) {
+    const id = e && e.currentTarget && e.currentTarget.dataset
+      ? e.currentTarget.dataset.id : '';
+    if (!id) return;
+    this.setData({ curSec: id });
+    const q = wx.createSelectorQuery().in(this);
+    q.select('#' + id).boundingClientRect();
+    q.selectViewport().scrollOffset();
+    q.exec(function (res) {
+      const rect = res && res[0];
+      if (!rect) return;
+      const cur = (res[1] && res[1].scrollTop) || 0;
+      const top = Math.max(0, cur + rect.top - 8);
+      wx.pageScrollTo({ scrollTop: top, duration: 220 });
+    });
   },
 
   /** 把当前输入写回缓存 */
