@@ -191,7 +191,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 48) ok('参考文献 48 条');
+if (EX.REFS.length === 49) ok('参考文献 49 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：只挂官方/免费可直连的 PDF，需登录下载的坚决不挂
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
