@@ -325,7 +325,7 @@ function check(name, ok, detail) {
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 9 条瓣膜通用计算（wilkins/vcw/rf/mva/pisav/avav/ppm/asload/pr）',
       d.valveCalc === 9, d.valveCalc);
-    check('参考文献 62 条', d.refs === 62, d.refs);
+    check('参考文献 69 条', d.refs === 69, d.refs);
     check('延展阅读卡片在公式集页', d.ext, true);
   }
 
@@ -812,7 +812,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 62 条', /62/.test(ri.cnt), refsInit);
+  check('折叠头显示 69 条', /69/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -830,7 +830,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 62 条', ro.hidden === false && ro.n === 62 && ro.h > 0, refsOpen);
+  check('点击后展开全部 69 条', ro.hidden === false && ro.n === 69 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 

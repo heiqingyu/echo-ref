@@ -42,6 +42,10 @@ function titleOf(name) {
 function main() {
   if (!fs.existsSync(DIR)) fs.mkdirSync(DIR, { recursive: true });
 
+  // ★ 已经被 extra-data.js 的 REFS 引用过的文件不再进「本地资料」组，避免重复列一遍
+  const extraPath = path.join(ROOT, 'miniprogram', 'utils', 'extra-data.js');
+  const extraSrc = fs.existsSync(extraPath) ? fs.readFileSync(extraPath, 'utf8') : '';
+
   const files = fs.readdirSync(DIR)
     .filter((f) => !f.startsWith('.'))
     .filter((f) => KINDS[path.extname(f).toLowerCase()])
@@ -59,12 +63,17 @@ function main() {
       return;
     }
     const kind = KINDS[path.extname(f).toLowerCase()];
+    const url = BASE + encodeURIComponent(f);
+    if (extraSrc.indexOf(url) !== -1) {
+      skipped.push(f + '（已作为参考文献直链挂在 REFS 里）');
+      return;
+    }
     items.push({
       id: 'm-' + f.replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9\u4e00-\u9fa5]+/g, '-').toLowerCase(),
       title: titleOf(f),
       sub: kind === 'pdf' ? 'PDF · ' + humanSize(st.size) : humanSize(st.size),
       kind: kind,
-      url: BASE + encodeURIComponent(f),
+      url: url,
     });
   });
 
