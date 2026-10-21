@@ -411,6 +411,10 @@
       fields: [['e', 'E 峰', 'cm/s'], ['a', 'A 峰', 'cm/s'], ['es', '间隔 e′', 'cm/s'], ['el', '侧壁 e′', 'cm/s']],
       note: 'E/e′ <8 左房压正常，>14 升高，8–14 为灰区；完整分级需结合 LAVI、肺静脉等' },
 
+    { id: 'vtir', sec: 'hemo', title: 'RVOT / LVOT VTI 比',
+      fields: [['vtrvo', 'RVOT VTI', 'cm'], ['vtrlo', 'LVOT VTI', 'cm']],
+      note: '正常 0.7–1.05；>1.2 提示左向右分流（可近似当 Qp/Qs），<0.6 提示肺血流减少。优点是不用测两处直径——直径平方的误差会被放大两次' },
+
     /* ── 右心与肺循环（sec: right） ── */
     { id: 'paspv', sec: 'right', title: '肺动脉收缩压 PASP',
       fields: [['ptrv', 'TR 峰速 Vmax', 'm/s'], ['prap', '右房压 RAP', 'mmHg']],
@@ -452,6 +456,11 @@
       fields: [['rdt', '1→2 m/s 时间差 Δt', 'ms']],
       note: '两点压差差为 4×2² − 4×1² = 12 mmHg，故 dP/dt = 12 ÷ Δt(s)，单位 mmHg/s。<400 提示右室收缩功能减低' },
 
+    { id: 'phprob', sec: 'right', title: '超声肺高压可能性',
+      opts: [{ k: 'phsign', n: '其他右心征象', list: [['n', '无'], ['y', '有']] }],
+      fields: [['phv', 'TR Vmax', 'm/s'], ['phrvotat', 'RVOT 加速时间（可选）', 'ms']],
+      note: 'TR Vmax ≤2.8 无征象 → 低；≤2.8 有征象 或 2.9–3.4 无征象 → 中；2.9–3.4 有征象 或 >3.4 → 高。右心征象指 RV/LV >1、室间隔变平 / 矛盾运动、RVOT AT <105 ms、右房面积 >18 cm²、IVC >21 mm 不塌陷、收缩期切迹。超声只给「可能性」，确诊必须右心导管' },
+
     /* ── v1.3.0 第三批：瓣膜与舒张细节 ── */
     { id: 'wilkins', sec: 'vq', title: 'Wilkins 二尖瓣形态评分',
       fields: [['wk1', '瓣叶厚度', '分'], ['wk2', '瓣叶钙化', '分'],
@@ -464,9 +473,13 @@
     { id: 'rf', sec: 'vq', title: '反流分数 RF',
       fields: [['rfvol', '反流量 RVol', 'mL'], ['rfsv', '每搏量 SV', 'mL']],
       note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷' },
-    { id: 'mvac', sec: 'vq', title: '二尖瓣面积（连续性方程法）',
-      fields: [['mvd', 'LVOT 直径', 'cm'], ['mvlvti', 'LVOT VTI', 'cm'], ['mvmvti', '二尖瓣 VTI', 'cm']],
-      note: 'MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV，与 PHT 法互为校核：连续性方程不受心率与合并反流影响，房颤时更可靠' },
+    { id: 'mva', sec: 'vq', title: '二尖瓣面积 MVA（两法对照）',
+      fields: [['mpht', '① 压力减半时间 PHT', 'ms'], ['mvd', '② LVOT 直径', 'cm'],
+        ['mvlvti', '② LVOT VTI', 'cm'], ['mvmvti', '② 二尖瓣 VTI', 'cm']],
+      note: '① PHT 法 MVA = 220/PHT，要求窦性心律、无明显主动脉瓣反流，房颤 / AR / 重度钙化 / 术后会失真；② 连续性方程 MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV，不受心率与反流影响，房颤 / AR 时首选。分级：>1.5 轻度、1.0–1.5 中度、<1.0 重度。两法差 >0.3 cm² 时回到图像找原因，不要取平均' },
+    { id: 'evp', sec: 'vq', title: 'E/Vp 左房压估测',
+      fields: [['evpe', 'E 峰速度', 'cm/s'], ['evpvp', 'Vp 血流传播速度', 'cm/s']],
+      note: 'E/Vp ≤1.5 正常；>1.5 提示 PCWP >15 mmHg，>2.5 提示 >18 mmHg。Vp 用彩色 M 型在四腔切面测（正常 ≥45 cm/s）。Vp 正常而 E/Vp 升高时，E 峰多被容量负荷或 MR 抬高，不等于松弛受损' },
     { id: 'laef', sec: 'recon', title: '左房排空分数 LAEF',
       fields: [['lavmax', 'LA 最大容积', 'mL'], ['lavmin', 'LA 最小容积', 'mL']],
       note: 'LAEF = (LAVmax − LAVmin) / LAVmax，正常 ≥50%；扩张指数 = (LAVmax − LAVmin) / LAVmin。LAEF 减低提示左房机械功能受损' },
@@ -506,13 +519,10 @@
     { id: 'avav', sec: 'vq', title: '主动脉瓣面积（连续性方程）',
       fields: [['ald', 'LVOT 直径', 'cm'], ['alvti', 'LVOT VTI', 'cm'], ['aavti', '主动脉瓣 VTI', 'cm']],
       note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；AVAi ≤0.6 为重度；DVI ≤0.25 支持重度 AS' },
-    { id: 'mvav', sec: 'vq', title: '二尖瓣面积（PHT 法）',
-      fields: [['mpht', '压力减半时间 PHT', 'ms'], ['msv', '每搏量 SV（可选，作连续方程）', 'mL'],
-        ['mvvti', '二尖瓣 VTI（可选）', 'cm']],
-      note: 'MVA = 220/PHT；>1.5 轻度、1.0–1.5 中度、<1.0 重度。房颤或合并反流时 PHT 不可靠' },
     { id: 'ppm', sec: 'vq', title: '人工瓣 EOAi 与 PPM',
-      fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', '']],
-      note: 'EOAi = EOA/BSA。主动脉位 <0.85 重度、0.85–1.0 中度；二尖瓣位 <0.9 重度、0.9–1.2 中度' },
+      fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', ''],
+        ['pbmi', 'BMI（可选；≥30 用肥胖切点）', 'kg/m²']],
+      note: 'EOAi = EOA/BSA。R17（ASE 2024）：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65；二尖瓣位 正常 >1.2、中度 1.2–0.91、重度 ≤0.90（cm²/m²）。BMI ≥30 时整体下调：主动脉位 0.70 / 0.70–0.56 / ≤0.55，二尖瓣位 1.0 / 1.0–0.76 / ≤0.75' },
     { id: 'dfun', sec: 'vq', title: '舒张功能分级（四步法）',
       fields: [['dfe', 'E 峰', 'cm/s'], ['dfa', 'A 峰', 'cm/s'], ['dfes', '间隔 e′', 'cm/s'],
         ['dfel', '侧壁 e′', 'cm/s'], ['dflavi', 'LAVi（可选）', 'mL/m²'], ['dftrv', 'TR Vmax（可选）', 'm/s']],
@@ -541,6 +551,13 @@
     { id: 'swv', sec: 'recon', title: '每搏功 SW / SWi',
       fields: [['ssv', '每搏量 SV', 'mL'], ['wmap', '平均动脉压 MAP', 'mmHg']],
       note: 'SW(g·m) = SV × MAP × 0.0136，正常 60–110；SWi = SW/BSA。GWI/GCW/GWE 需专有软件，无法手算' },
+
+    { id: 'lastiff', sec: 'recon', title: '左房僵硬度',
+      fields: [['lsee', 'E/e′', ''], ['lslars', 'LARS（填正数）', '%']],
+      note: 'LA stiffness = E/e′ ÷ LARS，LARS 填正数百分值（如 25 表示 25%）。≤0.47 正常，>0.47 支持 HFpEF，>0.60 明显僵硬' },
+    { id: 'lvnc', sec: 'recon', title: '致密化不全 NC/C 比',
+      fields: [['lnvnc', '非致密层厚度', 'mm'], ['lnvc', '致密层厚度', 'mm']],
+      note: 'Jenni（超声，收缩末期短轴）>2.0；Petersen（CMR，舒张末期）>2.3。比值只是三条标准之一，还必须有：两层结构分明、深陷隐窝与左室腔血流相通' },
 
     /* ── v1.2.8 第一批：M 型 / 评分体系 / 介入尺寸 ── */
     { id: 'mtype', sec: 'hemo', title: 'M 型三合一：FS · Teichholz EF · EPSS',
@@ -624,7 +641,6 @@
     svrv: '(MAP − RAP) × 80 ÷ CO',
     pisav: 'EROA · RVol · 反流分级',
     avav: 'AVA · AVAi · DVI',
-    mvav: 'MVA = 220 ÷ PHT',
     ppm: '有效开口面积指数 · 患者-瓣膜不匹配',
     dfun: 'E/A · E/e′ · LAVi · TR Vmax',
     volidx: 'EDVi · ESVi · SVi（按性别）',
@@ -649,7 +665,12 @@
     wilkins: '4 项各 1–4 分 · ≤8 适合 PBMV',
     vcw: 'MR / TR：<3 轻 · 3–6.9 中 · ≥7 重',
     rf: 'RVol ÷ SV · 轻 <30 中 30–49 重 ≥50',
-    mvac: 'MVA = SV ÷ 二尖瓣 VTI',
+    mva: 'MVA = 220÷PHT 与 SV÷VTI_MV 同屏对照',
+    evp: 'E 峰 ÷ 血流传播速度 Vp',
+    lastiff: 'E/e′ ÷ LARS',
+    vtir: '不测直径的分流替代量',
+    lvnc: '非致密层 ÷ 致密层',
+    phprob: '2022 ESC/ERS 三步法',
     laef: 'LAEF 与 LA 扩张指数',
     quickratio: '床头最常用的两个半定量比值',
     lvmih: 'de Simone 指数 · 男 >50 女 >47',
@@ -685,8 +706,8 @@
   }
 
   /** 目录：分组标题 + 分组说明（可选） + 列表开标签 */
-  function fxGroupHtml(title, note) {
-    let h = '<div class="fx-group">' + esc(title) + '</div>';
+  function fxGroupHtml(id, title, note) {
+    let h = '<div class="fx-group" id="g-' + esc(id) + '">' + esc(title) + '</div>';
     if (note) h += '<div class="fx-gnote">' + esc(note) + '</div>';
     return h + '<div class="fx-list">';
   }
@@ -718,7 +739,19 @@
     let h = '';
     (blocks || []).forEach(function (b) {
       if (b.kind === 'h') { h += '<div class="fx-h">' + esc(b.text) + '</div>'; return; }
-      if (b.kind === 'note') { h += '<div class="fx-note">' + esc(b.text) + '</div>'; return; }
+      if (b.kind === 'note') {
+        h += '<div class="fx-note">' + esc(b.text) + '</div>';
+        if (b.links && b.links.length) {
+          h += '<div class="chiprow">';
+          b.links.forEach(function (id) {
+            const g = calcGroupOf(id);
+            h += '<button type="button" class="chip" data-jump="' + esc(id) + '">' +
+              esc(g ? g.title : id) + '</button>';
+          });
+          h += '</div>';
+        }
+        return;
+      }
       if (b.kind === 'formula') { h += '<div class="fx-formula">' + esc(b.text) + '</div>'; return; }
       if (b.kind === 'table') {
         h += '<div class="fx-tbl fx-tbl--' + b.heads.length + '">';
@@ -772,6 +805,7 @@
         '<div class="ref-item__en">' + esc(r.en) + '</div>' +
         '<div class="ref-item__where">' + esc(r.where) + '</div>' +
         '<div class="ref-item__use">用于：' + esc(r.use) + '</div>' +
+        dlHtml(r.dl) +
         '</div></div>';
     });
     box.innerHTML = h;
@@ -786,6 +820,17 @@
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleRefs(); }
       });
     }
+  }
+
+  /** 文献直链（官方 / 免费 PDF，点开即下载，无需登录） */
+  function dlHtml(dl) {
+    if (!dl || !dl.length) return '';
+    let h = '<div class="ref-dl">';
+    dl.forEach(function (d) {
+      h += '<a class="ref-dl__i" href="' + esc(d.u) + '" target="_blank" rel="noopener">' +
+        esc(d.t) + '</a>';
+    });
+    return h + '</div>';
   }
 
   /** 展开 / 收起参考文献总表（force 为 true/false 时指定状态） */
@@ -957,7 +1002,7 @@
         });
       });
       if (!items.length) return;
-      list += fxGroupHtml(sec.title, sec.note);
+      list += fxGroupHtml(sec.id, sec.title, sec.note);
       items.forEach(function (it) {
         list += fxItemHtml(it.kind, it.id, it.title, it.sub, it.url, it.count, it.sec);
       });
@@ -967,7 +1012,14 @@
     if (!list) {
       list = '<div class="fx-empty">没有匹配「' + esc((kw || '').trim()) + '」的条目</div>';
     }
-    box.innerHTML = list;
+    // 组名跳转条：目录很长，点一下锚到该组（横向可滑动）
+    let nav = '';
+    secs.forEach(function (sec) {
+      if (!sec.items.length) return;
+      nav += '<a class="fx-nav__c" href="#g-' + esc(sec.id) + '">' +
+        esc(sec.title.replace(/（.*?）/g, '')) + '</a>';
+    });
+    box.innerHTML = (nav ? '<div class="fx-nav">' + nav + '</div>' : '') + list;
   }
 
   /** 目录的事件绑定：搜索框 + 条目点击（都用委托 / 只绑一次，重渲染无需重绑） */
@@ -1115,6 +1167,10 @@
           .forEach(function (o) { if (o !== inp) o.value = inp.value; });
         renderCalc();
       });
+    });
+    // 「相关计算」胶囊：点了直接进对应计算器
+    $('calcGroups').querySelectorAll('.chip[data-jump]').forEach(function (c) {
+      c.addEventListener('click', function () { openCalcGroup(c.dataset.jump); });
     });
     // 绑定动态生成的分段选择器
     $('calcGroups').querySelectorAll('.seg').forEach(function (seg) {
@@ -1394,23 +1450,29 @@
       put('avav', partsOf(parts));
     } else put('avav');
 
-    // MVA（PHT / 连续方程）
+    // MVA（PHT 法 + 连续性方程，同屏对照）
     {
+      const m = Calc.mvaBoth(
+        has('mpht') ? v.mpht : null,
+        has('mvd') ? v.mvd : null,
+        has('mvlvti') ? v.mvlvti : null,
+        has('mvmvti') ? v.mvmvti : null
+      );
       const parts = [];
-      if (has('mpht')) {
-        const mva = Calc.mvaPht(v.mpht);
-        parts.push('MVA ' + Calc.fmt(mva, 2) + ' cm²（PHT 法）→ ' + Calc.gradeMva(mva).text);
+      if (m.pht !== undefined) {
+        parts.push('MVA ' + Calc.fmt(m.pht, 2) + ' cm²（PHT 法）→ ' + m.phtText);
       }
-      if (has('msv', 'mvvti')) {
-        const m2 = Calc.mvaContinuity(v.msv, v.mvvti);
-        parts.push('MVA ' + Calc.fmt(m2, 2) + ' cm²（连续方程）→ ' + Calc.gradeMva(m2).text);
+      if (m.cont !== undefined) {
+        parts.push('MVA ' + Calc.fmt(m.cont, 2) + ' cm²（连续方程，SV ' +
+          Calc.fmt(m.sv, 1) + ' mL）→ ' + m.contText);
       }
-      put('mvav', partsOf(parts));
+      if (m.diffText) parts.push(m.diffText);
+      put('mva', partsOf(parts));
     }
 
     // 人工瓣 EOAi / PPM
     {
-      const r = Calc.eoaPpm(v.peoa, bsa, v.ppos);
+      const r = Calc.eoaPpm(v.peoa, bsa, v.ppos, v.pbmi);
       if (r.eoai !== undefined) {
         put('ppm', 'EOAi ' + Calc.fmt(r.eoai, 2) + ' cm²/m²（' +
           (r.pos === 'av' ? '主动脉位' : '二尖瓣位') + '）→ ' + r.text);
@@ -1674,13 +1736,47 @@
       put('rf', r.error ? r.error : 'RF = ' + Calc.fmt(r.rf, 1) + '% · ' + r.text);
     } else put('rf');
 
-    // MVA 连续性方程
-    if (has('mvd', 'mvlvti', 'mvmvti')) {
-      const sv = Calc.strokeVolume(v.mvd, v.mvlvti);
-      const mva = Calc.mvaContinuity(sv, v.mvmvti);
-      put('mvac', 'SV ' + Calc.fmt(sv, 1) + ' mL · MVA ' + Calc.fmt(mva) + ' cm² · ' +
-        Calc.gradeMva(mva).text);
-    } else put('mvac');
+    // E/Vp 左房压估测
+    if (has('evpe', 'evpvp')) {
+      const r = Calc.evpRatio(v.evpe, v.evpvp);
+      const parts = r.error ? [r.error] : ['E/Vp ' + Calc.fmt(r.ratio, 2), r.vpText, r.text];
+      if (!r.error && r.note) parts.push(r.note);
+      put('evp', partsOf(parts));
+    } else put('evp');
+
+    // 左房僵硬度
+    if (has('lsee', 'lslars')) {
+      const r = Calc.laStiffness(v.lsee, v.lslars);
+      const parts = r.error ? [r.error] : ['LA stiffness ' + Calc.fmt(r.stiffness, 2), r.text];
+      if (!r.error && r.note) parts.push(r.note);
+      put('lastiff', partsOf(parts));
+    } else put('lastiff');
+
+    // RVOT / LVOT VTI 比
+    if (has('vtrvo', 'vtrlo')) {
+      const r = Calc.vtiRatio(v.vtrvo, v.vtrlo);
+      put('vtir', r.error ? r.error : 'VTI 比 ' + Calc.fmt(r.ratio, 2) + '；' + r.text);
+    } else put('vtir');
+
+    // 致密化不全 NC/C
+    if (has('lnvnc', 'lnvc')) {
+      const r = Calc.lvncRatio(v.lnvnc, v.lnvc);
+      const parts = r.error ? [r.error] : ['NC/C ' + Calc.fmt(r.ratio, 2), r.text];
+      if (!r.error && r.note) parts.push(r.note);
+      put('lvnc', partsOf(parts));
+    } else put('lvnc');
+
+    // 超声肺高压可能性（2022 ESC/ERS）
+    {
+      const signs = calcOpt.phsign === 'y';
+      if (has('phv') || has('phrvotat') || signs) {
+        const r = Calc.phLikelihood(v.phv, signs, v.phrvotat);
+        const parts = r.error ? [r.error] : ['可能性 ' + r.prob, r.text];
+        if (!r.error && r.atText) parts.push(r.atText);
+        if (!r.error && r.note) parts.push(r.note);
+        put('phprob', partsOf(parts));
+      } else put('phprob');
+    }
 
     // 左房排空分数
     if (has('lavmax', 'lavmin')) {
@@ -2132,18 +2228,51 @@
       put('ctrcd', partsOf(parts));
     }
 
-    // 心肌应变判读
+    // 心肌应变判读（R43 · ASE/EACVI 2025：正常 <−18%、灰区 −16~−18%、异常 >−16%）
     {
       const parts = [];
       if (v.gls !== undefined) {
-        parts.push('GLS ' + Calc.fmt(v.gls, 1) + '% · ' +
-          (v.gls <= -20 ? '正常' : v.gls < -18 ? '边缘（缩短减弱）' : '异常（缩短明显减低）'));
+        let t;
+        if (v.gls > -16) t = '异常（R43：绝对值 <16）';
+        else if (v.gls > -18) t = '灰区（−16 ~ −18%，需合并其他异常）';
+        else t = '正常（R43：＜ −18%）';
+        parts.push('GLS ' + Calc.fmt(v.gls, 1) + '% · ' + t);
       }
       if (v.rvstrain !== undefined) {
         parts.push('右室游离壁应变 ' + Calc.fmt(v.rvstrain, 1) + '% · ' +
-          (v.rvstrain <= -20 ? '正常' : '缩短减低'));
+          (v.rvstrain <= -20 ? '正常（男 ≤−20 / 女 ≤−21）' : '缩短减低'));
       }
       put('strain', partsOf(parts));
+    }
+
+    // 二尖瓣疾病评估页：内嵌 Wilkins 形态评分 + MVA 两法（与公式集同一套引擎）
+    {
+      const parts = [];
+      if (has('wk1') || has('wk2') || has('wk3') || has('wk4')) {
+        const w = Calc.wilkinsScore(v.wk1, v.wk2, v.wk3, v.wk4);
+        if (w.error) parts.push(w.error);
+        else {
+          const detail = w.items.map(function (it) {
+            return it.n.replace('瓣叶', '') + ' ' + it.score;
+          }).join(' · ');
+          parts.push('形态 Wilkins ' + w.total + '/16（' + detail + '）· ' + w.text);
+        }
+      }
+      const m = Calc.mvaBoth(
+        has('mpht') ? v.mpht : null,
+        has('mvd') ? v.mvd : null,
+        has('mvlvti') ? v.mvlvti : null,
+        has('mvmvti') ? v.mvmvti : null
+      );
+      if (m.pht !== undefined) {
+        parts.push('MVA ' + Calc.fmt(m.pht, 2) + ' cm²（PHT 法）→ ' + m.phtText);
+      }
+      if (m.cont !== undefined) {
+        parts.push('MVA ' + Calc.fmt(m.cont, 2) + ' cm²（连续方程，SV ' +
+          Calc.fmt(m.sv, 1) + ' mL）→ ' + m.contText);
+      }
+      if (m.diffText) parts.push(m.diffText);
+      put('mitral', partsOf(parts));
     }
   }
 

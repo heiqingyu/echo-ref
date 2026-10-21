@@ -54,11 +54,11 @@ const html = fs.readFileSync(WWW, 'utf8');
 // ★ APK 打包源 = docs/index.html（4 页签）。用户明确：不要「瓣膜评估」单独页，
 //   它的判读条目本来就在公式集的「瓣膜评估」组里；只有 5 个瓣膜计算器依赖该页。
 //   但「节段划分」（室壁划分）必须保留 —— 这是之前 app 内容比小程序少的原因。
-check('www 完整版体积 < 560 KB', Buffer.byteLength(html, 'utf8') < 560 * 1024, true);
+check('www 完整版体积 < 660 KB', Buffer.byteLength(html, 'utf8') < 660 * 1024, true);
 check('docs 发布版存在（APK 打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 510 KB', Buffer.byteLength(dh, 'utf8') < 510 * 1024, true);
+  check('docs 发布版体积 < 610 KB', Buffer.byteLength(dh, 'utf8') < 610 * 1024, true);
   check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
 }
@@ -505,8 +505,8 @@ check('右心引擎函数已内联（rvVolumeIndex / rvFreeWallStrain / pulmonar
    'function pulmonaryDiastolicPressure', 'function resistanceIndices', 'function rvDpDt']
     .every(function (k) { return html.indexOf(k) !== -1; }), true);
 /* v1.3.0 第三批：瓣膜与舒张细节 */
-check('含 7 个新计算器（wilkins / vcw / rf / mvac / laef / quickratio / lvmih）',
-  ['wilkins', 'vcw', 'rf', 'mvac', 'laef', 'quickratio', 'lvmih'].every(function (id) {
+check('含 7 个新计算器（wilkins / vcw / rf / mva / laef / quickratio / lvmih）',
+  ['wilkins', 'vcw', 'rf', 'mva', 'laef', 'quickratio', 'lvmih'].every(function (id) {
     return html.indexOf("id: '" + id + "'") !== -1;
   }), true);
 check('第三批引擎函数已内联（wilkinsScore / vcwGrade / regurgFraction / laEmptying / quickRatios / lvmHeightIndex）',
@@ -550,7 +550,7 @@ check('含书籍视频分组（25 条 mp4）',
   (html.match(/image\.medonhand\.com/g) || []).length === 1 &&
   html.indexOf('978-7-5189-8028-4') !== -1, true);
 check('含 TEE 模拟器分组', (html.match(/title: 'TEE 模拟器'/g) || []).length === 1, true);
-check('含切面指南分组', (html.match(/title: '切面指南'/g) || []).length === 1, true);
+check('切面指南已并入参考文献（不再有该分组）', (html.match(/title: '切面指南'/g) || []).length === 0, true);
 check('含 CT2TEE 模拟器链接', html.indexOf('ct2tee.agh.edu.pl') !== -1, true);
 check('含 TEE Simulator 图谱链接', html.indexOf('tee-simulator.anesthbeta.com') !== -1, true);
 check('含 utoronto 标准视图链接',

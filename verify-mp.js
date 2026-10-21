@@ -438,6 +438,20 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('class="ref-dl__i"') !== -1 &&
     calcWxml.indexOf('catchtap="onCopyLink"') !== -1 ? 1 : 0, 1, 0);
 
+  // ── 组名跳转条（目录 113 条，页面很长） ──
+  check('目录页有组名跳转条（fx-nav）', calcWxml.indexOf('class="fx-nav"') !== -1 ? 1 : 0, 1, 0);
+  check('每个分组带锚点 id="g-{{sec.id}}"',
+    calcWxml.indexOf('id="g-{{sec.id}}"') !== -1 ? 1 : 0, 1, 0);
+  check('跳转条数据来自目录（navGroups）',
+    /navGroups:\s*buildSections\(\)/.test(calcJs) ? 1 : 0, 1, 0);
+  check('点组名走 onJumpGroup（选择器定位 + pageScrollTo）',
+    calcWxml.indexOf('bindtap="onJumpGroup"') !== -1 &&
+    /onJumpGroup\s*\(/.test(calcJs) &&
+    calcJs.indexOf('createSelectorQuery') !== -1 &&
+    calcJs.indexOf('pageScrollTo') !== -1 ? 1 : 0, 1, 0);
+  check('跳转条样式存在（.fx-nav__c--on 高亮）',
+    calcWxss.indexOf('.fx-nav__c--on') !== -1 ? 1 : 0, 1, 0);
+
   // 目录顺序：延展阅读与参考文献都在分组之后
   const lastGroupEnd = calcWxml.lastIndexOf('fx-item__a');
   check('延展阅读位于所有条目之后',
@@ -502,24 +516,24 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 17 个大组（切面指南已并入参考文献）', dirs.length, 17, 0);
+  check('公式集分 18 个大组（切面指南并入文献 + 新增报告与质控）', dirs.length, 18, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|右心与肺循环|瓣膜与舒张定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 113 条（58 计算 + 10 瓣膜 + 36 评估 + 9 外链）', nItems, 113, 0);
-  check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[15].items.length, 6, 0);
-  check('TEE 模拟器 3 条', dirs[16].items.length, 3, 0);
+  check('目录共 113 条（57 计算 + 10 瓣膜 + 42 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 113, 0);
+  check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[16].items.length, 6, 0);
+  check('TEE 模拟器 3 条', dirs[17].items.length, 3, 0);
   check('操作规范专辑排在切面学习第一条',
-    dirs[15].items[0] && dirs[15].items[0].kind === 'album' && dirs[15].items[0].id === 'bookvid' ? 1 : 0, 1, 0);
+    dirs[16].items[0] && dirs[16].items[0].kind === 'album' && dirs[16].items[0].id === 'bookvid' ? 1 : 0, 1, 0);
   check('专辑标题为「实用超声规范化检查与操作（视频）」',
-    dirs[15].items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
+    dirs[16].items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
   check('外链条目为 link 类型（专辑除外）',
-    dirs[15].items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+    dirs[16].items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
-    dirs[15].items[0] && dirs[15].items[0].count === 25 ? 1 : 0, 1, 0);
+    dirs[16].items[0] && dirs[16].items[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进目录数据（省 setData）',
-    dirs[15].items[0] && dirs[15].items[0].children === undefined ? 1 : 0, 1, 0);
+    dirs[16].items[0] && dirs[16].items[0].children === undefined ? 1 : 0, 1, 0);
   check('专辑条目带书籍出处说明',
     (function () {
       const EXv = require('./miniprogram/utils/extra-data.js');
@@ -527,9 +541,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       return /王辉/.test(it.note || '') && /978-7-5189-8028-4/.test(it.note || '') ? 1 : 0;
     })(), 1, 0);
   check('TTE 经胸切面为直达交互链接',
-    dirs[15].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[16].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含 TEE 速查表',
-    dirs[15].items.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
+    dirs[16].items.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
   // 原「切面指南」4 条 ASE 官方 PDF 已并入参考文献（R11 中/英、R12、R41）
   check('切面指南已并入参考文献（不在目录里单列）',
     dirs.every(d => d.title !== '切面指南') ? 1 : 0, 1, 0);
@@ -546,8 +560,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('R41 含 TEE 介入筛查官方 PDF 直链',
     EXL.REFS.filter(x => x.id === 'R41')[0].dl.some(d => /PIIS0894731721005940\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
   check('模拟器含 CT2TEE / TEE Simulator 图谱',
-    dirs[16].items.some(i => /ct2tee/.test(i.url)) &&
-    dirs[16].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+    dirs[17].items.some(i => /ct2tee/.test(i.url)) &&
+    dirs[17].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
   check('血流动力学与心功能 15 条（含 M 型三合一、快速比值、Ea、VTI 比）', dirs[0].items.length, 15, 0);
   check('右心与肺循环 13 条（PASP / RAP / FAC / TAPSE-PASP / PVR / SVR + 第二批 6 条 + 肺高压可能性）',
@@ -558,17 +572,17 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('右心组条目齐全',
     ['paspv', 'rapv', 'rvfacv', 'rcratiov', 'pvrv', 'svrv']
       .every(id => dirs[1].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('瓣膜与舒张定量 10 条（PISA / AVA / MVA / PPM / 舒张分级 + Wilkins / VCW / RF / MVA 连续性 + E/Vp）',
-    dirs[2].items.length, 10, 0);
+  check('瓣膜与舒张定量 9 条（MVA 两法已合并为 1 条）',
+    dirs[2].items.length, 9, 0);
   check('瓣膜定量组条目齐全',
-    ['pisav', 'avav', 'mvav', 'ppm', 'dfun']
+    ['pisav', 'avav', 'mva', 'ppm', 'dfun']
       .every(id => dirs[2].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('重构与心肌功能 12 条（容积 / RWS / 球形 / 左房应变 / 主动脉 / MDS / 每搏功 + LAEF / LVMI 身高^2.7 / RAS + 左房僵硬 / NC/C）',
     dirs[3].items.length, 12, 0);
   check('重构组条目齐全',
     ['volidx', 'rwsv', 'spher', 'lastrain', 'aortaidx', 'mdsv', 'swv']
       .every(id => dirs[3].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('计算类条目合计 58 条', dirs.slice(0, 6).reduce((n, d) => n + d.items.length, 0), 58, 0);
+  check('计算类条目合计 57 条（MVA 合并后 -1）', dirs.slice(0, 6).reduce((n, d) => n + d.items.length, 0), 57, 0);
   check('评分与室壁运动 3 条（WMSI / H2FPEF / HFA-PEFF）', dirs[4].items.length, 3, 0);
   check('评分组条目齐全',
     ['wmsi', 'h2fpef', 'hfapeff']
@@ -578,7 +592,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     ['tavrsz', 'laasz', 'paidx', 'coa']
       .every(id => dirs[5].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('第三四批条目齐全',
-    ['wilkins', 'vcw', 'rf', 'mvac', 'laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
+    ['wilkins', 'vcw', 'rf', 'mva', 'laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
       .every(id => ['0', '1', '2', '3', '4', '5'].some(k => dirs[+k].items.some(i => i.id === id)))
       ? 1 : 0, 1, 0);
   check('器械支持 3 条（CRT / LAD / LVAD）', dirs[7].items.length, 3, 0);
@@ -702,8 +716,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   mpCalc('pisav', { prad: 0.8, palias: 40, pvmax: 5.0, pvti: 150 },
     /EROA 0\.32/, 'PISA EROA 0.32');
   mpCalc('avav', { ald: 2.0, alvti: 20, aavti: 30 }, /AVA 2\.09/, 'AVA 2.09');
-  mpCalc('mvav', { mpht: 100 }, /MVA 2\.20.*轻度/, 'MVA PHT 100 → 2.2');
-  mpCalc('ppm', { peoa: 1.4, ppos: 1 }, /0\.80.*重度 PPM/, 'EOAi 0.8 重度 PPM');
+  mpCalc('mva', { mpht: 100 }, /MVA 2\.20 cm²（PHT 法）.*轻度/, 'MVA PHT 100 → 2.2');
+  mpCalc('ppm', { peoa: 1.4, ppos: 1 }, /0\.80.*中度 PPM/, 'EOAi 0.78 中度 PPM（R17 切点）');
   mpCalc('dfun', { dfe: 80, dfa: 60, dfes: 10, dfel: 14 },
     /E\/A 1\.33.*正常充盈/, '舒张四步法 正常充盈');
   mpCalc('volidx', { vedv: 150, vesv: 60 }, /EDVi 85\.7.*轻度增大/, 'EDVi 85.7 轻度增大');
@@ -782,8 +796,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   mpCalc2('vcw', { vcwv: 6 }, /AR 重度（≥6 mm）/, 'VCW 6mm AR 重度', { vsite: 'ar' });
   mpCalc2('vcw', { vcwv: 4 }, /MR 中度/, 'VCW 4mm MR 中度');
   mpCalc2('rf', { rfvol: 60, rfsv: 86 }, /RF = 69\.8%.*重度/, 'RF 69.8% 重度');
-  mpCalc2('mvac', { mvd: 2.0, mvlvti: 20, mvmvti: 8 },
-    /MVA 7\.85.*轻度/, 'MVA 连续性方程 7.85');
+  mpCalc2('mva', { mvd: 2.0, mvlvti: 20, mvmvti: 8 },
+    /MVA 7\.85 cm²（连续方程.*轻度/, 'MVA 连续性方程 7.85');
   mpCalc2('laef', { lavmax: 80, lavmin: 40 },
     /LAEF 50\.0%.*扩张指数 100\.0%.*保留/, 'LAEF 50% 扩张指数 100%');
   mpCalc2('quickratio', { qla: 40, qao: 32, qrv: 40, qlv: 50 },
@@ -1047,7 +1061,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // 二尖瓣页内嵌同一套评分
   pgF.onLoad({ id: 'mitral' });
   pgF.onShow();
-  check('二尖瓣页内嵌 4 个 Wilkins 打分输入', pgF.data.inputs.length, 4, 0);
+  check('二尖瓣页内嵌 8 个输入（Wilkins 4 + MVA 4）', pgF.data.inputs.length, 8, 0);
   check('二尖瓣页输入名带序号',
     pgF.data.inputs[0].name.indexOf('① 瓣叶活动度') !== -1 ? 1 : 0, 1, 0);
   check('二尖瓣页内含 4 张 Wilkins 分档表',
@@ -1055,21 +1069,21 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.data.inputs.forEach(function (r, i) { r.value = String(i === 0 ? 4 : 3); });
   pgF.refresh();
   check('二尖瓣页算 Wilkins：4+3+3+3 = 13 → 优先外科',
-    /Wilkins 13 \/ 16.*≥12.*外科/.test(pgF.data.out) ? 1 : 0, 1, 0);
+    /Wilkins 13\/16.*≥12.*外科/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
   // 相关计算胶囊
   pgF.onLoad({ id: 'mitral' });
   pgF.onShow();
   const lastBlk = pgF.data.blocks[pgF.data.blocks.length - 1];
-  check('二尖瓣页末块挂 3 个计算器胶囊', (lastBlk.links || []).length, 3, 0);
+  check('二尖瓣页末块挂 2 个计算器胶囊（MVA 已合并）', (lastBlk.links || []).length, 2, 0);
   check('胶囊名称取自 calc-groups 标题',
-    (lastBlk.links || []).some(function (l) { return l.n.indexOf('二尖瓣面积（PHT 法）') !== -1; }) ? 1 : 0, 1, 0);
+    (lastBlk.links || []).some(function (l) { return l.n.indexOf('二尖瓣面积 MVA（两法对照）') !== -1; }) ? 1 : 0, 1, 0);
   check('胶囊 id 与标题一一对应（无 fallback 原名）',
     (lastBlk.links || []).every(function (l) { return l.n !== l.id; }) ? 1 : 0, 1, 0);
   navTo = null;
-  pgF.onJump({ currentTarget: { dataset: { id: 'mvav' } } });
+  pgF.onJump({ currentTarget: { dataset: { id: 'mva' } } });
   check('点胶囊 → navigateTo formula?id=mvav',
-    navTo === '/pages/formula/formula?id=mvav' ? 1 : 0, 1, 0);
+    navTo === '/pages/formula/formula?id=mva' ? 1 : 0, 1, 0);
 
   // —— v1.3.2 新增判读条目（舒张 / 肺高压 / BAV / DCM / 运动员）——
   const briefText = function (id) {

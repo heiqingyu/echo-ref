@@ -332,16 +332,19 @@ const GROUPS = [
     note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷',
   },
   {
-    id: 'mvac',
+    // ★ 2026-10-21 合并：原 mvav（PHT）/ mvac（连续性方程）两条合一，
+    //   同一屏出两个结果并给出差值，MS 判读页内嵌的也是这一套（mvaBoth）
+    id: 'mva',
     sec: 'vq',
-    title: '二尖瓣面积（连续性方程法）',
-    sub: 'MVA = SV ÷ 二尖瓣 VTI',
+    title: '二尖瓣面积 MVA（两法对照）',
+    sub: 'PHT 法 + 连续性方程，同屏出结果',
     fields: [
-      { k: 'mvd', n: 'LVOT 直径', u: 'cm' },
-      { k: 'mvlvti', n: 'LVOT VTI', u: 'cm' },
-      { k: 'mvmvti', n: '二尖瓣 VTI', u: 'cm' },
+      { k: 'mpht', n: '① 压力减半时间 PHT', u: 'ms' },
+      { k: 'mvd', n: '② LVOT 直径', u: 'cm' },
+      { k: 'mvlvti', n: '② LVOT VTI', u: 'cm' },
+      { k: 'mvmvti', n: '② 二尖瓣 VTI', u: 'cm' },
     ],
-    note: 'MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV。与 PHT 法互为校核：**不受心率与合并反流影响，房颤、合并 AR、重度钙化时首选本法**；前提是有可靠的 LVOT 直径与 VTI，且无分流、无显著 MR。两法差 >0.3 cm² 时回到图像找原因，不要取平均',
+    note: '① **PHT 法** MVA = 220/PHT，省事但**要求窦性心律、无明显主动脉瓣反流**，房颤 / AR / 重度钙化 / 术后会失真；② **连续性方程** MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV，不受心率与反流影响，房颤 / AR 时首选，但要有可靠的 LVOT 直径与 VTI 且无分流、无显著 MR。分级：>1.5 轻度、1.0–1.5 中度、<1.0 重度。两法差 >0.3 cm² 时回到图像找原因，不要取平均',
   },
   {
     id: 'laef',
@@ -534,18 +537,6 @@ const GROUPS = [
     note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；AVAi = AVA/BSA（≤0.6 重度）。DVI = VTI_LVOT/VTI_AV，≤0.25 支持重度 AS',
   },
   {
-    id: 'mvav',
-    sec: 'vq',
-    title: '二尖瓣面积（PHT 法）',
-    sub: 'MVA = 220 ÷ PHT',
-    fields: [
-      { k: 'mpht', n: '压力减半时间 PHT', u: 'ms' },
-      { k: 'msv', n: '每搏量 SV（可选，作连续方程）', u: 'mL' },
-      { k: 'mvvti', n: '二尖瓣 VTI（可选）', u: 'cm' },
-    ],
-    note: 'MVA = 220/PHT；>1.5 轻度、1.0–1.5 中度、<1.0 重度。**适用前提：窦性心律、无明显主动脉瓣反流**——房颤（RR 不齐）、合并 AR、重度钙化或球囊扩张术后，PHT 都会失真，此时改用连续性方程或二维平面法',
-  },
-  {
     id: 'ppm',
     sec: 'vq',
     title: '人工瓣 EOAi 与 PPM',
@@ -553,8 +544,9 @@ const GROUPS = [
     fields: [
       { k: 'peoa', n: '有效开口面积 EOA', u: 'cm²' },
       { k: 'ppos', n: '位置（1 主动脉 / 2 二尖瓣，留空按主动脉）', u: '' },
+      { k: 'pbmi', n: 'BMI（可选；≥30 用肥胖切点）', u: 'kg/m²' },
     ],
-    note: 'EOAi = EOA/BSA。主动脉位 <0.85 重度、0.85–1.0 中度；二尖瓣位 <0.9 重度、0.9–1.2 中度。重度 PPM 影响症状与预后',
+    note: 'EOAi = EOA/BSA。**按 R17（ASE 2024）Table 7**：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65；二尖瓣位 正常 >1.2、中度 1.2–0.91、重度 ≤0.90（cm²/m²）。**BMI ≥30 时整体下调**：主动脉位 0.70 / 0.56，二尖瓣位 1.0 / 0.75。判读前提：瓣膜结构与活动正常、实测 EOA 在参考 EOA 的 1 SD 内',
   },
   {
     id: 'dfun',

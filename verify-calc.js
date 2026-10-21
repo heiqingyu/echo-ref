@@ -125,9 +125,14 @@ check('SVR 700 偏低', C.svrResistance(40, 5, 4).text.indexOf('降低') !== -1 
 
 console.log('=== 14. 人工瓣 EOAi / PPM ===');
 check('EOAi 1.5/1.8 = 0.833', C.round(C.eoaPpm(1.5, 1.8, 1).eoai, 3), 0.833, 0.001);
-check('主动脉位 0.833 重度 PPM', C.eoaPpm(1.5, 1.8, 1).level, 2);
-check('主动脉位 1.6/1.8 = 0.889 中度', C.eoaPpm(1.6, 1.8, 1).level, 1);
+// R17（ASE 2024）Table 7：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65
+check('主动脉位 0.833 中度 PPM（0.66–0.85）', C.eoaPpm(1.5, 1.8, 1).level, 1);
+check('主动脉位 1.6/1.8 = 0.889 无 PPM（>0.85）', C.eoaPpm(1.6, 1.8, 1).level, 0);
 check('主动脉位 2.0/1.8 = 1.11 无 PPM', C.eoaPpm(2.0, 1.8, 1).level, 0);
+check('主动脉位 1.0/1.8 = 0.56 重度 PPM', C.eoaPpm(1.0, 1.8, 1).level, 2);
+check('主动脉位 0.833 + BMI 32 → 无 PPM（肥胖切点 >0.70）', C.eoaPpm(1.5, 1.8, 1, 32).level, 0);
+check('主动脉位 1.1/1.8 = 0.61 + BMI 32 → 中度（0.56–0.70）', C.eoaPpm(1.1, 1.8, 1, 32).level, 1);
+check('主动脉位 0.5/1.8 = 0.28 + BMI 32 → 重度（≤0.55）', C.eoaPpm(0.5, 1.8, 1, 32).level, 2);
 check('二尖瓣位 1.5/1.8 = 0.833 重度', C.eoaPpm(1.5, 1.8, 2).level, 2);
 check('二尖瓣位 2.0/1.8 = 1.11 中度', C.eoaPpm(2.0, 1.8, 2).level, 1);
 check('二尖瓣位 2.4/1.8 = 1.33 无 PPM', C.eoaPpm(2.4, 1.8, 2).level, 0);

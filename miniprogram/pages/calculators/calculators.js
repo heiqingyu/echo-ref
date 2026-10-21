@@ -160,6 +160,11 @@ Page({
       { url: 'https://bdrwss.github.io/tte-quickref/dist/', name: 'TTE 心超速查 · 中文版', desc: '床旁速查卡片 · 测量与切面要点' },
     ],
     appVersion: V.APP_VERSION,
+    // 组名跳转条：目录很长（113 条），横向滑动点一下定位到该组
+    navGroups: buildSections().map(function (s) {
+      return { id: s.id, title: s.title.replace(/（.*?）/g, '') };
+    }),
+    curGroup: '',
   },
 
   onLoad() {
@@ -176,6 +181,28 @@ Page({
   /** 参考文献默认折叠（40 条会把页面拉得很长），点标题才展开全部 */
   onToggleRefs() {
     this.setData({ refsOpen: !this.data.refsOpen });
+  },
+
+  /**
+   * 点组名胶囊 → 滚到该组
+   * 用选择查询拿元素相对视口的位置 + 当前滚动量，算出目标 scrollTop
+   * （wx.pageScrollTo 的 selector 分支在部分基础库上不稳，故自己算）
+   */
+  onJumpGroup(e) {
+    const id = e && e.currentTarget && e.currentTarget.dataset
+      ? e.currentTarget.dataset.id : '';
+    if (!id) return;
+    this.setData({ curGroup: id });
+    const q = wx.createSelectorQuery().in(this);
+    q.select('#g-' + id).boundingClientRect();
+    q.selectViewport().scrollOffset();
+    q.exec(function (res) {
+      const rect = res && res[0];
+      if (!rect) return;                       // 搜索时该组可能被过滤掉了
+      const cur = (res[1] && res[1].scrollTop) || 0;
+      const top = Math.max(0, cur + rect.top - 8);
+      wx.pageScrollTo({ scrollTop: top, duration: 220 });
+    });
   },
 
   /** 「共 N 项」/「找到 N 项」（hasKw 由调用方传入，避免读到还没刷新的 this.data.kw） */

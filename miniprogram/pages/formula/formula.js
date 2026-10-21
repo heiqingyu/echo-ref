@@ -743,21 +743,9 @@ Page({
         if (!dvi.error) parts.push('DVI ' + calc.fmt(dvi.dvi, 2));
         out = parts.join('；');
       }
-    } else if (gid === 'mvav') {
-      // —— 二尖瓣面积（PHT 法 / 连续方程）——
-      const parts = [];
-      if (valid(v.mpht)) {
-        const mva = calc.mvaPht(v.mpht);
-        parts.push('MVA ' + calc.fmt(mva, 2) + ' cm²（PHT 法）→ ' + calc.gradeMva(mva).text);
-      }
-      if (valid(v.msv, v.mvvti)) {
-        const m2 = calc.mvaContinuity(v.msv, v.mvvti);
-        parts.push('MVA ' + calc.fmt(m2, 2) + ' cm²（连续方程）→ ' + calc.gradeMva(m2).text);
-      }
-      out = parts.join('；');
     } else if (gid === 'ppm') {
-      // —— 人工瓣 EOAi 与 PPM ——
-      const r = calc.eoaPpm(v.peoa, bsa, v.ppos);
+      // —— 人工瓣 EOAi 与 PPM（R17 / ASE 2024 切点，BMI≥30 时下调）——
+      const r = calc.eoaPpm(v.peoa, bsa, v.ppos, v.pbmi);
       if (r.eoai !== undefined) {
         out = 'EOAi ' + calc.fmt(r.eoai, 2) + ' cm²/m²（' +
           (r.pos === 'av' ? '主动脉位' : '二尖瓣位') + '）→ ' + r.text;
@@ -849,15 +837,18 @@ Page({
         out = parts.join('；');
       }
     } else if (gid === 'strain') {
-      // —— 应变判读 ——
+      // —— 应变判读（R43 · ASE/EACVI 2025：正常 <−18%、灰区 −16~−18%、异常 >−16%）——
       const parts = [];
       if (valid(v.gls)) {
-        parts.push('GLS ' + calc.fmt(v.gls, 1) + '% · ' +
-          (v.gls <= -20 ? '正常' : v.gls < -18 ? '边缘（缩短减弱）' : '异常（缩短明显减低）'));
+        let t;
+        if (v.gls > -16) t = '异常（R43：绝对值 <16）';
+        else if (v.gls > -18) t = '灰区（−16 ~ −18%，需合并其他异常）';
+        else t = '正常（R43：＜ −18%）';
+        parts.push('GLS ' + calc.fmt(v.gls, 1) + '% · ' + t);
       }
       if (valid(v.rvstrain)) {
         parts.push('右室游离壁应变 ' + calc.fmt(v.rvstrain, 1) + '% · ' +
-          (v.rvstrain <= -20 ? '正常' : '缩短减低'));
+          (v.rvstrain <= -20 ? '正常（男 ≤−20 / 女 ≤−21）' : '缩短减低'));
       }
       out = parts.join('；');
     } else if (gid === 'mtype') {
@@ -992,8 +983,8 @@ Page({
         const r = calc.rvDpDt(v.rdt);
         out = r.error ? r.error : 'RV dP/dt ≈ ' + calc.fmt(r.dpdt, 0) + ' mmHg/s · ' + r.text;
       }
-    } else if (gid === 'wilkins' || gid === 'mitral') {
-      // —— Wilkins 形态评分（二尖瓣评估页内嵌同一套算法）——
+    } else if (gid === 'wilkins') {
+      // —— Wilkins 形态评分（独立计算器）——
       if (valid(v.wk1) || valid(v.wk2) || valid(v.wk3) || valid(v.wk4)) {
         const r = calc.wilkinsScore(v.wk1, v.wk2, v.wk3, v.wk4);
         if (r.error) out = r.error;
@@ -1004,6 +995,35 @@ Page({
           out = 'Wilkins ' + r.total + ' / 16（' + detail + '）；' + r.text + '；' + r.worstText;
         }
       }
+    } else if (gid === 'mva' || gid === 'mitral') {
+      // —— 二尖瓣面积：PHT + 连续性方程同屏对照（MS 判读页内嵌同一套）——
+      const parts = [];
+      if (gid === 'mitral' &&
+        (valid(v.wk1) || valid(v.wk2) || valid(v.wk3) || valid(v.wk4))) {
+        const w = calc.wilkinsScore(v.wk1, v.wk2, v.wk3, v.wk4);
+        if (w.error) parts.push(w.error);
+        else {
+          const detail = w.items.map(function (it) {
+            return it.n.replace('瓣叶', '') + ' ' + it.score;
+          }).join(' · ');
+          parts.push('形态 Wilkins ' + w.total + '/16（' + detail + '）· ' + w.text);
+        }
+      }
+      const m = calc.mvaBoth(
+        valid(v.mpht) ? v.mpht : null,
+        valid(v.mvd) ? v.mvd : null,
+        valid(v.mvlvti) ? v.mvlvti : null,
+        valid(v.mvmvti) ? v.mvmvti : null
+      );
+      if (m.pht !== undefined) {
+        parts.push('MVA ' + calc.fmt(m.pht, 2) + ' cm²（PHT 法）→ ' + m.phtText);
+      }
+      if (m.cont !== undefined) {
+        parts.push('MVA ' + calc.fmt(m.cont, 2) + ' cm²（连续方程，SV ' +
+          calc.fmt(m.sv, 1) + ' mL）→ ' + m.contText);
+      }
+      if (m.diffText) parts.push(m.diffText);
+      out = parts.join('；');
     } else if (gid === 'vcw') {
       // —— 缩流颈宽度 ——
       if (valid(v.vcwv)) {
@@ -1015,14 +1035,6 @@ Page({
       if (valid(v.rfvol, v.rfsv)) {
         const r = calc.regurgFraction(v.rfvol, v.rfsv);
         out = r.error ? r.error : 'RF = ' + calc.fmt(r.rf, 1) + '% · ' + r.text;
-      }
-    } else if (gid === 'mvac') {
-      // —— MVA 连续性方程 ——
-      if (valid(v.mvd, v.mvlvti, v.mvmvti)) {
-        const sv = calc.strokeVolume(v.mvd, v.mvlvti);
-        const mva = calc.mvaContinuity(sv, v.mvmvti);
-        const g = calc.gradeMva(mva);
-        out = 'SV ' + calc.fmt(sv, 1) + ' mL · MVA ' + calc.fmt(mva) + ' cm² · ' + g.text;
       }
     } else if (gid === 'laef') {
       // —— 左房排空分数 ——

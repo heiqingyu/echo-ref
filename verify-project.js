@@ -122,7 +122,7 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 58) ok('公式集定义 58 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 57) ok('公式集定义 57 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
@@ -130,7 +130,7 @@ if (calcSecIds.join('/') === 'hemo/right/vq/recon/score/ivs')
   ok('计算组 6 个（血流动力学 / 右心肺循环 / 瓣膜舒张 / 重构心肌 / 评分与室壁运动 / 介入尺寸与先心）');
 else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1);
-if (!badSec.length) ok('58 条公式的 sec 归属均合法');
+if (!badSec.length) ok('57 条公式的 sec 归属均合法');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
@@ -138,8 +138,8 @@ const nVq = CG.GROUPS.filter(g => g.sec === 'vq').length;
 const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
 const nScore = CG.GROUPS.filter(g => g.sec === 'score').length;
 const nIvs = CG.GROUPS.filter(g => g.sec === 'ivs').length;
-if (nHemo === 15 && nRight === 13 && nVq === 10 && nRecon === 12 && nScore === 3 && nIvs === 5)
-  ok('分组条目数 15 / 13 / 10 / 12 / 3 / 5');
+if (nHemo === 15 && nRight === 13 && nVq === 9 && nRecon === 12 && nScore === 3 && nIvs === 5)
+  ok('分组条目数 15 / 13 / 9 / 12 / 3 / 5（MVA 两法已合并为 1 条）');
 else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
@@ -174,10 +174,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 9) ok('评估内容 9 个分组（器械 / 心腔与应变 / 瓣膜 / 心肌病变 / 大血管与急症 / 先天性心脏病 / 先心术后 / 负荷试验 / 介入 TEE）');
+if (EX.BRIEF_SECTIONS.length === 10) ok('评估内容 10 个分组（… + 报告与质控）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr') ok('评估条目 = 41 条（器械 3 + 心腔 12 + 瓣膜 5 + 心肌 5 + 大血管 4 + 先心 5 + 先心术后 3 + 负荷 1 + 介入 3）');
+if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr,report-std') ok('评估条目 = 42 条（… + 报告与质控 1）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -640,7 +640,7 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
   // 11.6 二尖瓣页必须内嵌 wilkins 计算器（用户要求归位到病种页）
   (mit.calc === 'wilkins') ? ok('二尖瓣页内嵌 Wilkins 计算器')
     : bad('二尖瓣页未挂 calc: wilkins');
-  ((mit.fields || []).length === 4) ? ok('二尖瓣页 4 个打分输入')
+  ((mit.fields || []).length === 8) ? ok('二尖瓣页 8 个输入（Wilkins 4 + MVA 4）')
     : bad('二尖瓣页打分输入 ' + (mit.fields || []).length + ' 个');
 }
 
