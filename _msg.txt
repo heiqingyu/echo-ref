@@ -1,25 +1,59 @@
-v1.3.10 网页/APK 体验修复 + 公式集返回栈与小节导航
+v1.3.11 内容扩充：AS 负荷量化（ELI · Zva · SWL）+ 妊娠期心血管超声
 
-【用户反馈的四项】
-1. 网页与 APK 每个页签顶部都有「关于本页」，刷屏影响阅读
-   → 全部移除，只在公式集页末尾保留一处（build-www.js 的 insertPubnote）
-2. 正文里大量 **加粗** 标记被原样输出成字面量 **
-   → 新建两端共用 miniprogram/utils/inline-md.js（parseInline / inlineHtml）
-     小程序端按片段切 <text> 渲染，网页端包 <b>；只处理成对 **，不误伤数学乘号
-3. 公式集里点返回直接退出页面/APP，而不是返回上一页
-   → 根因：单页应用从不写 history，WebView.canGoBack() 恒为 false
-     改为用 location.hash 记录视图（#/calc/xxx），返回时 history.back()
-     file:// 下 pushState 会抛 SecurityError，故用 hash
-     popView() 先同步还原界面再后退，按钮路径与系统返回键行为一致
-4. 公式集点进去的长条目没有小节导航
-   → 45 个评估条目全部含 ≥2 个小节，全部加上胶囊式小节导航 + 锚点跳转
+一、新增判读条目「AS 负荷量化（压力恢复 · ELI · Zva）」
+- 补的是主动脉瓣狭窄判读里最常被问、此前完全缺失的一环：
+  AVA / Vmax / 平均压差只描述瓣口本身，左室实际负荷 = 瓣膜阻力 + 动脉阻力
+- 四项进阶量化（含公式、阈值、适用场景与陷阱）：
+  ① 压力恢复 PR = 4v²×2×(EOA÷AAo)×(1−EOA÷AAo)
+     升主动脉 <30 mm 时才需认真考虑；AS 解剖本就不利于压力恢复
+  ② 能量损失指数 ELI = (EOA×AAo)÷(AAo−EOA)÷BSA，≤0.6 cm²/m² 支持重度
+  ③ 瓣-动脉阻抗 Zva = (SBP+ΔPmean)÷SVi，>3.5 识别不良预后、>4.5 高负荷
+  ④ 每搏做功损失 SWL = 100×ΔPmean÷(SBP+ΔPmean)，>25% 有血流动力学意义
+- 强调报告用法：先分层（高流量 / 经典 LF-LG / 反常 LF-LG），
+  再看负荷（Zva、SWL），再看压差准不准（ELI、PR）；只在灰区用
+- 提醒所有负荷指标都建立在测量准确之上（LVOT 内径测错 2mm → AVA 差 10%）
 
-【构建链路修复】
-- build-apk.bat 的「复制 APK 到仓库根目录」段改由 android-app/finalize-apk.js 承担
-  原因：cmd 的 copy + for /f + dir + del 在 Git Bash 驱动下不稳定
-  （两次运行报不同错误，且 copy 会吞掉目标名的 .apk 扩展名）
-- 构建产物根目录固定为 EchoRef-v<版本>.apk，并自动清理旧版本
+二、新增计算器 2 个（引擎 + 两端接入）
+- asload「AS 负荷量化（ELI · Zva · SWL）」：一次算完四件套
+- pr「压力恢复（PR）校正」：单独入口，便于边界病例核对
+- echo-calc.js 新增 energyLossIndex / valvuloArterialImpedance /
+  strokeWorkLoss / pressureRecovery / asLoadSummary 五个函数
+- 函数名已按约定预先 grep 确认不与既有 92 个导出重名
 
-【校验】
-verify-project 206 / verify-calc 335 / verify-peds 92
-verify-mp 451 / verify-docs 121 / verify-apk 381 —— 全部通过
+三、新增判读条目「妊娠期心血管超声评估」（新建「妊娠与特殊人群」组）
+- 妊娠生理性改变表：血容量 +40%、心排量 +30–50%（峰在孕 23–31 周）、
+  体循环阻力 −20–50%、血压 −15–25% → 常规参考值在孕期全部失真
+- 核心提醒：孕期「正常值」与平时不同；孕前基线超声是解读一切变化的参照物
+- 五类特殊瓣膜的孕期特点与超声重点（MS / MR / AR / AS / 机械瓣）
+- 主动脉：孕期是压力测试；孕期最大主动脉直径即本周期最差值，
+  产后回缩不能追认
+- 妊娠特有疾病：围产期心肌病（PPCM）、妊娠高血压、子痫前期
+- 随访节奏与 mWHO 风险分级对应；并划清超声的边界
+  （风险分层靠 mWHO/CARPREG II，不靠超声分级）
+
+四、参考文献 53 → 58 条
+- R54 EACVI/ASE 2017 主动脉瓣狭窄聚焦更新（PR 公式与分层算法出处）
+- R55 EAE/ASE 2009 瓣膜狭窄评估联合文件（ELI / SWL / Zva 原始出处）
+- R56 ASE/EACVI 2020 瓣膜病评估指南（Zva 预后阈值与压力恢复边界）
+- R57 BSE/UKMCS 2023 妊娠期心脏超声立场声明（PMC 全文）
+- R58 2025 ESC 心血管疾病与妊娠管理指南（mWHO 2.0 与妊娠 Heart Team）
+- 全部挂可点直链（ASE 官方 PDF / PMC 全文 / ESC 官方 PDF）
+
+五、校验脚本同步（内容变动的连带修改）
+- verify-project：公式组 57→59、瓣膜计算 7→9、评估分组 13→14、
+  评估条目 45→47、文献 53→58、桥接 28→29
+- verify-mp：文献编号断言改为程序化生成期望序列（以后加文献不必再手改）
+  ★ 硬编码下标 dirs[19]/dirs[20] 改为按 id 定位（dirById），
+    否则以后新增分组会让后续断言整体错位
+- verify-docs：分组串加入「妊娠与特殊人群」、条目 111→115、
+  瓣膜计算 7→9、文献 53→58
+- verify-apk：体积上限 www 660→700 KB、docs 610→660 KB
+  （内容从 647→685 KB，是真实的内容增长，不砍内容）
+
+六、状态
+- 版本 1.3.11 / versionCode 34
+- 公式集 59 个计算器、评估清单 14 组 47 条、参考文献 58 条
+- www 685.3 KB / docs 636.2 KB，assets 与 docs 字节一致
+- APK EchoRef-v1.3.11.apk（746875 bytes），签名与上版一致可覆盖安装
+- 小程序 1.3.11 已上传（659.1 KB）
+- 六项校验全绿：project 206 / calc 335 / peds 92 / mp 451 / docs 121 / apk 381

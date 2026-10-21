@@ -2140,6 +2140,186 @@ function fmt(n, dec) {
 }
 
 /* ════════════════════════════════════════════════════════════════
+ * v1.3.11 新增：主动脉瓣狭窄的「负荷」量化
+ *   AVA / Vmax / 平均压差 这三联只描述瓣口本身，
+ *   但左室实际承受的负荷 = 瓣膜阻力 + 动脉阻力（+ 收缩压）。
+ *   这一组算法就是把这三块拼起来，回答三个临床问题：
+ *     ① 压力恢复有多大？多普勒压差是不是高估了狭窄？（能量损失指数 ELI）
+ *     ② 左室的总负荷有多大？预后如何？（瓣-动脉阻抗 Zva）
+ *     ③ 每搏做功有多少被白白消耗在狭窄上？（每搏做功损失 SWL）
+ *
+ *   公式依据 EACVI/ASE 瓣膜狭窄评估建议（2009 / 2017 联合文件）
+ *   与 2020 ACC/AHA、2021 ESC/EACTS 瓣膜病指南的推荐分层。
+ * ════════════════════════════════════════════════════════════════ */
+
+/**
+ * 能量损失指数 ELI（cm²/m²）—— 压力恢复校正后的「有效瓣口面积」
+ *
+ *   ELI = (EOA × AAo) / (AAo − EOA) / BSA
+ *   EOA：连续性方程测得的有效瓣口面积（cm²）
+ *   AAo：升主动脉横截面积（cm²）
+ *   BSA：体表面积（m²）
+ *
+ *   直觉：AAo 越小（升主动脉细），压力恢复越多，
+ *   同一个 EOA 折算出来的「真正让左室做功的面积」就越小 → ELI 越小。
+ *   阈值：≤0.6 cm²/m² 支持重度狭窄（与 AVAi ≤0.6 同级）
+ *   注意：这个公式分母是 (AAo − EOA)，若 AAo 接近 EOA 会数值爆炸（无意义）。
+ *
+ * @param {number} eoaCm2  EOA（cm²）
+ * @param {number} ascAoCm  升主动脉直径（cm）
+ * @param {number} bsa      体表面积（m²）
+ */
+function energyLossIndex(eoaCm2, ascAoCm, bsa) {
+  if (!(eoaCm2 > 0)) return { error: '需填写有效瓣口面积 EOA' };
+  if (!(ascAoCm > 0)) return { error: '需填写升主动脉直径' };
+  const aao = csaFromDiameter(ascAoCm);
+  const denom = aao - eoaCm2;
+  const r = { eoa: eoaCm2, aao: aao };
+  if (denom <= 0) {
+    r.error = '升主动脉截面积不大于 EOA，本例不适合用 ELI 校正（正常不会发生）';
+    return r;
+  }
+  r.eli = eoaCm2 * aao / denom;
+  if (bsa > 0) {
+    r.eliIdx = r.eli / bsa;
+    r.text = 'ELI ' + fmt(r.eli, 2) + ' cm²；ELI/BSA ' + fmt(r.eliIdx, 2) + ' cm²/m²'
+      + (r.eliIdx <= 0.6 ? '（≤0.6，与 AVAi 同级，支持重度狭窄）' : '（>0.6，不支持重度狭窄）');
+  } else {
+    r.text = 'ELI ' + fmt(r.eli, 2) + ' cm²（未填体表面积，未出指数）';
+  }
+  r.note = '升主动脉越细，压力恢复越多，ELI 越小于 EOA；'
+    + '仅在升主动脉 <30 mm 或高流量状态下才需要用它校正 AVA';
+  return r;
+}
+
+/**
+ * 瓣-动脉阻抗 Zva（mmHg/(mL·m²)）—— 左室承受的总收缩负荷
+ *
+ *   Zva = (收缩压 SBP + 平均跨瓣压差 ΔPmean) / 每搏量指数 SVi
+ *   SVi = SV ÷ BSA
+ *
+ *   它把「瓣膜阻力」与「动脉阻力」合成一个数：
+ *   Zva 高说明左室顶着双重后负荷，容易失代偿。
+ *   阈值：≤3.5 正常；3.5–4.5 中度升高；>4.5 提示高负荷、预后差
+ *   （>3.5 已能识别无症状 AS 中的不良预后者）
+ *
+ * @param {number} sbpMmHg    收缩压（mmHg）
+ * @param {number} meanGradMmHg 平均跨瓣压差（mmHg）
+ * @param {number} svMl        每搏量（mL）
+ * @param {number} bsa         体表面积（m²）
+ */
+function valvuloArterialImpedance(sbpMmHg, meanGradMmHg, svMl, bsa) {
+  if (!(sbpMmHg > 0)) return { error: '需填写收缩压' };
+  if (!(svMl > 0)) return { error: '需填写每搏量' };
+  if (!(bsa > 0)) return { error: '需填写体表面积（Zva 的分母是每搏量指数）' };
+  const svi = svMl / bsa;
+  const zva = (sbpMmHg + (meanGradMmHg > 0 ? meanGradMmHg : 0)) / svi;
+  const r = { zva: zva, svi: svi };
+  if (zva > 4.5) {
+    r.level = 'high';
+    r.text = 'Zva ' + fmt(zva, 2) + ' mmHg/(mL·m²)：>4.5，总负荷高，提示症状出现与不良事件风险升高';
+  } else if (zva > 3.5) {
+    r.level = 'mid';
+    r.text = 'Zva ' + fmt(zva, 2) + ' mmHg/(mL·m²)：3.5–4.5，中度升高';
+  } else {
+    r.level = 'low';
+    r.text = 'Zva ' + fmt(zva, 2) + ' mmHg/(mL·m²)：≤3.5，在常见区间';
+  }
+  r.note = 'Zva 是「瓣膜 + 动脉」的总负荷，无法区分是哪一半贡献的；'
+    + '它是流量依赖指标，低流量状态下变异更大';
+  return r;
+}
+
+/**
+ * 每搏做功损失 SWL（%）—— 左室每搏做功中被狭窄白白消耗掉的比例
+ *
+ *   SWL = 100 × 平均跨瓣压差 ÷ (收缩压 + 平均跨瓣压差)
+ *
+ *   直观：左室总做功 = SBP × SV，其中 ΔPmean × SV 是克服狭窄阻力那部分。
+ *   阈值：>25% 提示狭窄在血流动力学上有意义（预后相关）
+ *   优点：比 Vmax 与 AVA 更少受流量状态影响
+ *   缺点：合并高血压时会低估（分母被 SBP 撑大）
+ *
+ * @param {number} meanGradMmHg 平均跨瓣压差（mmHg）
+ * @param {number} sbpMmHg       收缩压（mmHg）
+ */
+function strokeWorkLoss(meanGradMmHg, sbpMmHg) {
+  if (!(meanGradMmHg >= 0)) return { error: '需填写平均跨瓣压差' };
+  if (!(sbpMmHg > 0)) return { error: '需填写收缩压' };
+  const denom = sbpMmHg + meanGradMmHg;
+  if (denom <= 0) return { error: '收缩压与平均压差之和需大于 0' };
+  const swl = 100 * meanGradMmHg / denom;
+  const r = { swl: swl };
+  if (swl > 25) {
+    r.level = 'high';
+    r.text = 'SWL ' + fmt(swl, 0) + '%：>25%，狭窄在血流动力学上有意义（预后相关）';
+  } else {
+    r.level = 'low';
+    r.text = 'SWL ' + fmt(swl, 0) + '%：≤25%，未达血流动力学意义的切点';
+  }
+  r.note = 'SWL 比 Vmax、AVA 更少受流量影响，但合并高血压时会低估狭窄严重度';
+  return r;
+}
+
+/**
+ * 压力恢复 PR（mmHg）—— 多普勒压差与导管压差之间的差
+ *
+ *   PR = 4v² × 2 × (EOA ÷ AAo) × (1 − EOA ÷ AAo)
+ *   v：狭窄口峰值流速（m/s），EOA：有效瓣口面积（cm²），AAo：升主动脉截面积（cm²）
+ *
+ *   原理：狭窄后高速射流在升主动脉减速，部分动能转回压力，
+ *   多普勒只测到了「最大压降」，没算上这段回补 → 多普勒压差偏高。
+ *   PR 越大，说明多普勒压差越「虚高」。
+ *   临床意义：升主动脉 <30 mm 时才需要认真考虑。
+ *
+ * @param {number} vmaxMs   狭窄口峰值流速（m/s）
+ * @param {number} eoaCm2   有效瓣口面积（cm²）
+ * @param {number} ascAoCm  升主动脉直径（cm）
+ */
+function pressureRecovery(vmaxMs, eoaCm2, ascAoCm) {
+  if (!(vmaxMs > 0)) return { error: '需填写狭窄口峰值流速' };
+  if (!(eoaCm2 > 0)) return { error: '需填写有效瓣口面积 EOA' };
+  if (!(ascAoCm > 0)) return { error: '需填写升主动脉直径' };
+  const aao = csaFromDiameter(ascAoCm);
+  const ratio = eoaCm2 / aao;
+  const pr = 4 * vmaxMs * vmaxMs * 2 * ratio * (1 - ratio);
+  const r = { pr: pr, ratio: ratio, aao: aao };
+  r.text = '压力恢复 PR ' + fmt(pr, 0) + ' mmHg'
+    + '（EOA/升主动脉截面积 = ' + fmt(ratio, 2) + '）';
+  r.note = '升主动脉 ≥30 mm 时 PR 通常可忽略；'
+    + 'PR 明显时，多普勒压差会高估狭窄的「实际」严重程度';
+  return r;
+}
+
+/**
+ * 主动脉瓣狭窄负荷总汇（一次算完四件套）
+ * @param {object} o
+ *   vmax（m/s）、meanGrad（mmHg）、eoa（cm²）、ascAo（cm）、sbp（mmHg）、
+ *   sv（mL）、bsa（m²）
+ */
+function asLoadSummary(o) {
+  const x = o || {};
+  const out = {};
+  if (x.eoa > 0 && x.ascAo > 0) {
+    const eli = energyLossIndex(x.eoa, x.ascAo, x.bsa);
+    if (!eli.error) out.eli = eli; else out.eliError = eli.error;
+  }
+  if (x.sbp > 0 && x.sv > 0 && x.bsa > 0) {
+    const zva = valvuloArterialImpedance(x.sbp, x.meanGrad, x.sv, x.bsa);
+    if (!zva.error) out.zva = zva; else out.zvaError = zva.error;
+  }
+  if (x.sbp > 0 && x.meanGrad >= 0) {
+    const swl = strokeWorkLoss(x.meanGrad, x.sbp);
+    if (!swl.error) out.swl = swl; else out.swlError = swl.error;
+  }
+  if (x.vmax > 0 && x.eoa > 0 && x.ascAo > 0) {
+    const pr = pressureRecovery(x.vmax, x.eoa, x.ascAo);
+    if (!pr.error) out.pr = pr; else out.prError = pr.error;
+  }
+  return out;
+}
+
+/* ════════════════════════════════════════════════════════════════
  * v1.3.2 新增：E/Vp · 左房僵硬度 · VTI 比 · 致密化比 · 肺高压概率
  *   补的是「跨指标派生量」——现有 53 项里每个单项都能算，
  *   但把两项凑成一个判读量的算法一直缺，而报告里恰恰要写这个结论。
@@ -2361,5 +2541,11 @@ module.exports = {
   coarctationEcho,
   round,
   fmt,
+  // —— v1.3.11 新增：主动脉瓣狭窄的负荷量化 ——
+  energyLossIndex,
+  valvuloArterialImpedance,
+  strokeWorkLoss,
+  pressureRecovery,
+  asLoadSummary,
 };
 

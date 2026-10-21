@@ -54,11 +54,11 @@ const html = fs.readFileSync(WWW, 'utf8');
 // ★ APK 打包源 = docs/index.html（4 页签）。用户明确：不要「瓣膜评估」单独页，
 //   它的判读条目本来就在公式集的「瓣膜评估」组里；只有 5 个瓣膜计算器依赖该页。
 //   但「节段划分」（室壁划分）必须保留 —— 这是之前 app 内容比小程序少的原因。
-check('www 完整版体积 < 660 KB', Buffer.byteLength(html, 'utf8') < 660 * 1024, true);
+check('www 完整版体积 < 700 KB', Buffer.byteLength(html, 'utf8') < 700 * 1024, true);
 check('docs 发布版存在（APK 打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 610 KB', Buffer.byteLength(dh, 'utf8') < 610 * 1024, true);
+  check('docs 发布版体积 < 660 KB', Buffer.byteLength(dh, 'utf8') < 660 * 1024, true);
   check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
 }

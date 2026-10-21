@@ -538,6 +538,33 @@ const GROUPS = [
     note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；AVAi = AVA/BSA（≤0.6 重度）。DVI = VTI_LVOT/VTI_AV，≤0.25 支持重度 AS',
   },
   {
+    id: 'asload',
+    sec: 'valve',
+    title: 'AS 负荷量化（ELI · Zva · SWL）',
+    sub: '压力恢复 · 瓣-动脉阻抗 · 每搏做功损失',
+    fields: [
+      { k: 'alvmax', n: '主动脉瓣峰值流速 Vmax', u: 'm/s' },
+      { k: 'almean', n: '平均跨瓣压差', u: 'mmHg' },
+      { k: 'alava', n: '有效瓣口面积 EOA（连续性方程）', u: 'cm²' },
+      { k: 'alao', n: '升主动脉直径', u: 'cm' },
+      { k: 'alsbp', n: '收缩压', u: 'mmHg' },
+      { k: 'alsv', n: '每搏量 SV', u: 'mL' },
+    ],
+    note: 'ELI = (EOA×AAo)/(AAo−EOA)/BSA（≤0.6 重度）；Zva = (SBP+ΔPmean)/SVi（>4.5 高负荷）；SWL = 100×ΔPmean/(SBP+ΔPmean)（>25% 有意义）。体表面积取「EF·参考值」页身高体重',
+  },
+  {
+    id: 'pr',
+    sec: 'valve',
+    title: '压力恢复（PR）校正',
+    sub: '多普勒压差 vs 真实狭窄',
+    fields: [
+      { k: 'prvmax', n: '狭窄口峰值流速 Vmax', u: 'm/s' },
+      { k: 'preoa', n: '有效瓣口面积 EOA', u: 'cm²' },
+      { k: 'prao', n: '升主动脉直径', u: 'cm' },
+    ],
+    note: 'PR = 4v² × 2 × (EOA/AAo) × (1−EOA/AAo)。升主动脉 ≥30 mm 时可忽略；PR 大说明多普勒压差虚高',
+  },
+  {
     id: 'ppm',
     sec: 'valve',
     title: '人工瓣 EOAi 与 PPM',

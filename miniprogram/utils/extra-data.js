@@ -1133,6 +1133,84 @@ const BRIEF_SECTIONS = [
         note: 'AS 与 AR 定量均应先在「瓣膜评估」页用连续性方程 / PISA 法精算。',
       },
       {
+        id: 'asload',
+        title: 'AS 负荷量化（压力恢复 · ELI · Zva）',
+        sub: '瓣膜阻力 + 动脉阻力的合成量化',
+        source: ['R54', 'R55', 'R56'],
+        fields: [
+          { k: 'alvmax', n: '主动脉瓣峰值流速 Vmax', u: 'm/s' },
+          { k: 'almean', n: '平均跨瓣压差', u: 'mmHg' },
+          { k: 'alava', n: '有效瓣口面积 EOA', u: 'cm²' },
+          { k: 'alao', n: '升主动脉直径', u: 'cm' },
+          { k: 'alsbp', n: '收缩压', u: 'mmHg' },
+          { k: 'alsv', n: '每搏量 SV', u: 'mL' },
+        ],
+        calc: 'asload',
+        blocks: [
+          { kind: 'h', text: '为什么三联不够用' },
+          { kind: 'text', text: 'Vmax、平均压差、AVA 描述的是**瓣口本身**的狭窄程度，但左室真正承受的负荷 = 瓣膜阻力 + 动脉阻力 + 收缩压。把两者分开算再合成，才回答「这个患者能不能扛住」的问题。公式集「瓣膜评估」组有对应的计算器。' },
+          { kind: 'h', text: '① 压力恢复 PR：多普勒压差会不会虚高' },
+          {
+            kind: 'table',
+            heads: ['项', '内容'],
+            rows: [
+              ['现象', '狭窄后高速射流在升主动脉减速，部分动能回补成压力'],
+              ['后果', '多普勒只测到「最大压降」，没算上这段回补 → 压差偏高'],
+              ['公式', 'PR = 4v² × 2 × (EOA ÷ AAo) × (1 − EOA ÷ AAo)'],
+              ['关键变量', '升主动脉截面积 AAo 越小，PR 越大（EOA ÷ AAo 越接近 0.5 时最大）'],
+              ['何时需要算', '升主动脉 <30 mm，或高流量状态下 AVA 与压差不一致时'],
+              ['何时可忽略', '升主动脉 ≥30 mm 时 PR 通常很小'],
+            ],
+          },
+          { kind: 'note', text: 'AS 的解剖（突然从小孔扩到升主动脉）本就不利于压力恢复，所以只有「升主动脉细 + 狭窄不太重」这一组合才会让 PR 真正影响决策。重度 AS 患者湍流多、能量损耗大，反而恢复得少。', warn: true },
+          { kind: 'h', text: '② 能量损失指数 ELI：压力恢复校正后的瓣口面积' },
+          {
+            kind: 'table',
+            heads: ['项', '内容'],
+            rows: [
+              ['公式', 'ELI = (EOA × AAo) ÷ (AAo − EOA) ÷ BSA'],
+              ['含义', '把压力恢复「扣掉」后的有效面积，比 EOA 更贴近左室实际做功'],
+              ['阈值', '≤0.6 cm²/m² 支持重度狭窄（与 AVAi ≤0.6 同级）'],
+              ['优点', '最接近导管测得的瓣口面积，对流量依赖性小'],
+              ['限制', '需要测升主动脉直径，操作复杂、变异度大'],
+            ],
+          },
+          { kind: 'text', text: '直觉：升主动脉越细 → 压力恢复越多 → 同一个 EOA 折算出来的「真正让左室做功的面积」越小 → ELI 越小于 EOA。公式分母是 (AAo − EOA)，若两者接近则数值失去意义。' },
+          { kind: 'h', text: '③ 瓣-动脉阻抗 Zva：左室的总负荷' },
+          {
+            kind: 'table',
+            heads: ['项', '内容'],
+            rows: [
+              ['公式', 'Zva = (收缩压 SBP + 平均跨瓣压差 ΔPmean) ÷ 每搏量指数 SVi'],
+              ['SVi', '每搏量指数 = SV ÷ BSA（mL/m²）'],
+              ['≤3.5', '在常见区间'],
+              ['3.5–4.5', '中度升高'],
+              ['>4.5', '总负荷高，症状出现与不良事件风险升高'],
+              ['>3.5', '已能识别无症状 AS 中的不良预后者'],
+            ],
+          },
+          { kind: 'note', text: 'Zva 的价值在于**把瓣膜与动脉合成一个数**：同样 AVA，合并高血压者 Zva 明显更高，这正是「瓣膜不重但症状重」那类患者的解释工具。但它无法区分负荷是哪一半贡献的，且是流量依赖指标，低流量状态下变异更大。', warn: true },
+          { kind: 'h', text: '④ 每搏做功损失 SWL' },
+          {
+            kind: 'table',
+            heads: ['项', '内容'],
+            rows: [
+              ['公式', 'SWL = 100 × ΔPmean ÷ (SBP + ΔPmean)'],
+              ['含义', '左室每搏做的功里，有多少百分比被白白消耗在克服狭窄阻力上'],
+              ['阈值', '>25% 提示狭窄在血流动力学上有意义（预后相关）'],
+              ['优点', '比 Vmax、AVA 更少受流量状态影响'],
+              ['限制', '合并高血压时低估（分母被 SBP 撑大）'],
+            ],
+          },
+          { kind: 'h', text: '怎么在报告里用' },
+          { kind: 'text', text: '① **先分层**：按 Vmax / 平均压差 / AVA / EF / SVi 定位到「高流量 / 经典低流量低压差 /  paradoxical 低流量低压差」，这一层决定后面用哪条路径。' },
+          { kind: 'text', text: '② **再看负荷**：Zva 与 SWL 回答「负荷有多重」，ELI 与 PR 回答「压差算得准不准」。四个指标是互补的，不要只挑一个写。' },
+          { kind: 'text', text: '③ **边界病例才用**：AVA 在 1.0–1.5 cm² 的灰区、或者压差与面积互相矛盾时，用 Zva / SWL / ELI 帮助定级；明确重度或明确轻度时不必都算。' },
+          { kind: 'note', text: '所有负荷类指标都建立在「测得的值准确」之上。LVOT 内径测错 2 mm，AVA 可差 10%，Zva、ELI、SWL 会跟着一起错。压力恢复校正本身也未被充分前瞻性验证，报告里写「考虑压力恢复影响」比单给一个数更稳妥。', warn: true },
+        ],
+        note: '压力恢复只在升主动脉 <30 mm 时才真正影响决策；Zva 与 SWL 用于回答「负荷多重」，ELI 用于回答「压差准不准」。',
+      },
+      {
         id: 'bav',
         title: '主动脉瓣二叶式畸形（BAV）',
         sub: 'Sievers 分型 · 主动脉扩张随访',
@@ -2749,6 +2827,81 @@ const BRIEF_SECTIONS = [
     ],
   },
   {
+    id: 'pregnancy',
+    title: '妊娠与特殊人群',
+    items: [
+      {
+        id: 'pregnancy-echo',
+        title: '妊娠期心血管超声评估',
+        sub: '生理性改变 · 参考值陷阱 · 瓣膜与主动脉',
+        source: ['R57', 'R58'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '妊娠的生理性改变：会污染常规参考值' },
+          {
+            kind: 'table',
+            heads: ['参数', '孕期变化', '判读影响'],
+            rows: [
+              ['血浆容量', '增加约 40%（孕 2–3 季达峰）', '腔室扩大、瓣环扩张'],
+              ['心排量', '增加 30–50%（峰值在孕 23–31 周）', '多普勒流速普遍升高'],
+              ['心率', '增加 10–20 次/min', '缩短射血时间'],
+              ['体循环阻力', '下降 20–50%（孕酮 + NO）', '后负荷降低，反流可能显性化'],
+              ['血压', '收缩压舒张压下降约 15–25%（孕 20 周最低）', 'Zva、SWL 这类含 SBP 的指标会偏低'],
+              ['左房 / 右房 / 右室', '轻度增大（右房右室增大约 20%）', '按常规参考值易误判为扩大'],
+              ['左室', '轻度增大（约 6%），EF 基本不变', 'EF 正常即代表收缩功能正常'],
+              ['心包积液', '少量常见', '无病理意义'],
+            ],
+          },
+          { kind: 'note', text: '★ 最重要的一条：**孕期「正常值」和平时不一样**。判读前先问「孕几周」——孕 23–31 周心排量达峰，此时的流速、压差、腔室大小都要按生理性改变解释，不能直接套用成人常规参考范围。', warn: true },
+          { kind: 'h', text: '三类特殊瓣膜：风险与超声重点' },
+          {
+            kind: 'table',
+            heads: ['病变', '妊娠期特点', '超声重点'],
+            rows: [
+              ['二尖瓣狭窄', '血容量增加 → 房室压力阶差扩大，症状常在孕中晚期出现', '评估可否球囊成形（仅风湿性瓣适合）、PASP、左房大小、有无血栓'],
+              ['二尖瓣反流', '后负荷下降被血容量增加抵消，反流总量常增加', 'LV 大小与功能、充盈压、LA 大小、反流进展、PA 压'],
+              ['主动脉瓣反流', '多见于 BAV 或主动脉病变；后负荷下降使有效反流量减少', 'LV 大小与功能、主动脉根部进展、PA 压'],
+              ['主动脉瓣狭窄', '固定狭窄遇上心排量增加 → 压差与症状不成比例地恶化', '症状与压差是否脱节、LV 储备、有无失代偿'],
+              ['机械瓣', '抗凝是核心难题（华法林孕早期致畸，LMWH 疗效不稳定）', '基础抗凝方案、DVI 序列对比、有无血栓迹象'],
+            ],
+          },
+          { kind: 'text', text: '**二尖瓣狭窄是妊娠期最值得盯的瓣膜病**：症状与狭窄程度常常脱节（一个中度 MS 的患者可能直到孕晚期才出现症状，而此时已进入高危区）。超声要回答三个问题：① 狭窄形态能否球囊扩张（仅风湿性适合，钙化或合并 LA 血栓者不适合）；② 当前 PASP 与左房大小；③ 有无左房血栓。' },
+          { kind: 'text', text: '**机械瓣孕妇的所有人工瓣流速都会轻微升高**（心排量增加的必然结果），所以绝对值判读不可靠——**靠 DVI 做序列对比**。流速突然显著升高则必须重新评估瓣叶活动与血栓。' },
+          { kind: 'h', text: '主动脉：孕期是压力测试' },
+          { kind: 'text', text: '妊娠期主动脉根部与瓣环都会扩张，**合并主动脉病（Marfan、BAV、主动脉瓣上狭窄）者风险显著升高**。超声要点：主动脉根部与升主动脉直径（**孕期的基线要单独记，因为产后回缩不能追认）**、瓣膜反流有无新发或进展、LV 尺寸与功能。' },
+          { kind: 'note', text: '★ 产后回缩不等于「降回原位」：主动脉扩张在产后多仍大于孕前基线。**孕期测得的最大主动脉直径就是这条妊娠-分娩周期里的最差值**，是后续手术决策的参照，不能因为产后缩小就当作没发生过。', warn: true },
+          { kind: 'h', text: '妊娠特有或妊娠期新发的心脏病' },
+          {
+            kind: 'table',
+            heads: ['疾病', '超声特点', '注意'],
+            rows: [
+              ['围产期心肌病（PPCM）', '左室扩张、收缩功能减低，常伴左室血栓与心包积液', '起病于孕末月或产后 5 个月内；必须排除其他原因；抗凝与 HF 治疗'],
+              ['妊娠高血压综合征 / 子痫前期', '后负荷升高、LV 舒张功能异常、后壁增厚', '与妊娠期高血压性心衰鉴别'],
+              ['肺动脉高压', '妊娠会显著恶化，母体风险极高', 'PASP 明显升高者属 mWHO IV 类，通常建议避免妊娠'],
+            ],
+          },
+          { kind: 'text', text: '**围产期心肌病（PPCM）**的超声三件套：左室扩张与收缩功能减低、**左室血栓**（抗凝是常规）、心包积液。诊断是排除性的——必须先排除 Takotsubo、既往心肌病、瓣膜病、心肌炎等。' },
+          { kind: 'h', text: '超声什么时候做、怎么做' },
+          {
+            kind: 'table',
+            heads: ['场景', '建议'],
+            rows: [
+              ['孕前咨询', '有基础心脏病的女性孕前评估，确立基线值'],
+              ['孕期随访', '按 mWHO 风险分级：I 级 1–2 次；II–III 级每季度；IV 级劝阻妊娠'],
+              ['出现新症状', '及时复查（呼吸困难、晕厥、胸痛、下肢水肿）'],
+              ['产后', '产后 6 周复查（心排量约 6 周回到基线），PPCM 需更密集随访'],
+              ['检查方式', '超声无电离辐射，是孕期首选；必要时加 MRI（不用钆）'],
+            ],
+          },
+          { kind: 'note', text: '★ 孕前那一份基线超声极其重要：它是孕期所有数值的比较基准。**没有孕前基线，孕期看到的一切都只能解释成「可能是生理性」，无法判断「是恶化了还是本来就长这样」。**', warn: true },
+          { kind: 'h', text: '超声评估的边界' },
+          { kind: 'text', text: '超声回答不了的问题：① 母体风险分层要用 **mWHO 2.0 / CARPREG II / ZAHARA** 评分，不是超声分级；② 药物能不能用（华法林 vs LMWH、ACEI/ARB 禁忌）要看指南不是看超声；③ 分娩方式与镇痛方案是产科与心内科共同决策。**超声的价值是把心脏的结构与功能状态说清楚，为这些决策提供依据。**' },
+        ],
+        note: '孕期参考值全部要按生理性改变解释；孕前基线是解读孕期一切变化的参照物。',
+      },
+    ],
+  },
+  {
     id: 'report',
     title: '报告与质控',
     items: [
@@ -3453,6 +3606,56 @@ const REFS = [
       { t: '免费全文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2026/05/PIIS0894731726000386.pdf' },
     ],
   },
+  {
+    id: 'R54',
+    zh: '主动脉瓣狭窄超声评估建议（EACVI/ASE 2017 聚焦更新）',
+    en: 'Baumgartner H, Hung J, Bermejo J, et al. Recommendations on the Echocardiographic Assessment of Aortic Valve Stenosis: A Focused Update from the European Association of Cardiovascular Imaging and the American Society of Echocardiography',
+    where: 'J Am Soc Echocardiogr, 2017, 30(4): 372–392',
+    use: 'asload 判读页：压力恢复公式 PR = 4v²×2×(EOA/AoA)×(1−EOA/AoA)、按流速-压差-EF 的 AS 分层算法、LVOT 测量优化、低流量低压差处理路径',
+    dl: [
+      { t: 'ASE PDF', u: 'https://asecho.org/wp-content/uploads/2017/04/2017ValveStenosisGuideline.pdf' },
+    ],
+  },
+  {
+    id: 'R55',
+    zh: '瓣膜狭窄超声评估建议（EAE/ASE 2009 联合文件）',
+    en: 'Baumgartner H, Hung J, Bermejo J, et al. Echocardiographic Assessment of Valve Stenosis: EAE/ASE Recommendations for Clinical Practice',
+    where: 'J Am Soc Echocardiogr, 2009, 22(1): 1–23',
+    use: 'asload 判读页：能量损失指数 ELI = (EOA×AAo)/(AAo−EOA)/BSA 的原始出处与 ≤0.6 cm²/m² 切点、每搏做功损失 SWL 与瓣-动脉阻抗 Zva 的定义',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2020/08/2009_Echo-Assessment-of-Valve-Stenosis_note_added.pdf' },
+    ],
+  },
+  {
+    id: 'R56',
+    zh: '瓣膜性心脏病超声评估指南（ASE/EACVI 2020）',
+    en: 'Baumgartner H, Hung J, Bermejo J, et al. Guidelines for the Evaluation of Valve Prostheses and the Management of Native and Prosthetic Valve Disease: A Report of the American Society of Echocardiography and European Association of Cardiovascular Imaging',
+    where: 'J Am Soc Echocardiogr, 2020, 31(4): e1–e132',
+    use: 'asload 判读页：AS 严重度的多参数判读策略、瓣-动脉阻抗 Zva 的预后阈值（>3.5 识别不良预后、>4.5 高负荷）、压力恢复与能量指标的适用边界',
+    dl: [
+      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2024/03/Guidelines-for-the-Evaluation-of-Valve-Prostheses-and-the-Management-of-Native-and-Prosthetic-Valve-Disease.pdf' },
+    ],
+  },
+  {
+    id: 'R57',
+    zh: '妊娠期心脏超声评估立场声明（BSE / UK Maternal Cardiology Society）',
+    en: 'Curtis SL, Belham M, Bennett S, et al. Transthoracic Echocardiographic Assessment of the Heart in Pregnancy—a position statement on behalf of the British Society of Echocardiography and the United Kingdom Maternal Cardiology Society',
+    where: 'Echo Res Pract, 2023, 10(1): 7',
+    use: 'pregnancy-echo 判读页：妊娠期生理性血流动力学改变（血容量 +40%、心排量 +30–50%、体循环阻力 −20–50%）、各类瓣膜病在孕期的超声重点、二尖瓣狭窄球囊成形可行性评估、机械瓣靠 DVI 序列对比',
+    dl: [
+      { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10116662/' },
+    ],
+  },
+  {
+    id: 'R58',
+    zh: '心血管疾病与妊娠管理指南（2025 ESC）',
+    en: 'De Backer J, Haugaa KH, Hasselberg NE, et al. 2025 ESC Guidelines for the management of cardiovascular disease and pregnancy',
+    where: 'Eur Heart J, 2025, doi: 10.1093/eurheartj/ehaf193',
+    use: 'pregnancy-echo 判读页：mWHO 2.0 风险分级与随访强度（I 级 1–2 次 / II–III 级每季度 / IV 级劝阻妊娠）、妊娠 Heart Team 职责、围产期心肌病章节、主动脉病与妊娠',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://www.escardio.org/static-file/Escardio/Guidelines/Products/Essential%20Messages/2025%20Gls/2025%20Essential%20Messages_Pregnancy.pdf' },
+    ],
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════
@@ -3489,6 +3692,7 @@ var CALC_HINTS = {
   /* 瓣膜评估 */
   mitral: '瓣膜评估 · 二尖瓣面积 MVA（两法对照）；Wilkins 二尖瓣形态评分',
   aortic: '瓣膜评估 · 主动脉瓣面积（连续性方程）；血流动力学与心功能 · 无量纲指数 DVI；缩流颈宽度 VCW 分级',
+  asload: '瓣膜评估 · AS 负荷量化（ELI · Zva · SWL）；压力恢复（PR）校正；主动脉瓣面积（连续性方程）',
   'lf-lg': '重构与心肌功能 · 每搏功 SW / SWi；血流动力学与心功能 · 有效动脉弹性 Ea',
   /* 先天性心脏病 */
   shd: '介入尺寸与先心 · McGoon 比值与 Nakata 指数；血流动力学与心功能 · Qp/Qs',
@@ -3522,6 +3726,7 @@ var CALC_LINKS = {
   /* 瓣膜 */
   mitral: ['mva', 'wilkins'],
   aortic: ['avav', 'dvi', 'vcw'],
+  asload: ['asload', 'pr', 'avav'],
   bav: ['avav', 'dvi', 'aortaz', 'tavrsz'],
   'lf-lg': ['swv', 'ea'],
   /* 心肌病变 */

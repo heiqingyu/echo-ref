@@ -621,6 +621,15 @@
     { id: 'avav', sec: 'valve', title: '主动脉瓣面积（连续性方程）',
       fields: [['ald', 'LVOT 直径', 'cm'], ['alvti', 'LVOT VTI', 'cm'], ['aavti', '主动脉瓣 VTI', 'cm']],
       note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；AVAi ≤0.6 为重度；DVI ≤0.25 支持重度 AS' },
+    { id: 'asload', sec: 'valve', title: 'AS 负荷量化（ELI · Zva · SWL）',
+      fields: [['alvmax', '主动脉瓣峰值流速 Vmax', 'm/s'], ['almean', '平均跨瓣压差', 'mmHg'],
+        ['alava', '有效瓣口面积 EOA', 'cm²'], ['alao', '升主动脉直径', 'cm'],
+        ['alsbp', '收缩压', 'mmHg'], ['alsv', '每搏量 SV', 'mL']],
+      note: 'ELI = (EOA×AAo)/(AAo−EOA)/BSA（≤0.6 重度）；Zva = (SBP+ΔPmean)/SVi（>4.5 高负荷）；SWL = 100×ΔPmean/(SBP+ΔPmean)（>25% 有意义）' },
+    { id: 'pr', sec: 'valve', title: '压力恢复（PR）校正',
+      fields: [['prvmax', '狭窄口峰值流速 Vmax', 'm/s'], ['preoa', '有效瓣口面积 EOA', 'cm²'],
+        ['prao', '升主动脉直径', 'cm']],
+      note: 'PR = 4v² × 2 × (EOA/AAo) × (1−EOA/AAo)。升主动脉 ≥30 mm 时可忽略；PR 大说明多普勒压差虚高' },
     { id: 'ppm', sec: 'valve', title: '人工瓣 EOAi 与 PPM',
       fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', ''],
         ['pbmi', 'BMI（可选；≥30 用肥胖切点）', 'kg/m²']],
@@ -1606,6 +1615,40 @@
       if (!dvi.error) parts.push('DVI ' + Calc.fmt(dvi.dvi, 2));
       put('avav', partsOf(parts));
     } else put('avav');
+
+    // AS 负荷量化（ELI · Zva · SWL）
+    {
+      const sum = Calc.asLoadSummary({
+        vmax: has('alvmax') ? v.alvmax : null,
+        meanGrad: has('almean') ? v.almean : null,
+        eoa: has('alava') ? v.alava : null,
+        ascAo: has('alao') ? v.alao : null,
+        sbp: has('alsbp') ? v.alsbp : null,
+        sv: has('alsv') ? v.alsv : null,
+        bsa: bsa,
+      });
+      const parts = [];
+      const notes = [];
+      if (sum.eli) { parts.push(sum.eli.text); notes.push(sum.eli.note); }
+      if (sum.zva) { parts.push(sum.zva.text); notes.push(sum.zva.note); }
+      if (sum.swl) { parts.push(sum.swl.text); notes.push(sum.swl.note); }
+      if (sum.pr) parts.push(sum.pr.text);
+      if (parts.length) {
+        put('asload', partsOf(parts) + (notes.length ? '｜' + notes.join('｜') : ''));
+      } else {
+        put('asload', '请至少填写：EOA + 升主动脉直径（算 ELI）、收缩压 + 每搏量 + 身高体重（算 Zva）、平均压差（算 SWL）');
+      }
+    }
+
+    // 压力恢复校正
+    {
+      const r = Calc.pressureRecovery(
+        has('prvmax') ? v.prvmax : null,
+        has('preoa') ? v.preoa : null,
+        has('prao') ? v.prao : null,
+      );
+      put('pr', r.error ? r.error : (r.text + '｜' + r.note));
+    }
 
     // MVA（PHT 法 + 连续性方程，同屏对照）
     {
