@@ -851,7 +851,11 @@ function buildPublicHtml() {
   ['id="calcIndex"', 'id="calcList"', 'id="calcDetail"', 'id="calcBack"',
    'id="calcRefs"', 'id="calcRefList"', 'id="extLinks"',
    'window.Calc', 'window.ExtraData', 'BRIEF_SECTIONS', 'LINK_SECTIONS', 'REFS',
-   'buildCalcInputs', 'renderCalc', 'openCalcGroup', '.fx-item', '.fx-tbl__c', '.ref-item__zh']
+   'buildCalcInputs', 'renderCalc', 'openCalcGroup', '.fx-item', '.fx-tbl__c', '.ref-item__zh',
+   // ★ 2026-10-21：.fx-nav / .ref-dl / .chip 的 CSS 块必须留在 app.css 的
+   //   「瓣膜专页」注释之前——stripCssBlock 会把该注释到 </style> 整段删掉。
+   //   曾经把 .fx-nav 追加到文件末尾，发布版跳转条退化成无样式蓝色裸链接。
+   '.fx-nav {', '.fx-nav__c {', '.ref-dl__i {', '.chip {']
     .forEach((s) => {
       if (out.indexOf(s) === -1) throw new Error('发布版：公式集依赖缺失 ' + s);
     });
@@ -885,10 +889,13 @@ function buildPublicHtml() {
 
   <div class="pubnote">
     <b>关于本页</b><br>
-    本页为个人整理的成人经胸超声（TTE）参考值速查工具，含四部分：M 型 EF 计算、成人正常参考值
-    （中国 2016 指南 37 项 / ASE-EACVI 2015）、儿童 Z 值（PHN 数据库）、
-    公式集（血流动力学计算 / 器械支持 / 心腔与应变 / 切面与模拟器外链）。
-    切面与模拟器条目均为第三方站点的文字链接，本工具不加载其任何内容。
+    本页为个人整理的心脏超声（TTE）参考速查工具，四个页签：<b>EF·参考值</b>（M 型 / 二维 EF 计算、
+    成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>节段划分</b>（ASE 17 节段模型与冠脉供血）、
+    <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（57 个计算器 + 42 条评估清单，按 18 个主题分组，
+    含二尖瓣狭窄 PMBV 适合度流程、人工瓣、危急值清单与报告标准化）。
+    公式集目录顶部有组名跳转条，点一下直接定位到对应分组；切面学习视频为第三方站点的文字链接，
+    本工具不加载其任何内容。「切面指南」已并入参考文献（48 条，其中 37 条附 ASE 官方 / 免费 PDF 直链，
+    点开即可下载；各详情页底部标注该条目使用的文献编号）。
     <b>本页内容为自行整理，非任何学会或机构的官方产品</b>，仅供医学教育与速查使用；
     参考值需结合患者体型、血流状态及测量方法，<b>不能单凭一个指标作出诊断</b>。
   </div>`

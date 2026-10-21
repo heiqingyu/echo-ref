@@ -204,8 +204,8 @@
 .fx-nav {
   width: 100%;
   white-space: nowrap;
-  margin: 0 0 12rpx;
-  padding: 2rpx 0;
+  margin: 18rpx 0 12rpx;
+  padding: 4rpx 0;
 }
 
 .fx-nav__i {

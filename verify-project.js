@@ -640,8 +640,30 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
   // 11.6 二尖瓣页必须内嵌 wilkins 计算器（用户要求归位到病种页）
   (mit.calc === 'wilkins') ? ok('二尖瓣页内嵌 Wilkins 计算器')
     : bad('二尖瓣页未挂 calc: wilkins');
-  ((mit.fields || []).length === 8) ? ok('二尖瓣页 8 个输入（Wilkins 4 + MVA 4）')
+  ((mit.fields || []).length === 10) ? ok('二尖瓣页 10 个输入（Wilkins 4 + MVA 4 + 压差/PASP 2）')
     : bad('二尖瓣页打分输入 ' + (mit.fields || []).length + ' 个');
+  // 11.7 PMBV 适合度流程：三个指标必须都在输入里，且页面有串流程的小节
+  const pmbvFields = ['mpht', 'mvd', 'mvlvti', 'mvmvti', 'mgrad', 'pasp', 'wk1', 'wk2', 'wk3', 'wk4'];
+  const missF = pmbvFields.filter(k => !(mit.fields || []).some(f => f.k === k));
+  (!missF.length) ? ok('PMBV 流程输入齐全（MVA 两法 + 平均压差 + PASP + Wilkins）')
+    : bad('PMBV 流程缺输入：' + missF.join(','));
+  const pmbvSec = (mit.blocks || []).some(b => /PMBV 适合度/.test(b.text || ''));
+  pmbvSec ? ok('二尖瓣页含 PMBV 适合度流程小节') : bad('二尖瓣页缺 PMBV 适合度流程小节');
+
+  // 11.8 报告标准化条目必须含危急值清单（心包填塞 / 主动脉夹层 / 人工瓣急性功能障碍等）
+  const rs = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'report')[0]
+    .items.filter(i => i.id === 'report-std')[0];
+  const cvTb = (rs.blocks || []).filter(function (b) {
+    return b.kind === 'table' && (b.heads || [])[0] === '危急值';
+  })[0];
+  const cvRows = (cvTb && cvTb.rows) || [];
+  const cvNeed = ['心包填塞', '主动脉夹层', '人工瓣急性功能障碍'];
+  const cvMiss = cvNeed.filter(function (n) {
+    return !cvRows.some(function (r) { return (r[0] || '').indexOf(n) !== -1; });
+  });
+  (cvRows.length >= 5 && !cvMiss.length)
+    ? ok('危急值清单 ' + cvRows.length + ' 条，含' + cvNeed.join(' / '))
+    : bad('危急值清单异常（' + cvRows.length + ' 行，缺 ' + cvMiss.join(',') + '）');
 }
 
 console.log('\n' + '='.repeat(50));

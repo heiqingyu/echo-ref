@@ -127,6 +127,129 @@ function mvaBoth(phtMs, lvotD, lvotVti, mvVti) {
 }
 
 /**
+ * PMBV 适合度：把「平均压差 + PASP + Wilkins」串成一条流程（二尖瓣狭窄判读页用）
+ *
+ * 临床顺序不是先测面积，而是三步递进：
+ *   ① 定严重度 —— MVA（PHT / 连续性方程，二选一或都算）+ 心率校正后的平均压差，两者互相印证
+ *   ② 看后果   —— PASP >50 mmHg 说明狭窄已造成重度肺高压后果，是介入的最强理由
+ *   ③ 看形态   —— Wilkins 评分回答「瓣膜能不能扩」：≤8 适合 PMBV、9–11 边缘、≥12 外科
+ * 前两步决定「要不要做」，第三步决定「适合谁做」。
+ * 超声报告还必须写明三项排除：TEE 排除左房血栓、反流 ≤轻度、无重度主动脉瓣病变。
+ *
+ * @param {object} o { mva, mvaHow, gra, pasp, wilkins }
+ *   mva     面积 cm²（PHT 与连续方程不一致时由调用方择一传入，不取平均）
+ *   mvaHow  面积测法标签（'PHT 法' / '连续方程'），仅用于文案
+ *   gra     平均跨瓣压差 mmHg（应校正到心率 60–80 次/分）
+ *   pasp    肺动脉收缩压 mmHg
+ *   wilkins Wilkins 总分 4–16
+ * @returns {{parts:string[], verdict:string, level:number, missing:string[]}}
+ */
+function pmbvSuit(o) {
+  o = o || {};
+  var ok = function (x) { return typeof x === 'number' && isFinite(x) && x > 0; };
+  var mva = ok(o.mva) ? o.mva : null;
+  var how = o.mvaHow || '';
+  var gra = ok(o.gra) ? o.gra : null;
+  var pasp = ok(o.pasp) ? o.pasp : null;
+  var wk = (o.wilkins >= 4 && o.wilkins <= 16) ? Math.round(o.wilkins) : null;
+
+  var parts = [];
+  var missing = [];
+
+  // ── ① 严重度 ──
+  var sev = null; // 0 轻 / 1 中 / 2 重
+  var mismatch = false; // 压差与面积分级不一致（面积为准，压差复测）
+  if (mva !== null) {
+    var gm = gradeMva(mva);
+    sev = gm.level === 'severe' ? 2 : (gm.level === 'moderate' ? 1 : 0);
+    parts.push('① 严重度：MVA ' + mva.toFixed(2) + ' cm²' +
+      (how ? '（' + how + '）' : '') + ' → ' + gm.text +
+      (gm.level === 'severe' ? '（≤1.0 cm²）' : gm.level === 'moderate' ? '（1.0–1.5）' : '（>1.5）'));
+  }
+  if (gra !== null) {
+    var gt = gra > 10 ? '重度（>10 mmHg）' : (gra >= 5 ? '中度（5–10 mmHg）' : '轻度（<5 mmHg）');
+    var gsev = gra > 10 ? 2 : (gra >= 5 ? 1 : 0);
+    parts.push('① 严重度：平均压差 ' + gra.toFixed(0) + ' mmHg → ' + gt);
+    if (mva !== null && gsev !== sev) {
+      // 两法/两指标打架：以面积为准，压差提示流量或测量问题
+      mismatch = true;
+      parts.push('⚠ 压差与面积分级不一致：压差随心率和流量变化，校正到 60–80 次/分复测，仍以面积为准');
+    } else if (mva !== null) {
+      sev = Math.max(sev, gsev);
+    } else {
+      sev = gsev;
+    }
+  }
+  if (mva === null && gra === null) missing.push('MVA（PHT / 连续方程）或平均压差');
+
+  // ── ② 后果 ──
+  var conseq = 0;
+  if (pasp !== null) {
+    if (pasp > 50) {
+      conseq = 2;
+      parts.push('② 后果：PASP ' + pasp.toFixed(0) + ' mmHg >50 → 重度肺高压，介入理由强');
+    } else if (pasp >= 30) {
+      conseq = 1;
+      parts.push('② 后果：PASP ' + pasp.toFixed(0) + ' mmHg 30–50 → 中度升高');
+    } else {
+      parts.push('② 后果：PASP ' + pasp.toFixed(0) + ' mmHg <30 → 无明显肺高压后果');
+    }
+  } else missing.push('PASP');
+
+  // ── ③ 形态 ──
+  if (wk !== null) {
+    if (wk <= 8) parts.push('③ 形态：Wilkins ' + wk + '/16 ≤8 → 瓣膜形态适合 PMBV');
+    else if (wk <= 11) parts.push('③ 形态：Wilkins ' + wk + '/16 9–11 → 边缘区，个体化');
+    else parts.push('③ 形态：Wilkins ' + wk + '/16 ≥12 → 形态差，优先外科');
+  } else missing.push('Wilkins 四项评分（各 1–4 分）');
+
+  // ── 结论：前两步定「要不要做」，第三步定「适合谁做」 ──
+  var verdict = '';
+  var level = 0;
+  var severeEnough = sev === 2 || (sev === 1 && conseq === 2);
+  if (wk !== null) {
+    if (wk >= 12) {
+      verdict = 'PMBV 适合度：形态不适合（Wilkins ≥12），优先外科换瓣';
+      level = 3;
+    } else if (wk <= 8) {
+      if (sev === 2) {
+        verdict = 'PMBV 适合度：重度 MS + 形态适合 → 理想 PMBV 候选；术前 TEE 排除左房血栓，' +
+          '确认 MR ≤轻度、无重度主动脉瓣病变' +
+          (mva === null ? '；未测 MVA，补一项面积确认' : '');
+        level = 1;
+      } else if (sev === 1 && conseq === 2) {
+        verdict = 'PMBV 适合度：MS 中度但 PASP >50 mmHg（后果重）+ 形态适合 → 有 PMBV 理由，建议与外科共同决策';
+        level = 1;
+      } else if (sev === null && conseq === 2) {
+        verdict = 'PASP 已 >50 mmHg，存在介入理由；补 MVA 与平均压差确认严重度';
+        level = 1;
+      } else if (sev === null) {
+        verdict = '形态适合 PMBV，但尚未确认 MS 严重度（补 MVA / 平均压差）';
+        level = 0;
+      } else if (sev === 1) {
+        verdict = pasp !== null
+          ? 'MS 中度（MVA 1.0–1.5）且 PASP ≤50 mmHg：以药物与随访为主，出现症状或 PASP 升高再评估介入'
+          : 'MS 中度（MVA 1.0–1.5）；补平均压差与 PASP 判断后果，再定介入时机';
+        level = 0;
+      } else {
+        verdict = '狭窄未达重度（MVA >1.5 cm²' +
+          (mismatch ? '，压差 ' + gra.toFixed(0) + ' mmHg 与面积不符需复测' : '') +
+          '），以随访与对症为主，暂不考虑 PMBV';
+        level = 0;
+      }
+    } else {
+      verdict = 'PMBV 适合度：边缘区（Wilkins 9–11），结合年龄、合并症与外科风险个体化决定';
+      level = 2;
+    }
+  } else if (severeEnough || conseq === 2) {
+    verdict = '已达中重度 MS（或 PASP >50 mmHg），有介入理由；补 Wilkins 四项评分判断能否 PMBV';
+    level = 1;
+  }
+
+  return { parts: parts, verdict: verdict, level: level, missing: missing };
+}
+
+/**
  * PISA 法二尖瓣反流：流量、EROA、RVol
  * radius cm；aliasVa cm/s；regV m/s（内部转 cm/s）；regVti cm
  */
@@ -2150,6 +2273,7 @@ module.exports = {
   mvaContinuity,
   mvaBoth,
   gradeMva,
+  pmbvSuit,
   pisa,
   gradeEroa,
   gradeRvol,
