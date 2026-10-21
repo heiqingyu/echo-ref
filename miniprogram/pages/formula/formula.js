@@ -11,6 +11,7 @@ const CG = require('../../utils/calc-groups.js');
 const EX = require('../../utils/extra-data.js');
 const calc = require('../../utils/echo-calc.js');
 const MD = require('../../utils/inline-md.js');
+const CN = require('../../utils/calc-notes.js');
 const app = getApp();
 
 /** 在评估类内容里按 id 找条目 */
@@ -136,13 +137,15 @@ Page({
       });
       const optsV = {};
       opts.forEach(function (o) { optsV[o.k] = o.v; });
+      // 说明块（临床意义 / 参考标准 / 判读要点）放在最前，后面跟本条目自带的小节
+      const calcBlocks = CN.notesBlocks(g.id).concat(g.blocks || []);
       this.setData({
         gid: g.id,
         mode: 'calc',
         title: g.title,
         note: g.note,
-        blocks: toBlocks(g.blocks || []),
-        toc: buildToc(g.blocks || []),
+        blocks: toBlocks(calcBlocks),
+        toc: buildToc(calcBlocks),
         refs: [],
         inputs: inputs,
         opts: opts,
@@ -1013,6 +1016,24 @@ Page({
         if (r.depthWarn) parts.push(r.depthWarn);
         out = parts.join('；');
       }
+    } else if (gid === 'aortagrow') {
+      // —— 主动脉扩张增长率 ——
+      const r = calc.aorticGrowthRate(v.d1, v.d2, v.yrs);
+      if (r.error) out = r.error;
+      else out = r.text + '｜' + r.note;
+    } else if (gid === 'pvfu') {
+      // —— 人工瓣术后跨瓣血流 ——
+      const r = calc.prostheticValveFunction({
+        lvotD: v.lvotD, lvotVti: v.lvotVti, valveVti: v.valveVti,
+        vmax: v.fupvmax, meanGrad: v.fupmean, bsa: bsa,
+      });
+      if (r.error) out = r.error;
+      else out = r.text + '｜' + r.note;
+    } else if (gid === 'cfr') {
+      // —— 冠脉血流储备 ——
+      const r = calc.coronaryFlowReserve(v.distal, v.proximal);
+      if (r.error) out = r.error;
+      else out = r.text + '｜' + r.note;
     } else if (gid === 'rvvol') {
       // —— 右室容积指数 ——
       if (valid(v.rvedv)) {

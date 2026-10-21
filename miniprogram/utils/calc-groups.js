@@ -772,6 +772,43 @@ const GROUPS = [
     ],
     note: '按着陆区最大径 × 1.08 上取整落到常规型号（17/20/24/27/31/35 mm）。长短径比 >1.3 提示椭圆度大；深度不足时考虑小一号。常用于 Watchman FLX 类器械，其他产品按各自说明书',
   },
+  {
+    id: 'aortagrow',
+    sec: 'fu',
+    title: '主动脉扩张增长率',
+    sub: '两次测量之差 ÷ 间隔年数',
+    fields: [
+      { k: 'd1', n: '上次直径', u: 'cm' },
+      { k: 'd2', n: '本次直径', u: 'cm' },
+      { k: 'yrs', n: '间隔时间', u: '年' },
+    ],
+    note: '增长率 = (本次 − 上次) × 10 ÷ 间隔年数（mm/年）。<3 低危；3–5 缩短随访间隔；≥5 倾向尽快干预。必须同切面同方法测量',
+  },
+  {
+    id: 'pvfu',
+    sec: 'fu',
+    title: '人工瓣术后跨瓣血流',
+    sub: 'TAVR / 换瓣后 EOA 与压差',
+    fields: [
+      { k: 'lvotD', n: 'LVOT 直径', u: 'cm' },
+      { k: 'lvotVti', n: 'LVOT VTI', u: 'cm' },
+      { k: 'valveVti', n: '人工瓣 VTI', u: 'cm' },
+      { k: 'fupvmax', n: '跨瓣峰值流速', u: 'm/s' },
+      { k: 'fupmean', n: '跨瓣平均压差', u: 'mmHg' },
+    ],
+    note: 'EOA = (π×LVOT 直径²÷4 × LVOT VTI) ÷ 人工瓣 VTI。术后平均压差 <20 mmHg、EOA ≥1.2 cm²（EOAi ≥0.8）为佳。压差高不等于故障：先排 undersizing、瓣周漏、LVOT 梗阻、压降恢复与高流量',
+  },
+  {
+    id: 'cfr',
+    sec: 'fu',
+    title: '冠脉血流储备 CFR',
+    sub: '远端 ÷ 近端冠脉舒张期流速',
+    fields: [
+      { k: 'distal', n: '远端冠脉舒张期流速', u: 'cm/s' },
+      { k: 'proximal', n: '近端冠脉舒张期流速', u: 'cm/s' },
+    ],
+    note: 'CFR = 远端 ÷ 近端。>2.0 正常；1.6–2.0 可疑；<1.6 明显受限（缺血）。要求同一支冠脉、同一角度、同一心率与同一负荷状态下测量',
+  },
 ];
 
 /**
@@ -787,6 +824,7 @@ const CALC_SECTIONS = [
   { id: 'recon', title: '重构与心肌功能' },
   { id: 'score', title: '评分与室壁运动' },
   { id: 'ivs', title: '介入尺寸与先心' },
+  { id: 'fu', title: '随访与术中评估' },
 ];
 
 /** IVC 塌陷选项 */

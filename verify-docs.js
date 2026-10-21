@@ -308,10 +308,10 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 6 个计算组 + 瓣膜 + 13 组评估 + 2 组外链',
-      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|报告与质控|切面学习（视频）|TEE 模拟器',
+    check('公式集分组 = 7 个计算组 + 瓣膜 + 14 组评估 + 2 组外链',
+      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 115 条（59 计算 − 5 瓣膜计算器 + 9 瓣膜 + 43 评估 + 9 外链）', d.items === 115, d.items);
+    check('条目 122 条（62 计算 − 5 瓣膜计算器 + 9 瓣膜 + 47 评估 + 9 外链）', d.items === 122, d.items);
     check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -321,7 +321,7 @@ function check(name, ok, detail) {
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 9 条瓣膜通用计算（wilkins/vcw/rf/mva/pisav/avav/ppm/asload/pr）',
       d.valveCalc === 9, d.valveCalc);
-    check('参考文献 58 条', d.refs === 58, d.refs);
+    check('参考文献 62 条', d.refs === 62, d.refs);
     check('延展阅读卡片在公式集页', d.ext, true);
   }
 
@@ -475,6 +475,44 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 300));
   let o = await outOf('paspv');
   check('PASP 3.0 + 8 → 44 mmHg 轻度', /44/.test(o) && /轻度/.test(o), o);
+
+  // —— v1.3.12：随访与术中评估 ——
+  await openCalc('aortagrow');
+  await fillCalc('aortagrow', 'd1', '3.0');
+  await fillCalc('aortagrow', 'd2', '3.6');
+  await fillCalc('aortagrow', 'yrs', '2');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('aortagrow');
+  check('主动脉 3.0→3.6cm/2年 → 3.00 mm/年 中危', /3\.00 mm/.test(o) && /中危/.test(o), o);
+
+  await openCalc('pvfu');
+  await fillCalc('pvfu', 'lvotD', '2.0');
+  await fillCalc('pvfu', 'lvotVti', '20');
+  await fillCalc('pvfu', 'valveVti', '20');
+  await fillCalc('pvfu', 'fupvmax', '2.6');
+  await fillCalc('pvfu', 'fupmean', '12');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('pvfu');
+  check('人工瓣 EOA 3.14 cm² 开放良好、平均压差正常',
+    /3\.14 cm²/.test(o) && /开放良好/.test(o) && /正常/.test(o), o);
+
+  await openCalc('cfr');
+  await fillCalc('cfr', 'distal', '60');
+  await fillCalc('cfr', 'proximal', '25');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('cfr');
+  check('CFR 2.40 正常', /2\.40/.test(o) && /正常/.test(o), o);
+
+  // 说明块（临床意义 / 参考标准 / 判读要点）应出现在计算器详情里
+  const notesOk = await c.evalJs(`(function(){
+    var box=document.querySelector('#calcGroups .card[data-g="flow"]');
+    if(!box) return false;
+    var t=box.textContent||'';
+    return t.indexOf('这个指标是干什么用的')!==-1 &&
+           t.indexOf('参考标准 / 正常值')!==-1 &&
+           t.indexOf('判读要点与常见陷阱')!==-1;
+  })()`);
+  check('计算器详情含「临床意义 / 参考标准 / 判读要点」三节', notesOk, notesOk);
 
   await openCalc('pvrv');
   await fillCalc('pvrv', 'hmmpap', '45');
@@ -770,7 +808,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 58 条', /58/.test(ri.cnt), refsInit);
+  check('折叠头显示 62 条', /62/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -788,7 +826,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 58 条', ro.hidden === false && ro.n === 58 && ro.h > 0, refsOpen);
+  check('点击后展开全部 62 条', ro.hidden === false && ro.n === 62 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 

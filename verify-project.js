@@ -122,15 +122,15 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 59) ok('公式集定义 59 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 62) ok('公式集定义 62 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
-if (calcSecIds.join('/') === 'hemo/right/vq/recon/score/ivs')
-  ok('计算组 6 个（血流动力学 / 右心肺循环 / 瓣膜舒张 / 重构心肌 / 评分与室壁运动 / 介入尺寸与先心）');
+if (calcSecIds.join('/') === 'hemo/right/vq/recon/score/ivs/fu')
+  ok('计算组 7 个（血流动力学 / 右心肺循环 / 瓣膜舒张 / 重构心肌 / 评分与室壁运动 / 介入尺寸与先心 / 随访与术中）');
 else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1 && g.sec !== 'valve');
-if (!badSec.length) ok('59 条公式的 sec 归属均合法（含 valve 瓣膜评估组）');
+if (!badSec.length) ok('62 条公式的 sec 归属均合法（含 valve 瓣膜评估组 + fu 随访与术中组）');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
@@ -139,9 +139,10 @@ const nValveCalc = CG.GROUPS.filter(g => g.sec === 'valve').length;
 const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
 const nScore = CG.GROUPS.filter(g => g.sec === 'score').length;
 const nIvs = CG.GROUPS.filter(g => g.sec === 'ivs').length;
-if (nHemo === 14 && nRight === 13 && nVq === 3 && nRecon === 12 && nScore === 3 && nIvs === 5 && nValveCalc === 9)
-  ok('分组条目数 14 / 13 / 3 / 12 / 3 / 5 + 瓣膜评估 9（瓣膜通用计算 + AS 负荷量化已并入瓣膜评估组）');
-else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs, nValveCalc].join('/'));
+const nFu = CG.GROUPS.filter(g => g.sec === 'fu').length;
+if (nHemo === 14 && nRight === 13 && nVq === 3 && nRecon === 12 && nScore === 3 && nIvs === 5 && nValveCalc === 9 && nFu === 3)
+  ok('分组条目数 14 / 13 / 3 / 12 / 3 / 5 + 瓣膜评估 9 + 随访与术中 3');
+else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs, nValveCalc, nFu].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
 const SHARED_KEYS = { ld: 1, lvti: 1 };
@@ -175,10 +176,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 14) ok('评估内容 14 个分组（… + 妊娠与特殊人群 + 报告与质控）');
+if (EX.BRIEF_SECTIONS.length === 15) ok('评估内容 15 个分组（… + 妊娠与特殊人群 + 特殊临床场景 + 报告与质控）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,asload,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr,contrast-echo,echo-interv,artifact-guide,pregnancy-echo,report-std') ok('评估条目 = 47 条（… + AS 负荷量化 1 + 妊娠期心血管 1 + 报告与质控 1）');
+if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,asload,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr,contrast-echo,echo-interv,artifact-guide,pregnancy-echo,takotsubo,osa,myowork,ecmo,report-std') ok('评估条目 = 51 条（… + 妊娠期 1 + 特殊临床场景 4 + 报告与质控 1）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -192,7 +193,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 58) ok('参考文献 58 条');
+if (EX.REFS.length === 62) ok('参考文献 62 条');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：只挂官方/免费可直连的 PDF，需登录下载的坚决不挂
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -528,8 +529,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
       }
     });
   });
-  (bridged.length === 29) ? ok('29 个判读条目挂上「相关计算」桥接')
-    : bad('桥接条目数 ' + bridged.length + '（期望 29）');
+  (bridged.length === 33) ? ok('33 个判读条目挂上「相关计算」桥接')
+    : bad('桥接条目数 ' + bridged.length + '（期望 33）');
   bridged.every(function (b) { return b.text.indexOf('公式集 → ') !== -1; })
     ? ok('桥接文案统一指向「公式集 → 组 · 计算器」')
     : bad('桥接文案格式不一致');
