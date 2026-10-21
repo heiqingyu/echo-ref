@@ -1,0 +1,69 @@
+<view class="page-wrap">
+
+  <view class="card">
+    <view class="card__title">瓣膜分区 · 分叶 · 分段</view>
+    <view class="card__desc">
+      按标准屏幕方位示意，实际以解剖标志核实。点击下方色块按钮，它会在所有示意图中同步高亮同一解剖结构；再次点击取消。
+    </view>
+
+    <view wx:if="{{sel}}" class="hi-line hi-line--sel">{{selInfo}}</view>
+    <view wx:if="{{sel}}" class="btn btn--ghost" bindtap="onClear" style="margin-top:16rpx">取消选中</view>
+  </view>
+
+  <block wx:for="{{groups}}" wx:key="id" wx:for-item="g">
+    <view class="card">
+      <view class="card__title">{{g.title}}</view>
+      <view class="card__desc">{{g.views.length}} 个标准切面示意</view>
+
+      <view class="wall-card" wx:for="{{g.views}}" wx:key="id" wx:for-item="v">
+        <view class="wall-card__t">{{v.title}}</view>
+        <view class="wall-card__s">{{v.sub}}</view>
+        <image class="wall-img" src="{{v.src}}" mode="aspectFit" />
+        <view class="wall-group">
+          <text class="wall-group__l">解剖分区</text>
+          <view class="wall-chips">
+            <text class="segchip {{sel === c.id ? 'segchip--on' : ''}}"
+                  wx:for="{{v.chips}}" wx:for-item="c" wx:key="id"
+                  style="--c:{{c.color}}" bindtap="onPart" data-p="{{c.id}}">{{c.n}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view class="note">
+    主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC。TTE 短轴按钟面位判读（12 点前壁），TEE 短轴 30–60° 的屏幕方位与 TTE 不同，务必以冠状动脉开口和左心房位置核实。
+  </view>
+  <view class="note">
+    二尖瓣分叶：前叶 P1–P3、后叶 A1–A3。交界区为 P1–A1 与 P3–A3。前叶瓣口面积约占 60%，后叶约 40%。四腔心切面只能分辨前叶 / 后叶大系，精确分叶需 TEE 60° 交界切面。
+  </view>
+  <view class="note">
+    三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心显示隔叶与前叶，后叶需胸骨旁短轴右室流入道切面。
+  </view>
+  <view class="note">
+    肺动脉瓣为三个半月瓣，不单独命名，也没有冠状窦对应关系。
+  </view>
+  <view class="note">
+    本页为教学示意图，不替代真实超声图像；示意图仅标注解剖分区与切面关系，测量与判读请以本工具「公式集 → 瓣膜评估」条目的定量标准为准。
+  </view>
+
+  <!-- 教学视频与交互教学站 -->
+  <view class="card">
+    <view class="card__title">瓣膜教学视频与交互教学</view>
+    <view class="card__desc">
+      视频可直接在站内播放；交互教学站点一下复制链接，到浏览器打开。
+    </view>
+
+    <view class="lesson" wx:for="{{lessons}}" wx:key="id" wx:for-item="l">
+      <view class="lesson__t">
+        <text>{{l.title}}</text>
+        <text class="lesson__badge">{{l.video ? '视频' : '教学站'}}</text>
+      </view>
+      <view class="lesson__s">{{l.sub}}</view>
+      <view class="lesson__go" bindtap="onLesson" data-url="{{l.url}}" data-title="{{l.title}}" data-video="{{l.video}}">
+        {{l.video ? '▶ 站内播放' : '复制链接'}}
+      </view>
+    </view>
+  </view>
+
+</view>

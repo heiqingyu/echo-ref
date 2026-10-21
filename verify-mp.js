@@ -479,6 +479,10 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
   check('公式集排在最后一位',
     tabList[tabList.length - 1].pagePath === 'pages/calculators/calculators' ? 1 : 0, 1, 0);
   check('首页仍是 EF·参考值', tabList[0].text === 'EF·参考值' ? 1 : 0, 1, 0);
+  // 用户 2026-10-21：儿童 Z 值调到「节段划分」之前
+  check('tabBar 顺序 index,pediatric,segments,calculators',
+    tabList.map(function (t) { return t.pagePath; }).join(',') ===
+    'pages/index/index,pages/pediatric/pediatric,pages/segments/segments,pages/calculators/calculators' ? 1 : 0, 1, 0);
 }
 
 console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）===');
@@ -518,16 +522,16 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 24 个大组（… + 随访与术中评估 + 妊娠与特殊人群 + 特殊临床场景 + 报告与质控）', dirs.length, 24, 0);
+  check('公式集分 25 个大组（… + 随访与术中评估 + 妊娠与特殊人群 + 特殊临床场景 + 报告与质控 + 瓣膜解剖教学）', dirs.length, 25, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器|瓣膜解剖教学' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 127 条（62 计算 + 10 瓣膜 + 51 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 127, 0);
+  check('目录共 138 条（62 计算 + 11 瓣膜 + 51 评估 + 19 外链 - 5 合并进瓣膜组）', nItems, 138, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   check('操作规范专辑排在切面学习第一条',
@@ -615,7 +619,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 5 个瓣膜计算器 + 4 条判读（合并为一组，不再有「瓣膜疾病评估」）
-  check('瓣膜评估组合并为 20 条（5 专用计算器 + 9 通用计算 + 6 判读）', dirById('valve').items.length, 20, 0);
+  check('瓣膜评估组合并为 21 条（5 专用计算器 + 9 通用计算 + 6 判读 + 1 解剖示意图）', dirById('valve').items.length, 21, 0);
   check('瓣膜评估组含 7 条瓣膜通用计算（wilkins / vcw / rf / mva / pisav / avav / ppm）',
     ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
       .every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -1300,6 +1304,77 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.onLoad({ id: 'aortaz' });
   pgF.onShow();
   check('男性 profile → Z 值页性别默认「男」', pgF.data.optsV.azsex === 'm' ? 1 : 0, 1, 0);
+}
+
+console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教学资源）===');
+{
+  let navTo = null, clip = null;
+  global.wx = {
+    navigateTo(o) { navTo = o.url; },
+    setNavigationBarTitle() {},
+    setClipboardData(o) { clip = o.data; if (o.success) o.success(); },
+    showToast() {},
+  };
+  global.getApp = () => ({ globalData: {} });
+  let pgV = null;
+  global.Page = (c) => { pgV = c; };
+  const VS = require(pathW.join(__dirname, 'miniprogram', 'utils', 'valve-svg.js'));
+  require(pathW.join(__dirname, 'miniprogram', 'pages', 'valveana', 'valveana.js'));
+  pgV.setData = function (patch) {
+    const self = this;
+    Object.keys(patch).forEach(function (k) {
+      const m = k.match(/^(\w+)\[(\d+)\]\.?(.*)$/);
+      if (m) {
+        const arr = self.data[m[1]] || (self.data[m[1]] = []);
+        if (m[3]) arr[+m[2]][m[3]] = patch[k];
+        else arr[+m[2]] = patch[k];
+      } else self.data[k] = patch[k];
+    });
+  };
+
+  check('视图数 = 7', VS.VALVE_VIEWS.length, 7, 0);
+  check('视图 id 齐全',
+    VS.VALVE_VIEWS.map(function (v) { return v.id; }).join(',') ===
+    'avTteSax,avTeeSax,mvArea,mvTteA4c,mvTeeCommissural,tvTte,pv' ? 1 : 0, 1, 0);
+  check('主动脉瓣 3 分区（rcc/lcc/ncc）', VS.AV_CUSPS.length, 3, 0);
+  check('二尖瓣 6 分段（p1–p3/a1–a3）', VS.MV_SEGMENTS.length, 6, 0);
+  check('三尖瓣 3 瓣叶', VS.TV_LEAFLETS.length, 3, 0);
+  check('每个视图都绑定了渲染函数',
+    VS.VALVE_VIEWS.every(function (v) { return typeof v.fn === 'function'; }) ? 1 : 0, 1, 0);
+  check('7 张 SVG 全部无 NaN',
+    VS.VALVE_VIEWS.every(function (v) { return v.fn({ sel: null }).indexOf('NaN') === -1; }) ? 1 : 0, 1, 0);
+  check('每张 SVG 都含可点击分区标记',
+    VS.VALVE_VIEWS.every(function (v) { return v.fn({ sel: null }).indexOf('data-part=') !== -1; }) ? 1 : 0, 1, 0);
+  check('base64 编码无 NaN',
+    VS.utf8ToBase64('<svg>').indexOf('NaN') === -1 ? 1 : 0, 1, 0);
+  check('分区说明含名称与出现视图',
+    VS.partInfoText('a2').indexOf('A2') !== -1 && VS.partInfoText('a2').indexOf('见于') !== -1 ? 1 : 0, 1, 0);
+
+  // —— 页面 ——
+  pgV.onLoad();
+  check('页面按瓣膜分组（4 组）', pgV.data.groups.length, 4, 0);
+  check('教学资源 = 10 条', pgV.data.lessons.length, 10, 0);
+  check('教学资源含 mp4 动图',
+    pgV.data.lessons.filter(function (l) { return /\.mp4/i.test(l.url || ''); }).length >= 5 ? 1 : 0, 1, 0);
+  check('教学资源含交互教学站',
+    pgV.data.lessons.filter(function (l) { return /^https?:/i.test(l.url || '') && !/\.mp4/i.test(l.url || ''); }).length >= 5 ? 1 : 0, 1,  0);
+  const allImgs = pgV.data.groups.reduce(function (n, g) { return n + g.views.length; }, 0);
+  check('示意图条目 = 7', allImgs, 7, 0);
+  check('示意图为 base64 data URI',
+    pgV.data.groups[0].views[0].src.indexOf('data:image/svg+xml;base64,') === 0 ? 1 : 0, 1, 0);
+  pgV.onPart({ currentTarget: { dataset: { p: 'rcc' } } });
+  check('点击分区后选中', pgV.data.sel === 'rcc' ? 1 : 0, 1, 0);
+  check('选中后有说明文字', pgV.data.selInfo.length > 0 ? 1 : 0, 1, 0);
+  pgV.onPart({ currentTarget: { dataset: { p: 'rcc' } } });
+  check('再次点击取消选中', pgV.data.sel === null ? 1 : 0, 1, 0);
+  navTo = null;
+  pgV.onLesson({ currentTarget: { dataset: { url: 'https://x/a.mp4', title: '动图', video: 'true' } } });
+  check('mp4 资源跳到视频页',
+    navTo && navTo.indexOf('/pages/video/video') === 0 ? 1 : 0, 1, 0);
+  navTo = null; clip = null;
+  pgV.onLesson({ currentTarget: { dataset: { url: 'https://x/site', title: '教学站', video: 'false' } } });
+  check('非 mp4 资源复制链接（video 传字符串 false 也不误判）',
+    clip === 'https://x/site' ? 1 : 0, 1, 0);
 }
 
 console.log(`\n${'='.repeat(46)}`);

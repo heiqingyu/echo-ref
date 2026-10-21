@@ -103,13 +103,15 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 1500)); // 等 boot
 
   console.log('\n【一】结构');
-  check('页签数 = 4',
-    (await c.evalJs('document.querySelectorAll(".tab").length')) === 4);
+  check('页签数 = 5',
+    (await c.evalJs('document.querySelectorAll(".tab").length')) === 5);
   const tabNames = await c.evalJs(
     '[...document.querySelectorAll(".tab")].map(e=>e.dataset.tab).join(",")');
-  check('页签顺序 index,segments,peds,calc', tabNames === 'index,segments,peds,calc', tabNames);
-  check('页面容器 4 个（无 ef/valves）',
-    (await c.evalJs('document.querySelectorAll(".page").length')) === 4);
+  // 用户 2026-10-21 要求：儿童 Z 值调到「节段划分」之前；瓣膜解剖为新增页
+  check('页签顺序 index,peds,segments,valveana,calc',
+    tabNames === 'index,peds,segments,valveana,calc', tabNames);
+  check('页面容器 5 个（无 ef/valves）',
+    (await c.evalJs('document.querySelectorAll(".page").length')) === 5);
   check('Core 引擎已挂载', (await c.evalJs('typeof window.Core === "object"')) === true);
   check('Peds 引擎已挂载', (await c.evalJs('typeof window.Peds === "object"')) === true);
   check('Calc 引擎已挂载（公式集需要）', (await c.evalJs('typeof window.Calc')) === 'object');
@@ -117,6 +119,8 @@ function check(name, ok, detail) {
   check('ValveCalc 引擎已移除', (await c.evalJs('typeof window.ValveCalc')) === 'undefined');
   check('SegSvg 引擎已挂载（节段划分页需要）',
     (await c.evalJs('typeof window.SegSvg')) === 'object');
+  check('ValveSvg 引擎已挂载（瓣膜解剖页需要）',
+    (await c.evalJs('typeof window.ValveSvg')) === 'object');
 
   console.log('\n【二】Tab1 EF·参考值（EF 计算 + 参数参考值已合并）');
   // 通用：给输入框赋值并触发 input
@@ -230,12 +234,12 @@ function check(name, ok, detail) {
     return JSON.stringify({
       bullSvg: document.querySelectorAll('#bullseyeBox svg').length,
       bullSegs: document.querySelectorAll('#bullseyeBox g[data-seg]').length,
-      wallSvgs: [].slice.call(document.querySelectorAll('.wallsvg-box'))
+      wallSvgs: [].slice.call(document.querySelectorAll('#page-segments .wallsvg-box'))
         .map(function(e){return e.querySelectorAll('svg').length;})
         .filter(function(n){return n>0;}).length,
-      wallBoxes: document.querySelectorAll('.wallsvg-box').length,
-      terrChips: document.querySelectorAll('.terr-chip').length,
-      segChips: document.querySelectorAll('.segchip').length,
+      wallBoxes: document.querySelectorAll('#page-segments .wallsvg-box').length,
+      terrChips: document.querySelectorAll('#page-segments .terr-chip').length,
+      segChips: document.querySelectorAll('#page-segments .segchip').length,
       btnZoom: document.querySelectorAll('#page-segments [data-selseg]').length
     });
   })()`);
@@ -308,11 +312,11 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 7 个计算组 + 瓣膜 + 14 组评估 + 2 组外链',
-      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器',
+    check('公式集分组 = 7 个计算组 + 瓣膜 + 14 组评估 + 3 组外链',
+      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器|瓣膜解剖教学',
       d.groups.join('|'));
-    check('条目 122 条（62 计算 − 5 瓣膜计算器 + 9 瓣膜 + 47 评估 + 9 外链）', d.items === 122, d.items);
-    check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
+    check('条目 132 条（62 计算 − 5 瓣膜计算器 + 10 瓣膜 + 47 评估 + 18 外链）', d.items === 132, d.items);
+    check('外链 <a> 条目 18 条（切面 8 + 瓣膜教学 10）', d.links === 18, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
     check('专辑二级视图容器存在', d.albumView, true);
@@ -854,6 +858,24 @@ function check(name, ok, detail) {
   check('首页显示版本行', homeVer === 1, homeVer);
   const verText = await c.evalJs('(document.querySelector("#page-index .verline") || {}).textContent || ""');
   check('版本号已递增（非 1.0.0）', /v\d+\.\d+\.\d+/.test(verText) && !/v1\.0\.0/.test(verText), verText);
+
+  console.log('\n【三b】Tab 瓣膜解剖（分区/分叶/分段示意图）');
+  await c.evalJs('document.querySelector(\'[data-tab="valveana"]\').click()');
+  await new Promise((r) => setTimeout(r, 400));
+  check('page-valveana 可见',
+    (await c.evalJs('!document.getElementById("page-valveana").hidden')) === true);
+  check('ValveSvg 视图数 = 7',
+    (await c.evalJs('window.ValveSvg.VALVE_VIEWS.length')) === 7);
+  const vaFilled = await c.evalJs(
+    '[...document.querySelectorAll(".wallsvg-box[id^=va-]")]' +
+    '.filter(function(e){return e.querySelector("svg");}).length');
+  check('7 张示意图全部已渲染 SVG', vaFilled === 7, vaFilled);
+  check('示意图含可点击分区标记',
+    (await c.evalJs('document.querySelectorAll("#page-valveana g[data-part]").length')) > 0);
+  check('色块按钮存在',
+    (await c.evalJs('document.querySelectorAll("#page-valveana [data-vap]").length')) > 0);
+  check('教学资源条目 = 10',
+    (await c.evalJs('document.querySelectorAll("#page-valveana .va-lesson").length')) === 10);
 
   console.log('\n【四】控制台');
   const errs = c.logs.filter((l) => l.indexOf('EXCEPTION') === 0 ||

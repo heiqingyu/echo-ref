@@ -1187,6 +1187,49 @@ html, body {
   margin-top: 6px;
 }
 
+/* ── 瓣膜解剖页：教学资源条目 ── */
+.va-lesson {
+  padding: 10px 0;
+  border-top: 1px solid #f0f1f3;
+}
+
+.va-lesson__t {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.va-lesson__b {
+  font-size: 11px;
+  font-weight: 500;
+  color: #2563eb;
+  background: #eef2ff;
+  border-radius: 4px;
+  padding: 1px 8px;
+  flex: none;
+  margin-left: 10px;
+}
+
+.va-lesson__s {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 3px;
+}
+
+.va-lesson__go {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #fff;
+  background: #2563eb;
+  border-radius: 6px;
+  padding: 4px 14px;
+  text-decoration: none;
+}
+
 /* ── 组名快速跳转（目录很长，平铺全部组名一眼看全，不再横向拖动） ── */
 .fx-nav {
   display: flex;

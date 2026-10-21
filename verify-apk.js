@@ -58,9 +58,11 @@ check('www 完整版体积 < 780 KB', Buffer.byteLength(html, 'utf8') < 780 * 10
 check('docs 发布版存在（APK 打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 730 KB', Buffer.byteLength(dh, 'utf8') < 730 * 1024, true);
+  check('docs 发布版体积 < 760 KB', Buffer.byteLength(dh, 'utf8') < 760 * 1024, true);
   check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
+  check('docs 发布版含瓣膜解剖页', dh.indexOf('id="page-valveana"') !== -1, true);
+  check('docs 发布版内联 ValveSvg 引擎', dh.indexOf('window.ValveSvg = {') !== -1, true);
 }
 // APK 实际打包源：android-app/assets/index.html 必须与 docs 完全一致
 const ASSET = path.join(ROOT, 'android-app', 'assets', 'index.html');
@@ -73,7 +75,8 @@ if (fs.existsSync(ASSET) && fs.existsSync(DOCS)) {
     true);
   check('APK 内不含瓣膜单独页（用户要求）', ah.indexOf('id="page-valves"') === -1, true);
   check('APK 内含节段划分页（室壁划分）', ah.indexOf('id="page-segments"') !== -1, true);
-  check('APK 内 4 个页签', (ah.match(/class="tab[ "][^>]*data-tab="/g) || []).length, 4);
+  check('APK 内含瓣膜解剖页', ah.indexOf('id="page-valveana"') !== -1, true);
+  check('APK 内 5 个页签', (ah.match(/class="tab[ "][^>]*data-tab="/g) || []).length, 5);
   // 公式集里必须仍能查到瓣膜评估这一组（否则「公式集里有就行」就不成立）
   check('APK 公式集仍含「瓣膜评估」组', ah.indexOf("title: '瓣膜评估'") !== -1 ||
     ah.indexOf('瓣膜评估') !== -1, true);
@@ -114,9 +117,9 @@ check('APK Calc 已挂载', !!ApkCalc, true);
 check('APK ValveCalc 已挂载', !!ApkValve, true);
 
 // 页面结构自检
-check('包含 5 个页面容器', (html.match(/class="page"/g) || []).length, 5);
+check('包含 6 个页面容器（完整版含瓣膜评估单页）', (html.match(/class="page"/g) || []).length, 6);
 // 注意：第一个页签的 class 是 "tab tab--on"，所以要用 \btab\b 而非 class="tab"
-check('包含 5 个底部页签', (html.match(/class="tab(?:\s|")/g) || []).length, 5);
+check('包含 6 个底部页签', (html.match(/class="tab(?:\s|")/g) || []).length, 6);
 check('含 viewport meta（移动端适配）', /name="viewport"/.test(html), true);
 check('含 safe-area 适配', /safe-area-inset/.test(html), true);
 
@@ -445,10 +448,11 @@ check('清空按钮改为「清空本组输入」', html.indexOf('清空本组�
 /* ══════════════════════════════════════════════════════════ */
 
 /* 公式集扩展：评估类内容 / 参考文献 / 版本号 / 页签顺序 */
-check('页签顺序 = EF·参考值|瓣膜评估|节段划分|儿童 Z 值|公式集',
+// 用户 2026-10-21：儿童 Z 值调到节段划分之前；新增瓣膜解剖页
+check('页签顺序 = EF·参考值|瓣膜评估|儿童 Z 值|节段划分|瓣膜解剖|公式集',
   (html.match(/class="tab__t">([^<]+)</g) || []).map(function (x) {
     return x.replace(/^class="tab__t">/, '').replace(/<$/, '');
-  }).join('|') === 'EF·参考值|瓣膜评估|节段划分|儿童 Z 值|公式集', true);
+  }).join('|') === 'EF·参考值|瓣膜评估|儿童 Z 值|节段划分|瓣膜解剖|公式集', true);
 check('含评估内容数据 ExtraData', html.indexOf('window.ExtraData') !== -1, true);
 check('含 2 个评估分组（器械支持 / 心腔与应变）',
   (html.match(/id: '(device|chamber)',\s*\n\s*title: '[^']+'/g) || []).length >= 2 ||
@@ -545,9 +549,9 @@ check('版本号已注入（非 1.0.0）', /v\d+\.\d+\.\d+/.test(html) && html.i
 /* 切面学习 / TEE 模拟器：纯外链条目（不嵌图片与 iframe，省内存） */
 check('含 LINK_SECTIONS 外链数据', html.indexOf('LINK_SECTIONS') !== -1, true);
 check('含切面学习分组', (html.match(/title: '切面学习（视频）'/g) || []).length === 1, true);
-check('含书籍视频分组（25 条 mp4）',
+check('含书籍视频分组（25 段 mp4）',
   html.match(/title: '实用超声规范化检查与操作（视频）'/g) &&
-  (html.match(/image\.medonhand\.com/g) || []).length === 1 &&
+  (html.match(/image\.medonhand\.com/g) || []).length >= 1 &&
   html.indexOf('978-7-5189-8028-4') !== -1, true);
 check('含 TEE 模拟器分组', (html.match(/title: 'TEE 模拟器'/g) || []).length === 1, true);
 check('切面指南已并入参考文献（不再有该分组）', (html.match(/title: '切面指南'/g) || []).length === 0, true);
