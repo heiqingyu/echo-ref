@@ -417,7 +417,7 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 58 条', EXD.REFS.length, 58, 0);
+  check('参考文献 62 条', EXD.REFS.length, 62, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
@@ -518,16 +518,16 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 22 个大组（… + 妊娠与特殊人群 + 报告与质控）', dirs.length, 22, 0);
+  check('公式集分 24 个大组（… + 随访与术中评估 + 妊娠与特殊人群 + 特殊临床场景 + 报告与质控）', dirs.length, 24, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 120 条（59 计算 + 10 瓣膜 + 47 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 120, 0);
+  check('目录共 127 条（62 计算 + 10 瓣膜 + 51 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 127, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   check('操作规范专辑排在切面学习第一条',
@@ -569,105 +569,105 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirSim.items.some(i => /ct2tee/.test(i.url)) &&
     dirSim.items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
-  check('血流动力学与心功能 14 条（含 M 型三合一、快速比值、Ea、VTI 比；dias 已移至舒张功能定量）', dirs[0].items.length, 14, 0);
+  check('血流动力学与心功能 14 条（含 M 型三合一、快速比值、Ea、VTI 比；dias 已移至舒张功能定量）', dirById('hemo').items.length, 14, 0);
   check('右心与肺循环 13 条（PASP / RAP / FAC / TAPSE-PASP / PVR / SVR + 第二批 6 条 + 肺高压可能性）',
-    dirs[1].items.length, 13, 0);
+    dirById('right').items.length, 13, 0);
   check('右心第二批条目齐全（rvvol / rvfws / papi / pdap / residx / rvdvdt）',
     ['rvvol', 'rvfws', 'papi', 'pdap', 'residx', 'rvdvdt']
-      .every(id => dirs[1].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+      .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('右心组条目齐全',
     ['paspv', 'rapv', 'rvfacv', 'rcratiov', 'pvrv', 'svrv']
-      .every(id => dirs[1].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+      .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('舒张功能定量 3 条（基础比值 dias + E/Vp + 四步法分级）',
-    dirs[2].items.length, 3, 0);
+    dirById('vq').items.length, 3, 0);
   check('舒张功能定量组条目齐全（dias / evp / dfun）',
     ['dias', 'evp', 'dfun']
-      .every(id => dirs[2].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+      .every(id => dirById('vq').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('重构与心肌功能 12 条（容积 / RWS / 球形 / 左房应变 / 主动脉 / MDS / 每搏功 + LAEF / LVMI 身高^2.7 / RAS + 左房僵硬 / NC/C）',
-    dirs[3].items.length, 12, 0);
+    dirById('recon').items.length, 12, 0);
   check('重构组条目齐全',
     ['volidx', 'rwsv', 'spher', 'lastrain', 'aortaidx', 'mdsv', 'swv']
-      .every(id => dirs[3].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+      .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('计算类条目合计 50 条（6 个计算组；另 7 条瓣膜通用计算在瓣膜评估组，合计仍 57）',
     dirs.slice(0, 6).reduce((n, d) => n + d.items.length, 0), 50, 0);
-  check('评分与室壁运动 3 条（WMSI / H2FPEF / HFA-PEFF）', dirs[4].items.length, 3, 0);
+  check('评分与室壁运动 3 条（WMSI / H2FPEF / HFA-PEFF）', dirById('score').items.length, 3, 0);
   check('评分组条目齐全',
     ['wmsi', 'h2fpef', 'hfapeff']
-      .every(id => dirs[4].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('介入尺寸与先心 5 条（TAVR / LAA / McGoon / CoA / 主动脉 Z 值）', dirs[5].items.length, 5, 0);
+      .every(id => dirById('score').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('介入尺寸与先心 5 条（TAVR / LAA / McGoon / CoA / 主动脉 Z 值）', dirById('ivs').items.length, 5, 0);
   check('介入组条目齐全',
     ['tavrsz', 'laasz', 'paidx', 'coa']
-      .every(id => dirs[5].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+      .every(id => dirById('ivs').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('第三四批条目齐全',
     ['wilkins', 'vcw', 'rf', 'mva', 'laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
-      .every(id => ['0', '1', '2', '3', '4', '5', '6'].some(k => dirs[+k].items.some(i => i.id === id)))
+      .every(id => ['hemo', 'right', 'vq', 'recon', 'score', 'ivs', 'valve'].some(g => dirById(g).items.some(i => i.id === id)))
       ? 1 : 0, 1, 0);
-  check('器械支持 3 条（CRT / LAD / LVAD）', dirs[7].items.length, 3, 0);
+  check('器械支持 3 条（CRT / LAD / LVAD）', dirById('device').items.length, 3, 0);
   check('器械支持含 CRT 同步化',
-    dirs[7].items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
+    dirById('device').items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
   check('器械支持含 LAD 参数',
-    dirs[7].items.some(i => i.id === 'la') ? 1 : 0, 1, 0);
+    dirById('device').items.some(i => i.id === 'la') ? 1 : 0, 1, 0);
   check('器械支持含 LVAD 超声评估',
-    dirs[7].items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
-  check('心腔与应变 12 条（含舒张功能分级）', dirs[8].items.length, 12, 0);
+    dirById('device').items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
+  check('心腔与应变 12 条（含舒张功能分级）', dirById('chamber').items.length, 12, 0);
   ['lv', 'rv', 'rcoupling', 'rvfail', 'rv-strain', 'strain', 'la-strain', 'peri', 'cp-rm', 'prosthetic', 'ctrcd'].forEach(id => {
     check('心腔与应变含 ' + id,
-      dirs[8].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 5 个瓣膜计算器 + 4 条判读（合并为一组，不再有「瓣膜疾病评估」）
-  check('瓣膜评估组合并为 20 条（5 专用计算器 + 9 通用计算 + 6 判读）', dirs[6].items.length, 20, 0);
+  check('瓣膜评估组合并为 20 条（5 专用计算器 + 9 通用计算 + 6 判读）', dirById('valve').items.length, 20, 0);
   check('瓣膜评估组含 7 条瓣膜通用计算（wilkins / vcw / rf / mva / pisav / avav / ppm）',
     ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
-      .every(id => dirs[6].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+      .every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('瓣膜通用计算不再出现在舒张功能定量组',
     ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
-      .every(id => !dirs[2].items.some(i => i.id === id)) ? 1 : 0, 1, 0);
+      .every(id => !dirById('vq').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
   check('瓣膜评估组含 5 个瓣膜计算器入口',
-    ['as', 'ar', 'ms', 'mr', 'tr'].every(id => dirs[6].items.some(i => i.id === id && i.kind === 'valve')) ? 1 : 0, 1, 0);
+    ['as', 'ar', 'ms', 'mr', 'tr'].every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'valve')) ? 1 : 0, 1, 0);
   ['mitral', 'aortic', 'lf-lg', 'ie'].forEach(id => {
     check('瓣膜评估组含判读条目 ' + id,
-      dirs[6].items.some(i => i.id === id && i.kind === 'brief') ? 1 : 0, 1, 0);
+      dirById('valve').items.some(i => i.id === id && i.kind === 'brief') ? 1 : 0, 1, 0);
   });
   check('不存在重复的「瓣膜疾病评估」分组',
     dirs.filter(s => s.title.indexOf('瓣膜疾病') !== -1).length === 0 ? 1 : 0, 1, 0);
-  check('心肌病变 5 条（HCM / 淀粉样变 / 应变鉴别 / DCM / 运动员心脏）', dirs[9].items.length, 5, 0);
+  check('心肌病变 5 条（HCM / 淀粉样变 / 应变鉴别 / DCM / 运动员心脏）', dirById('myopathy').items.length, 5, 0);
   ['hcm', 'amyloid', 'rcm-strain'].forEach(id => {
     check('心肌病变含 ' + id,
-      dirs[9].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirById('myopathy').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('大血管与急症 4 条（主动脉 / 肺栓塞 / 肺高压 / 心腔占位）', dirs[10].items.length, 4, 0);
+  check('大血管与急症 4 条（主动脉 / 肺栓塞 / 肺高压 / 心腔占位）', dirById('vascular').items.length, 4, 0);
   ['aorta', 'pe', 'thrombus'].forEach(id => {
     check('大血管与急症含 ' + id,
-      dirs[10].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病 5 条（分流判读 / 可手术性 / TOF 术后 PR / Ebstein / DORV）', dirs[11].items.length, 5, 0);
+  check('先天性心脏病 5 条（分流判读 / 可手术性 / TOF 术后 PR / Ebstein / DORV）', dirById('chd').items.length, 5, 0);
   ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
     check('先天性心脏病含 ' + id,
-      dirs[11].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先心病术后残余病变 3 条（Mustard / Fontan / ASO）', dirs[12].items.length, 3, 0);
+  check('先心病术后残余病变 3 条（Mustard / Fontan / ASO）', dirById('chd-post').items.length, 3, 0);
   ['mustard', 'fontan', 'as-switch'].forEach(id => {
     check('先心术后含 ' + id,
-      dirs[12].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirById('chd-post').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('负荷与功能试验 1 条（运动负荷超声）', dirs[13].items.length, 1, 0);
+  check('负荷与功能试验 1 条（运动负荷超声）', dirById('stress').items.length, 1, 0);
   check('负荷试验含 stress-echo',
-    dirs[13].items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
-  check('介入 TEE 评估 3 条（三尖瓣 / 二尖瓣 / TAVR）', dirs[14].items.length, 3, 0);
+    dirById('stress').items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
+  check('介入 TEE 评估 3 条（三尖瓣 / 二尖瓣 / TAVR）', dirById('tee-interv').items.length, 3, 0);
   ['tr-interv', 'mv-interv', 'tavr'].forEach(id => {
     check('介入 TEE 评估含 ' + id,
-      dirs[14].items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirById('tee-interv').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('造影与特殊检查 1 条（超声造影 CEUS）', dirs[15].items.length, 1, 0);
+  check('造影与特殊检查 1 条（超声造影 CEUS）', dirById('contrast').items.length, 1, 0);
   check('造影与特殊检查含 contrast-echo',
-    dirs[15].items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
-  check('有创操作与介入超声 1 条（超声引导有创操作）', dirs[16].items.length, 1, 0);
-  check('伪影识别与规避 1 条（超声伪影指南）', dirs[17].items.length, 1, 0);
+    dirById('contrast').items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
+  check('有创操作与介入超声 1 条（超声引导有创操作）', dirById('intervention').items.length, 1, 0);
+  check('伪影识别与规避 1 条（超声伪影指南）', dirById('artifact').items.length, 1, 0);
   check('伪影识别与规避含 artifact-guide',
-    dirs[17].items.some(i => i.id === 'artifact-guide' && i.kind === 'brief') ? 1 : 0, 1, 0);
+    dirById('artifact').items.some(i => i.id === 'artifact-guide' && i.kind === 'brief') ? 1 : 0, 1, 0);
 
   check('有创操作与介入超声含 echo-interv',
-    dirs[16].items.some(i => i.id === 'echo-interv' && i.kind === 'brief') ? 1 : 0, 1, 0);
+    dirById('intervention').items.some(i => i.id === 'echo-interv' && i.kind === 'brief') ? 1 : 0, 1, 0);
   check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
 
   // 跳转
@@ -788,6 +788,20 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   mpCalc2('laasz', { lzmax: 24, lzmin: 19, lzdepth: 20 },
     /长短径比 1\.26.*建议选用 27 mm.*深度/, 'LAA 24mm → 推荐 27mm 并提示深度');
   mpCalc2('laasz', { lzmax: 34 }, /超出常规型号上限/, 'LAA 34mm 超上限');
+  // —— v1.3.12：随访与术中评估 ——
+  mpCalc2('aortagrow', { d1: 3.0, d2: 3.6, yrs: 2 },
+    /年增长 3\.00 mm\/年.*中危/, '主动脉 3.0→3.6cm/2年 → 3.00 mm/年 中危');
+  mpCalc2('aortagrow', { d1: 4.0, d2: 4.8, yrs: 1 },
+    /年增长 8\.00 mm\/年.*高危/, '主动脉 4.0→4.8cm/1年 → 8.00 mm/年 高危');
+  mpCalc2('pvfu', { lvotD: 2.0, lvotVti: 20, valveVti: 20, fupvmax: 2.6, fupmean: 12 },
+    /EOA 3\.14 cm².*开放良好.*峰值流速 2\.60 m\/s.*平均压差 12\.0 mmHg.*正常/,
+    '人工瓣 EOA 3.14 cm² 开放良好');
+  mpCalc2('pvfu', { lvotD: 2.0, lvotVti: 20, valveVti: 16, fupvmax: 3.4, fupmean: 32 },
+    /20–40 mmHg.*需鉴别/, '人工瓣术后 32 mmHg 提示需鉴别');
+  mpCalc2('cfr', { distal: 60, proximal: 25 },
+    /CFR 2\.40.*正常/, 'CFR 2.40 正常');
+  mpCalc2('cfr', { distal: 35, proximal: 25 },
+    /CFR 1\.40.*明显受限/, 'CFR 1.40 明显受限');
 
   // —— v1.2.9 第二批：右心与肺循环 ——
   mpCalc2('rvvol', { rvedv: 150, rvesv: 60 }, /RVEDVi 85\.7.*正常.*RVESVi 34\.3.*正常/,
@@ -1075,11 +1089,15 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   pgF.onLoad({ id: 'wilkins' });
   pgF.onShow();
-  check('Wilkins 页渲染出 9 个说明块', pgF.data.blocks.length, 9, 0);
-  check('Wilkins 页首块为「① 瓣叶活动度」',
-    pgF.data.blocks[0].text.indexOf('① 瓣叶活动度') !== -1 ? 1 : 0, 1, 0);
+  check('Wilkins 页渲染出 15 个说明块（9 条评分细则 + 6 条临床意义/参考标准/判读要点）', pgF.data.blocks.length, 15, 0);
+  check('Wilkins 页说明块以「这个指标是干什么用的」开头',
+    pgF.data.blocks[0].text.indexOf('这个指标是干什么用的') !== -1 ? 1 : 0, 1, 0);
+  check('Wilkins 页含「参考标准 / 正常值」小节',
+    pgF.data.blocks.some(function (b) { return b.text.indexOf('参考标准') !== -1; }) ? 1 : 0, 1, 0);
+  check('Wilkins 页评分细则仍在说明之后',
+    pgF.data.blocks.some(function (b) { return b.text.indexOf('① 瓣叶活动度') !== -1; }) ? 1 : 0, 1, 0);
   check('Wilkins 页末块提示不要倒推打分',
-    pgF.data.blocks[8].text.indexOf('倒推') !== -1 ? 1 : 0, 1, 0);
+    pgF.data.blocks[pgF.data.blocks.length - 1].text.indexOf('倒推') !== -1 ? 1 : 0, 1, 0);
 
   // 二尖瓣页内嵌同一套评分
   pgF.onLoad({ id: 'mitral' });

@@ -95,6 +95,8 @@ const valveSrc = wrapEngine(path.join(MP, 'utils', 'valve-calc.js'), 'ValveCalc'
 const mdSrc = wrapEngine(path.join(MP, 'utils', 'inline-md.js'), 'InlineMd');
 // 公式集「评估类内容 + 参考文献」数据（纯数据，与小程序同源）
 const extraSrc = wrapEngine(path.join(MP, 'utils', 'extra-data.js'), 'ExtraData');
+// 计算器说明（临床意义 / 参考标准 / 判读要点），与小程序同源
+const notesSrc = wrapEngine(path.join(MP, 'utils', 'calc-notes.js'), 'CalcNotes');
 
 /* ---------- 1b. 节段划分页（构建时生成骨架，示意图由 SegSvg 运行时渲染） ---------- */
 
@@ -714,6 +716,8 @@ ${valveSrc}
 ${mdSrc}
 
 ${extraSrc}
+
+${notesSrc}
 
 ${js}
 </script>

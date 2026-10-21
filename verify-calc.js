@@ -544,5 +544,45 @@ check('全空 → 无结论、missing 三项齐全',
   pf9.verdict === '' && pf9.missing.length === 3 ? 'ok' : 'bad', 'ok');
 check('全空时 missing 含 MVA', pf9.missing.some(function (m) { return m.indexOf('MVA') !== -1; }) ? 'ok' : 'bad', 'ok');
 
+/* ── v1.3.12：随访增长率 / 人工瓣术后 / 冠脉血流储备 ── */
+const ag1 = C.aorticGrowthRate(3.0, 3.3, 2);
+check('主动脉 3.0→3.3 cm / 2 年 → 3.0 mm/年（中危）',
+  Math.abs(ag1.mmPerYear - 1.5) < 0.01 ? 'ok' : 'bad', 'ok');
+const ag2 = C.aorticGrowthRate(3.0, 3.6, 2);
+check('3.0→3.6 cm / 2 年 → 3.0 mm/年 边界（≥3 归中危）',
+  Math.abs(ag2.mmPerYear - 3.0) < 0.01 && ag2.level.indexOf('中危') === 0 ? 'ok' : 'bad', 'ok');
+const ag3 = C.aorticGrowthRate(4.0, 4.8, 1);
+check('4.0→4.8 cm / 1 年 → 8 mm/年（高危）',
+  Math.abs(ag3.mmPerYear - 8) < 0.01 && ag3.level.indexOf('高危') === 0 ? 'ok' : 'bad', 'ok');
+check('缺间隔年数 → 报错',
+  C.aorticGrowthRate(3.0, 3.3, 0).error ? 'ok' : 'bad', 'ok');
+
+const pv1 = C.prostheticValveFunction({ lvotD: 2.0, lvotVti: 20, valveVti: 20, vmax: 2.6, meanGrad: 12, bsa: 1.8 });
+check('人工瓣 EOA = CSA×VTI比 = 3.14 cm²',
+  Math.abs(pv1.eoa - Math.PI * 4 / 4) < 0.01 ? 'ok' : 'bad', 'ok');
+check('EOA ≥1.2 判为开放良好',
+  pv1.eoaText.indexOf('开放良好') !== -1 ? 'ok' : 'bad', 'ok');
+check('EOAi = EOA/BSA',
+  Math.abs(pv1.eoaIdx - pv1.eoa / 1.8) < 0.01 ? 'ok' : 'bad', 'ok');
+const pv2 = C.prostheticValveFunction({ lvotD: 2.0, lvotVti: 20, valveVti: 16, vmax: 3.4, meanGrad: 32, bsa: 1.8 });
+check('术后高压差 32 mmHg → 提示需鉴别',
+  pv2.meanGradText.indexOf('需鉴别') !== -1 ? 'ok' : 'bad', 'ok');
+check('Vmax 3.4 m/s → 提示个体差异',
+  pv2.vmaxText.indexOf('压差恢复') !== -1 ? 'ok' : 'bad', 'ok');
+check('缺 VTI → 报错',
+  C.prostheticValveFunction({ lvotD: 2.0 }).error ? 'ok' : 'bad', 'ok');
+
+const cf1 = C.coronaryFlowReserve(60, 25);
+check('CFR = 60/25 = 2.4 → 正常',
+  Math.abs(cf1.cfr - 2.4) < 0.01 && cf1.level.indexOf('正常') !== -1 ? 'ok' : 'bad', 'ok');
+const cf2 = C.coronaryFlowReserve(35, 25);
+check('CFR = 1.4 → 明显受限',
+  Math.abs(cf2.cfr - 1.4) < 0.01 && cf2.level.indexOf('明显受限') !== -1 ? 'ok' : 'bad', 'ok');
+const cf3 = C.coronaryFlowReserve(45, 25);
+check('CFR = 1.8 → 可疑',
+  Math.abs(cf3.cfr - 1.8) < 0.01 && cf3.level.indexOf('可疑') !== -1 ? 'ok' : 'bad', 'ok');
+check('缺近端流速 → 报错',
+  C.coronaryFlowReserve(60, 0).error ? 'ok' : 'bad', 'ok');
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);

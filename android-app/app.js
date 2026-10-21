@@ -701,6 +701,16 @@
       fields: [['lzmax', '着陆区最大径', 'mm'], ['lzmin', '着陆区最小径（可选）', 'mm'],
         ['lzdepth', '着陆区深度（可选）', 'mm']],
       note: '按着陆区最大径 × 1.08 上取整落到常规型号（17/20/24/27/31/35 mm）。长短径比 >1.3 提示椭圆度大；深度不足时考虑小一号。多用于 Watchman FLX 类器械，其他产品按各自说明书' },
+    { id: 'aortagrow', sec: 'fu', title: '主动脉扩张增长率',
+      fields: [['d1', '上次直径', 'cm'], ['d2', '本次直径', 'cm'], ['yrs', '间隔时间', '年']],
+      note: '增长率 = (本次 − 上次) × 10 ÷ 间隔年数（mm/年）。<3 低危；3–5 缩短随访间隔；≥5 倾向尽快干预。必须同切面同方法测量' },
+    { id: 'pvfu', sec: 'fu', title: '人工瓣术后跨瓣血流',
+      fields: [['lvotD', 'LVOT 直径', 'cm'], ['lvotVti', 'LVOT VTI', 'cm'],
+        ['valveVti', '人工瓣 VTI', 'cm'], ['fupvmax', '跨瓣峰值流速', 'm/s'], ['fupmean', '跨瓣平均压差', 'mmHg']],
+      note: 'EOA = (π×LVOT 直径²÷4 × LVOT VTI) ÷ 人工瓣 VTI。术后平均压差 <20 mmHg、EOA ≥1.2 cm²（EOAi ≥0.8）为佳。压差高不等于故障：先排 undersizing、瓣周漏、LVOT 梗阻、压降恢复与高流量' },
+    { id: 'cfr', sec: 'fu', title: '冠脉血流储备 CFR',
+      fields: [['distal', '远端冠脉舒张期流速', 'cm/s'], ['proximal', '近端冠脉舒张期流速', 'cm/s']],
+      note: 'CFR = 远端 ÷ 近端。>2.0 正常；1.6–2.0 可疑；<1.6 明显受限（缺血）。要求同一支冠脉、同一角度、同一心率与同一负荷状态下测量' },
   ];
 
   /** 计算类条目的目录分组（与 calc-groups.js 的 CALC_SECTIONS 同源同序） */
@@ -711,6 +721,7 @@
     { id: 'recon', title: '重构与心肌功能' },
     { id: 'score', title: '评分与室壁运动' },
     { id: 'ivs', title: '介入尺寸与先心' },
+    { id: 'fu', title: '随访与术中评估' },
   ];
 
   const CALC_COLLAPSE = [['', 'IVC 塌陷未知'], ['yes', '吸气塌陷 >50%'], ['no', '吸气塌陷 ≤50%']];
@@ -790,6 +801,9 @@
     ea: 'ESP ÷ SV · Ees/Ea ≈ SV ÷ ESV',
     coa: '峰值压差 · 舒张末期持续血流',
     aortaz: '四段 Z 值 · 成人参考区间',
+    aortagrow: '两次测量之差 ÷ 间隔年数',
+    pvfu: '人工瓣术后 EOA 与压差',
+    cfr: '远端 ÷ 近端冠脉舒张期流速',
   };
 
   /** 评估类内容（器械支持 / 心腔与应变）与参考文献：来自 extra-data.js，与小程序同源 */
@@ -843,6 +857,15 @@
     return '<button class="fx-item" data-kind="' + kind + '" data-id="' + id + '"' +
       (secId ? ' data-sec="' + secId + '"' : '') + '>' +
       inner + '</button>';
+  }
+
+  /**
+   * 取某计算器的说明块（临床意义 / 参考标准 / 判读要点）
+   * 数据来自 miniprogram/utils/calc-notes.js，构建时注入为 window.CalcNotes。
+   */
+  function calcNotesBlocks(id) {
+    if (!window.CalcNotes || !window.CalcNotes.notesBlocks) return [];
+    return window.CalcNotes.notesBlocks(id) || [];
   }
 
   /**
@@ -1267,8 +1290,13 @@
     // ── 详情：一次性渲染全部条目卡，按条目切换显示 ──
     let html = '';
     CALC_GROUPS.forEach(function (g) {
+      // 说明块（临床意义 / 参考标准 / 判读要点）来自 calc-notes.js，与小程序同源
+      const nb = calcNotesBlocks(g.id);
+      const bl = blocksHtml(nb);
       html += '<div class="card" data-g="' + g.id + '" hidden>' +
         '<div class="card__t">' + esc(g.title) + '</div>' +
+        tocHtml(bl.toc) +
+        bl.html +
         fieldsHtml(g.fields.map(function (f) { return { k: f[0], n: f[1], u: f[2] }; }));
       if (g.opts) html += optsHtml(g.opts);
       // 右房压条目需要 IVC 塌陷选项（与右心评估条目共用同一条状态）
@@ -1862,6 +1890,27 @@
         put('laasz', partsOf(parts));
       }
     } else put('laasz');
+
+    // 主动脉扩张增长率
+    if (has('d1', 'd2', 'yrs')) {
+      const r = Calc.aorticGrowthRate(v.d1, v.d2, v.yrs);
+      put('aortagrow', r.error ? r.error : r.text + '｜' + r.note);
+    } else put('aortagrow');
+
+    // 人工瓣术后跨瓣血流
+    if (has('lvotD', 'lvotVti', 'valveVti') || has('fupvmax') || has('fupmean')) {
+      const r = Calc.prostheticValveFunction({
+        lvotD: v.lvotD, lvotVti: v.lvotVti, valveVti: v.valveVti,
+        vmax: v.fupvmax, meanGrad: v.fupmean, bsa: bsa,
+      });
+      put('pvfu', r.error ? r.error : r.text + '｜' + r.note);
+    } else put('pvfu');
+
+    // 冠脉血流储备
+    if (has('distal', 'proximal')) {
+      const r = Calc.coronaryFlowReserve(v.distal, v.proximal);
+      put('cfr', r.error ? r.error : r.text + '｜' + r.note);
+    } else put('cfr');
 
     // ── v1.2.9 第二批：右心与肺循环 ──
 

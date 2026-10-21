@@ -2441,6 +2441,126 @@ function phLikelihood(trVmax, hasSigns, rvotAt) {
   return out;
 }
 
+/* ════════════════════════════════════════════════════════════════
+ * v1.3.12 新增：主动脉瘤随访增长率 · TAVR 术后瓣膜功能 · 冠脉血流储备
+ *   补的是「随访场景」——前两项是介入 / 术后的常规测量，
+ *   第三项是超声可以直接测的冠脉微循环指标。
+ * ════════════════════════════════════════════════════════════════ */
+
+/**
+ * 主动脉瘤 / 主动脉扩张的年增长率（mm/年）
+ *
+ *   增长率 = (本次直径 − 上次直径) ÷ 间隔年数
+ *
+ *   阈值（腹主动脉瘤，指南常用）：
+ *     <3 mm/年   低危，可按计划随访
+ *     3–5 mm/年  需缩短随访间隔（3–6 个月）
+ *     ≥5 mm/年   高危，倾向尽快干预
+ *   升主动脉参照同一思路（阈值常取 5 mm/年）。
+ *
+ * @param {number} d1 上次直径（cm）
+ * @param {number} d2 本次直径（cm）
+ * @param {number} years 间隔（年）
+ */
+function aorticGrowthRate(d1, d2, years) {
+  if (!(d1 > 0) || !(d2 > 0)) return { error: '需填写两次测量直径' };
+  if (!(years > 0)) return { error: '需填写间隔年数（大于 0）' };
+  const diffCm = d2 - d1;
+  const mmPerYear = (diffCm * 10) / years;
+  const r = { diffCm: diffCm, mmPerYear: mmPerYear, years: years };
+  let level;
+  if (mmPerYear < 3) level = '低危（<3 mm/年）：按计划随访即可';
+  else if (mmPerYear < 5) level = '中危（3–5 mm/年）：缩短随访间隔至 3–6 个月';
+  else level = '高危（≥5 mm/年）：倾向尽快干预（结合直径、合并症与影像随访）';
+  r.level = level;
+  r.text = '年增长 ' + fmt(mmPerYear, 2) + ' mm/年（直径变化 ' + fmt(diffCm * 10, 1) + ' mm）→ ' + level;
+  r.note = '增长速率必须与绝对直径一起看：小瘤快速增长同样危险，大瘤稳定也要按直径分期随访。'
+    + '测量须同一切面、同一方法（舒张末、内缘到内缘、垂直长轴），换机器或换切面造成的差异会被误读为增长。';
+  return r;
+}
+
+/**
+ * TAVR / 外科换瓣术后跨瓣血流评估
+ *
+ *   EOA（连续方程）= (π × LVOT 直径² ÷ 4 × LVOT VTI) ÷ 人工瓣 VTI
+ *   平均压差、峰值流速按多普勒直接测量
+ *
+ *   术后正常值：
+ *     平均跨瓣压差 <20 mmHg、峰值流速 <30 m/s（个体差异大，需结合主动脉根部大小）
+ *     EOA ≥1.2 cm²（EOAi ≥0.8 cm²/m²）提示瓣膜开放良好
+ *   术后高压差（约 20–40 mmHg）多因 undersizing 或 flow obstruction，
+ *   与残余狭窄、瓣周漏、压降恢复、肥厚型（高流量）状态需逐一鉴别。
+ *
+ * @param {object} o
+ *   lvotD（cm）、lvotVti（cm）、valveVti（cm）、vmax（m/s）、meanGrad（mmHg）、bsa（m²）
+ */
+function prostheticValveFunction(o) {
+  const x = o || {};
+  const out = {};
+  if (x.lvotD > 0 && x.lvotVti > 0 && x.valveVti > 0) {
+    const csa = csaFromDiameter(x.lvotD);
+    const eoa = (csa * x.lvotVti) / x.valveVti;
+    out.eoa = eoa;
+    if (x.bsa > 0) {
+      out.eoaIdx = eoa / x.bsa;
+      out.eoaIdxText = 'EOAi ' + fmt(out.eoaIdx, 2) + ' cm²/m²'
+        + (out.eoaIdx >= 0.8 ? '（≥0.8，开放良好）' : '（<0.8，提示 undersizing 或显著流出道梗阻）');
+    }
+    out.eoaText = 'EOA ' + fmt(eoa, 2) + ' cm²'
+      + (eoa >= 1.2 ? '（≥1.2 cm²，开放良好）' : '（<1.2 cm²，提示流出道梗阻或 undersizing）');
+  }
+  if (x.vmax > 0) {
+    out.vmax = x.vmax;
+    out.vmaxText = '峰值流速 ' + fmt(x.vmax, 2) + ' m/s'
+      + (x.vmax < 3 ? '（<3 m/s，术后通常可接受）' : '（≥3 m/s，注意压差恢复与个体流出道差异）');
+  }
+  if (x.meanGrad !== undefined && x.meanGrad !== null && !isNaN(x.meanGrad)) {
+    out.meanGrad = x.meanGrad;
+    out.meanGradText = '平均压差 ' + fmt(x.meanGrad, 1) + ' mmHg'
+      + (x.meanGrad < 20 ? '（<20 mmHg，正常）' : (x.meanGrad < 40 ? '（20–40 mmHg，术后高压差，需鉴别）' : '（≥40 mmHg，明显异常）'));
+  }
+  const parts = [];
+  if (out.eoaText) parts.push(out.eoaText);
+  if (out.eoaIdxText) parts.push(out.eoaIdxText);
+  if (out.vmaxText) parts.push(out.vmaxText);
+  if (out.meanGradText) parts.push(out.meanGradText);
+  if (!parts.length) return { error: '需至少填写 LVOT 直径与 VTI、人工瓣 VTI 之一' };
+  out.text = parts.join('｜');
+  out.note = '术后压差偏高不等于瓣膜故障：需同时排查 undersizing、瓣周漏、'
+    + '左室流出道梗阻、压降恢复（升主动脉小者尤甚）与高流量状态（贫血、甲亢、发热）。'
+    + '随访趋势比单次数值更重要。';
+  return out;
+}
+
+/**
+ * 冠脉血流储备（coronary flow reserve, CFR）
+ *
+ *   CFR = 远端冠脉舒张期血流速度 ÷ 近端冠脉舒张期血流速度
+ *
+ *   用超声（心外膜冠脉多普勒，如 LAD）测量：
+ *     CFR >2.0  正常
+ *     CFR 1.6–2.0 可疑（提示部分血流受限）
+ *     CFR <1.6  明显受限（缺血）
+ *   多巴酚丁胺负荷试验中，负荷后 CFR 下降 >20%（或 <2.0）提示显著缺血。
+ *
+ * @param {number} distal 远端舒张期流速（cm/s）
+ * @param {number} proximal 近端舒张期流速（cm/s）
+ */
+function coronaryFlowReserve(distal, proximal) {
+  if (!(distal > 0) || !(proximal > 0)) return { error: '需填写远端与近端舒张期流速' };
+  const cfr = distal / proximal;
+  const r = { cfr: cfr };
+  let level;
+  if (cfr > 2.0) level = '正常（>2.0）';
+  else if (cfr >= 1.6) level = '可疑（1.6–2.0）';
+  else level = '明显受限（<1.6，提示缺血）';
+  r.level = level;
+  r.text = 'CFR ' + fmt(cfr, 2) + ' → ' + level;
+  r.note = '要求远端与近端取样在同一支冠脉、同一角度、同一心率与同一负荷状态下测量，'
+    + '否则比值无意义。超声测量的绝对流速受切面与角度影响，只看比值不看绝对值。';
+  return r;
+}
+
 module.exports = {
   csaFromDiameter,
   strokeVolume,
@@ -2547,5 +2667,9 @@ module.exports = {
   strokeWorkLoss,
   pressureRecovery,
   asLoadSummary,
+  // —— v1.3.12 新增：随访增长率 · 人工瓣术后功能 · 冠脉血流储备 ——
+  aorticGrowthRate,
+  prostheticValveFunction,
+  coronaryFlowReserve,
 };
 
