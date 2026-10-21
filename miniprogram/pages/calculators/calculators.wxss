@@ -294,3 +294,21 @@
   padding: 6rpx 20rpx;
   background: #fff;
 }
+
+/* 回到顶部（目录很长，2026-10-21） */
+.totop {
+  position: fixed;
+  right: 28rpx;
+  bottom: 140rpx;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .97);
+  border: 1rpx solid #dbe3ec;
+  color: #2563eb;
+  font-size: 40rpx;
+  line-height: 86rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, .16);
+  z-index: 60;
+}

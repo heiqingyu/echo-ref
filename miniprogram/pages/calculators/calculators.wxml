@@ -103,4 +103,7 @@
     Abbas（PVR 经验公式）。本工具仅供速查与学习，不构成诊断依据。
   </view>
 
+  <!-- 回到顶部：目录 100+ 条，滚下去后给个回顶按钮 -->
+  <view wx:if="{{showTop}}" class="totop" bindtap="onToTop" aria-role="button" aria-label="回到顶部">↑</view>
+
 </view>

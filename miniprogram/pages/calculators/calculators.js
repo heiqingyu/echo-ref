@@ -1,6 +1,7 @@
 const CG = require('../../utils/calc-groups.js');
 const EX = require('../../utils/extra-data.js');
 const V = require('../../utils/version.js');
+const MT = require('../../utils/materials.js');
 const app = getApp();
 
 /**
@@ -108,6 +109,22 @@ function buildSections() {
     });
   });
 
+  // 本地资料（PDF / 图片 / 视频直链）：docs/materials/ 里放了东西才出现这一组
+  // ★ 只存 URL，不内嵌文件，所以工具体积不随资料变大
+  if (MT.MATERIALS && MT.MATERIALS.length) {
+    sections.push({
+      id: 'materials',
+      title: '本地资料（PDF 等）',
+      note: '放在 docs/materials/ 的本地资料，体积不影响工具本体；点一下复制链接到浏览器打开',
+      items: MT.MATERIALS.map(function (it) {
+        return {
+          kind: 'link', id: it.id, title: it.title, sub: it.sub || '', url: it.url,
+          video: isVideo(it.url),
+        };
+      }),
+    });
+  }
+
   return sections;
 }
 
@@ -179,6 +196,7 @@ Page({
       return { id: s.id, title: s.title.replace(/（.*?）/g, '') };
     }),
     curGroup: '',
+    showTop: false,
   },
 
   onLoad() {
@@ -193,6 +211,17 @@ Page({
   },
 
   /** 参考文献默认折叠（40 条会把页面拉得很长），点标题才展开全部 */
+  /** 滚动到一定距离后显示「回到顶部」 */
+  onPageScroll(e) {
+    const show = e.scrollTop > 420;
+    if (show !== this.data.showTop) this.setData({ showTop: show });
+  },
+
+  onToTop() {
+    wx.pageScrollTo({ scrollTop: 0, duration: 260 });
+    this.setData({ showTop: false });
+  },
+
   onToggleRefs() {
     this.setData({ refsOpen: !this.data.refsOpen });
   },

@@ -170,6 +170,9 @@
     if (name === 'index') renderIndex();
 
     window.scrollTo(0, 0);
+    if (typeof syncToTop === 'function') {
+      requestAnimationFrame(syncToTop);
+    }
   }
 
   document.querySelectorAll('.tab').forEach(function (el) {
@@ -178,6 +181,32 @@
 
   document.querySelectorAll('[data-go]').forEach(function (el) {
     el.addEventListener('click', function () { switchTab(el.dataset.go); });
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     回到顶部：公式集目录很长（100+ 条），滚下去后给个回顶按钮
+     只在公式集页出现，其它页签一律隐藏
+     ══════════════════════════════════════════════════════════ */
+  const toTopBtn = document.createElement('button');
+  toTopBtn.type = 'button';
+  toTopBtn.className = 'totop';
+  toTopBtn.setAttribute('aria-label', '回到顶部');
+  toTopBtn.textContent = '↑';
+  document.body.appendChild(toTopBtn);
+
+  function syncToTop() {
+    toTopBtn.classList.toggle('totop--on', currentTab === 'calc' && window.scrollY > 420);
+  }
+  window.addEventListener('scroll', syncToTop, { passive: true });
+  toTopBtn.addEventListener('click', function () {
+    const before = window.scrollY;
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) { /* 老 WebView 不认对象参数 */ }
+    // 兜底：不支持平滑滚动（或系统开了「减少动态效果」）时直接跳回顶部
+    setTimeout(function () {
+      if (window.scrollY > 0 && window.scrollY === before) window.scrollTo(0, 0);
+    }, 450);
   });
 
   /* ══════════════════════════════════════════════════════════
@@ -1126,6 +1155,19 @@
         }),
       });
     });
+
+    // 本地资料（PDF / 图片 / 视频直链）：docs/materials/ 里有东西才出现
+    const MT = window.Materials;
+    if (MT && MT.MATERIALS && MT.MATERIALS.length) {
+      secs.push({
+        id: 'materials',
+        title: '本地资料（PDF 等）',
+        note: '放在 docs/materials/ 的本地资料，体积不影响工具本体；点击在新标签页打开',
+        items: MT.MATERIALS.map(function (it) {
+          return { kind: 'link', id: it.id, title: it.title, sub: it.sub || '', url: it.url };
+        }),
+      });
+    }
 
     return secs;
   }
