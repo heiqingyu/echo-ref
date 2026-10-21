@@ -795,6 +795,35 @@ Page({
         if (!dvi.error) parts.push('DVI ' + calc.fmt(dvi.dvi, 2));
         out = parts.join('；');
       }
+    } else if (gid === 'asload') {
+      // —— AS 负荷量化（ELI · Zva · SWL）——
+      const sum = calc.asLoadSummary({
+        vmax: v.alvmax, meanGrad: v.almean, eoa: v.alava,
+        ascAo: v.alao, sbp: v.alsbp, sv: v.alsv, bsa: bsa,
+      });
+      const parts = [];
+      if (sum.eli) parts.push(sum.eli.text);
+      if (sum.zva) parts.push(sum.zva.text);
+      if (sum.swl) parts.push(sum.swl.text);
+      if (sum.pr) parts.push(sum.pr.text);
+      if (parts.length) {
+        out = parts.join('；');
+        const notes = [];
+        if (sum.eli) notes.push(sum.eli.note);
+        if (sum.zva) notes.push(sum.zva.note);
+        if (sum.swl) notes.push(sum.swl.note);
+        if (notes.length) out += '｜' + notes.join('｜');
+      } else {
+        out = '请至少填写：EOA + 升主动脉直径（算 ELI）、收缩压 + 每搏量 + 身高体重（算 Zva）、平均压差（算 SWL）';
+      }
+    } else if (gid === 'pr') {
+      // —— 压力恢复校正 ——
+      const r = calc.pressureRecovery(v.prvmax, v.preoa, v.prao);
+      if (r.error) {
+        out = r.error;
+      } else {
+        out = r.text + '｜' + r.note;
+      }
     } else if (gid === 'ppm') {
       // —— 人工瓣 EOAi 与 PPM（R17 / ASE 2024 切点，BMI≥30 时下调）——
       const r = calc.eoaPpm(v.peoa, bsa, v.ppos, v.pbmi);

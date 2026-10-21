@@ -417,10 +417,12 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 53 条', EXD.REFS.length, 53, 0);
+  check('参考文献 58 条', EXD.REFS.length, 58, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
-  check('文献编号连续 R1–R53',
-    refIds === 'R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,R16,R17,R18,R19,R20,R21,R22,R23,R24,R25,R26,R27,R28,R29,R30,R31,R32,R33,R34,R35,R36,R37,R38,R39,R40,R41,R42,R43,R44,R45,R46,R47,R48,R49,R50,R51,R52,R53' ? 1 : 0, 1, 0);
+  // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
+  const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
+  check('文献编号连续 R1–R' + EXD.REFS.length,
+    refIds === expRefIds ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
   // 文献直链：只放「点开就能看」的官方/免费 PDF，需要登录的一律不挂
@@ -516,24 +518,28 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 21 个大组（… + 有创操作与介入超声 + 伪影识别与规避）', dirs.length, 21, 0);
+  check('公式集分 22 个大组（… + 妊娠与特殊人群 + 报告与质控）', dirs.length, 22, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+  // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
+  const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
+  const dirViews = dirById('views');
+  const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 116 条（57 计算 + 10 瓣膜 + 45 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 116, 0);
-  check('切面学习 6 条（专辑入口 + 5 个外链）', dirs[19].items.length, 6, 0);
-  check('TEE 模拟器 3 条', dirs[20].items.length, 3, 0);
+  check('目录共 120 条（59 计算 + 10 瓣膜 + 47 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 120, 0);
+  check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
+  check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   check('操作规范专辑排在切面学习第一条',
-    dirs[19].items[0] && dirs[19].items[0].kind === 'album' && dirs[19].items[0].id === 'bookvid' ? 1 : 0, 1, 0);
+    dirViews.items[0] && dirViews.items[0].kind === 'album' && dirViews.items[0].id === 'bookvid' ? 1 : 0, 1, 0);
   check('专辑标题为「实用超声规范化检查与操作（视频）」',
-    dirs[19].items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
+    dirViews.items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
   check('外链条目为 link 类型（专辑除外）',
-    dirs[19].items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+    dirViews.items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
-    dirs[19].items[0] && dirs[19].items[0].count === 25 ? 1 : 0, 1, 0);
+    dirViews.items[0] && dirViews.items[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进目录数据（省 setData）',
-    dirs[19].items[0] && dirs[19].items[0].children === undefined ? 1 : 0, 1, 0);
+    dirViews.items[0] && dirViews.items[0].children === undefined ? 1 : 0, 1, 0);
   check('专辑条目带书籍出处说明',
     (function () {
       const EXv = require('./miniprogram/utils/extra-data.js');
@@ -541,9 +547,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       return /王辉/.test(it.note || '') && /978-7-5189-8028-4/.test(it.note || '') ? 1 : 0;
     })(), 1, 0);
   check('TTE 经胸切面为直达交互链接',
-    dirs[19].items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
+    dirViews.items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含 TEE 速查表',
-    dirs[19].items.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
+    dirViews.items.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
   // 原「切面指南」4 条 ASE 官方 PDF 已并入参考文献（R11 中/英、R12、R41）
   check('切面指南已并入参考文献（不在目录里单列）',
     dirs.every(d => d.title !== '切面指南') ? 1 : 0, 1, 0);
@@ -560,8 +566,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('R41 含 TEE 介入筛查官方 PDF 直链',
     EXL.REFS.filter(x => x.id === 'R41')[0].dl.some(d => /PIIS0894731721005940\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
   check('模拟器含 CT2TEE / TEE Simulator 图谱',
-    dirs[20].items.some(i => /ct2tee/.test(i.url)) &&
-    dirs[20].items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+    dirSim.items.some(i => /ct2tee/.test(i.url)) &&
+    dirSim.items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
   check('血流动力学与心功能 14 条（含 M 型三合一、快速比值、Ea、VTI 比；dias 已移至舒张功能定量）', dirs[0].items.length, 14, 0);
   check('右心与肺循环 13 条（PASP / RAP / FAC / TAPSE-PASP / PVR / SVR + 第二批 6 条 + 肺高压可能性）',
@@ -609,7 +615,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       dirs[8].items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 5 个瓣膜计算器 + 4 条判读（合并为一组，不再有「瓣膜疾病评估」）
-  check('瓣膜评估组合并为 17 条（5 专用计算器 + 7 通用计算 + 5 判读）', dirs[6].items.length, 17, 0);
+  check('瓣膜评估组合并为 20 条（5 专用计算器 + 9 通用计算 + 6 判读）', dirs[6].items.length, 20, 0);
   check('瓣膜评估组含 7 条瓣膜通用计算（wilkins / vcw / rf / mva / pisav / avav / ppm）',
     ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
       .every(id => dirs[6].items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
