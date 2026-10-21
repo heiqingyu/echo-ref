@@ -509,5 +509,40 @@ check('最重项带 4 分描述',
   w13.worstText.indexOf('瓣叶无活动') !== -1 ? 'ok' : 'bad', 'ok');
 check('并列最高时取第一项', C.wilkinsScore(3, 3, 1, 1).worst, '瓣叶活动度');
 
+console.log('=== 49. PMBV 适合度流程（v1.3.4）===');
+const pf1 = C.pmbvSuit({ mva: 0.9, mvaHow: 'PHT 法', gra: 12, pasp: 55, wilkins: 7 });
+check('重度 MS + PASP >50 + Wilkins ≤8 → 理想候选',
+  pf1.verdict.indexOf('理想 PMBV 候选') !== -1 ? 'ok' : 'bad', 'ok');
+check('候选结论带 TEE 排除三项',
+  pf1.verdict.indexOf('TEE 排除左房血栓') !== -1 && pf1.verdict.indexOf('MR ≤轻度') !== -1 ? 'ok' : 'bad', 'ok');
+check('流程行含 ①②③', pf1.parts.some(function (p) { return p.indexOf('② 后果：PASP 55') !== -1; }) ? 'ok' : 'bad', 'ok');
+const pf2 = C.pmbvSuit({ mva: 0.9, mvaHow: '连续方程', gra: 15, pasp: 62, wilkins: 13 });
+check('Wilkins ≥12 → 形态不适合、优先外科',
+  pf2.verdict.indexOf('优先外科换瓣') !== -1 && pf2.level === 3 ? 'ok' : 'bad', 'ok');
+const pf3 = C.pmbvSuit({ mva: 1.2, mvaHow: '连续方程', gra: 8, pasp: 45, wilkins: 10 });
+check('Wilkins 9–11 → 边缘区个体化', pf3.verdict.indexOf('个体化') !== -1 ? 'ok' : 'bad', 'ok');
+const pf4 = C.pmbvSuit({ mva: 2.2, mvaHow: 'PHT 法', gra: 4, pasp: 28, wilkins: 6 });
+check('轻度 MS → 暂不考虑 PMBV', pf4.verdict.indexOf('暂不考虑 PMBV') !== -1 ? 'ok' : 'bad', 'ok');
+const pf5 = C.pmbvSuit({ mva: 1.6, mvaHow: 'PHT 法', gra: 12, pasp: 40, wilkins: 8 });
+check('面积轻压差重 → 报警并以面积为准',
+  pf5.parts.some(function (p) { return p.indexOf('⚠ 压差与面积分级不一致') !== -1; }) ? 'ok' : 'bad', 'ok');
+check('不一致时结论按面积（未达重度）',
+  pf5.verdict.indexOf('未达重度') !== -1 && pf5.verdict.indexOf('需复测') !== -1 ? 'ok' : 'bad', 'ok');
+const pf6 = C.pmbvSuit({ mva: 1.05, mvaHow: 'PHT 法', gra: 12, pasp: 55, wilkins: 7 });
+check('MVA 中度但 PASP >50 + 形态适合 → 有 PMBV 理由',
+  pf6.verdict.indexOf('有 PMBV 理由') !== -1 ? 'ok' : 'bad', 'ok');
+const pf7 = C.pmbvSuit({ gra: 11, pasp: 52 });
+check('缺 MVA 与 Wilkins → 只提示补什么',
+  pf7.verdict.indexOf('补 Wilkins 四项评分') !== -1 && pf7.missing.indexOf('PASP') === -1 ? 'ok' : 'bad', 'ok');
+check('有压差时不再把 MVA 列为缺失（压差可定严重度）',
+  pf7.missing.some(function (m) { return m.indexOf('MVA') !== -1; }) ? 'bad' : 'ok', 'ok');
+const pf8 = C.pmbvSuit({ gra: 11, pasp: 52, wilkins: 8 });
+check('压差定重度 + 缺 MVA → 提示补面积',
+  pf8.verdict.indexOf('未测 MVA，补一项面积确认') !== -1 ? 'ok' : 'bad', 'ok');
+const pf9 = C.pmbvSuit({});
+check('全空 → 无结论、missing 三项齐全',
+  pf9.verdict === '' && pf9.missing.length === 3 ? 'ok' : 'bad', 'ok');
+check('全空时 missing 含 MVA', pf9.missing.some(function (m) { return m.indexOf('MVA') !== -1; }) ? 'ok' : 'bad', 'ok');
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);

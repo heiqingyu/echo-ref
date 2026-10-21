@@ -1061,7 +1061,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // 二尖瓣页内嵌同一套评分
   pgF.onLoad({ id: 'mitral' });
   pgF.onShow();
-  check('二尖瓣页内嵌 8 个输入（Wilkins 4 + MVA 4）', pgF.data.inputs.length, 8, 0);
+  check('二尖瓣页内嵌 10 个输入（Wilkins 4 + MVA 4 + 压差/PASP 2）', pgF.data.inputs.length, 10, 0);
   check('二尖瓣页输入名带序号',
     pgF.data.inputs[0].name.indexOf('① 瓣叶活动度') !== -1 ? 1 : 0, 1, 0);
   check('二尖瓣页内含 4 张 Wilkins 分档表',
@@ -1070,6 +1070,34 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.refresh();
   check('二尖瓣页算 Wilkins：4+3+3+3 = 13 → 优先外科',
     /Wilkins 13\/16.*≥12.*外科/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  // PMBV 适合度流程：平均压差 + PASP + Wilkins 串成一条（v1.3.4）
+  // 注意：每次显式给齐全部相关字段——早前测试往缓存里写过 mvd/mvlvti/mvmvti，
+  // 不显式清掉会让连续性方程掺进来（SV = π×1.5²×3 ≈ 21 mL，MVA ≈ 7 cm²）。
+  const setMit = function (kv) {
+    pgF.onLoad({ id: 'mitral' });
+    pgF.onShow();
+    pgF.data.inputs.forEach(function (r) {
+      r.value = kv[r.key] !== undefined ? String(kv[r.key]) : '';
+    });
+    pgF.refresh();
+  };
+  setMit({ wk1: 1, wk2: 2, wk3: 2, wk4: 2, mpht: 220, mgrad: 12, pasp: 55 });
+  check('PMBV 流程：重度 MS + PASP >50 + Wilkins ≤8 → 理想候选',
+    /PMBV 适合度：重度 MS \+ 形态适合/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('PMBV 流程：串出 ①严重度 ②后果 ③形态 与 TEE 排除项',
+    /② 后果：PASP 55/.test(pgF.data.out) &&
+      pgF.data.out.indexOf('TEE 排除左房血栓') !== -1 ? 1 : 0, 1, 0);
+  setMit({ wk1: 4, wk2: 4, wk3: 4, wk4: 4, mpht: 220, mgrad: 12, pasp: 55 });
+  check('PMBV 流程：Wilkins ≥12 → 优先外科',
+    /形态不适合（Wilkins ≥12），优先外科换瓣/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  setMit({ wk1: 1, wk2: 1, wk3: 1, wk4: 1, mpht: 120, mgrad: 4, pasp: 28 });
+  check('PMBV 流程：轻度 MS → 暂不考虑 PMBV',
+    /暂不考虑 PMBV/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  setMit({ wk1: 2, wk2: 2, wk3: 2, wk4: 2, mgrad: 11, pasp: 52 });
+  check('PMBV 流程：缺 MVA 时按压差定重度、并提示补面积',
+    /重度 MS \+ 形态适合/.test(pgF.data.out) &&
+      pgF.data.out.indexOf('未测 MVA，补一项面积确认') !== -1 ? 1 : 0, 1, 0);
 
   // 相关计算胶囊
   pgF.onLoad({ id: 'mitral' });

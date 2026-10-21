@@ -1179,6 +1179,89 @@ html, body {
   margin-top: 6px;
 }
 
+/* ── 组名快速跳转（目录很长，横向滑动点一下锚到该组） ── */
+.fx-nav {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin: 14px 0 6px;
+  padding: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fx-nav__c {
+  flex: none;
+  padding: 5px 11px;
+  font-size: 11px;
+  color: var(--sub);
+  background: #f1f3f6;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.fx-nav__c:active,
+.fx-nav__c:hover {
+  color: #fff;
+  background: var(--brand);
+}
+
+.fx-group {
+  scroll-margin-top: 56px;
+}
+
+/* 文献直链（官方 / 免费 PDF，点开即下载） */
+.ref-dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.ref-dl__i {
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border: 1px solid #dbe6ff;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.ref-dl__i:hover {
+  background: #dbe6ff;
+}
+
+/* 「相关计算」胶囊：点了直接进对应计算器 */
+.chiprow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.chip {
+  padding: 4px 11px;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border: 1px solid #dbe6ff;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: #dbe6ff;
+}
+
+/* ★ 以上公式集样式（.fx-nav / .fx-group / .ref-dl / .chip 等）必须留在
+   下面「已裁掉的瓣膜专页」注释块之前：build-www.js 的 stripCssBlock 会把
+   那个标记到 </style> 之间整段删掉（发布版不带瓣膜页 CSS）。
+   2026-10-21 就因把 .fx-nav 追加在文件末尾，导致 docs/index.html
+   （即 APK 内嵌页）里跳转条退化成无样式的蓝色裸链接——
+   新增 .fx-* 规则请加在本块内，不要 append 到文件末尾。 */
+
 /* ══════════════════════════════════════════════════════════
    瓣膜评估页（AS / AR / MS / MR / TR）
    ══════════════════════════════════════════════════════════ */
@@ -1379,80 +1462,6 @@ html, body {
   color: #b91c1c;
 }
 
-/* ── 组名快速跳转（目录很长，横向滑动点一下锚到该组） ── */
-.fx-nav {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding: 2px 2px 8px;
-  -webkit-overflow-scrolling: touch;
-}
-
-.fx-nav__c {
-  flex: none;
-  padding: 5px 11px;
-  font-size: 11px;
-  color: var(--sub);
-  background: #f1f3f6;
-  border-radius: 999px;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.fx-nav__c:active,
-.fx-nav__c:hover {
-  color: #fff;
-  background: var(--brand);
-}
-
-.fx-group {
-  scroll-margin-top: 56px;
-}
-
-/* 文献直链（官方 / 免费 PDF，点开即下载） */
-.ref-dl {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 5px;
-}
-
-.ref-dl__i {
-  padding: 3px 10px;
-  font-size: 11px;
-  color: var(--brand);
-  background: var(--brand-soft);
-  border: 1px solid #dbe6ff;
-  border-radius: 999px;
-  text-decoration: none;
-}
-
-.ref-dl__i:hover {
-  background: #dbe6ff;
-}
-
-/* 「相关计算」胶囊：点了直接进对应计算器 */
-.chiprow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-.chip {
-  padding: 4px 11px;
-  font-size: 11px;
-  font-family: inherit;
-  color: var(--brand);
-  background: var(--brand-soft);
-  border: 1px solid #dbe6ff;
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-.chip:hover {
-  background: #dbe6ff;
-}
 </style>
 </head>
 <body>
@@ -1605,7 +1614,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.3.3</div>
+    <div class="verline">心脏超声参考值 · v1.3.4</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1661,7 +1670,7 @@ html, body {
         </a>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.3.3</div>
+      <div class="verline">心脏超声参考值 · v1.3.4</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -3131,6 +3140,129 @@ function mvaBoth(phtMs, lvotD, lvotVti, mvVti) {
     r.method = hasPht ? 'pht' : (hasCont ? 'cont' : '');
   }
   return r;
+}
+
+/**
+ * PMBV 适合度：把「平均压差 + PASP + Wilkins」串成一条流程（二尖瓣狭窄判读页用）
+ *
+ * 临床顺序不是先测面积，而是三步递进：
+ *   ① 定严重度 —— MVA（PHT / 连续性方程，二选一或都算）+ 心率校正后的平均压差，两者互相印证
+ *   ② 看后果   —— PASP >50 mmHg 说明狭窄已造成重度肺高压后果，是介入的最强理由
+ *   ③ 看形态   —— Wilkins 评分回答「瓣膜能不能扩」：≤8 适合 PMBV、9–11 边缘、≥12 外科
+ * 前两步决定「要不要做」，第三步决定「适合谁做」。
+ * 超声报告还必须写明三项排除：TEE 排除左房血栓、反流 ≤轻度、无重度主动脉瓣病变。
+ *
+ * @param {object} o { mva, mvaHow, gra, pasp, wilkins }
+ *   mva     面积 cm²（PHT 与连续方程不一致时由调用方择一传入，不取平均）
+ *   mvaHow  面积测法标签（'PHT 法' / '连续方程'），仅用于文案
+ *   gra     平均跨瓣压差 mmHg（应校正到心率 60–80 次/分）
+ *   pasp    肺动脉收缩压 mmHg
+ *   wilkins Wilkins 总分 4–16
+ * @returns {{parts:string[], verdict:string, level:number, missing:string[]}}
+ */
+function pmbvSuit(o) {
+  o = o || {};
+  var ok = function (x) { return typeof x === 'number' && isFinite(x) && x > 0; };
+  var mva = ok(o.mva) ? o.mva : null;
+  var how = o.mvaHow || '';
+  var gra = ok(o.gra) ? o.gra : null;
+  var pasp = ok(o.pasp) ? o.pasp : null;
+  var wk = (o.wilkins >= 4 && o.wilkins <= 16) ? Math.round(o.wilkins) : null;
+
+  var parts = [];
+  var missing = [];
+
+  // ── ① 严重度 ──
+  var sev = null; // 0 轻 / 1 中 / 2 重
+  var mismatch = false; // 压差与面积分级不一致（面积为准，压差复测）
+  if (mva !== null) {
+    var gm = gradeMva(mva);
+    sev = gm.level === 'severe' ? 2 : (gm.level === 'moderate' ? 1 : 0);
+    parts.push('① 严重度：MVA ' + mva.toFixed(2) + ' cm²' +
+      (how ? '（' + how + '）' : '') + ' → ' + gm.text +
+      (gm.level === 'severe' ? '（≤1.0 cm²）' : gm.level === 'moderate' ? '（1.0–1.5）' : '（>1.5）'));
+  }
+  if (gra !== null) {
+    var gt = gra > 10 ? '重度（>10 mmHg）' : (gra >= 5 ? '中度（5–10 mmHg）' : '轻度（<5 mmHg）');
+    var gsev = gra > 10 ? 2 : (gra >= 5 ? 1 : 0);
+    parts.push('① 严重度：平均压差 ' + gra.toFixed(0) + ' mmHg → ' + gt);
+    if (mva !== null && gsev !== sev) {
+      // 两法/两指标打架：以面积为准，压差提示流量或测量问题
+      mismatch = true;
+      parts.push('⚠ 压差与面积分级不一致：压差随心率和流量变化，校正到 60–80 次/分复测，仍以面积为准');
+    } else if (mva !== null) {
+      sev = Math.max(sev, gsev);
+    } else {
+      sev = gsev;
+    }
+  }
+  if (mva === null && gra === null) missing.push('MVA（PHT / 连续方程）或平均压差');
+
+  // ── ② 后果 ──
+  var conseq = 0;
+  if (pasp !== null) {
+    if (pasp > 50) {
+      conseq = 2;
+      parts.push('② 后果：PASP ' + pasp.toFixed(0) + ' mmHg >50 → 重度肺高压，介入理由强');
+    } else if (pasp >= 30) {
+      conseq = 1;
+      parts.push('② 后果：PASP ' + pasp.toFixed(0) + ' mmHg 30–50 → 中度升高');
+    } else {
+      parts.push('② 后果：PASP ' + pasp.toFixed(0) + ' mmHg <30 → 无明显肺高压后果');
+    }
+  } else missing.push('PASP');
+
+  // ── ③ 形态 ──
+  if (wk !== null) {
+    if (wk <= 8) parts.push('③ 形态：Wilkins ' + wk + '/16 ≤8 → 瓣膜形态适合 PMBV');
+    else if (wk <= 11) parts.push('③ 形态：Wilkins ' + wk + '/16 9–11 → 边缘区，个体化');
+    else parts.push('③ 形态：Wilkins ' + wk + '/16 ≥12 → 形态差，优先外科');
+  } else missing.push('Wilkins 四项评分（各 1–4 分）');
+
+  // ── 结论：前两步定「要不要做」，第三步定「适合谁做」 ──
+  var verdict = '';
+  var level = 0;
+  var severeEnough = sev === 2 || (sev === 1 && conseq === 2);
+  if (wk !== null) {
+    if (wk >= 12) {
+      verdict = 'PMBV 适合度：形态不适合（Wilkins ≥12），优先外科换瓣';
+      level = 3;
+    } else if (wk <= 8) {
+      if (sev === 2) {
+        verdict = 'PMBV 适合度：重度 MS + 形态适合 → 理想 PMBV 候选；术前 TEE 排除左房血栓，' +
+          '确认 MR ≤轻度、无重度主动脉瓣病变' +
+          (mva === null ? '；未测 MVA，补一项面积确认' : '');
+        level = 1;
+      } else if (sev === 1 && conseq === 2) {
+        verdict = 'PMBV 适合度：MS 中度但 PASP >50 mmHg（后果重）+ 形态适合 → 有 PMBV 理由，建议与外科共同决策';
+        level = 1;
+      } else if (sev === null && conseq === 2) {
+        verdict = 'PASP 已 >50 mmHg，存在介入理由；补 MVA 与平均压差确认严重度';
+        level = 1;
+      } else if (sev === null) {
+        verdict = '形态适合 PMBV，但尚未确认 MS 严重度（补 MVA / 平均压差）';
+        level = 0;
+      } else if (sev === 1) {
+        verdict = pasp !== null
+          ? 'MS 中度（MVA 1.0–1.5）且 PASP ≤50 mmHg：以药物与随访为主，出现症状或 PASP 升高再评估介入'
+          : 'MS 中度（MVA 1.0–1.5）；补平均压差与 PASP 判断后果，再定介入时机';
+        level = 0;
+      } else {
+        verdict = '狭窄未达重度（MVA >1.5 cm²' +
+          (mismatch ? '，压差 ' + gra.toFixed(0) + ' mmHg 与面积不符需复测' : '') +
+          '），以随访与对症为主，暂不考虑 PMBV';
+        level = 0;
+      }
+    } else {
+      verdict = 'PMBV 适合度：边缘区（Wilkins 9–11），结合年龄、合并症与外科风险个体化决定';
+      level = 2;
+    }
+  } else if (severeEnough || conseq === 2) {
+    verdict = '已达中重度 MS（或 PASP >50 mmHg），有介入理由；补 Wilkins 四项评分判断能否 PMBV';
+    level = 1;
+  }
+
+  return { parts: parts, verdict: verdict, level: level, missing: missing };
 }
 
 /**
@@ -5157,6 +5289,7 @@ function phLikelihood(trVmax, hasSigns, rvotAt) {
     mvaContinuity: mvaContinuity,
     gradeMva: gradeMva,
     mvaBoth: mvaBoth,
+    pmbvSuit: pmbvSuit,
     pisa: pisa,
     gradeEroa: gradeEroa,
     gradeRvol: gradeRvol,
@@ -7011,7 +7144,7 @@ const BRIEF_SECTIONS = [
       {
         id: 'mitral',
         title: '二尖瓣疾病评估',
-        sub: '狭窄 MS（MVA 两法 + Wilkins 评分）· 反流 MR（定性 + 定量）',
+        sub: '狭窄 MS（MVA 两法 + 压差 + PASP + Wilkins → PMBV 适合度）· 反流 MR（定性 + 定量）',
         source: ['R9', 'R45', 'R46'],
         // ★ 本页内嵌两套算法：Wilkins 形态评分 + MVA（PHT / 连续性方程），
         //   公式集里那条「二尖瓣面积 MVA（两法对照）」用的是同一个 mvaBoth
@@ -7026,6 +7159,8 @@ const BRIEF_SECTIONS = [
           { k: 'mvd', n: '⑥ LVOT 直径', u: 'cm' },
           { k: 'mvlvti', n: '⑥ LVOT VTI', u: 'cm' },
           { k: 'mvmvti', n: '⑥ 二尖瓣 VTI', u: 'cm' },
+          { k: 'mgrad', n: '⑦ 平均跨瓣压差', u: 'mmHg' },
+          { k: 'pasp', n: '⑧ 肺动脉收缩压 PASP', u: 'mmHg' },
         ],
         blocks: [
           { kind: 'h', text: '二尖瓣狭窄 MS（定性 + 定量）' },
@@ -7097,8 +7232,20 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'note', text: '总分 4–16：**≤8 适合 PBMV；9–11 边缘区需结合年龄、合并症与外科风险个体化；≥12 优先外科**。报告里最好写明哪一项扣分最多——同样是 9 分，「钙化 4 分」和「活动度 4 分」的手术风险并不一样。', warn: true },
-          { kind: 'h', text: 'PBMV（经皮球囊二尖瓣成形）指征' },
-          { kind: 'text', text: '理想候选：Wilkins 评分 ≤8、瓣叶活动好、交界薄、无明显钙化与瓣下融合、无左房血栓、MR ≤轻度。评分 9–11 为相对禁忌，>11 一般不考虑。' },
+          { kind: 'h', text: 'PMBV 适合度：把平均压差、PASP、Wilkins 串成一条流程' },
+          { kind: 'text', text: '临床顺序不是「先测面积」，而是三步递进：**第一步定严重度**（MVA 与心率校正后的平均压差互相印证）、**第二步看后果**（PASP >50 mmHg 说明狭窄已造成重度肺高压，是介入的最强理由）、**第三步看形态**（Wilkins 回答「瓣膜能不能扩」）。前两步决定「要不要做」，第三步决定「适合谁做」。' },
+          {
+            kind: 'table',
+            heads: ['步骤', '看什么', '阈值', '提示'],
+            rows: [
+              ['① 严重度', 'MVA（PHT / 连续方程）', '重度 ≤1.0 cm²', 'MVA <1.5 且有症状即达介入标准'],
+              ['① 严重度', '平均压差（心率 60–80）', '重度 >10 mmHg', '与 MVA 分级不一致时以面积为准，复测压差'],
+              ['② 后果', 'PASP', '>50 mmHg', '静息 >50 或轻度活动后骤升 → 介入理由强'],
+              ['③ 形态', 'Wilkins 总分', '≤8 适合 / 9–11 边缘 / ≥12 外科', '看单项分布：钙化 4 分比活动度 4 分预后差'],
+            ],
+          },
+          { kind: 'text', text: '满足 ①+② 后，Wilkins ≤8、瓣叶活动好、交界薄、无明显钙化与瓣下融合 → **理想 PMBV 候选**；9–11 分结合年龄、合并症与外科风险个体化；≥12 分优先外科换瓣。' },
+          { kind: 'note', text: '**超声报告必须写明的三项排除**：TEE 排除左房血栓（窦性也不能省，血栓者禁忌）、反流 ≤轻度（中重度 MR 做 PMBV 会加重反流）、无重度主动脉瓣病变（否则先处理主动脉瓣）。交界已融合成致密瘢痕、瓣叶重度钙化者，即使总分不高也要谨慎。', warn: true },
           { kind: 'h', text: 'MR 的病因分型（决定术式，比程度更重要）' },
           {
             kind: 'table',
@@ -7113,7 +7260,7 @@ const BRIEF_SECTIONS = [
           { kind: 'note', text: '继发性 MR 的介入阈值比原发性更严：EROA ≥0.4 cm² 且 LVEF 30–50% 才考虑 TEER（COAPT 标准）；LVEF <30% 或不可逆左室扩大者获益有限，别只看 EROA 大小。', warn: true },
           { kind: 'note', text: '**风湿性病因背景看 R45（ASE 2022 风湿性心脏病超声评估，官方 PDF 在参考文献里）**：国内的 MS 绝大多数是风湿性的，Wilkins 评分本身就是为「风湿性二尖瓣球囊扩张是否合适」设计的，所以它评的是瓣膜形态而不是狭窄程度——形态分高不等于一定不能做，但要提前把风险讲清楚。' },
         ],
-        note: '反流程度需结合定性（彩色面积、频谱密度）与定量（PISA 法 EROA / RVol）。',
+        note: '反流程度需结合定性（彩色面积、频谱密度）与定量（PISA 法 EROA / RVol）。MS 输入框已把 PMBV 适合度串成流程：填 PHT 与 LVOT / 二尖瓣 VTI 出两个 MVA，再填平均压差与 PASP，结果行依次给出「严重度 → 后果 → 形态 → PMBV 适合度」。',
       },
       {
         id: 'aortic',
@@ -8395,7 +8542,7 @@ const BRIEF_SECTIONS = [
       {
         id: 'report-std',
         title: '超声报告标准化清单（ASE 2025）',
-        sub: '完整 · 简洁 · 正确 · 有临床用途',
+        sub: '完整 · 简洁 · 正确 · 有临床用途 · 危急值清单',
         source: ['R44'],
         fields: [],
         blocks: [
@@ -8440,6 +8587,22 @@ const BRIEF_SECTIONS = [
               ['危急值沟通留痕', '写「已与主管团队沟通」——不记录等于没做'],
             ],
           },
+          { kind: 'h', text: '危急值清单：见到就打电话，不要只写报告' },
+          { kind: 'text', text: '下面这些不是「重度」，而是「可能下一秒就出事」。确认后**立即电话**通知主管团队 / 值班医师，记录沟通时间、对象与内容，必要时启动床旁处置——只把结论写进报告、等着别人来发现，等于没报。' },
+          {
+            kind: 'table',
+            heads: ['危急值', '超声所见（满足即报）', '动作'],
+            rows: [
+              ['心包填塞', '中大量心包积液 + 右房收缩期塌陷 >1/3 周期 / 右室舒张期塌陷；IVC >21 mm 且吸气塌陷 <50%；二尖瓣 E 峰呼吸变异 >25%', '立即电话，床旁备穿刺'],
+              ['主动脉夹层 / 壁内血肿', '主动脉内飘动内膜片与破口；主动脉显著扩张；新发 AR；心包积液（破裂先兆）', '立即电话，同时建议 CTA'],
+              ['人工瓣急性功能障碍', '跨瓣压差较基线骤升；新发中大量瓣周漏 / 中心性反流；机械瓣碟片活动消失；生物瓣撕裂或脱位', '立即电话，鉴别血栓 vs 衰败'],
+              ['急性肺栓塞（高危型）', 'RV/LV >0.9 或 RV 基底径 >41 mm；McConnell 征；室间隔矛盾运动；TAPSE 下降；60/60 征', '立即电话，结合 CTPA'],
+              ['急性心梗机械并发症', '室间隔穿孔（左向右高速分流）；乳头肌断裂（急性重度 MR + 肺水肿）；游离壁破裂 / 假性室壁瘤', '立即电话，外科急诊'],
+              ['感染性心内膜炎并发症', '赘生物合并瓣周脓肿 / 瘘、瓣叶穿孔、新发重度反流、栓塞事件、人工瓣新发瓣周漏', '当日电话，血培养'],
+              ['梗阻性休克', '左房黏液瘤往返阻塞瓣口；LVOT 严重动态梗阻（SAM）致晕厥 / 低血压', '立即电话，避免体位与前负荷骤降'],
+            ],
+          },
+          { kind: 'note', text: '检查中患者出现症状或节律改变：**先处理患者，再补报告**。沟通过程要写进报告（「已与 XX 团队电话沟通，时间 XX」）——没有记录的危急值沟通，复盘时无法举证。' },
           { kind: 'note', text: '**附加动作与分流时相要写明**：静息即出现多见于 PFO / ASD，Valsalva 释放后才出现也提示 PFO，而数个心动周期后才出现气泡提示肺内分流。同时要交代该结论受图像质量与患者配合程度影响的程度。' },
         ],
         note: '报告是给临床看的，不是给超声同行看的：写完通读一遍，问自己「临床看完知不知道下一步该干什么」，答不上来就重写结论段。',
@@ -11394,10 +11557,12 @@ var CALC_LINKS = {
     // 二尖瓣疾病评估页：内嵌 Wilkins 形态评分 + MVA 两法（与公式集同一套引擎）
     {
       const parts = [];
+      let wkTotal = null;
       if (has('wk1') || has('wk2') || has('wk3') || has('wk4')) {
         const w = Calc.wilkinsScore(v.wk1, v.wk2, v.wk3, v.wk4);
         if (w.error) parts.push(w.error);
         else {
+          wkTotal = w.total;
           const detail = w.items.map(function (it) {
             return it.n.replace('瓣叶', '') + ' ' + it.score;
           }).join(' · ');
@@ -11418,6 +11583,20 @@ var CALC_LINKS = {
           Calc.fmt(m.sv, 1) + ' mL）→ ' + m.contText);
       }
       if (m.diffText) parts.push(m.diffText);
+      // PMBV 适合度：平均压差 + PASP + Wilkins 串成「严重度 → 后果 → 形态」一条流程
+      const s = Calc.pmbvSuit({
+        mva: m.cont !== undefined ? m.cont : (m.pht !== undefined ? m.pht : null),
+        mvaHow: m.cont !== undefined ? '连续方程' : (m.pht !== undefined ? 'PHT 法' : ''),
+        gra: has('mgrad') ? v.mgrad : null,
+        pasp: has('pasp') ? v.pasp : null,
+        wilkins: wkTotal,
+      });
+      s.parts.forEach(function (p) {
+        if (p.indexOf('① 严重度：MVA') === 0 && (m.pht !== undefined || m.cont !== undefined)) return;
+        if (p.indexOf('③ 形态：Wilkins') === 0 && wkTotal !== null) return;
+        parts.push(p);
+      });
+      if (s.verdict) parts.push(s.verdict);
       put('mitral', partsOf(parts));
     }
   }

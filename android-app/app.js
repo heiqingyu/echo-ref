@@ -2248,10 +2248,12 @@
     // 二尖瓣疾病评估页：内嵌 Wilkins 形态评分 + MVA 两法（与公式集同一套引擎）
     {
       const parts = [];
+      let wkTotal = null;
       if (has('wk1') || has('wk2') || has('wk3') || has('wk4')) {
         const w = Calc.wilkinsScore(v.wk1, v.wk2, v.wk3, v.wk4);
         if (w.error) parts.push(w.error);
         else {
+          wkTotal = w.total;
           const detail = w.items.map(function (it) {
             return it.n.replace('瓣叶', '') + ' ' + it.score;
           }).join(' · ');
@@ -2272,6 +2274,20 @@
           Calc.fmt(m.sv, 1) + ' mL）→ ' + m.contText);
       }
       if (m.diffText) parts.push(m.diffText);
+      // PMBV 适合度：平均压差 + PASP + Wilkins 串成「严重度 → 后果 → 形态」一条流程
+      const s = Calc.pmbvSuit({
+        mva: m.cont !== undefined ? m.cont : (m.pht !== undefined ? m.pht : null),
+        mvaHow: m.cont !== undefined ? '连续方程' : (m.pht !== undefined ? 'PHT 法' : ''),
+        gra: has('mgrad') ? v.mgrad : null,
+        pasp: has('pasp') ? v.pasp : null,
+        wilkins: wkTotal,
+      });
+      s.parts.forEach(function (p) {
+        if (p.indexOf('① 严重度：MVA') === 0 && (m.pht !== undefined || m.cont !== undefined)) return;
+        if (p.indexOf('③ 形态：Wilkins') === 0 && wkTotal !== null) return;
+        parts.push(p);
+      });
+      if (s.verdict) parts.push(s.verdict);
       put('mitral', partsOf(parts));
     }
   }

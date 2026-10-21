@@ -998,11 +998,13 @@ Page({
     } else if (gid === 'mva' || gid === 'mitral') {
       // —— 二尖瓣面积：PHT + 连续性方程同屏对照（MS 判读页内嵌同一套）——
       const parts = [];
+      let wkTotal = null;
       if (gid === 'mitral' &&
         (valid(v.wk1) || valid(v.wk2) || valid(v.wk3) || valid(v.wk4))) {
         const w = calc.wilkinsScore(v.wk1, v.wk2, v.wk3, v.wk4);
         if (w.error) parts.push(w.error);
         else {
+          wkTotal = w.total;
           const detail = w.items.map(function (it) {
             return it.n.replace('瓣叶', '') + ' ' + it.score;
           }).join(' · ');
@@ -1023,6 +1025,23 @@ Page({
           calc.fmt(m.sv, 1) + ' mL）→ ' + m.contText);
       }
       if (m.diffText) parts.push(m.diffText);
+      // PMBV 适合度：平均压差 + PASP + Wilkins 串成「严重度 → 后果 → 形态」一条流程。
+      // 已有独立行展示过的（MVA 两法 / Wilkins 明细）不重复，流程行只补新增信息。
+      if (gid === 'mitral') {
+        const s = calc.pmbvSuit({
+          mva: m.cont !== undefined ? m.cont : (m.pht !== undefined ? m.pht : null),
+          mvaHow: m.cont !== undefined ? '连续方程' : (m.pht !== undefined ? 'PHT 法' : ''),
+          gra: valid(v.mgrad) ? v.mgrad : null,
+          pasp: valid(v.pasp) ? v.pasp : null,
+          wilkins: wkTotal,
+        });
+        s.parts.forEach(function (p) {
+          if (p.indexOf('① 严重度：MVA') === 0 && (m.pht !== undefined || m.cont !== undefined)) return;
+          if (p.indexOf('③ 形态：Wilkins') === 0 && wkTotal !== null) return;
+          parts.push(p);
+        });
+        if (s.verdict) parts.push(s.verdict);
+      }
       out = parts.join('；');
     } else if (gid === 'vcw') {
       // —— 缩流颈宽度 ——
