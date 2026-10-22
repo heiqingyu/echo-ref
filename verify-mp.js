@@ -418,7 +418,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 71 条（含 7 条本站托管中文指南 PDF）', EXD.REFS.length, 71, 0);
+  check('参考文献 76 条（含 7 条本站托管中文指南 PDF + 4 条中文指南免费全文）', EXD.REFS.length, 76, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
@@ -521,16 +521,16 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 25 个大组（切面图解速查 + … + 报告与质控）', dirs.length, 25, 0);
+  check('公式集分 21 个大组（7 计算 + 12 评估 + 2 外链；评估组已由 16 合并为 12）', dirs.length, 21, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|切面图解速查|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|切面图解速查|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病（含术后）|负荷与功能试验|介入与操作超声|造影、伪影与图像优化|特殊场景与人群|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 141 条（62 计算 + 11 瓣膜 + 64 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 141, 0);
+  check('目录共 146 条（62 计算 + 11 瓣膜 + 69 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 146, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
@@ -621,7 +621,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirById('device').items.some(i => i.id === 'la') ? 1 : 0, 1, 0);
   check('器械支持含 LVAD 超声评估',
     dirById('device').items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
-  check('心腔与应变 12 条（含舒张功能分级）', dirById('chamber').items.length, 12, 0);
+  check('心腔与应变 14 条（含舒张功能分级 / 中国正常值 / 心脏占位）', dirById('chamber').items.length, 14, 0);
   ['lv', 'rv', 'rcoupling', 'rvfail', 'rv-strain', 'strain', 'la-strain', 'peri', 'cp-rm', 'prosthetic', 'ctrcd'].forEach(id => {
     check('心腔与应变含 ' + id,
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
@@ -642,46 +642,41 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   });
   check('不存在重复的「瓣膜疾病评估」分组',
     dirs.filter(s => s.title.indexOf('瓣膜疾病') !== -1).length === 0 ? 1 : 0, 1, 0);
-  check('心肌病变 7 条（HCM / 淀粉样变 / 应变鉴别 / DCM / 运动员心脏 / 法布雷病 / ACM）', dirById('myopathy').items.length, 7, 0);
+  check('心肌病变 8 条（HCM / 淀粉样变 / 应变鉴别 / DCM / 运动员心脏 / 法布雷病 / ACM / 心肌炎）', dirById('myopathy').items.length, 8, 0);
   ['hcm', 'amyloid', 'rcm-strain'].forEach(id => {
     check('心肌病变含 ' + id,
       dirById('myopathy').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('大血管与急症 4 条（主动脉 / 肺栓塞 / 肺高压 / 心腔占位）', dirById('vascular').items.length, 4, 0);
+  check('大血管与急症 6 条（主动脉 / 肺栓塞 / 肺高压 / 心腔占位 / 中国 PH 分层 / 心梗并发症）', dirById('vascular').items.length, 6, 0);
   ['aorta', 'pe', 'thrombus'].forEach(id => {
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病 7 条（分流 / 可手术性 / TOF 术后 PR / Ebstein / DORV / ASD 封堵 / CoA）', dirById('chd').items.length, 7, 0);
+  check('先天性心脏病（含术后）7 条（分流 / 可手术性 / TOF 术后 PR / Ebstein / DORV / ASD 封堵 / CoA）', dirById('chd').items.length, 10, 0);
   ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
     check('先天性心脏病含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先心病术后残余病变 3 条（Mustard / Fontan / ASO）', dirById('chd-post').items.length, 3, 0);
+  check('先心病合并术后 3 条（Mustard / Fontan / ASO）',
+    ['mustard', 'fontan', 'as-switch'].filter(id => dirById('chd').items.some(i => i.id === id)).length, 3, 0);
   ['mustard', 'fontan', 'as-switch'].forEach(id => {
     check('先心术后含 ' + id,
-      dirById('chd-post').items.some(i => i.id === id) ? 1 : 0, 1, 0);
+      dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   check('负荷与功能试验 3 条（运动负荷 + HCM 激发 + DSE）', dirById('stress').items.length, 3, 0);
   check('负荷试验含 stress-echo',
     dirById('stress').items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
-  check('介入 TEE 评估 4 条（三尖瓣 / 二尖瓣 / 三尖瓣介入术式 / TAVR）', dirById('tee-interv').items.length, 4, 0);
-  ['tr-interv', 'mv-interv', 'tavr'].forEach(id => {
-    check('介入 TEE 评估含 ' + id,
+  check('介入与操作超声 5 条（三尖瓣 / 二尖瓣 / 三尖瓣介入术式 / TAVR / 有创操作）', dirById('tee-interv').items.length, 5, 0);
+  ['tr-interv', 'mv-interv', 'tavr', 'echo-interv'].forEach(id => {
+    check('介入与操作超声含 ' + id,
       dirById('tee-interv').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('造影与特殊检查 1 条（超声造影 CEUS）', dirById('contrast').items.length, 1, 0);
-  check('造影与特殊检查含 contrast-echo',
-    dirById('contrast').items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
-  check('有创操作与介入超声 1 条（超声引导有创操作）', dirById('intervention').items.length, 1, 0);
-  check('伪影识别与规避 2 条（伪影指南 + 高频假病变）', dirById('artifact').items.length, 2, 0);
-  check('伪影识别与规避含 artifact-guide',
+  check('造影、伪影与图像优化含 contrast-echo',
+    dirById('artifact').items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
+  check('造影、伪影与图像优化 3 条（造影 + 伪影指南 + 高频假病变）', dirById('artifact').items.length, 3, 0);
+  check('造影、伪影与图像优化含 artifact-guide',
     dirById('artifact').items.some(i => i.id === 'artifact-guide' && i.kind === 'brief') ? 1 : 0, 1, 0);
-
-  check('有创操作与介入超声含 echo-interv',
-    dirById('intervention').items.some(i => i.id === 'echo-interv' && i.kind === 'brief') ? 1 : 0, 1, 0);
-  check('妊娠与特殊人群 2 条', dirById('pregnancy').items.length, 2, 0);
-  check('特殊临床场景 4 条', dirById('special').items.length, 4, 0);
+  check('特殊场景与人群 6 条（含妊娠 2 条）', dirById('special').items.length, 6, 0);
   check('报告与质控 2 条', dirById('report').items.length, 2, 0);
   check('v1.3.18 新增 6 条均已进入目录',
     ['dse', 'asd-close', 'coa-echo', 'ppcm', 'mimic', 'critical'].every(function (id) {
