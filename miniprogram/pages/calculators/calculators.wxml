@@ -77,25 +77,6 @@
     </view>
   </view>
 
-  <!-- ══════ 延展阅读（外部工具，复制链接到浏览器打开） ══════ -->
-  <view class="card">
-    <view class="card__title">延展阅读</view>
-    <view class="card__desc">
-      同类心超速查工具，内容更全。小程序内无法直接打开外部网页，点击条目复制链接，
-      粘贴到手机浏览器即可访问。
-    </view>
-
-    <view wx:for="{{extLinks}}" wx:key="url" wx:for-item="it"
-          class="extlink" hover-class="extlink--tap"
-          data-url="{{it.url}}" bindtap="onCopyLink">
-      <view class="extlink__main">
-        <view class="extlink__name">{{it.name}}</view>
-        <view class="extlink__desc">{{it.desc}}</view>
-      </view>
-      <view class="extlink__act">复制</view>
-    </view>
-  </view>
-
   <view class="verline">心脏超声参考值 · v{{appVersion}}</view>
 
   <view class="note note--strong">

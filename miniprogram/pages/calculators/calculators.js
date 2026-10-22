@@ -186,10 +186,6 @@ Page({
     refsCount: EX.REFS.length,
     refsPdf: EX.REFS.filter(function (r) { return r.dl && r.dl.length; }).length,
     refsOpen: false,
-    extLinks: [
-      { url: 'https://zs-echo.com', name: '心超速查 ZS-Echo Copilot', desc: '86 个计算器 · 19 类参考值 · 瓣膜与决策流程' },
-      { url: 'https://bdrwss.github.io/tte-quickref/dist/', name: 'TTE 心超速查 · 中文版', desc: '床旁速查卡片 · 测量与切面要点' },
-    ],
     appVersion: V.APP_VERSION,
     // 组名跳转条：目录很长（113 条），横向滑动点一下定位到该组
     navGroups: buildSections().map(function (s) {
@@ -319,7 +315,7 @@ Page({
   },
 
   /**
-   * 延展阅读：复制外部链接
+   * 复制外部链接（参考文献 PDF 胶囊用）
    * 小程序 web-view 只能打开已在小程序后台配置业务域名的页面，
    * 别人的站点无法校验，故统一走「复制链接 → 用户自行到浏览器打开」。
    */

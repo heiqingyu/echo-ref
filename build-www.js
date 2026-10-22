@@ -570,28 +570,6 @@ const html = `<!DOCTYPE html>
         <div id="calcRefList" hidden></div>
       </div>
 
-      <!-- ══ 延展阅读（第三方工具，点击由系统浏览器打开） ══ -->
-      <div class="card" id="extLinks">
-        <div class="card__t">延展阅读</div>
-        <div class="card__d">同类心超速查工具，内容更全。点击条目由系统浏览器打开。</div>
-        <a class="extlink" href="https://zs-echo.com" target="_blank" rel="noopener noreferrer">
-          <span class="extlink__main">
-            <span class="extlink__name">心超速查 ZS-Echo Copilot</span>
-            <span class="extlink__desc">86 个计算器 · 19 类参考值 · 瓣膜与决策流程</span>
-            <span class="extlink__url">zs-echo.com</span>
-          </span>
-          <span class="extlink__act">打开</span>
-        </a>
-        <a class="extlink" href="https://bdrwss.github.io/tte-quickref/dist/" target="_blank" rel="noopener noreferrer">
-          <span class="extlink__main">
-            <span class="extlink__name">TTE 心超速查 · 中文版</span>
-            <span class="extlink__desc">床旁速查卡片 · 测量与切面要点</span>
-            <span class="extlink__url">bdrwss.github.io/tte-quickref</span>
-          </span>
-          <span class="extlink__act">打开</span>
-        </a>
-      </div>
-
       <div class="verline">心脏超声参考值 · v${APP_VERSION}</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
@@ -977,7 +955,7 @@ function buildPublicHtml() {
 
   // 5b2) 公式集页已发布：其依赖必须齐全（引擎 / 数据 / 目录容器 / 样式）
   ['id="calcIndex"', 'id="calcList"', 'id="calcDetail"', 'id="calcBack"',
-   'id="calcRefs"', 'id="calcRefList"', 'id="extLinks"',
+   'id="calcRefs"', 'id="calcRefList"',
    'window.Calc', 'window.ExtraData', 'BRIEF_SECTIONS', 'LINK_SECTIONS', 'REFS',
    'buildCalcInputs', 'renderCalc', 'openCalcGroup', '.fx-item', '.fx-tbl__c', '.ref-item__zh',
    // ★ 2026-10-21：.fx-nav / .ref-dl / .chip 的 CSS 块必须留在 app.css 的
