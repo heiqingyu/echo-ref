@@ -1511,7 +1511,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.4.2</div>
+    <div class="verline">心脏超声参考值 · v1.4.3</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1550,7 +1550,7 @@ html, body {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.4.2</div>
+      <div class="verline">心脏超声参考值 · v1.4.3</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -14172,11 +14172,13 @@ const MATERIALS = [];
       if (b.kind === 'table') {
         h += '<div class="fx-tbl fx-tbl--' + b.heads.length + '">';
         h += '<div class="fx-tbl__r fx-tbl__r--h">';
-        b.heads.forEach(function (c) { h += '<span class="fx-tbl__c">' + esc(c) + '</span>'; });
+        // ★ 表头与单元格也要过 mdInline：表格里的 **强调** 以前直接 esc() 输出，
+        //   219 个单元格会把字面量 ** 漏到屏幕上（用户 2026-10-22 第二次反馈）
+        b.heads.forEach(function (c) { h += '<span class="fx-tbl__c">' + mdInline(c) + '</span>'; });
         h += '</div>';
         (b.rows || []).forEach(function (r) {
           h += '<div class="fx-tbl__r">';
-          r.forEach(function (c) { h += '<span class="fx-tbl__c">' + esc(c) + '</span>'; });
+          r.forEach(function (c) { h += '<span class="fx-tbl__c">' + mdInline(c) + '</span>'; });
           h += '</div>';
         });
         h += '</div>';

@@ -854,6 +854,47 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   });
   if (!badPrefix.length) ok('瓣膜计算器输入键带条目前缀（不会与其它条目串值）');
   else bad('输入键未加前缀：' + badPrefix.join(','));
+
+  // ★★ 加粗标记「渲染覆盖」断言（2026-10-22 第二次漏出后加的）
+  //    真实事故：表格单元格 rows[][] 与条目 note 都是直接 esc() 输出，
+  //    219 个单元格 + 19 条说明把字面量 ** 漏到屏幕上，而当时的奇偶断言查不出来
+  //    （它只查配对，不查「这段文本到底有没有走解析器」）。
+  //    思路：** 只允许出现在会被 mdInline / parseInline 处理的字段名里。
+  const mdSafeKeys = { text: 1, note: 1, rows: 1, heads: 1 };
+  const badMd = [];
+  (function walkMd(o, key) {
+    if (typeof o === 'string') {
+      if (o.indexOf('**') !== -1 && !mdSafeKeys[key]) {
+        badMd.push(key + ' → ' + o.slice(0, 26));
+      }
+      return;
+    }
+    if (Array.isArray(o)) { o.forEach(function (v) { walkMd(v, key); }); return; }
+    if (o && typeof o === 'object') {
+      Object.keys(o).forEach(function (k) { walkMd(o[k], k); });
+    }
+  })(EX160, '');
+  if (!badMd.length) ok('** 只出现在会被解析的字段（正文 / 说明 / 表格单元格）');
+  else bad('这些字段含 ** 但渲染时不解解析：' + badMd.slice(0, 6).join('  |  '));
+
+  // 渲染侧兜底：三处曾经漏解析的代码位置必须保持解析
+  const appMd = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
+  if (!/r\.forEach\(function \(c\) \{ h \+= '<span class="fx-tbl__c">' \+ esc\(c\)/.test(appMd)) {
+    ok('网页端表格单元格走 mdInline（不再 esc 直出）');
+  } else bad('网页端表格单元格又改回 esc(c)，单元格里的 ** 会漏出');
+
+  const fxJsMd = fs.readFileSync(path.join(ROOT, 'miniprogram/pages/formula/formula.js'), 'utf8');
+  const fxWxMd = fs.readFileSync(path.join(ROOT, 'miniprogram/pages/formula/formula.wxml'), 'utf8');
+  const okTableJs = /kind: 'table'[\s\S]{0,400}MD\.parseInline/.test(fxJsMd);
+  const okTableWx = fxWxMd.indexOf('wx:for="{{cell}}"') !== -1 &&
+                    fxWxMd.indexOf('wx:for="{{cellSeg}}"') === -1;
+  if (okTableJs && okTableWx) ok('小程序表格单元格拆成片段渲染');
+  else bad('小程序表格单元格未按片段渲染（表格里的 ** 会漏出）');
+
+  const okNoteWx = /class="note"><text wx:for="\{\{noteSegs\}\}"/.test(fxWxMd);
+  const okNoteJs = fxJsMd.indexOf('noteSegs: MD.parseInline') !== -1;
+  if (okNoteWx && okNoteJs) ok('小程序条目说明（note）按片段渲染');
+  else bad('小程序 note 未按片段渲染（wilkins / mva / ppm 的 ** 会漏出）');
 }
 
 console.log('\n' + '='.repeat(50));

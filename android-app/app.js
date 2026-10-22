@@ -987,11 +987,13 @@
       if (b.kind === 'table') {
         h += '<div class="fx-tbl fx-tbl--' + b.heads.length + '">';
         h += '<div class="fx-tbl__r fx-tbl__r--h">';
-        b.heads.forEach(function (c) { h += '<span class="fx-tbl__c">' + esc(c) + '</span>'; });
+        // ★ 表头与单元格也要过 mdInline：表格里的 **强调** 以前直接 esc() 输出，
+        //   219 个单元格会把字面量 ** 漏到屏幕上（用户 2026-10-22 第二次反馈）
+        b.heads.forEach(function (c) { h += '<span class="fx-tbl__c">' + mdInline(c) + '</span>'; });
         h += '</div>';
         (b.rows || []).forEach(function (r) {
           h += '<div class="fx-tbl__r">';
-          r.forEach(function (c) { h += '<span class="fx-tbl__c">' + esc(c) + '</span>'; });
+          r.forEach(function (c) { h += '<span class="fx-tbl__c">' + mdInline(c) + '</span>'; });
           h += '</div>';
         });
         h += '</div>';
