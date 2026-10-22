@@ -881,6 +881,22 @@ function check(name, ok, detail) {
   check('参考文献末尾含版权声明（三端一致）',
     /著作权归原作者与发布机构所有/.test(refCopy) ? 1 : 0, 1, 0);
 
+  // ★ 2026-10-22：app.css 曾把 style 闭标签写成注释字面量，内联后提前结束
+  //   样式表，导致页面顶部露出一段 CSS 注释。这里做运行时兜底。
+  const leak = await c.evalJs(`(function () {
+    const out = [];
+    document.querySelectorAll('style').forEach(function (s, i) {
+      if (s.textContent.indexOf('<' + '/style>') !== -1) out.push('style#' + i);
+    });
+    Array.prototype.forEach.call(document.body.childNodes, function (n) {
+      if (n.nodeType === 3 && n.textContent.trim().length > 8) {
+        out.push('裸文本:' + n.textContent.trim().slice(0, 20));
+      }
+    });
+    return out.join(' | ');
+  })()`);
+  check('CSS 注释未被泄漏成页面可见文字', leak === '', leak === '' ? '干净' : leak);
+
   check('瓣膜解剖页不再单列教学资源（与切面学习/模拟器重复）',
     (await c.evalJs('document.querySelectorAll("#page-valveana .va-lesson").length')) === 0);
 
