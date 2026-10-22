@@ -312,10 +312,10 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 7 个计算组 + 瓣膜 + 14 组评估 + 2 组外链',
-      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器',
+    check('公式集分组 = 7 个计算组 + 瓣膜 + 15 组评估 + 2 组外链',
+      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|切面图解速查|器械支持|心腔与应变|心肌病变|大血管与急症|先天性心脏病|先心病术后残余病变|负荷与功能试验|介入 TEE 评估|造影与特殊检查|有创操作与介入超声|伪影识别与规避|妊娠与特殊人群|特殊临床场景|报告与质控|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 122 条（62 计算 − 5 瓣膜计算器 + 10 瓣膜 + 47 评估 + 8 外链）', d.items === 122, d.items);
+    check('条目 129 条（62 计算 − 5 瓣膜计算器 + 10 瓣膜 + 54 评估 + 8 外链）', d.items === 129, d.items);
     check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -325,7 +325,7 @@ function check(name, ok, detail) {
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 9 条瓣膜通用计算（wilkins/vcw/rf/mva/pisav/avav/ppm/asload/pr）',
       d.valveCalc === 9, d.valveCalc);
-    check('参考文献 69 条', d.refs === 69, d.refs);
+    check('参考文献 71 条', d.refs === 71, d.refs);
     check('延展阅读卡片在公式集页', d.ext, true);
   }
 
@@ -812,7 +812,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 69 条', /69/.test(ri.cnt), refsInit);
+  check('折叠头显示 71 条', /71/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -830,7 +830,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 69 条', ro.hidden === false && ro.n === 69 && ro.h > 0, refsOpen);
+  check('点击后展开全部 71 条', ro.hidden === false && ro.n === 71 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 
@@ -876,6 +876,52 @@ function check(name, ok, detail) {
     (await c.evalJs('document.querySelectorAll("#page-valveana [data-vap]").length')) > 0);
   check('瓣膜解剖页不再单列教学资源（与切面学习/模拟器重复）',
     (await c.evalJs('document.querySelectorAll("#page-valveana .va-lesson").length')) === 0);
+
+  /* ────────────────────────────────────────────────────────────
+     【三c】条目内小节导航真的能滚
+     用户 2026-10-22 报「APK 公式集点进去的导航点不动，小程序正常」。
+     根因是 window.scrollTo({behavior:'smooth'}) 在部分 Android WebView 里
+     静默失效，已改为 goToY() 带 420ms 兜底。这里做真实点击回归：
+     打开小节数最多的条目 → 点第 4 个胶囊 → 断言 scrollY 明显大于 0。
+     ★ 必须放在文件末尾：中途切页签会让后面的断言全红。
+     ──────────────────────────────────────────────────────────── */
+  console.log('\n【三c】条目内小节导航（点胶囊真的会滚）');
+  await c.evalJs(`(function(){
+    document.querySelector('.tab[data-tab="calc"]').click();
+    const card = document.querySelector('#calcGroups .card[data-g="tavr"]');
+    if (!card) return 'noc';
+    document.getElementById('calcIndex').hidden = true;
+    document.getElementById('calcDetail').hidden = false;
+    card.hidden = false;
+    window.scrollTo(0, 0);
+    return card.querySelectorAll('.fx-nav--sec .fx-nav__c').length;
+  })()`);
+  const navN = await c.evalJs(
+    'document.querySelectorAll(\'#calcGroups .card[data-g="tavr"] .fx-nav--sec .fx-nav__c\').length');
+  check('TAVR 条目渲染出 7 个小节导航胶囊', navN === 7, navN);
+  await c.evalJs(
+    'document.querySelector(\'#calcGroups .card[data-g="tavr"] .fx-nav--sec .fx-nav__c:nth-child(5)\').click()');
+  await new Promise((r) => setTimeout(r, 900));
+  const scrollInfo = await c.evalJs(`(function(){
+    return JSON.stringify({
+      wy: Math.round(window.scrollY),
+      de: Math.round(document.documentElement.scrollTop),
+      bd: Math.round(document.body.scrollTop),
+      sec4: Math.round((document.getElementById('sec-4-tavr')||{getBoundingClientRect:function(){return{top:-9999}}}).getBoundingClientRect().top)
+    });
+  })()`);
+  const navSc = JSON.parse(scrollInfo);
+  const scrolled = Math.max(navSc.wy, navSc.de, navSc.bd);
+  check('点第 5 个胶囊后页面确实向下滚动', scrolled > 200, scrollInfo);
+  const atTarget = await c.evalJs(`(function(){
+    const el = document.getElementById('sec-4-tavr');
+    if (!el) return -1;
+    const dy = Math.round(el.getBoundingClientRect().top);
+    // 顶栏 56px 遮挡余量，落在 -80 ~ +200 之间即算定位正确
+    return (dy > -80 && dy < 200) ? 1 : dy;
+  })()`);
+  check('滚动落点对准目标小节（顶栏留 56px 余量）', atTarget === 1, atTarget);
+  await c.evalJs('window.scrollTo(0, 0)');
 
   console.log('\n【四】控制台');
   const errs = c.logs.filter((l) => l.indexOf('EXCEPTION') === 0 ||

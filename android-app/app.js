@@ -198,16 +198,29 @@
     toTopBtn.classList.toggle('totop--on', currentTab === 'calc' && window.scrollY > 420);
   }
   window.addEventListener('scroll', syncToTop, { passive: true });
-  toTopBtn.addEventListener('click', function () {
+
+  /**
+   * 平滑滚动到指定纵向位置，带兜底
+   *
+   * ★ 必须带兜底：部分 Android WebView（以及系统开了「减少动态效果」时）
+   *   对 scrollTo({behavior:'smooth'}) 完全无反应 —— 表现为「点了没动静」。
+   *   用户 2026-10-21 报的「APK 里回到顶部点了不动」、2026-10-22 报的
+   *   「公式集点进去的小节导航点不动」都是这一个根因。
+   *   这里统一：先试平滑，420ms 后若位置没变就直接跳过去。
+   */
+  function goToY(top) {
+    const y = Math.max(0, Math.round(top));
     const before = window.scrollY;
     try {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: y, behavior: 'smooth' });
     } catch (e) { /* 老 WebView 不认对象参数 */ }
-    // 兜底：不支持平滑滚动（或系统开了「减少动态效果」）时直接跳回顶部
     setTimeout(function () {
-      if (window.scrollY > 0 && window.scrollY === before) window.scrollTo(0, 0);
-    }, 450);
-  });
+      // 平滑滚动已经开始移动时不要打断，只处理「一点没动」的情况
+      if (window.scrollY === before && before !== y) window.scrollTo(0, y);
+    }, 420);
+  }
+
+  toTopBtn.addEventListener('click', function () { goToY(0); });
 
   /* ══════════════════════════════════════════════════════════
      二、分段选择器（通用）
@@ -323,7 +336,10 @@
 
   // 「查看下方参考值」平滑滚动
   if ($('jumpRef')) $('jumpRef').addEventListener('click', function () {
-    $('refBlock').scrollIntoView({ behavior: 'smooth' });
+    const el = $('refBlock');
+    if (!el) return;
+    // 与其它跳转统一走 goToY：APK 的 WebView 不认 smooth，必须有兜底
+    goToY(el.getBoundingClientRect().top + window.pageYOffset - 56);
   });
 
   /* ══════════════════════════════════════════════════════════
@@ -905,15 +921,23 @@
    * ★ 正文里的 **加粗** 要转成 <b>，否则屏幕上出现字面量 ** （用户 2026-10-21 反馈）。
    *   解析器 InlineMd 与小程序共用同一份（miniprogram/utils/inline-md.js）。
    * ★ 返回 { html, toc }：toc 是小节标题清单，长条目用它做顶部导航。
+   *
+   * ★★ 锚点 id 必须带条目前缀（用户 2026-10-22 报「APK 导航点不动」的根因）：
+   *   网页端把**全部**条目卡一次性渲染进 #calcGroups，若每张卡都从 sec-0 编号，
+   *   整页会出现 100 多组重复 id；document.getElementById('sec-4') 只返回文档里
+   *   第一个，而那是**别的（隐藏的）卡片**里的元素，rect.top 恒为 0 →
+   *   点导航永远滚到顶或不动。小程序是「一条目一页面」所以不复现。
+   *   故 id 形如 sec-4-tavr：既能用 [id^="sec-"] 选中，又保证全页唯一。
    */
-  function blocksHtml(blocks) {
+  function blocksHtml(blocks, prefix) {
     let h = '';
     const toc = [];
     let secIdx = -1;
+    const uid = prefix ? String(prefix) : '';
     (blocks || []).forEach(function (b) {
       if (b.kind === 'h') {
         secIdx += 1;
-        const id = 'sec-' + secIdx;
+        const id = 'sec-' + secIdx + (uid ? '-' + uid : '');
         toc.push({ id: id, t: String(b.text || '').replace(/\*\*/g, '') });
         h += '<div class="fx-h" id="' + id + '">' + mdInline(b.text) + '</div>';
         return;
@@ -1336,7 +1360,7 @@
     CALC_GROUPS.forEach(function (g) {
       // 说明块（临床意义 / 参考标准 / 判读要点）来自 calc-notes.js，与小程序同源
       const nb = calcNotesBlocks(g.id);
-      const bl = blocksHtml(nb);
+      const bl = blocksHtml(nb, g.id);
       html += '<div class="card" data-g="' + g.id + '" hidden>' +
         '<div class="card__t">' + esc(g.title) + '</div>' +
         tocHtml(bl.toc) +
@@ -1352,7 +1376,7 @@
 
     BRIEF.forEach(function (sec) {
       sec.items.forEach(function (it) {
-        const bl = blocksHtml(it.blocks);
+        const bl = blocksHtml(it.blocks, it.id);
         html += '<div class="card" data-g="' + it.id + '" hidden>' +
           '<div class="card__t">' + esc(it.title) + '</div>' +
           tocHtml(bl.toc) +
@@ -1398,7 +1422,7 @@
         if (!target) return;
         // 顶栏是 fixed 的，滚动后要留出高度，否则标题被盖住
         const top = target.getBoundingClientRect().top + window.pageYOffset - 56;
-        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        goToY(top);
       });
     });
     // 绑定动态生成的分段选择器
