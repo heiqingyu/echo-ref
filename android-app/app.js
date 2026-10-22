@@ -159,10 +159,6 @@
       el.classList.toggle('tab--on', el.dataset.tab === name);
     });
     $('appbarTitle').textContent = TAB_TITLE[name];
-    // 页尾「其他页面」高亮当前页签
-    document.querySelectorAll('.pagefoot__i').forEach(function (el) {
-      el.classList.toggle('pagefoot__i--on', el.dataset.go === name);
-    });
 
     // 切页时刷新数据
     if (name === 'peds') renderPeds();
@@ -614,6 +610,37 @@
       fields: [['phv', 'TR Vmax', 'm/s'], ['phrvotat', 'RVOT 加速时间（可选）', 'ms']],
       note: 'TR Vmax ≤2.8 无征象 → 低；≤2.8 有征象 或 2.9–3.4 无征象 → 中；2.9–3.4 有征象 或 >3.4 → 高。右心征象指 RV/LV >1、室间隔变平 / 矛盾运动、RVOT AT <105 ms、右房面积 >18 cm²、IVC >21 mm 不塌陷、收缩期切迹。超声只给「可能性」，确诊必须右心导管' },
 
+    /* ── 瓣膜专用定量（v1.4.1：与小程序 calc-groups.js 同源，走 valve-calc 引擎） ── */
+    { id: 'as', sec: 'valve', title: 'AS 主动脉瓣狭窄定量',
+      fields: [['as_lvotD', 'LVOT 直径', 'cm'], ['as_lvotVti', 'LVOT VTI', 'cm'],
+        ['as_avVti', 'AV VTI（连续方程）', 'cm'], ['as_avVmax', 'AV Vmax', 'm/s'],
+        ['as_lvotVmax', 'LVOT Vmax（峰速法，可选）', 'm/s'], ['as_mg', '平均跨瓣压差（可选）', 'mmHg']],
+      note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；DVI = VTI_LVOT ÷ VTI_AV；峰速法 AVA = SV_LVOT ÷ (Vmax_AV × 100)。连续方程与峰速法互相印证，两法差 >0.2 cm² 时回图像找原因' },
+    { id: 'ar', sec: 'valve', title: 'AR 主动脉瓣反流定量',
+      fields: [['ar_radius', 'PISA 半径', 'cm'], ['ar_aliasVa', '混叠速度 Va', 'cm/s'],
+        ['ar_regV', '反流峰速', 'm/s'], ['ar_regVti', '反流 VTI', 'cm'],
+        ['ar_vc', '缩流颈 VC（可选）', 'cm'], ['ar_pht', '压力半降时间 PHT（可选）', 'ms'],
+        ['ar_lvotD', 'LVOT 直径（算 RF，可选）', 'cm'], ['ar_lvotVti', 'LVOT VTI（算 RF，可选）', 'cm']],
+      note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_AR，反流分数 RF = RVol ÷ SV_LVOT。填了 PHT 会给压力半降时间分级，填了 VC 会给缩流颈分级' },
+    { id: 'ms', sec: 'valve', title: 'MS 二尖瓣狭窄定量',
+      fields: [['ms_mvaPlani', 'MVA 直接描记（首选）', 'cm²'], ['ms_pht', '压力半降时间 PHT', 'ms'],
+        ['ms_mg', '平均跨瓣压差', 'mmHg'], ['ms_pasp', '估测 PASP（可选）', 'mmHg'],
+        ['ms_lvotD', 'LVOT 直径（连续方程，可选）', 'cm'], ['ms_lvotVti', 'LVOT VTI（连续方程，可选）', 'cm'],
+        ['ms_mvVti', '二尖瓣流入 VTI（连续方程，可选）', 'cm']],
+      note: 'MVA = 220 ÷ PHT；连续性方程 MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV。直接描记、PHT、连续方程三法同屏对照，差值 >0.3 cm² 时回图像核对' },
+    { id: 'mr', sec: 'valve', title: 'MR 二尖瓣反流定量',
+      fields: [['mr_radius', 'PISA 半径', 'cm'], ['mr_aliasVa', '混叠速度 Va', 'cm/s'],
+        ['mr_regV', '反流峰速', 'm/s'], ['mr_regVti', '反流 VTI', 'cm'],
+        ['mr_vc', '缩流颈 VC（可选）', 'cm'], ['mr_dt', 'dP/dt：1→3 m/s 时间（可选）', 'ms'],
+        ['mr_lvotD', 'LVOT 直径（算 RF，可选）', 'cm'], ['mr_lvotVti', 'LVOT VTI（算 RF，可选）', 'cm']],
+      note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_MR；dP/dt = 32 ÷ Δt（1→3 m/s）。填了 VC 给缩流颈分级，填了 LVOT 直径与 VTI 会算反流分数' },
+    { id: 'tr', sec: 'valve', title: 'TR 三尖瓣反流定量',
+      fields: [['tr_radius', 'PISA 半径', 'cm'], ['tr_aliasVa', '混叠速度 Va', 'cm/s'],
+        ['tr_regV', '反流峰速', 'm/s'], ['tr_regVti', '反流 VTI', 'cm'],
+        ['tr_vc', '缩流颈 VC（可选）', 'cm'], ['tr_trV', 'TR 峰速（可选）', 'm/s'],
+        ['tr_ivc', 'IVC 内径（可选）', 'mm']],
+      note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_TR；TR 峰速按 4V² 得压差，配合 IVC 内径估右房压算出 PASP。填了 VC 会给缩流颈分级' },
+
     /* ── v1.3.0 第三批：瓣膜与舒张细节 ── */
     { id: 'wilkins', sec: 'valve', title: 'Wilkins 二尖瓣形态评分',
       fields: [['wk1', '瓣叶厚度', '分'], ['wk2', '瓣叶钙化', '分'],
@@ -784,17 +811,14 @@
   /** 选项组状态（性别 / 心律 / 节段总数 …），键为 calcc-groups 里的 opts.k */
   const calcOpt = {};
 
-  /** 公式集目录里的瓣膜条目：点击跳到瓣膜页并预选该瓣膜（发布版无此页，故不渲染该组） */
-  const VALVE_INDEX = [
-    { id: 'as', title: 'AS 主动脉瓣狭窄', sub: 'AVA · 峰值流速 · 压差分级' },
-    { id: 'ar', title: 'AR 主动脉瓣反流', sub: '反流束 · PHT · 压力减半时间' },
-    { id: 'ms', title: 'MS 二尖瓣狭窄', sub: 'MVA · PHT · 平均压差' },
-    { id: 'mr', title: 'MR 二尖瓣反流', sub: 'EROA · RVol · 反流分级' },
-    { id: 'tr', title: 'TR 三尖瓣反流', sub: 'EROA · RVol · PASP' },
-  ];
-
   /** 目录里每条公式的一句话说明 */
   const CALC_SUB = {
+    // 瓣膜专用定量（v1.4.1：从小程序瓣膜页搬进公式集）
+    as: 'AVA 连续性方程 · DVI · 峰速法',
+    ar: 'PISA EROA · 缩流颈 VC · PHT · 反流分数',
+    ms: 'MVA 描记 / PHT · 平均压差 · PASP',
+    mr: 'PISA EROA · RVol · dP/dt',
+    tr: 'EROA · RVol · TR 峰速 · IVC',
     flow: 'SV · CO · SVi · CI',
     ef: 'Simpson 双平面 · EF · SVi · ESVi',
     lvmass: 'LV Mass · LVMI · RWT · 四分法',
@@ -1132,7 +1156,6 @@
    *  album 条目（整本书的视频）只占 1 行，children 不进目录，点进去才列切面。
    */
   function buildCalcSections() {
-    const hasValvePage = !!$('page-valves');
     // mergeInto：并入同名组，避免「瓣膜评估」与「瓣膜疾病评估」两个相似组并存
     const MERGED = {};
     BRIEF.forEach(function (sec) {
@@ -1154,13 +1177,10 @@
       });
     });
 
-    // 瓣膜评估组：完整版含 5 个瓣膜计算器，发布版没有瓣膜页只有通用计算与判读条目
+    // 瓣膜评估组：v1.4.1 起 AS/AR/MS/MR/TR 就是 calc-groups 里的普通计算条目
+    // （三层端目录一致），这里不再从 VALVE_INDEX 生成 kind:'valve' 条目，
+    // 否则完整版里同一台计算器会出现两次。
     const valveItems = [];
-    if (hasValvePage) {
-      VALVE_INDEX.forEach(function (v) {
-        valveItems.push({ kind: 'valve', id: v.id, title: v.title, sub: v.sub });
-      });
-    }
     // ★ 瓣膜通用计算（sec: 'valve'）并入瓣膜组，紧跟瓣膜专用计算器之后
     //   —— 与小程序 calculators.js 的顺序严格一致
     CALC_GROUPS.filter(function (g) {
@@ -1805,6 +1825,26 @@
         put('ppm', '需先在「EF·参考值」页填写身高体重（BSA 为 0 时无法算 EOAi）');
       } else put('ppm');
     }
+
+    // 瓣膜专用定量（AS / AR / MS / MR / TR）——v1.4.1 起与小程序共用 valve-calc 引擎
+    // 结果行直接把前 5 项算出来的数值列出来（AVA / EROA / VC 这些才是要点），
+    // 末尾再缀一句综合分级，跟瓣膜页原来的表格信息量对齐。
+    ['as', 'ar', 'ms', 'mr', 'tr'].forEach(function (vid) {
+      if (!ValveCalc) { put(vid, ''); return; }
+      // 输入键带条目前缀（as_lvotD），去掉前缀还原成引擎认的键名
+      const vv = {};
+      Object.keys(v).forEach(function (k) {
+        if (k.indexOf(vid + '_') === 0) vv[k.slice(vid.length + 1)] = v[k];
+      });
+      const rv = ValveCalc.valveCalc(vid, vv, bsa);
+      let txt = '';
+      if (rv.rows && rv.rows.length) {
+        txt = rv.rows.slice(0, 5).map(function (r) {
+          return r.k + ' ' + r.v + (r.tag ? '（' + r.tag + '）' : '');
+        }).join(' · ') + '｜' + rv.summary;
+      }
+      put(vid, txt);
+    });
 
     // 舒张功能分级
     {

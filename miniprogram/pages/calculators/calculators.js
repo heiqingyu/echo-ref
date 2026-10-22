@@ -8,20 +8,19 @@ const app = getApp();
  * 公式集目录
  *
  * ★ 以后新增条目（只需改一处）：
- *   - 计算公式：在 utils/calc-groups.js 的 GROUPS 加一条
- *   - 瓣膜评估：在下面 EXTRA 加一条（跳瓣膜页并预选瓣膜）
+ *   - 计算公式：在 utils/calc-groups.js 的 GROUPS 加一条（瓣膜 AS/AR/MS/MR/TR 也是）
  *   - 评估类内容：在 utils/extra-data.js 的 BRIEF_SECTIONS 对应分组加一条
+ *
+ * ★ v1.4.1：原来 5 个跳「瓣膜页」的专用计算器改成公式集里的普通计算条目
+ *   （AS/AR/MS/MR/TR 在 calc-groups.js 里，id 与原瓣膜页一致），
+ *   这样网页 / APK / 小程序三端目录完全一致，不再有「这个端有、那个端没有」。
+ *   这里只留「瓣膜解剖示意图」一个跳转项，放在组末尾。
  */
 const EXTRA = [
   {
     id: 'valve',
     title: '瓣膜评估',
     items: [
-      { kind: 'valve', id: 'as', title: 'AS 主动脉瓣狭窄', sub: 'AVA · 峰值流速 · 压差分级' },
-      { kind: 'valve', id: 'ar', title: 'AR 主动脉瓣反流', sub: '反流束 · PHT · 压力减半时间' },
-      { kind: 'valve', id: 'ms', title: 'MS 二尖瓣狭窄', sub: 'MVA · PHT · 平均压差' },
-      { kind: 'valve', id: 'mr', title: 'MR 二尖瓣反流', sub: 'EROA · RVol · 反流分级' },
-      { kind: 'valve', id: 'tr', title: 'TR 三尖瓣反流', sub: 'EROA · RVol · PASP' },
       { kind: 'valveana', id: 'valveana', title: '瓣膜解剖示意图', sub: '分区 · 分叶 · 分段 · TTE/TEE 标准切面' },
     ],
   },
@@ -55,7 +54,8 @@ function buildSections() {
   });
 
   EXTRA.forEach(function (s) {
-    sections.push({ id: s.id, title: s.title, items: s.items });
+    // ★ 跳转型条目（瓣膜解剖示意图）先别急着塞开头，等判读条目合并完再放末尾
+    sections.push({ id: s.id, title: s.title, items: s.items.slice() });
   });
 
   // ★ 瓣膜通用计算（calc-groups.js 里 sec: 'valve'）并入「瓣膜评估」组，
@@ -85,6 +85,17 @@ function buildSections() {
     }
     sections.push({ id: s.id, title: s.title, items: items });
   });
+
+  // ★ 瓣膜解剖示意图挪到组末尾：先给计算器与判读条目，再看示意图
+  const valveTail = sections.filter(function (x) { return x.id === 'valve'; })[0];
+  if (valveTail) {
+    const jumps = valveTail.items.filter(function (it) { return it.kind === 'valveana'; });
+    if (jumps.length) {
+      valveTail.items = valveTail.items
+        .filter(function (it) { return it.kind !== 'valveana'; })
+        .concat(jumps);
+    }
+  }
 
   // 切面学习与 TEE 模拟器：纯链接条目
   // mp4 直链走站内播放页，其余外链仍复制到浏览器（小程序 web-view 受业务域名限制）

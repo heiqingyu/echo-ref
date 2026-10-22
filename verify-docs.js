@@ -116,7 +116,8 @@ function check(name, ok, detail) {
   check('Peds 引擎已挂载', (await c.evalJs('typeof window.Peds === "object"')) === true);
   check('Calc 引擎已挂载（公式集需要）', (await c.evalJs('typeof window.Calc')) === 'object');
   check('ExtraData 评估内容已挂载', (await c.evalJs('typeof window.ExtraData')) === 'object');
-  check('ValveCalc 引擎已移除', (await c.evalJs('typeof window.ValveCalc')) === 'undefined');
+  // v1.4.1：AS/AR/MS/MR/TR 成了公式集里的普通计算条目，ValveCalc 引擎必须留着
+  check('ValveCalc 引擎已挂载（瓣膜计算条目需要）', (await c.evalJs('typeof window.ValveCalc')) === 'object');
   check('SegSvg 引擎已挂载（节段划分页需要）',
     (await c.evalJs('typeof window.SegSvg')) === 'object');
   check('ValveSvg 引擎已挂载（瓣膜解剖页需要）',
@@ -315,7 +316,7 @@ function check(name, ok, detail) {
     check('公式集分组 = 7 个计算组 + 瓣膜 + 6 组评估 + 2 组外链（评估组已合并到 6 组）',
       d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|切面、图像与质控|心腔、应变与负荷|心肌病变|先天性心脏病（含术后）|器械与介入操作|急症与特殊场景|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 148 条（62 计算 − 5 瓣膜计算器 + 10 瓣膜 + 73 评估 + 8 外链）', d.items === 148, d.items);
+    check('条目 153 条（67 计算 + 10 瓣膜判读与解剖 + 68 评估 + 8 外链）', d.items === 153, d.items);
     check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -323,8 +324,7 @@ function check(name, ok, detail) {
     check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
-    check('发布版瓣膜评估组含 9 条瓣膜通用计算（wilkins/vcw/rf/mva/pisav/avav/ppm/asload/pr）',
-      d.valveCalc === 9, d.valveCalc);
+    check('发布版瓣膜评估组含 14 条计算（5 个瓣膜专用 + 9 个通用）', d.valveCalc === 14, d.valveCalc);
     check('参考文献 78 条', d.refs === 78, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
@@ -851,8 +851,8 @@ function check(name, ok, detail) {
   const st = JSON.parse(stripped);
   check('发布版已剥离瓣膜页', st.valvePage === false, stripped);
   check('发布版保留节段划分页', st.segPage === true, stripped);
-  check('发布版已剥离 ValveCalc、保留 SegSvg',
-    st.valveEngine === 'undefined' && st.segEngine === 'object', stripped);
+  check('发布版保留 ValveCalc 与 SegSvg（瓣膜计算条目 + 节段页都要用）',
+    st.valveEngine === 'object' && st.segEngine === 'object', stripped);
 
   const homeVer = await c.evalJs('document.querySelector("#page-index .verline") ? 1 : 0');
   check('首页显示版本行', homeVer === 1, homeVer);

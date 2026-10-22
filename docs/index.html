@@ -1317,73 +1317,6 @@ html, body {
   background: #e6d9ff;
 }
 
-/* ══════════════ 页尾：跳转其他页面（2026-10-22） ══════════════ */
-.pagefoot {
-  margin: 18px 12px 96px;
-  padding: 14px 14px 6px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-}
-
-.pagefoot__hd {
-  font-size: 12px;
-  color: var(--sub);
-  margin-bottom: 10px;
-  letter-spacing: .3px;
-}
-
-/* 用 flex 而不是 grid：发布版少了「瓣膜评估」那个入口，页尾只剩 5 项，
-   flex 的最后一行会自动撑满，不会在右下角留一个空格子。 */
-.pagefoot__grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding-bottom: 8px;
-}
-
-.pagefoot__i {
-  display: block;
-  flex: 1 1 150px;
-  min-width: 0;
-  text-align: left;
-  padding: 9px 11px;
-  background: #f8f9fb;
-  border: 1px solid #edeff3;
-  border-radius: 10px;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.pagefoot__i b {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.pagefoot__i span {
-  display: block;
-  margin-top: 2px;
-  font-size: 11px;
-  color: var(--sub);
-  line-height: 1.45;
-}
-
-.pagefoot__i:hover {
-  background: var(--brand-soft);
-  border-color: #dbe6ff;
-}
-
-.pagefoot__i--on {
-  border-color: var(--brand);
-  background: var(--brand-soft);
-}
-
-.pagefoot__i--on b {
-  color: var(--brand);
-}
-
 /* ══════════════ 回到顶部（公式集等长页面，2026-10-21） ══════════════ */
 .totop {
   position: fixed;
@@ -1578,7 +1511,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.4.1</div>
+    <div class="verline">心脏超声参考值 · v1.4.2</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1617,7 +1550,7 @@ html, body {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.4.1</div>
+      <div class="verline">心脏超声参考值 · v1.4.2</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -1845,28 +1778,6 @@ html, body {
   </section>
 
 </main>
-
-<!-- ══════════ 页尾：跳转其他页面（2026-10-22） ══════════ -->
-<footer class="pagefoot" id="pagefoot">
-  <div class="pagefoot__hd">继续看其他页面</div>
-  <div class="pagefoot__grid">
-    <button type="button" class="pagefoot__i" data-go="index">
-      <b>EF·参考值</b><span>EF 分级 · 正常值 · 参考区间</span>
-    </button>
-    <button type="button" class="pagefoot__i" data-go="peds">
-      <b>儿童 Z 值</b><span>0–18 岁按体表面积校正</span>
-    </button>
-    <button type="button" class="pagefoot__i" data-go="segments">
-      <b>节段划分</b><span>17 节段与冠脉供血的对应</span>
-    </button>
-    <button type="button" class="pagefoot__i" data-go="valveana">
-      <b>瓣膜解剖</b><span>TTE / TEE 短轴方位与分区</span>
-    </button>
-    <button type="button" class="pagefoot__i" data-go="calc">
-      <b>公式集</b><span>77 条判读 · 62 个计算器 · 78 条文献</span>
-    </button>
-  </div>
-</footer>
 
 <!-- ══════════ 底部页签 ══════════ -->
 <nav class="tabbar" id="tabbar">
@@ -6567,6 +6478,458 @@ function utf8ToBase64(str) {
   };
 })();
 
+/* ── 引擎：valve-calc.js（由小程序源码自动抽取，勿手改）── */
+(function () {
+/**
+ * valve-calc.js — 瓣膜页计算引擎（AS / AR / MS / MR / TR）
+ *
+ * 与 echo-calc.js 同一套约定：本文件为独立引擎，所有函数必须定义在文件末尾的
+ * 导出语句之前（build-www.js 抽取源码时会在导出处截断，注释里不要出现该语句原文）。
+ *
+ * 分级阈值来源：
+ *   AS：ASE/EACVI 2017 定量（Vmax / 平均压差 / AVA / AVAi / DVI）
+ *   AR：ASE 2017 原生瓣膜反流定量（VC / PHT / RVol / RF / EROA）
+ *   MS：ACC/AHA 2020 分期（MVA / 平均压差 / PASP）+ Hatle MVA = 220 / PHT
+ *   MR：ASE 2017（VC / EROA / RVol / RF）+ dP/dt = 32000 / Δt
+ *   TR：ASE 2017（VC / EROA / RVol，重度 RVol ≥45 mL）
+ *   PASP = 4·TRV² + RAP；RAP 用 IVC 三分级（自主呼吸）
+ * 本工具仅供速查与学习，阈值不能替代指南原文与临床判断。
+ */
+
+/* ────────── 基础工具 ────────── */
+
+function isNum(x) {
+  return typeof x === 'number' && isFinite(x);
+}
+
+function f1(x) { return Math.round(x * 10) / 10; }
+function f2(x) { return Math.round(x * 100) / 100; }
+function txt(x, d) {
+  if (!isNum(x)) return '—';
+  return Number(x).toFixed(d === undefined ? 2 : d);
+}
+
+/** 圆面积（瓣环横截面）cm²，d 单位 cm */
+function csaOf(dCm) { return Math.PI * dCm * dCm / 4; }
+
+/** 每搏量 mL = 面积 × VTI */
+function svOf(dCm, vtiCm) { return csaOf(dCm) * vtiCm; }
+
+/** PISA 血流量 mL/s = 2πr² × Va */
+function pisaFlow(radiusCm, aliasVaCms) { return 2 * Math.PI * radiusCm * radiusCm * aliasVaCms; }
+
+/** PISA 有效反流口面积 cm² = 流量 ÷ 反流峰速（cm/s） */
+function pisaEroa(radiusCm, aliasVaCms, regVmS) { return pisaFlow(radiusCm, aliasVaCms) / (regVmS * 100); }
+
+/** 反流量 mL = EROA × 反流 VTI */
+function rvolOf(eroaCm2, regVtiCm) { return eroaCm2 * regVtiCm; }
+
+/** dP/dt（mmHg/s）= 32000 ÷ Δt(ms) */
+function dpdtOf(dtMs) { return 32000 / dtMs; }
+
+/** RAP 估算（自主呼吸）：IVC ≤21 mm 且吸气塌陷 >50% → 3；>21 mm 且 ≤50% → 15；其余 8 */
+function rapOf(ivcMm, collapse) {
+  if (ivcMm <= 21 && collapse === 'yes') return 3;
+  if (ivcMm > 21 && collapse === 'no') return 15;
+  return 8;
+}
+
+/** RVSP / PASP = 4·V_TR² + RAP */
+function paspOf(trVmS, rap) { return 4 * trVmS * trVmS + rap; }
+
+/* ────────── 单项分级 ────────── */
+
+const LEVEL_RANK = { none: 0, mild: 1, moderate: 2, severe: 3 };
+const LEVEL_TEXT = { none: '不显著', mild: '轻度', moderate: '中度', severe: '重度' };
+
+function lv(level) { return { level: level, text: LEVEL_TEXT[level] }; }
+
+/* AS */
+function gVmax(v) {
+  if (v < 2.6) return lv('none');
+  if (v <= 2.9) return lv('mild');
+  if (v <= 3.9) return lv('moderate');
+  return lv('severe');
+}
+function gMeanGrad(m) {
+  if (m < 20) return lv('mild');
+  if (m <= 39) return lv('moderate');
+  return lv('severe');
+}
+function gAva(a) {
+  if (a > 1.5) return lv('mild');
+  if (a >= 1.0) return lv('moderate');
+  return lv('severe');
+}
+function gAvai(a) {
+  if (a > 0.85) return lv('mild');
+  if (a >= 0.60) return lv('moderate');
+  return lv('severe');
+}
+function gDvi(d) {
+  if (d > 0.50) return lv('mild');
+  if (d >= 0.25) return lv('moderate');
+  return lv('severe');
+}
+
+/* AR */
+function gArVc(c) {
+  if (c < 0.3) return lv('mild');
+  if (c <= 0.6) return lv('moderate');
+  return lv('severe');
+}
+function gArPht(p) {
+  if (p > 500) return lv('mild');
+  if (p >= 200) return lv('moderate');
+  return lv('severe');
+}
+function gArEroa(e) {
+  if (e < 0.10) return lv('mild');
+  if (e < 0.30) return lv('moderate');
+  return lv('severe');
+}
+function gArRvol(v) {
+  if (v < 30) return lv('mild');
+  if (v < 60) return lv('moderate');
+  return lv('severe');
+}
+function gRf(r) {
+  if (r < 30) return lv('mild');
+  if (r < 50) return lv('moderate');
+  return lv('severe');
+}
+
+/* MS */
+function gMsMva(a) {
+  if (a > 1.5) return lv('none');
+  if (a >= 1.0) return lv('moderate');
+  return lv('severe');
+}
+function gMsMg(m) {
+  if (m < 5) return lv('mild');
+  if (m <= 10) return lv('moderate');
+  return lv('severe');
+}
+function gMsPasp(p) {
+  if (p < 30) return lv('mild');
+  if (p <= 50) return lv('moderate');
+  return lv('severe');
+}
+
+/* MR */
+function gMrVc(c) {
+  if (c < 0.3) return lv('mild');
+  if (c < 0.7) return lv('moderate');
+  return lv('severe');
+}
+function gMrEroa(e) {
+  if (e < 0.20) return lv('mild');
+  if (e < 0.40) return lv('moderate');
+  return lv('severe');
+}
+function gMrRvol(v) {
+  if (v < 30) return lv('mild');
+  if (v < 60) return lv('moderate');
+  return lv('severe');
+}
+
+/* TR */
+function gTrVc(c) {
+  if (c < 0.3) return lv('mild');
+  if (c < 0.7) return lv('moderate');
+  return lv('severe');
+}
+function gTrEroa(e) {
+  if (e < 0.20) return lv('mild');
+  if (e < 0.40) return lv('moderate');
+  return lv('severe');
+}
+function gTrRvol(v) {
+  if (v < 30) return lv('mild');
+  if (v < 45) return lv('moderate');
+  return lv('severe');
+}
+function gDpdt(v) {
+  if (v < 800) return lv('severe');
+  if (v <= 1000) return lv('moderate');
+  return lv('none');
+}
+
+/* ────────── 行构造 ────────── */
+
+function row(k, v, g) {
+  return { k: k, v: v, tag: g ? g.text : '', level: g ? g.level : 'none' };
+}
+
+/** 汇总：最重等级 + 各级计数 */
+function summarize(rows) {
+  let worst = 'none';
+  let nSev = 0;
+  let nMod = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r.tag) continue;
+    if (LEVEL_RANK[r.level] > LEVEL_RANK[worst]) worst = r.level;
+    if (r.level === 'severe') nSev++;
+    if (r.level === 'moderate') nMod++;
+  }
+  let text;
+  if (worst === 'severe') text = '综合提示：达到重度区间（' + nSev + ' 项）';
+  else if (worst === 'moderate') text = '综合提示：达到中度区间（' + nMod + ' 项）';
+  else if (worst === 'mild') text = '综合提示：位于轻度区间';
+  else text = '综合提示：未达到显著狭窄 / 反流区间';
+  return { level: worst, summary: text, nSev: nSev, nMod: nMod };
+}
+
+/* ────────── 各瓣膜计算 ────────── */
+
+function calcAs(v, bsa) {
+  const rows = [];
+  const notes = [];
+
+  const hasLvot = isNum(v.lvotD) && v.lvotD > 0 && isNum(v.lvotVti);
+  const sv = hasLvot ? svOf(v.lvotD, v.lvotVti) : null;
+  if (sv !== null) rows.push(row('每搏量 SV（LVOT）', txt(sv, 1) + ' mL'));
+
+  if (sv !== null && isNum(v.avVti) && v.avVti > 0) {
+    const ava = sv / v.avVti;
+    rows.push(row('AVA 连续方程', txt(ava, 2) + ' cm²', gAva(ava)));
+    if (bsa > 0) rows.push(row('AVAi', txt(ava / bsa, 2) + ' cm²/m²', gAvai(ava / bsa)));
+  }
+  if (isNum(v.lvotVti) && isNum(v.avVti) && v.avVti > 0) {
+    const dvi = v.lvotVti / v.avVti;
+    rows.push(row('DVI（VTI 比值）', txt(dvi, 2), gDvi(dvi)));
+  }
+  if (isNum(v.lvotD) && isNum(v.lvotVmax) && isNum(v.avVmax) && v.avVmax > 0) {
+    rows.push(row('AVA 峰速法', txt(csaOf(v.lvotD) * v.lvotVmax / v.avVmax, 2) + ' cm²'));
+  }
+  if (isNum(v.avVmax) && v.avVmax > 0) {
+    rows.push(row('AV Vmax', txt(v.avVmax, 2) + ' m/s', gVmax(v.avVmax)));
+    rows.push(row('峰值压差 4V²', txt(4 * v.avVmax * v.avVmax, 1) + ' mmHg'));
+    if (v.avVmax >= 5) notes.push('Vmax ≥5 m/s：提示极重度狭窄。');
+  }
+  if (isNum(v.mg)) {
+    rows.push(row('平均跨瓣压差', txt(v.mg, 1) + ' mmHg', gMeanGrad(v.mg)));
+    if (v.mg >= 60) notes.push('平均压差 ≥60 mmHg：提示极重度狭窄。');
+  }
+
+  if (sv !== null && bsa > 0 && sv / bsa < 35) {
+    notes.push('低流量：SVi ' + txt(sv / bsa, 1) + ' mL/m²（<35）—— AVA 可能低估，考虑低剂量多巴酚丁胺负荷与 CT 钙化评分。');
+  }
+  if (rows.length && !isNum(v.mg)) {
+    notes.push('未填平均跨瓣压差：分级仅依据 AVA / AVAi / DVI / Vmax，建议补录压差并注明心率。');
+  }
+  return { rows: rows, notes: notes };
+}
+
+function calcAr(v, bsa) {
+  const rows = [];
+  const notes = [];
+  let eroa = null;
+  let rvol = null;
+
+  if (isNum(v.radius) && isNum(v.aliasVa) && isNum(v.regV) && v.regV > 0) {
+    rows.push(row('PISA 血流量', txt(pisaFlow(v.radius, v.aliasVa), 1) + ' mL/s'));
+    eroa = pisaEroa(v.radius, v.aliasVa, v.regV);
+    rows.push(row('EROA', txt(eroa, 2) + ' cm²', gArEroa(eroa)));
+    if (isNum(v.regVti)) {
+      rvol = rvolOf(eroa, v.regVti);
+      rows.push(row('RVol', txt(rvol, 1) + ' mL', gArRvol(rvol)));
+    } else {
+      notes.push('未填反流 VTI：只得到 EROA，无法给出反流量与反流分数。');
+    }
+  }
+  if (eroa !== null && rvol !== null && isNum(v.lvotD) && isNum(v.lvotVti)) {
+    const sv = svOf(v.lvotD, v.lvotVti);
+    if (sv > 0) {
+      const rf = rvol / sv * 100;
+      rows.push(row('反流分数 RF', txt(rf, 1) + '%', gRf(rf)));
+    }
+  }
+  if (isNum(v.vc)) rows.push(row('缩流颈 VC', txt(v.vc, 2) + ' cm', gArVc(v.vc)));
+  if (isNum(v.pht)) {
+    rows.push(row('压力半降时间 PHT', txt(v.pht, 0) + ' ms', gArPht(v.pht)));
+    notes.push('PHT 受主动脉 / 左室顺应性与血压影响，需结合 VC 与降主动脉反向血流。');
+  }
+  if (!rows.length) notes.push('填 PISA 半径 / 混叠速度 / 反流峰速即可得到 EROA；再填反流 VTI 得到 RVol。');
+  return { rows: rows, notes: notes };
+}
+
+function calcMs(v) {
+  const rows = [];
+  const notes = [];
+  let mvaLevelRow = null;
+
+  if (isNum(v.mvaPlani) && v.mvaPlani > 0) {
+    mvaLevelRow = row('MVA 直接描记（首选）', txt(v.mvaPlani, 2) + ' cm²', gMsMva(v.mvaPlani));
+    rows.push(mvaLevelRow);
+  }
+  if (isNum(v.pht) && v.pht > 0) {
+    const mva = 220 / v.pht;
+    const r = row('MVA · PHT 法（220÷PHT）', txt(mva, 2) + ' cm²', gMsMva(mva));
+    rows.push(r);
+    if (!mvaLevelRow) mvaLevelRow = r;
+    notes.push('PHT 法在球囊扩张后、顺应性异常、明显 AR 或高流量状态下不可靠。');
+  }
+  if (isNum(v.lvotD) && isNum(v.lvotVti) && isNum(v.mvVti) && v.mvVti > 0) {
+    const mva = svOf(v.lvotD, v.lvotVti) / v.mvVti;
+    const r = row('MVA 连续方程', txt(mva, 2) + ' cm²', gMsMva(mva));
+    rows.push(r);
+    if (!mvaLevelRow) mvaLevelRow = r;
+  }
+  if (isNum(v.mg)) {
+    rows.push(row('平均跨瓣压差', txt(v.mg, 1) + ' mmHg', gMsMg(v.mg)));
+    notes.push('压差随心率与流量变化，报告需同时记录心率与心律。');
+  }
+  if (isNum(v.pasp)) rows.push(row('估测 PASP', txt(v.pasp, 1) + ' mmHg', gMsPasp(v.pasp)));
+  if (!rows.length) notes.push('优先填 MVA 直接描记；无描记时可用 PHT（MVA = 220 ÷ PHT）或连续方程估算。');
+  return { rows: rows, notes: notes };
+}
+
+function calcMr(v) {
+  const rows = [];
+  const notes = [];
+  let eroa = null;
+  let rvol = null;
+
+  if (isNum(v.radius) && isNum(v.aliasVa) && isNum(v.regV) && v.regV > 0) {
+    rows.push(row('PISA 血流量', txt(pisaFlow(v.radius, v.aliasVa), 1) + ' mL/s'));
+    eroa = pisaEroa(v.radius, v.aliasVa, v.regV);
+    rows.push(row('EROA', txt(eroa, 2) + ' cm²', gMrEroa(eroa)));
+    if (isNum(v.regVti)) {
+      rvol = rvolOf(eroa, v.regVti);
+      rows.push(row('RVol', txt(rvol, 1) + ' mL', gMrRvol(rvol)));
+    } else {
+      notes.push('未填反流 VTI：无法给出反流量与反流分数。');
+    }
+  }
+  if (eroa !== null && rvol !== null && isNum(v.lvotD) && isNum(v.lvotVti)) {
+    const sv = svOf(v.lvotD, v.lvotVti);
+    if (sv > 0) rows.push(row('反流分数 RF', txt(rvol / sv * 100, 1) + '%', gRf(rvol / sv * 100)));
+  }
+  if (isNum(v.vc)) rows.push(row('缩流颈 VC', txt(v.vc, 2) + ' cm', gMrVc(v.vc)));
+  if (isNum(v.dt) && v.dt > 0) {
+    const d = dpdtOf(v.dt);
+    rows.push(row('dP/dt（1→3 m/s）', txt(d, 0) + ' mmHg/s', gDpdt(d)));
+    notes.push('dP/dt >1000 提示左室收缩功能尚可，<800 mmHg/s 提示收缩功能受损；受负荷与频谱质量影响。');
+  }
+  if (eroa !== null && (eroa >= 0.30 || (rvol !== null && rvol >= 45))) {
+    notes.push('EROA / RVol 已进入继发 MR 也具有预后意义的区间（EROA ≥0.30 cm² 和/或 RVol ≥45 mL），需与心衰治疗、CRT 评估及团队决策结合。');
+  }
+  notes.push('继发 MR 反流口常呈椭圆形且随负荷变化，PISA 可能低估，应结合肺静脉血流与 CW 频谱形态。');
+  if (!rows.length) notes.push('填 PISA 半径 / 混叠速度 / 反流峰速即可得到 EROA。');
+  return { rows: rows, notes: notes };
+}
+
+function calcTr(v, collapse) {
+  const rows = [];
+  const notes = [];
+  let eroa = null;
+  let rvol = null;
+
+  if (isNum(v.radius) && isNum(v.aliasVa) && isNum(v.regV) && v.regV > 0) {
+    rows.push(row('PISA 血流量', txt(pisaFlow(v.radius, v.aliasVa), 1) + ' mL/s'));
+    eroa = pisaEroa(v.radius, v.aliasVa, v.regV);
+    rows.push(row('EROA', txt(eroa, 2) + ' cm²', gTrEroa(eroa)));
+    if (isNum(v.regVti)) {
+      rvol = rvolOf(eroa, v.regVti);
+      rows.push(row('RVol', txt(rvol, 1) + ' mL', gTrRvol(rvol)));
+    } else {
+      notes.push('未填反流 VTI：TR 分级需要 RVol（重度界值 ≥45 mL）。');
+    }
+  }
+  if (isNum(v.vc)) rows.push(row('缩流颈 VC', txt(v.vc, 2) + ' cm', gTrVc(v.vc)));
+
+  let rap = null;
+  if (isNum(v.ivc)) {
+    rap = rapOf(v.ivc, collapse);
+    rows.push(row('RAP 估测（IVC 法）', rap + ' mmHg'));
+    if (collapse === '') notes.push('未选择 IVC 吸气塌陷：RAP 按 8 mmHg 估算；机械通气时不可套用。');
+  }
+  if (isNum(v.trV) && v.trV > 0) {
+    rows.push(row('TR 峰值压差 4V²', txt(4 * v.trV * v.trV, 1) + ' mmHg'));
+    if (rap !== null) rows.push(row('PASP ≈ 4V² + RAP', txt(paspOf(v.trV, rap), 1) + ' mmHg'));
+    else notes.push('填 IVC 内径可得 RAP，从而估算 PASP。');
+  }
+  notes.push('显著 TR 可能低估 TR 压差，需结合右室大小与功能、右房面积、IVC 及肝静脉血流。');
+  if (!rows.length) notes.push('填 PISA 参数可做 TR 定量；TR 峰速 + IVC 可估算 PASP。');
+  return { rows: rows, notes: notes };
+}
+
+/* ────────── 统一入口 ────────── */
+
+/**
+ * @param {string} id  as | ar | ms | mr | tr
+ * @param {object} v   输入值字典（数值，ivcCollapse 为 'yes'|'no'|''）
+ * @param {number} bsa 体表面积，可为 0
+ * @returns {{rows:Array, notes:Array, level:string, summary:string}}
+ */
+function valveCalc(id, v, bsa) {
+  const inputs = v || {};
+  const area = bsa > 0 ? bsa : 0;
+  let out;
+  if (id === 'as') out = calcAs(inputs, area);
+  else if (id === 'ar') out = calcAr(inputs, area);
+  else if (id === 'ms') out = calcMs(inputs, area);
+  else if (id === 'mr') out = calcMr(inputs, area);
+  else if (id === 'tr') out = calcTr(inputs, inputs.ivcCollapse || '');
+  else return { rows: [], notes: [], level: 'none', summary: '' };
+
+  const s = summarize(out.rows);
+  return {
+    rows: out.rows,
+    notes: out.notes,
+    level: s.level,
+    summary: out.rows.length ? s.summary : '等待输入',
+  };
+}
+
+  window.ValveCalc = {
+    isNum: isNum,
+    f1: f1,
+    f2: f2,
+    txt: txt,
+    csaOf: csaOf,
+    svOf: svOf,
+    pisaFlow: pisaFlow,
+    pisaEroa: pisaEroa,
+    rvolOf: rvolOf,
+    dpdtOf: dpdtOf,
+    rapOf: rapOf,
+    paspOf: paspOf,
+    LEVEL_RANK: LEVEL_RANK,
+    LEVEL_TEXT: LEVEL_TEXT,
+    lv: lv,
+    gVmax: gVmax,
+    gMeanGrad: gMeanGrad,
+    gAva: gAva,
+    gAvai: gAvai,
+    gDvi: gDvi,
+    gArVc: gArVc,
+    gArPht: gArPht,
+    gArEroa: gArEroa,
+    gArRvol: gArRvol,
+    gRf: gRf,
+    gMsMva: gMsMva,
+    gMsMg: gMsMg,
+    gMsPasp: gMsPasp,
+    gMrVc: gMrVc,
+    gMrEroa: gMrEroa,
+    gMrRvol: gMrRvol,
+    gTrVc: gTrVc,
+    gTrEroa: gTrEroa,
+    gTrRvol: gTrRvol,
+    gDpdt: gDpdt,
+    row: row,
+    summarize: summarize,
+    calcAs: calcAs,
+    calcAr: calcAr,
+    calcMs: calcMs,
+    calcMr: calcMr,
+    calcTr: calcTr,
+    valveCalc: valveCalc,
+  };
+})();
 
 /* ── 引擎：inline-md.js（由小程序源码自动抽取，勿手改）── */
 (function () {
@@ -12234,6 +12597,52 @@ var CALC_HINTS = {
   osa: '右心与肺循环 · 肺动脉收缩压 PASP；右室容积指数；血流动力学与心功能 · IVC 估右房压',
   myowork: '重构与心肌功能 · 每搏做功与每搏功指数；相对室壁应力 RWS',
   ecmo: '右心与肺循环 · 右室游离壁应变 RVFWS；TAPSE/肺动脉压耦联比',
+  /* 切面、图像与质控 */
+  'tee-20': '瓣膜评估 · MS 二尖瓣狭窄定量；AS 主动脉瓣狭窄定量；介入尺寸与先心 · TAVR 瓣环尺寸与 oversizing',
+  'tte-std': '血流动力学与心功能 · 左室容积与射血分数；左室质量与几何构型；MAPSE 长轴收缩',
+  'tee-safety': '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · 肺动脉收缩压 PASP',
+  'artifact-guide': '血流动力学与心功能 · 简化伯努利压差；无量纲指数 DVI；瓣膜评估 · 缩流颈宽度 VCW 分级',
+  mimic: '血流动力学与心功能 · 简化伯努利压差；瓣膜评估 · 反流定量（PISA）；缩流颈宽度 VCW 分级',
+  'contrast-echo': '血流动力学与心功能 · 左室容积与射血分数；Qp/Qs 肺体循环血流比',
+  '3d-tee': '瓣膜评估 · MS 二尖瓣狭窄定量；介入尺寸与先心 · TAVR 瓣环尺寸与 oversizing',
+  'report-std': '评分与室壁运动 · WMSI 室壁运动积分；血流动力学与心功能 · 左室容积与射血分数',
+  critical: '右心与肺循环 · 肺动脉收缩压 PASP；血流动力学与心功能 · 左室容积与射血分数',
+  'doppler-basics': '血流动力学与心功能 · 简化伯努利压差；无量纲指数 DVI；瓣膜评估 · 缩流颈宽度 VCW 分级',
+  peri: '右心与肺循环 · 右房压（IVC 法）；TAPSE/PASP 耦联比',
+  'cp-rm': '舒张功能定量 · 舒张功能分级（四步法）；E/Vp 左房压估测；重构与心肌功能 · 左房僵硬度',
+  ctrcd: '血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · 应变离散度 MDS；左房应变三值',
+  'zh-normal': '血流动力学与心功能 · 心房容积指数；重构与心肌功能 · LVMI 身高^2.7（肥胖适用）',
+  mass: '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · 右房压（IVC 法）',
+  'hcm-stress': '重构与心肌功能 · LVMI 身高^2.7（肥胖适用）；心尖保留比值 RAS；每搏功 SW / SWi',
+  dse: '瓣膜评估 · 主动脉瓣面积（连续性方程）；血流动力学与心功能 · 无量纲指数 DVI；左室容积与射血分数',
+  ie: '瓣膜评估 · 反流定量（PISA）；缩流颈宽度 VCW 分级；血流动力学与心功能 · 左室容积与射血分数',
+  'aortic-root': '介入尺寸与先心 · 主动脉分节段 Z 值；重构与心肌功能 · 升主动脉直径指数；TAVR 瓣环尺寸与 oversizing',
+  rheumatic: '瓣膜评估 · Wilkins 二尖瓣形态评分；MS 二尖瓣狭窄定量；右心与肺循环 · 肺动脉收缩压 PASP',
+  fabry: '重构与心肌功能 · LVMI 身高^2.7（肥胖适用）；心尖保留比值 RAS；应变离散度 MDS',
+  arvc: '右心与肺循环 · 右室容积指数 RVEDVi / RVESVi；右室游离壁应变 RVFWS；右室面积变化分数 FAC',
+  myocarditis: '右心与肺循环 · 右室游离壁应变 RVFWS；血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · 应变离散度 MDS',
+  sarcoid: '血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · 应变离散度 MDS；心尖保留比值 RAS',
+  ebstein: '瓣膜评估 · TR 三尖瓣反流定量；右心与肺循环 · 右房压（IVC 法）；右室面积变化分数 FAC',
+  dorv: '血流动力学与心功能 · Qp/Qs 肺体循环血流比；介入尺寸与先心 · McGoon 比值与 Nakata 指数；瓣膜评估 · TR 三尖瓣反流定量',
+  'asd-close': '血流动力学与心功能 · Qp/Qs 肺体循环血流比；介入尺寸与先心 · McGoon 比值与 Nakata 指数；右心与肺循环 · 肺血管阻力 PVR',
+  'coa-echo': '介入尺寸与先心 · 主动脉缩窄压差与拖尾；McGoon 比值与 Nakata 指数；主动脉分节段 Z 值',
+  mustard: '右心与肺循环 · 右室容积指数 RVEDVi / RVESVi；右室游离壁应变 RVFWS；肺动脉收缩压 PASP',
+  fontan: '右心与肺循环 · PAPi 肺动脉搏动指数；肺血管阻力 PVR；阻力指数 PVRI / SVRI',
+  'as-switch': '瓣膜评估 · AS 主动脉瓣狭窄定量；TR 三尖瓣反流定量；血流动力学与心功能 · 左室容积与射血分数',
+  ttvr: '瓣膜评估 · TR 三尖瓣反流定量；缩流颈宽度 VCW 分级；反流定量（PISA）',
+  'echo-interv': '右心与肺循环 · 肺动脉收缩压 PASP；右房压（IVC 法）；血流动力学与心功能 · 左室容积与射血分数',
+  crt: '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · 右室游离壁应变 RVFWS',
+  la: '血流动力学与心功能 · 心房容积指数；重构与心肌功能 · 左房应变三值；左房排空分数 LAEF',
+  lvad: '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · PAPi 肺动脉搏动指数；右室游离壁应变 RVFWS',
+  thrombus: '血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · 左室球形指数；评分与室壁运动 · WMSI 室壁运动积分',
+  'zh-ph': '右心与肺循环 · 肺动脉收缩压 PASP；肺血管阻力 PVR；阻力指数 PVRI / SVRI',
+  'ami-comp': '评分与室壁运动 · WMSI 室壁运动积分；血流动力学与心功能 · 左室容积与射血分数；瓣膜评估 · MR 二尖瓣反流定量',
+  'pregnancy-echo': '右心与肺循环 · 肺动脉收缩压 PASP；右房压（IVC 法）；血流动力学与心功能 · 左室容积与射血分数',
+  ppcm: '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · TAPSE/PASP 耦联比；肺动脉收缩压 PASP',
+  sepsis: '血流动力学与心功能 · LVOT 每搏量与心排量；左室容积与射血分数；右心与肺循环 · PAPi 肺动脉搏动指数',
+  'postop-icu': '血流动力学与心功能 · LVOT 每搏量与心排量；左室容积与射血分数；右心与肺循环 · PAPi 肺动脉搏动指数',
+  'lung-us': '舒张功能定量 · E/Vp 左房压估测；右心与肺循环 · 右房压（IVC 法）',
+
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -12284,6 +12693,51 @@ var CALC_LINKS = {
   osa: ['paspv', 'rvvol', 'rapv'],
   myowork: ['swv', 'rwsv'],
   ecmo: ['rvfws', 'rcratiov'],
+  'tee-20': ['ms', 'as', 'tavrsz'],
+  'tte-std': ['ef', 'lvmass', 'mapse'],
+  'tee-safety': ['ef', 'paspv'],
+  'artifact-guide': ['bernoulli', 'dvi', 'vcw'],
+  mimic: ['bernoulli', 'pisav', 'vcw'],
+  'contrast-echo': ['ef', 'shunt'],
+  '3d-tee': ['ms', 'tavrsz'],
+  'report-std': ['wmsi', 'ef'],
+  critical: ['paspv', 'ef'],
+  'doppler-basics': ['bernoulli', 'dvi', 'vcw'],
+  peri: ['rapv', 'rcratiov'],
+  'cp-rm': ['dfun', 'evp', 'lastiff'],
+  ctrcd: ['ef', 'mdsv', 'lastrain'],
+  'zh-normal': ['atrial', 'lvmih'],
+  mass: ['ef', 'rapv'],
+  'hcm-stress': ['lvmih', 'ras', 'swv'],
+  dse: ['avav', 'dvi', 'ef'],
+  ie: ['pisav', 'vcw', 'ef'],
+  'aortic-root': ['aortaz', 'aortaidx', 'tavrsz'],
+  rheumatic: ['wilkins', 'ms', 'paspv'],
+  fabry: ['lvmih', 'ras', 'mdsv'],
+  arvc: ['rvvol', 'rvfws', 'rvfacv'],
+  myocarditis: ['rvfws', 'ef', 'mdsv'],
+  sarcoid: ['ef', 'mdsv', 'ras'],
+  ebstein: ['tr', 'rapv', 'rvfacv'],
+  dorv: ['shunt', 'paidx', 'tr'],
+  'asd-close': ['shunt', 'paidx', 'pvrv'],
+  'coa-echo': ['coa', 'paidx', 'aortaz'],
+  mustard: ['rvvol', 'rvfws', 'paspv'],
+  fontan: ['papi', 'pvrv', 'residx'],
+  'as-switch': ['as', 'tr', 'ef'],
+  ttvr: ['tr', 'vcw', 'pisav'],
+  'echo-interv': ['paspv', 'rapv', 'ef'],
+  crt: ['ef', 'rvfws'],
+  la: ['atrial', 'lastrain', 'laef'],
+  lvad: ['ef', 'papi', 'rvfws'],
+  thrombus: ['ef', 'spher', 'wmsi'],
+  'zh-ph': ['paspv', 'pvrv', 'residx'],
+  'ami-comp': ['wmsi', 'ef', 'mr'],
+  'pregnancy-echo': ['paspv', 'rapv', 'ef'],
+  ppcm: ['ef', 'rcratiov', 'paspv'],
+  sepsis: ['flow', 'ef', 'papi'],
+  'postop-icu': ['flow', 'ef', 'papi'],
+  'lung-us': ['evp', 'rapv'],
+
 };
 
 (function attachCalcHints() {
@@ -12457,6 +12911,32 @@ const CALC_NOTES = {
   },
 
   /* ── 瓣膜定量 ───────────────────────────────────── */
+  /* ── 瓣膜专用定量（v1.4.1 从小程序瓣膜页搬进公式集） ── */
+  as: {
+    use: '定量主动脉瓣狭窄程度，回答「是重度吗、需不需要干预」。AVA、DVI、峰速与平均压差是分级和随访的四条主线，低流量状态还要靠它判断是不是「假性轻中度」。',
+    std: '重度：AVA <1.0 cm²、AVAi <0.60 cm²/m²、Vmax ≥4.0 m/s、平均压差 ≥40 mmHg、DVI <0.25。极重度线索：Vmax ≥5 m/s 或平均压差 ≥60 mmHg。',
+    tip: 'LVOT 直径的误差被平方放大，重复测 3 次取平均并记录测量平面。AVA 与压差不一致时先查 LVOT 内径、PW 取样位置、CW 声束对齐与血压，不要简单取平均。',
+  },
+  ar: {
+    use: '定量主动脉瓣反流，用于判断「重度吗、左室还能代偿多久」。急性重度 AR 与慢性重度 AR 的处理完全不同，前者是急诊手术指征。',
+    std: '重度：EROA ≥0.30 cm²、RVol ≥60 mL、RF ≥50%、VC ≥6 mm；PHT <200 ms 支持重度。',
+    tip: 'PHT 受心率与急性病程影响，心动过速、急性 AR 会假性缩短。偏心束用 PISA 常低估，需结合 VC、反流束宽度与降主动脉舒张期反向血流。',
+  },
+  ms: {
+    use: '定量二尖瓣狭窄，决定 PBMV 还是外科、以及随访节奏。MVA 是分级核心，平均压差随流量变化，不能单独用。',
+    std: 'MVA >1.5 轻度、1.0–1.5 中度、<1.0 重度、<0.6 极重度；平均压差 ≥10 mmHg 或 PASP >50 mmHg 提示有血流动力学意义。',
+    tip: 'PHT 法（220/PHT）要求窦性心律、无明显 AR；房颤、重度钙化、术后首选直接描记或连续性方程。房颤测量取 3–5 个心动周期平均。',
+  },
+  mr: {
+    use: '定量二尖瓣反流，判断重度与手术时机。原发性 MR 看瓣膜本身，继发性 MR 还要看左室重构与存活心肌。',
+    std: '重度：EROA ≥0.40 cm²、RVol ≥60 mL、RF ≥50%、VC ≥7 mm；dP/dt <800 mmHg/s 提示收缩功能受损。',
+    tip: '偏心束、多束反流时 PISA 低估，需结合 VC、肺静脉血流频谱与反流束形态。急性重度 MR 时 LVEF「正常」也可能已经失代偿。',
+  },
+  tr: {
+    use: '定量三尖瓣反流并估右心压力，是右心衰、肺动脉高压与左心瓣膜术前评估的关键。',
+    std: '重度：EROA ≥0.40 cm²、RVol ≥45 mL、VC ≥7 mm；TR 峰速 ≥3.4 m/s 对应 PASP ≥50 mmHg；IVC >21 mm 且塌陷 <50% 提示右房压升高。',
+    tip: '房颤患者的 IVC 与反流频谱可靠性下降，应结合肝静脉血流与右房面积。TR 重度合并瓣环扩张（>40 mm）提示需要一并处理。',
+  },
   wilkins: {
     use: '二尖瓣狭窄的形态学评分，判断是否适合经皮二尖瓣球囊扩张（PBMV），也用于选择瓣膜型号。',
     std: '四项各 1–4 分，总分 4–16：≤8 分适合 PBMV；9–11 边缘区需个体化；≥12 优先外科换瓣。',
@@ -12719,6 +13199,7 @@ const MATERIALS = [];
   const Core = window.Core;
   const Peds = window.Peds;
   const Calc = window.Calc;
+  const ValveCalc = window.ValveCalc;
 
   /* ══════════ 全局状态（对应小程序的 app.globalData） ══════════ */
   const state = {
@@ -12868,10 +13349,6 @@ const MATERIALS = [];
       el.classList.toggle('tab--on', el.dataset.tab === name);
     });
     $('appbarTitle').textContent = TAB_TITLE[name];
-    // 页尾「其他页面」高亮当前页签
-    document.querySelectorAll('.pagefoot__i').forEach(function (el) {
-      el.classList.toggle('pagefoot__i--on', el.dataset.go === name);
-    });
 
     // 切页时刷新数据
     if (name === 'peds') renderPeds();
@@ -13318,6 +13795,37 @@ const MATERIALS = [];
       fields: [['phv', 'TR Vmax', 'm/s'], ['phrvotat', 'RVOT 加速时间（可选）', 'ms']],
       note: 'TR Vmax ≤2.8 无征象 → 低；≤2.8 有征象 或 2.9–3.4 无征象 → 中；2.9–3.4 有征象 或 >3.4 → 高。右心征象指 RV/LV >1、室间隔变平 / 矛盾运动、RVOT AT <105 ms、右房面积 >18 cm²、IVC >21 mm 不塌陷、收缩期切迹。超声只给「可能性」，确诊必须右心导管' },
 
+    /* ── 瓣膜专用定量（v1.4.1：与小程序 calc-groups.js 同源，走 valve-calc 引擎） ── */
+    { id: 'as', sec: 'valve', title: 'AS 主动脉瓣狭窄定量',
+      fields: [['as_lvotD', 'LVOT 直径', 'cm'], ['as_lvotVti', 'LVOT VTI', 'cm'],
+        ['as_avVti', 'AV VTI（连续方程）', 'cm'], ['as_avVmax', 'AV Vmax', 'm/s'],
+        ['as_lvotVmax', 'LVOT Vmax（峰速法，可选）', 'm/s'], ['as_mg', '平均跨瓣压差（可选）', 'mmHg']],
+      note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；DVI = VTI_LVOT ÷ VTI_AV；峰速法 AVA = SV_LVOT ÷ (Vmax_AV × 100)。连续方程与峰速法互相印证，两法差 >0.2 cm² 时回图像找原因' },
+    { id: 'ar', sec: 'valve', title: 'AR 主动脉瓣反流定量',
+      fields: [['ar_radius', 'PISA 半径', 'cm'], ['ar_aliasVa', '混叠速度 Va', 'cm/s'],
+        ['ar_regV', '反流峰速', 'm/s'], ['ar_regVti', '反流 VTI', 'cm'],
+        ['ar_vc', '缩流颈 VC（可选）', 'cm'], ['ar_pht', '压力半降时间 PHT（可选）', 'ms'],
+        ['ar_lvotD', 'LVOT 直径（算 RF，可选）', 'cm'], ['ar_lvotVti', 'LVOT VTI（算 RF，可选）', 'cm']],
+      note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_AR，反流分数 RF = RVol ÷ SV_LVOT。填了 PHT 会给压力半降时间分级，填了 VC 会给缩流颈分级' },
+    { id: 'ms', sec: 'valve', title: 'MS 二尖瓣狭窄定量',
+      fields: [['ms_mvaPlani', 'MVA 直接描记（首选）', 'cm²'], ['ms_pht', '压力半降时间 PHT', 'ms'],
+        ['ms_mg', '平均跨瓣压差', 'mmHg'], ['ms_pasp', '估测 PASP（可选）', 'mmHg'],
+        ['ms_lvotD', 'LVOT 直径（连续方程，可选）', 'cm'], ['ms_lvotVti', 'LVOT VTI（连续方程，可选）', 'cm'],
+        ['ms_mvVti', '二尖瓣流入 VTI（连续方程，可选）', 'cm']],
+      note: 'MVA = 220 ÷ PHT；连续性方程 MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV。直接描记、PHT、连续方程三法同屏对照，差值 >0.3 cm² 时回图像核对' },
+    { id: 'mr', sec: 'valve', title: 'MR 二尖瓣反流定量',
+      fields: [['mr_radius', 'PISA 半径', 'cm'], ['mr_aliasVa', '混叠速度 Va', 'cm/s'],
+        ['mr_regV', '反流峰速', 'm/s'], ['mr_regVti', '反流 VTI', 'cm'],
+        ['mr_vc', '缩流颈 VC（可选）', 'cm'], ['mr_dt', 'dP/dt：1→3 m/s 时间（可选）', 'ms'],
+        ['mr_lvotD', 'LVOT 直径（算 RF，可选）', 'cm'], ['mr_lvotVti', 'LVOT VTI（算 RF，可选）', 'cm']],
+      note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_MR；dP/dt = 32 ÷ Δt（1→3 m/s）。填了 VC 给缩流颈分级，填了 LVOT 直径与 VTI 会算反流分数' },
+    { id: 'tr', sec: 'valve', title: 'TR 三尖瓣反流定量',
+      fields: [['tr_radius', 'PISA 半径', 'cm'], ['tr_aliasVa', '混叠速度 Va', 'cm/s'],
+        ['tr_regV', '反流峰速', 'm/s'], ['tr_regVti', '反流 VTI', 'cm'],
+        ['tr_vc', '缩流颈 VC（可选）', 'cm'], ['tr_trV', 'TR 峰速（可选）', 'm/s'],
+        ['tr_ivc', 'IVC 内径（可选）', 'mm']],
+      note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_TR；TR 峰速按 4V² 得压差，配合 IVC 内径估右房压算出 PASP。填了 VC 会给缩流颈分级' },
+
     /* ── v1.3.0 第三批：瓣膜与舒张细节 ── */
     { id: 'wilkins', sec: 'valve', title: 'Wilkins 二尖瓣形态评分',
       fields: [['wk1', '瓣叶厚度', '分'], ['wk2', '瓣叶钙化', '分'],
@@ -13488,17 +13996,14 @@ const MATERIALS = [];
   /** 选项组状态（性别 / 心律 / 节段总数 …），键为 calcc-groups 里的 opts.k */
   const calcOpt = {};
 
-  /** 公式集目录里的瓣膜条目：点击跳到瓣膜页并预选该瓣膜（发布版无此页，故不渲染该组） */
-  const VALVE_INDEX = [
-    { id: 'as', title: 'AS 主动脉瓣狭窄', sub: 'AVA · 峰值流速 · 压差分级' },
-    { id: 'ar', title: 'AR 主动脉瓣反流', sub: '反流束 · PHT · 压力减半时间' },
-    { id: 'ms', title: 'MS 二尖瓣狭窄', sub: 'MVA · PHT · 平均压差' },
-    { id: 'mr', title: 'MR 二尖瓣反流', sub: 'EROA · RVol · 反流分级' },
-    { id: 'tr', title: 'TR 三尖瓣反流', sub: 'EROA · RVol · PASP' },
-  ];
-
   /** 目录里每条公式的一句话说明 */
   const CALC_SUB = {
+    // 瓣膜专用定量（v1.4.1：从小程序瓣膜页搬进公式集）
+    as: 'AVA 连续性方程 · DVI · 峰速法',
+    ar: 'PISA EROA · 缩流颈 VC · PHT · 反流分数',
+    ms: 'MVA 描记 / PHT · 平均压差 · PASP',
+    mr: 'PISA EROA · RVol · dP/dt',
+    tr: 'EROA · RVol · TR 峰速 · IVC',
     flow: 'SV · CO · SVi · CI',
     ef: 'Simpson 双平面 · EF · SVi · ESVi',
     lvmass: 'LV Mass · LVMI · RWT · 四分法',
@@ -13836,7 +14341,6 @@ const MATERIALS = [];
    *  album 条目（整本书的视频）只占 1 行，children 不进目录，点进去才列切面。
    */
   function buildCalcSections() {
-    const hasValvePage = !!$('page-valves');
     // mergeInto：并入同名组，避免「瓣膜评估」与「瓣膜疾病评估」两个相似组并存
     const MERGED = {};
     BRIEF.forEach(function (sec) {
@@ -13858,13 +14362,10 @@ const MATERIALS = [];
       });
     });
 
-    // 瓣膜评估组：完整版含 5 个瓣膜计算器，发布版没有瓣膜页只有通用计算与判读条目
+    // 瓣膜评估组：v1.4.1 起 AS/AR/MS/MR/TR 就是 calc-groups 里的普通计算条目
+    // （三层端目录一致），这里不再从 VALVE_INDEX 生成 kind:'valve' 条目，
+    // 否则完整版里同一台计算器会出现两次。
     const valveItems = [];
-    if (hasValvePage) {
-      VALVE_INDEX.forEach(function (v) {
-        valveItems.push({ kind: 'valve', id: v.id, title: v.title, sub: v.sub });
-      });
-    }
     // ★ 瓣膜通用计算（sec: 'valve'）并入瓣膜组，紧跟瓣膜专用计算器之后
     //   —— 与小程序 calculators.js 的顺序严格一致
     CALC_GROUPS.filter(function (g) {
@@ -14509,6 +15010,26 @@ const MATERIALS = [];
         put('ppm', '需先在「EF·参考值」页填写身高体重（BSA 为 0 时无法算 EOAi）');
       } else put('ppm');
     }
+
+    // 瓣膜专用定量（AS / AR / MS / MR / TR）——v1.4.1 起与小程序共用 valve-calc 引擎
+    // 结果行直接把前 5 项算出来的数值列出来（AVA / EROA / VC 这些才是要点），
+    // 末尾再缀一句综合分级，跟瓣膜页原来的表格信息量对齐。
+    ['as', 'ar', 'ms', 'mr', 'tr'].forEach(function (vid) {
+      if (!ValveCalc) { put(vid, ''); return; }
+      // 输入键带条目前缀（as_lvotD），去掉前缀还原成引擎认的键名
+      const vv = {};
+      Object.keys(v).forEach(function (k) {
+        if (k.indexOf(vid + '_') === 0) vv[k.slice(vid.length + 1)] = v[k];
+      });
+      const rv = ValveCalc.valveCalc(vid, vv, bsa);
+      let txt = '';
+      if (rv.rows && rv.rows.length) {
+        txt = rv.rows.slice(0, 5).map(function (r) {
+          return r.k + ' ' + r.v + (r.tag ? '（' + r.tag + '）' : '');
+        }).join(' · ') + '｜' + rv.summary;
+      }
+      put(vid, txt);
+    });
 
     // 舒张功能分级
     {
