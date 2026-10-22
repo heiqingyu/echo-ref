@@ -58,11 +58,16 @@ check('www 完整版体积 < 1050 KB', Buffer.byteLength(html, 'utf8') < 1050 * 
 check('docs 发布版存在（APK 打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 1000 KB（9 组 73 条评估 + 78 条文献）', Buffer.byteLength(dh, 'utf8') < 1000 * 1024, true);
+  check('docs 发布版体积 < 1000 KB（6 组 77 条评估 + 78 条文献）', Buffer.byteLength(dh, 'utf8') < 1000 * 1024, true);
   check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
   check('docs 发布版含瓣膜解剖页', dh.indexOf('id="page-valveana"') !== -1, true);
   check('docs 发布版内联 ValveSvg 引擎', dh.indexOf('window.ValveSvg = {') !== -1, true);
+  // 页尾「继续看其他页面」：瓣膜评估页被摘掉，对应按钮必须一起摘掉（不能留死链）
+  check('docs 页尾 5 个跳转且无瓣膜评估死链',
+    dh.indexOf('id="pagefoot"') !== -1 &&
+    (dh.match(/class="pagefoot__i" data-go="/g) || []).length === 5 &&
+    dh.indexOf('data-go="valves"') === -1, true);
 }
 // APK 实际打包源：android-app/assets/index.html 必须与 docs 完全一致
 const ASSET = path.join(ROOT, 'android-app', 'assets', 'index.html');
@@ -454,8 +459,12 @@ check('页签顺序 = EF·参考值|瓣膜评估|儿童 Z 值|节段划分|瓣�
     return x.replace(/^class="tab__t">/, '').replace(/<$/, '');
   }).join('|') === 'EF·参考值|瓣膜评估|儿童 Z 值|节段划分|瓣膜解剖|公式集', true);
 check('含评估内容数据 ExtraData', html.indexOf('window.ExtraData') !== -1, true);
-check('含评估分组（切面与图像优化 / 心腔、应变与负荷 / 器械与介入操作）',
-  ['切面与图像优化', '心腔、应变与负荷', '器械与介入操作'].every(function (t) {
+check('含页尾「继续看其他页面」（6 个跳转，含瓣膜评估）',
+  html.indexOf('id="pagefoot"') !== -1 &&
+  (html.match(/class="pagefoot__i" data-go="/g) || []).length === 6 &&
+  html.indexOf('data-go="valves"') !== -1, true);
+check('含评估分组（切面、图像与质控 / 心腔、应变与负荷 / 器械与介入操作 / 急症与特殊场景）',
+  ['切面、图像与质控', '心腔、应变与负荷', '器械与介入操作', '急症与特殊场景'].every(function (t) {
     return html.indexOf("title: '" + t + "'") !== -1;
   }), true);
 check('含 5 个评估条目（crt/la/lv/rv/strain）',

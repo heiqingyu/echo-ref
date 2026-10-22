@@ -176,10 +176,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 9) ok('评估内容 9 个分组（切面与图像 / 心腔应变与负荷 / 瓣膜 / 心肌 / 大血管 / 先心含术后 / 器械与介入 / 特殊人群 / 报告质控）');
+if (EX.BRIEF_SECTIONS.length === 7) ok('评估内容 7 个分组（切面图像与质控 / 心腔应变与负荷 / 瓣膜 / 心肌 / 先心含术后 / 器械与介入 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,mitral,aortic,asload,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,aorta,pe,ph,thrombus,zh-ph,ami-comp,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,tr-interv,mv-interv,ttvr,tavr,echo-interv,crt,la,lvad,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,report-std,critical') ok('评估条目 = 73 条（9 个分组）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,mitral,aortic,asload,bav,lf-lg,ie,aortic-root,rheumatic,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,tr-interv,mv-interv,ttvr,tavr,echo-interv,crt,la,lvad,aorta,pe,ph,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us') ok('评估条目 = 77 条（7 个分组）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -671,7 +671,7 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
   pmbvSec ? ok('二尖瓣页含 PMBV 适合度流程小节') : bad('二尖瓣页缺 PMBV 适合度流程小节');
 
   // 11.8 报告标准化条目必须含危急值清单（心包填塞 / 主动脉夹层 / 人工瓣急性功能障碍等）
-  const rs = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'report')[0]
+  const rs = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'views-atlas')[0]
     .items.filter(i => i.id === 'report-std')[0];
   const cvTb = (rs.blocks || []).filter(function (b) {
     return b.kind === 'table' && (b.heads || [])[0] === '危急值';
@@ -767,9 +767,70 @@ console.log('\n=== 159. style 闭标签字面量（会被 HTML 解析器提前�
   else ok('app.css 不含 style 闭标签字面量（内联进页面不会被截断）');
 }
 
+/* ---- 160. 条目「相关内容」与页尾跳转 ---- *
+ * 用户 2026-10-22：条目要给「相关联的内容」，页尾要给「跳转其他页面」。
+ * 数据侧 rel 是唯一真相源（网页 + 小程序都读 extra-data），这里一并守住。
+ */
+console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ===');
+{
+  const appJs160 = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
+  const bwJs160 = fs.readFileSync(path.join(ROOT, 'build-www.js'), 'utf8');
+  const EX160 = require('./miniprogram/utils/extra-data.js');
+  const briefs160 = EX160.BRIEF_SECTIONS.reduce((a, s) => a.concat(s.items), []);
+  const ids160 = briefs160.map(b => b.id);
+
+  const withRel = briefs160.filter(b => Array.isArray(b.rel) && b.rel.length);
+  if (withRel.length >= 60) ok('评估条目带相关内容 rel：' + withRel.length + ' / ' + briefs160.length);
+  else bad('带 rel 的条目只有 ' + withRel.length + ' 条（应 ≥ 60）');
+
+  const dangling = [];
+  const selfRef = [];
+  briefs160.forEach(b => {
+    (b.rel || []).forEach(r => {
+      if (ids160.indexOf(r) === -1) dangling.push(b.id + '->' + r);
+      if (r === b.id) selfRef.push(b.id);
+    });
+  });
+  if (!dangling.length) ok('rel 全部指向存在的条目');
+  else bad('rel 悬空引用 → ' + dangling.join(' | '));
+  if (!selfRef.length) ok('rel 不指向自身');
+  else bad('rel 自我引用 → ' + selfRef.join(' | '));
+
+  // 网页端渲染 + 点击跳转
+  if (/function briefRelHtml\(ids\)/.test(appJs160) &&
+      appJs160.indexOf("data-rel=\"' + esc(id)") !== -1) ok('网页端渲染「相关内容」胶囊（briefRelHtml）');
+  else bad('网页端缺少 briefRelHtml 或 data-rel 输出');
+
+  if (appJs160.indexOf('briefRelHtml(it.rel)') !== -1) ok('网页端把 rel 接进条目详情');
+  else bad('网页端条目详情未调用 briefRelHtml');
+
+  if (/querySelectorAll\('\.chip\[data-rel\]'\)/.test(appJs160)) ok('网页端「相关内容」可点击跳转');
+  else bad('网页端「相关内容」未绑定点击');
+
+  // 页尾（在产物里数，避免把 build-www.js 里的删除正则也算进去）
+  const wwwPath160 = path.join(ROOT, 'www', 'index.html');
+  const www160 = fs.existsSync(wwwPath160) ? fs.readFileSync(wwwPath160, 'utf8') : '';
+  const footBtns = (www160.match(/class="pagefoot__i" data-go="/g) || []).length;
+  if (footBtns === 6) ok('完整版页尾 6 个跳转入口（含瓣膜评估）');
+  else bad('完整版页尾入口数 ' + footBtns + '（应 6，先跑 node build-www.js）');
+
+  if (bwJs160.indexOf('pagefoot__i" data-go="valves"') !== -1 &&
+      /未找到页尾的瓣膜评估按钮/.test(bwJs160)) ok('发布版会摘掉页尾的瓣膜评估死链');
+  else bad('发布版未处理页尾瓣膜评估死链');
+
+  if (/querySelectorAll\('\[data-go\]'\)/.test(appJs160)) ok('网页端页尾按钮已绑定 switchTab');
+  else bad('网页端页尾按钮未绑定点击');
+
+  const css160 = fs.readFileSync(path.join(ROOT, 'android-app', 'app.css'), 'utf8');
+  if (css160.indexOf('.pagefoot__grid {') !== -1 && css160.indexOf('.pagefoot__i--on') !== -1) {
+    ok('页尾样式已写入 app.css（grid 容器 + 当前页高亮）');
+  } else bad('页尾样式缺失');
+  if (css160.indexOf('.chip--rel') !== -1) ok('「相关内容」胶囊专用配色已定义');
+  else bad('缺少 .chip--rel 配色');
+}
+
 console.log('\n' + '='.repeat(50));
-console.log(`结果： ${pass} 通过 / ${fail} 失败`);
-if (problems.length) {
+console.log(`结果： ${pass} 通过 / ${fail} 失败`);if (problems.length) {
   console.log('\n问题列表：');
   problems.forEach(p => console.log('  - ' + p));
 }

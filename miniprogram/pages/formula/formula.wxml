@@ -107,6 +107,14 @@
 
   <button wx:if="{{!isReference}}" class="clear-btn" bindtap="onClear">清空本组输入</button>
 
+  <view class="card" wx:if="{{rels.length}}">
+    <view class="card__title">相关内容</view>
+    <view class="rel-wrap">
+      <view wx:for="{{rels}}" wx:key="id" class="rel-chip"
+            data-id="{{item.id}}" bindtap="onRel">{{item.t}}</view>
+    </view>
+  </view>
+
   <view class="card" wx:if="{{refs.length}}">
     <view class="card__title">本条目引用</view>
     <view wx:for="{{refs}}" wx:key="id" class="ref-item">
@@ -114,6 +122,30 @@
       <view class="ref-item__body">
         <view class="ref-item__zh">{{item.zh}}</view>
         <view class="ref-item__where">{{item.where}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="pagefoot">
+    <view class="pagefoot__hd">继续看其他页面</view>
+    <view class="pagefoot__grid">
+      <view class="pagefoot__i" data-go="index" bindtap="onGo">
+        <text class="pagefoot__t">EF·参考值</text><text class="pagefoot__d">EF 分级 · 正常值</text>
+      </view>
+      <view class="pagefoot__i" data-go="valves" bindtap="onGo">
+        <text class="pagefoot__t">瓣膜评估</text><text class="pagefoot__d">AS / AR / MS / MR / TR</text>
+      </view>
+      <view class="pagefoot__i" data-go="pediatric" bindtap="onGo">
+        <text class="pagefoot__t">儿童 Z 值</text><text class="pagefoot__d">0–18 岁体表面积校正</text>
+      </view>
+      <view class="pagefoot__i" data-go="segments" bindtap="onGo">
+        <text class="pagefoot__t">节段划分</text><text class="pagefoot__d">17 节段与冠脉对应</text>
+      </view>
+      <view class="pagefoot__i" data-go="valveana" bindtap="onGo">
+        <text class="pagefoot__t">瓣膜解剖</text><text class="pagefoot__d">TTE / TEE 短轴方位</text>
+      </view>
+      <view class="pagefoot__i" data-go="calculators" bindtap="onGo">
+        <text class="pagefoot__t">公式集目录</text><text class="pagefoot__d">77 条判读 · 62 个计算器</text>
       </view>
     </view>
   </view>
