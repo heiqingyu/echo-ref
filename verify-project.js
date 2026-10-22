@@ -176,10 +176,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 12) ok('评估内容 12 个分组（切面图解 / 器械 / 心腔 / 瓣膜 / 心肌 / 大血管 / 先心含术后 / 负荷 / 介入与操作 / 造影伪影 / 特殊人群 / 报告质控）');
+if (EX.BRIEF_SECTIONS.length === 9) ok('评估内容 9 个分组（切面与图像 / 心腔应变与负荷 / 瓣膜 / 心肌 / 大血管 / 先心含术后 / 器械与介入 / 特殊人群 / 报告质控）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,zh-normal,mass,mitral,aortic,asload,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,aorta,pe,ph,thrombus,zh-ph,ami-comp,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,stress-echo,hcm-stress,dse,tr-interv,mv-interv,ttvr,tavr,echo-interv,artifact-guide,mimic,contrast-echo,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,report-std,critical') ok('评估条目 = 69 条（12 个分组，含中国正常值 / 心脏占位 / 中国 PH 分层 / 心梗并发症 / 心肌炎）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,mitral,aortic,asload,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,aorta,pe,ph,thrombus,zh-ph,ami-comp,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,tr-interv,mv-interv,ttvr,tavr,echo-interv,crt,la,lvad,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,report-std,critical') ok('评估条目 = 73 条（9 个分组）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -211,7 +211,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 76) ok('参考文献 76 条（含 7 条本站托管指南 PDF + 4 条中文指南免费全文 + Fabry/ACM/中国指南 5 条）');
+if (EX.REFS.length === 78) ok('参考文献 78 条（7 条本站托管指南 PDF + 4 条中文指南免费全文 + 中国指南与综述 7 条）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：只挂官方/免费可直连的 PDF，需登录下载的坚决不挂
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -686,7 +686,7 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
     : bad('危急值清单异常（' + cvRows.length + ' 行，缺 ' + cvMiss.join(',') + '）');
 
   // 11.9 超声造影条目：适应证限定 LVO/EBD、MI 分级、剂量、EBD 三招、安全性数据
-  const ce = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'artifact')[0]
+  const ce = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'views-atlas')[0]
     .items.filter(i => i.id === 'contrast-echo')[0];
   if (ce) {
     const ceText = JSON.stringify(ce.blocks || []);

@@ -853,7 +853,7 @@
     cfr: '远端 ÷ 近端冠脉舒张期流速',
   };
 
-  /** 评估类内容（器械支持 / 心腔与应变）与参考文献：来自 extra-data.js，与小程序同源 */
+  /** 评估类内容（切面与图像 / 心腔应变与负荷 / …）与参考文献：来自 extra-data.js，与小程序同源 */
   const BRIEF = (window.ExtraData && window.ExtraData.BRIEF_SECTIONS) || [];
   const LINKS = (window.ExtraData && window.ExtraData.LINK_SECTIONS) || [];
   const REFS = (window.ExtraData && window.ExtraData.REFS) || [];
@@ -2174,7 +2174,7 @@
       }
     } else put('aortaz');
 
-    // ── 评估类条目（器械支持 / 心腔与应变）──
+    // ── 评估类条目（切面与图像 / 心腔应变与负荷 / …）──
 
     // CRT：SV / SVi（低流量）+ QRS 时限提示
     {

@@ -54,11 +54,11 @@ const html = fs.readFileSync(WWW, 'utf8');
 // ★ APK 打包源 = docs/index.html（4 页签）。用户明确：不要「瓣膜评估」单独页，
 //   它的判读条目本来就在公式集的「瓣膜评估」组里；只有 5 个瓣膜计算器依赖该页。
 //   但「节段划分」（室壁划分）必须保留 —— 这是之前 app 内容比小程序少的原因。
-check('www 完整版体积 < 900 KB', Buffer.byteLength(html, 'utf8') < 900 * 1024, true);
+check('www 完整版体积 < 1050 KB', Buffer.byteLength(html, 'utf8') < 1050 * 1024, true);
 check('docs 发布版存在（APK 打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 850 KB', Buffer.byteLength(dh, 'utf8') < 850 * 1024, true);
+  check('docs 发布版体积 < 1000 KB（9 组 73 条评估 + 78 条文献）', Buffer.byteLength(dh, 'utf8') < 1000 * 1024, true);
   check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
   check('docs 发布版含瓣膜解剖页', dh.indexOf('id="page-valveana"') !== -1, true);
@@ -454,10 +454,10 @@ check('页签顺序 = EF·参考值|瓣膜评估|儿童 Z 值|节段划分|瓣�
     return x.replace(/^class="tab__t">/, '').replace(/<$/, '');
   }).join('|') === 'EF·参考值|瓣膜评估|儿童 Z 值|节段划分|瓣膜解剖|公式集', true);
 check('含评估内容数据 ExtraData', html.indexOf('window.ExtraData') !== -1, true);
-check('含 2 个评估分组（器械支持 / 心腔与应变）',
-  (html.match(/id: '(device|chamber)',\s*\n\s*title: '[^']+'/g) || []).length >= 2 ||
-  (html.match(/title: '器械支持'/g) || []).length === 1 &&
-  (html.match(/title: '心腔与应变'/g) || []).length === 1, true);
+check('含评估分组（切面与图像优化 / 心腔、应变与负荷 / 器械与介入操作）',
+  ['切面与图像优化', '心腔、应变与负荷', '器械与介入操作'].every(function (t) {
+    return html.indexOf("title: '" + t + "'") !== -1;
+  }), true);
 check('含 5 个评估条目（crt/la/lv/rv/strain）',
   ['crt', 'la', 'lv', 'rv', 'strain'].every(function (id) {
     return html.indexOf("id: '" + id + "'") !== -1;
