@@ -634,8 +634,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('瓣膜通用计算不再出现在舒张功能定量组',
     ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
       .every(id => !dirById('vq').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
-  check('瓣膜评估组含 5 个瓣膜计算器入口',
-    ['as', 'ar', 'ms', 'mr', 'tr'].every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'valve')) ? 1 : 0, 1, 0);
+  // v1.4.1：5 个瓣膜计算器从小程序瓣膜页搬进公式集，kind 由 valve 变 calc，
+  // 这样三端目录一致（网页 / APK 也在这组里算）
+  check('瓣膜评估组含 5 个瓣膜计算器（AS/AR/MS/MR/TR，kind=calc）',
+    ['as', 'ar', 'ms', 'mr', 'tr'].every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   ['mitral', 'aortic', 'lf-lg', 'ie'].forEach(id => {
     check('瓣膜评估组含判读条目 ' + id,
       dirById('valve').items.some(i => i.id === id && i.kind === 'brief') ? 1 : 0, 1, 0);
@@ -940,8 +942,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.onLoad({ id: 'ie' });
   pgF.onShow();
   const lastIe = pgF.data.blocks[pgF.data.blocks.length - 1];
-  check('无对应算法的判读页（感染性心内膜炎）不挂桥接',
-    lastIe && lastIe.text.indexOf('相关计算') === -1 ? 1 : 0, 1, 0);
+  // v1.4.1 起 77 条判读全部挂上「相关计算」，IE 对应 PISA / VCW / EF
+  check('感染性心内膜炎也挂上了「相关计算」桥接',
+    lastIe && lastIe.text.indexOf('相关计算') !== -1 ? 1 : 0, 1, 0);
 
   pgF.onLoad({ id: 'la' });
   pgF.onShow();
@@ -970,6 +973,35 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.data.inputs[0].value = '-16';
   pgF.refresh();
   check('GLS -16% 判为异常', /异常/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  // v1.4.1：AS/AR/MS/MR/TR 搬进公式集后，小程序端必须能算（与网页同一套 valve-calc）
+  (function () {
+    const put = function (id, pairs) {
+      pgF.onLoad({ id: id });
+      pgF.onShow();
+      pairs.forEach(function (pr) {
+        const f = pgF.data.inputs.filter(function (x) { return x.key === pr[0]; })[0];
+        if (f) f.value = pr[1];
+      });
+      pgF.refresh();
+      return pgF.data.out || '';
+    };
+    const asOut = put('as', [['as_lvotD', '2.0'], ['as_lvotVti', '20'],
+      ['as_avVti', '45'], ['as_avVmax', '4.2']]);
+    check('AS 计算条目出 AVA 与 DVI', /AVA 连续方程 1\.4/.test(asOut) && /DVI/.test(asOut) ? 1 : 0, 1, 0);
+    check('AS 四项指标不一致时提示「重度」', /重度/.test(asOut) ? 1 : 0, 1, 0);
+    const mrOut = put('mr', [['mr_radius', '0.9'], ['mr_aliasVa', '40'],
+      ['mr_regV', '5.0'], ['mr_regVti', '120'], ['mr_vc', '0.7']]);
+    check('MR 计算条目出 EROA 与缩流颈', /EROA 0\.4/.test(mrOut) && /缩流颈/.test(mrOut) ? 1 : 0, 1, 0);
+    const trOut = put('tr', [['tr_radius', '0.9'], ['tr_aliasVa', '40'],
+      ['tr_regV', '3.4'], ['tr_regVti', '100']]);
+    check('TR 计算条目可算（含 PASP 相关行）', trOut.length > 10 ? 1 : 0, 1, 0);
+    const emptyOut = put('ms', []);
+    check('瓣膜计算条目不填值时不报错、不出结果', emptyOut === '' ? 1 : 0, 1, 0);
+  })();
+  // 上面把我切到了 ms，这里要切回 strain 再继续
+  pgF.onLoad({ id: 'strain' });
+  pgF.onShow();
   pgF.data.inputs[0].value = '-22';
   pgF.refresh();
   check('GLS -22% 判为正常', /正常/.test(pgF.data.out) ? 1 : 0, 1, 0);

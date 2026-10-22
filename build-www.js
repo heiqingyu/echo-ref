@@ -729,31 +729,6 @@ ${VALVEANA_HTML}
 
 </main>
 
-<!-- ══════════ 页尾：跳转其他页面（2026-10-22） ══════════ -->
-<footer class="pagefoot" id="pagefoot">
-  <div class="pagefoot__hd">继续看其他页面</div>
-  <div class="pagefoot__grid">
-    <button type="button" class="pagefoot__i" data-go="index">
-      <b>EF·参考值</b><span>EF 分级 · 正常值 · 参考区间</span>
-    </button>
-    <button type="button" class="pagefoot__i" data-go="valves">
-      <b>瓣膜评估</b><span>AS / AR / MS / MR / TR 分级与干预时机</span>
-    </button>
-    <button type="button" class="pagefoot__i" data-go="peds">
-      <b>儿童 Z 值</b><span>0–18 岁按体表面积校正</span>
-    </button>
-    <button type="button" class="pagefoot__i" data-go="segments">
-      <b>节段划分</b><span>17 节段与冠脉供血的对应</span>
-    </button>
-    <button type="button" class="pagefoot__i" data-go="valveana">
-      <b>瓣膜解剖</b><span>TTE / TEE 短轴方位与分区</span>
-    </button>
-    <button type="button" class="pagefoot__i" data-go="calc">
-      <b>公式集</b><span>77 条判读 · 62 个计算器 · 78 条文献</span>
-    </button>
-  </div>
-</footer>
-
 <!-- ══════════ 底部页签 ══════════ -->
 <nav class="tabbar" id="tabbar">
   <div class="tab tab--on" data-tab="index">
@@ -907,18 +882,9 @@ function buildPublicHtml() {
     out = out.replace(re, '');
   });
 
-  // 2b) 页尾「继续看其他页面」：发布版没有瓣膜评估页，对应按钮要一并摘掉，
-  //     否则点下去是死链（页尾由 v1.4.1 引入）
-  {
-    const re = /^[ \t]*<button type="button" class="pagefoot__i" data-go="valves">[\s\S]*?\n[ \t]*<\/button>\n?/m;
-    if (!re.test(out)) throw new Error('发布版：未找到页尾的瓣膜评估按钮');
-    out = out.replace(re, '');
-  }
-  // 3) 删掉用不到的引擎（ValveCalc）；SegSvg 供节段页使用，Calc 供公式集页使用
-  [valveSrc].forEach((src) => {
-    if (out.indexOf(src) === -1) throw new Error('发布版：未找到待移除的引擎块');
-    out = out.replace(src + '\n', '');
-  });
+  // 3) ValveCalc 引擎保留：v1.4.1 起 AS/AR/MS/MR/TR 是公式集里的普通计算条目，
+  //    渲染时直接调 valveCalc()，不能像以前那样整块删掉。
+  //    SegSvg 供节段页使用，Calc 供其它公式条目使用。
 
   // 3b) 删掉 app.js 里被标记为 PUBLIC-CUT 的整块逻辑（目前只有瓣膜）
   ['valve'].forEach((tag) => {
@@ -937,7 +903,6 @@ function buildPublicHtml() {
     /^[ \t]*valveivc: function[^\n]*\n/m,
     /^[ \t]*valves: '瓣膜评估',[^\n]*\n/m,
     // 已切块的引擎/页面，其顶部声明与页签分派也要摘掉（Calc / SegSvg 引擎均保留）
-    /^[ \t]*const ValveCalc = window\.ValveCalc;[^\n]*\n/m,
     /^[ \t]*if \(name === 'valves'\) renderValves\(\);[^\n]*\n/m,
     /^[ \t]*<!--[^\n]*瓣膜评估[^\n]*-->[^\n]*\n/m,
     /^[ \t]*\/\/[^\n]*瓣膜评估[^\n]*\n/m,
@@ -983,7 +948,7 @@ function buildPublicHtml() {
    // 两条判读合法引用肝静脉血流频谱，不能再据此判定瓣膜页残留。
    // 「Wilkins」也不再是残留标记：v1.3.0 起公式集有 Wilkins 形态评分计算器。
    // PISA / EROA 属于 echo-calc.js 的通用公式注释，发布版保留 Calc 引擎，故不禁止
-   'window.ValveCalc', 'ValveCalc', 'renderValves', 'clearValves', '__HAS_']
+   'renderValves', 'clearValves', '__HAS_']
     .forEach((s) => {
       if (out.indexOf(s) !== -1) {
         const at = out.indexOf(s);
@@ -1008,8 +973,8 @@ function buildPublicHtml() {
    //   「瓣膜专页」注释之前——stripCssBlock 会把该注释到 </style> 整段删掉。
    //   曾经把 .fx-nav 追加到文件末尾，发布版跳转条退化成无样式蓝色裸链接。
    '.fx-nav {', '.fx-nav__c {', '.ref-dl__i {', '.chip {',
-   // 页尾「继续看其他页面」（v1.4.1）：容器 + 按钮样式 + 至少一个跳转目标
-   'id="pagefoot"', 'data-go="calc"', '.pagefoot__i {', '.pagefoot__grid']
+   // 瓣膜专用定量进公式集后，引擎必须留在发布版
+   'window.ValveCalc', 'valveCalc']
     .forEach((s) => {
       if (out.indexOf(s) === -1) throw new Error('发布版：公式集依赖缺失 ' + s);
     });

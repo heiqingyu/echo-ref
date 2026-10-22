@@ -10,6 +10,7 @@
 const CG = require('../../utils/calc-groups.js');
 const EX = require('../../utils/extra-data.js');
 const calc = require('../../utils/echo-calc.js');
+const VC = require('../../utils/valve-calc.js');
 const MD = require('../../utils/inline-md.js');
 const CN = require('../../utils/calc-notes.js');
 const app = getApp();
@@ -1121,6 +1122,23 @@ Page({
           }).join(' · ');
           out = 'Wilkins ' + r.total + ' / 16（' + detail + '）；' + r.text + '；' + r.worstText;
         }
+      }
+    } else if (gid === 'as' || gid === 'ar' || gid === 'ms' ||
+               gid === 'mr' || gid === 'tr') {
+      // —— 瓣膜专用定量（v1.4.1 起进公式集，与瓣膜页共用 valve-calc 引擎）——
+      //    结果行列出前 5 项数值，末尾缀综合分级，信息量与瓣膜页的表格对齐
+      //    输入键带条目前缀（as_lvotD），这里去掉前缀还原成引擎认的键名
+      const vv = {};
+      Object.keys(v).forEach(function (k) {
+        if (k.indexOf(gid + '_') === 0) vv[k.slice(gid.length + 1)] = v[k];
+      });
+      const rv = VC.valveCalc(gid, vv, bsa);
+      if (rv.rows && rv.rows.length) {
+        out = rv.rows.slice(0, 5).map(function (r) {
+          return r.k + ' ' + r.v + (r.tag ? '（' + r.tag + '）' : '');
+        }).join(' · ') + '｜' + rv.summary;
+      } else {
+        out = '';
       }
     } else if (gid === 'mva' || gid === 'mitral') {
       // —— 二尖瓣面积：PHT + 连续性方程同屏对照（MS 判读页内嵌同一套）——
