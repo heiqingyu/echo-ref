@@ -1,60 +1,86 @@
 @echo off
-chcp 65001 >nul
-setlocal
+chcp 936 >nul
+setlocal enabledelayedexpansion
 
 REM ============================================================
-REM  EchoRef æ¨é€è„šæœ¬
-REM  æœ¬æœº git ä¸åœ¨ç³»ç»Ÿ PATHï¼ˆå·²åŠ å…¥ç”¨æˆ· PATHï¼Œä½†æ—§ç»ˆç«¯éœ€é‡å¼€ï¼‰
-REM  è¿™é‡Œä»æ˜¾å¼æŒ‡å®š PortableGitï¼Œé¿å…ä¾èµ– PATH æ˜¯å¦ç”Ÿæ•ˆ
+REM  EchoRef Í¬²½ + ÍÆËÍ½Å±¾£¨Ë«»÷¼´¿É£©
+REM  ±¾»ú git ²»ÔÚÏµÍ³ PATH£¬ÕâÀïÏÔÊ½Ö¸¶¨ PortableGit
+REM  Á÷³Ì£ºfetch -> rebase -> push£¬×Ô¶¯½â¾ö non-fast-forward
+REM  ËµÃ÷£º±¾ÎÄ¼ş±ØĞë±£´æÎª GBK ±àÂë£¬ÓÃ UTF-8 ´æÖĞÎÄ×¢ÊÍ»áÈÃ cmd ¶ÏĞĞ±¨´í
 REM ============================================================
 
-set "GITDIR=C:\Users\wlb33\.workbuddy\binaries\PortableGit\versions\1.3.0\cmd"
-set "GIT=%GITDIR%\git.exe"
+set "GIT=C:\Users\wlb33\.workbuddy\binaries\PortableGit\versions\1.3.0\cmd\git.exe"
 if not exist "%GIT%" (
-  echo [ERROR] æ‰¾ä¸åˆ° git.exe: %GIT%
+  echo [ERROR] ÕÒ²»µ½ git.exe: %GIT%
   goto :end
 )
 
-REM â”€â”€ æ˜¾å¼ HOMEï¼šPowerShell é‡Œ HOME ä¸ºç©ºä¼šè®© ssh è¯»ä¸åˆ° ~/.ssh/config â”€â”€
 set "HOME=C:\Users\wlb33"
 set "USERPROFILE=C:\Users\wlb33"
-
-REM â”€â”€ GitHub çš„ 443 ä¸é€šï¼Œåªèƒ½èµ° SSHï¼ˆ22ï¼‰ï¼Œå¯†é’¥æ˜¾å¼æŒ‡å®š â”€â”€
-set "GIT_SSH_COMMAND=ssh -i ""C:/Users/wlb33/.ssh/id_ed25519_mcloud"" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
+set "GIT_SSH_COMMAND=ssh -i ""C:/Users/wlb33/.ssh/id_ed25519_mcloud"" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ServerAliveInterval=15"
 
 cd /d "%~dp0"
 
 echo ============================================================
-echo   å½“å‰åˆ†æ”¯ / æœ€æ–°æäº¤
+echo   [1/4] µ±Ç°·ÖÖ§Óë×îĞÂÌá½»
 echo ============================================================
 "%GIT%" rev-parse --abbrev-ref HEAD
 "%GIT%" log --oneline -1
 echo.
-
-echo ============================================================
-echo   å¾…æäº¤æ”¹åŠ¨
-echo ============================================================
+echo --- Î´Ìá½»µÄ¸Ä¶¯ ---
 "%GIT%" status --short
 echo.
 
 if /i "%~1"=="status" goto :end
 
+"%GIT%" diff --quiet
+if errorlevel 1 (
+  echo [ERROR] »¹ÓĞÎ´Ìá½»µÄ¸Ä¶¯£¬rebase »á±»¾Ü¾ø¡£
+  echo         ÏÈ git add -A ^&^& git commit -m "..."£¬ÔÙË«»÷±¾½Å±¾¡£
+  goto :end
+)
+
 echo ============================================================
-echo   æ¨é€åˆ° GitHub
+echo   [2/4] À­È¡Ô¶¶Ë¸Ä¶¯£¨º¬ÍøÒ³¶ËÉÏ´«µÄÎÄ¼ş£¬¼¸Ê® MB£¬ÂıÊÇÕı³£µÄ£©
 echo ============================================================
-"%GIT%" push %*
+"%GIT%" fetch --progress origin main
 if errorlevel 1 (
   echo.
-  echo [æç¤º] æ¨é€å¤±è´¥ã€‚è‹¥æŠ¥ publickey deniedï¼Œæ£€æŸ¥å¯†é’¥æ–‡ä»¶æ˜¯å¦è¿˜åœ¨ï¼š
-  echo        C:\Users\wlb33\.ssh\id_ed25519_mcloud
-  echo        è‹¥æŠ¥ Connection refusedï¼Œæ£€æŸ¥ä»£ç†æ˜¯å¦å¼€ç€ï¼ˆå¿…è¦æ—¶å…³æ‰ä»£ç†é‡è¯•ï¼‰
+  echo [ERROR] À­È¡Ê§°Ü£¬¶àÎªÍøÂçÖĞ¶Ï¡£
+  echo         Ö±½ÓÔÙË«»÷Ò»´Î±¾½Å±¾ÖØÊÔ£»Á¬ĞøÊ§°ÜÔÙÕÒÖúÊÖ¡£
   goto :end
 )
 
 echo.
 echo ============================================================
-echo   å®Œæˆ   https://heiqingyu.github.io/echo-ref/
-echo   Pages çº¦ 1 åˆ†é’Ÿå†…åˆ·æ–°
+echo   [3/4] ±¾µØÌá½»¶ÔÆëµ½Ô¶¶Ë×îĞÂ£¨rebase£©
+echo ============================================================
+"%GIT%" rebase origin/main
+if errorlevel 1 (
+  echo.
+  echo [ERROR] ±ä»ù³öÏÖ³åÍ»£¬ÒÑÖĞÖ¹±¾´Î±ä»ù£¬²Ö¿â±£³ÖÔ­Ñù¡£
+  echo         °ÑÉÏÃæ¼¸ĞĞÌáÊ¾·¢¸øÖúÊÖ´¦Àí£¬²»ÒªÊÖ¶¯ÂÒ¸Ä¡£
+  "%GIT%" rebase --abort
+  goto :end
+)
+
+echo.
+echo ============================================================
+echo   [4/4] ÍÆËÍµ½ GitHub
+echo ============================================================
+"%GIT%" push origin main
+if errorlevel 1 (
+  echo.
+  echo [ÌáÊ¾] ÍÆËÍÊ§°Ü¡£Èô±¨ publickey denied£¬¼ì²éÃÜÔ¿ÎÄ¼şÊÇ·ñ»¹ÔÚ£º
+  echo        C:\Users\wlb33\.ssh\id_ed25519_mcloud
+  echo        Èô±¨ Connection refused£¬¼ì²é´úÀíÊÇ·ñ¿ª×Å£¨±ØÒªÊ±¹Øµô´úÀíÖØÊÔ£©
+  goto :end
+)
+
+echo.
+echo ============================================================
+echo   Íê³É   https://heiqingyu.github.io/echo-ref/
+echo   Pages Ô¼ 1 ·ÖÖÓÄÚË¢ĞÂ
 echo ============================================================
 
 :end
