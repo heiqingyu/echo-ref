@@ -738,6 +738,17 @@ html, body {
   line-height: 1.5;
 }
 
+/* 参考文献末尾的版权声明（本站托管的指南 PDF） */
+.refs-copy {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(16, 32, 64, 0.04);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted, #6b7a90);
+}
+
 
 
 /* 目录搜索框：吸顶，长列表下也能随时改关键词 */

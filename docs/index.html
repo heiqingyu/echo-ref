@@ -748,6 +748,17 @@ html, body {
   line-height: 1.5;
 }
 
+/* 参考文献末尾的版权声明（本站托管的指南 PDF） */
+.refs-copy {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(16, 32, 64, 0.04);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted, #6b7a90);
+}
+
 
 
 /* 目录搜索框：吸顶，长列表下也能随时改关键词 */
@@ -1484,7 +1495,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.3.18</div>
+    <div class="verline">心脏超声参考值 · v1.3.19</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1516,9 +1527,13 @@ html, body {
         </div>
         <div class="card__d">本工具全部数据与分级标准的来源，详情页会标注该条目使用的文献编号。点标题展开全部。</div>
         <div id="calcRefList" hidden></div>
+        <div class="refs-copy">
+          带「中文 PDF」标记的条目为本站收录的公开指南 / 专家共识原文，著作权归原作者与发布机构所有，
+          仅供个人学习参考，不作商业用途；若权利人认为不宜转载，请联系删除。
+        </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.3.18</div>
+      <div class="verline">心脏超声参考值 · v1.3.19</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -11078,7 +11093,7 @@ const REFS = [
     where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
     use: 'TAVR 术前超声 / CT 评估、瓣环与冠脉高度测量、术后随访节点',
     dl: [
-      { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E7%BD%AE%E6%8D%A2%E6%9C%AF%E4%B8%B4%E5%BA%8A%E8%B7%AF%E5%BE%84%EF%BC%882024%E5%85%A8%E6%96%87%E7%89%88%EF%BC%89%20(1).pdf' },
+      { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E7%BD%AE%E6%8D%A2%E6%9C%AF%E4%B8%B4%E5%BA%8A%E8%B7%AF%E5%BE%84%EF%BC%882024%E5%85%A8%E6%96%87%E7%89%88%EF%BC%89.pdf' },
     ],
   },
   {

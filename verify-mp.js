@@ -400,6 +400,8 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
   // onCopyLink 仍被参考文献直链胶囊使用，必须保留
   check('onCopyLink 仍存在（参考文献 PDF 胶囊用）',
     calcJsSrc.indexOf('onCopyLink(') !== -1 ? 1 : 0, 1, 0);
+  check('参考文献末尾含版权声明 .refs-copy',
+    calcWxml.indexOf('class="refs-copy"') !== -1 ? 1 : 0, 1, 0);
 
   // 参考文献区（默认折叠：49 条平铺会把页面拉得极长）
   check('公式集页含参考文献区（折叠头）',

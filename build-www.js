@@ -568,6 +568,10 @@ const html = `<!DOCTYPE html>
         </div>
         <div class="card__d">本工具全部数据与分级标准的来源，详情页会标注该条目使用的文献编号。点标题展开全部。</div>
         <div id="calcRefList" hidden></div>
+        <div class="refs-copy">
+          带「中文 PDF」标记的条目为本站收录的公开指南 / 专家共识原文，著作权归原作者与发布机构所有，
+          仅供个人学习参考，不作商业用途；若权利人认为不宜转载，请联系删除。
+        </div>
       </div>
 
       <div class="verline">心脏超声参考值 · v${APP_VERSION}</div>

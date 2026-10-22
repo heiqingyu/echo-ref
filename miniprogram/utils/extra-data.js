@@ -4569,7 +4569,7 @@ const REFS = [
     where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
     use: 'TAVR 术前超声 / CT 评估、瓣环与冠脉高度测量、术后随访节点',
     dl: [
-      { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E7%BD%AE%E6%8D%A2%E6%9C%AF%E4%B8%B4%E5%BA%8A%E8%B7%AF%E5%BE%84%EF%BC%882024%E5%85%A8%E6%96%87%E7%89%88%EF%BC%89%20(1).pdf' },
+      { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E7%BD%AE%E6%8D%A2%E6%9C%AF%E4%B8%B4%E5%BA%8A%E8%B7%AF%E5%BE%84%EF%BC%882024%E5%85%A8%E6%96%87%E7%89%88%EF%BC%89.pdf' },
     ],
   },
   {
