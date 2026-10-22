@@ -159,6 +159,10 @@
       el.classList.toggle('tab--on', el.dataset.tab === name);
     });
     $('appbarTitle').textContent = TAB_TITLE[name];
+    // 页尾「其他页面」高亮当前页签
+    document.querySelectorAll('.pagefoot__i').forEach(function (el) {
+      el.classList.toggle('pagefoot__i--on', el.dataset.go === name);
+    });
 
     // 切页时刷新数据
     if (name === 'peds') renderPeds();
@@ -987,6 +991,27 @@
     return h + '</div>';
   }
 
+  /**
+   * 详情页底部的「相关内容」
+   *
+   * 条目之间做交叉引用（如「中国正常值」↔「左室定量」），点胶囊直接换到那条，
+   * 与目录点击同一条路径（openCalcGroup），历史栈照常压入，返回可回到上一条。
+   * 引用 id 找不到就跳过，不阻断渲染。
+   */
+  function briefRelHtml(ids) {
+    if (!ids || !ids.length) return '';
+    let chips = '';
+    let n = 0;
+    ids.forEach(function (id) {
+      const b = briefOf(id);
+      if (!b) return;
+      chips += '<a class="chip chip--rel" data-rel="' + esc(id) + '">' + esc(b.title) + '</a>';
+      n += 1;
+    });
+    if (!n) return '';
+    return '<div class="fx-h">相关内容</div><div class="chiprow">' + chips + '</div>';
+  }
+
   /** 详情页底部的本条目引用 */
   function briefRefsHtml(ids) {
     if (!ids || !ids.length || !REFS.length) return '';
@@ -1393,7 +1418,7 @@
             '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div>';
         }
         if (it.note) html += '<div class="note">' + mdInline(it.note) + '</div>';
-        html += briefRefsHtml(it.source) + '</div>';
+        html += briefRelHtml(it.rel) + briefRefsHtml(it.source) + '</div>';
       });
     });
     $('calcGroups').innerHTML = html;
@@ -1412,6 +1437,10 @@
     // 「相关计算」胶囊：点了直接进对应计算器
     $('calcGroups').querySelectorAll('.chip[data-jump]').forEach(function (c) {
       c.addEventListener('click', function () { openCalcGroup(c.dataset.jump); });
+    });
+    // 「相关内容」胶囊：直接打开对应条目（同目录点击）
+    $('calcGroups').querySelectorAll('.chip[data-rel]').forEach(function (c) {
+      c.addEventListener('click', function () { openCalcGroup(c.dataset.rel); });
     });
     // 条目内小节导航：点胶囊滚到对应小节（与目录页组名跳转条同一套交互）
     $('calcGroups').querySelectorAll('.fx-nav--sec .fx-nav__c').forEach(function (a) {

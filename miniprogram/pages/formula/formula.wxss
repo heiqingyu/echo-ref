@@ -232,3 +232,69 @@
 .chip:active {
   background: rgba(37, 99, 235, 0.18);
 }
+
+/* ── 相关内容：条目间交叉引用胶囊（2026-10-22） ── */
+.rel-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.rel-chip {
+  padding: 10rpx 22rpx;
+  font-size: 24rpx;
+  line-height: 1.4;
+  color: #7c3aed;
+  background: #f5f0ff;
+  border: 1rpx solid #e6d9ff;
+  border-radius: 999rpx;
+}
+
+.rel-chip:active {
+  background: #e6d9ff;
+}
+
+/* ── 页尾：跳转其他页面 ── */
+.pagefoot {
+  margin: 28rpx 0 12rpx;
+}
+
+.pagefoot__hd {
+  margin: 0 8rpx 16rpx;
+  font-size: 24rpx;
+  color: #8a9099;
+}
+
+.pagefoot__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.pagefoot__i {
+  width: calc(50% - 8rpx);
+  box-sizing: border-box;
+  padding: 20rpx 22rpx;
+  background: #ffffff;
+  border: 1rpx solid #e6e8ec;
+  border-radius: 16rpx;
+}
+
+.pagefoot__i:active {
+  background: #eff4ff;
+}
+
+.pagefoot__t {
+  display: block;
+  font-size: 27rpx;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+.pagefoot__d {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #8a9099;
+}

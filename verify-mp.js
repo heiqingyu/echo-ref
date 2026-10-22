@@ -521,16 +521,16 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 18 个大组（7 计算 + 9 评估 + 2 外链；评估组已由 16 合并为 9）', dirs.length, 18, 0);
+  check('公式集分 16 个大组（7 计算 + 7 评估 + 2 外链；评估组已由 16 合并为 7）', dirs.length, 16, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|切面与图像优化|心腔、应变与负荷|心肌病变|大血管与急症|先天性心脏病（含术后）|器械与介入操作|特殊场景与人群|报告与质控|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|切面、图像与质控|心腔、应变与负荷|心肌病变|先天性心脏病（含术后）|器械与介入操作|急症与特殊场景|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 150 条（62 计算 + 11 瓣膜 + 73 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 150, 0);
+  check('目录共 154 条（62 计算 + 11 瓣膜 + 77 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 154, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
@@ -627,7 +627,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 5 个瓣膜计算器 + 4 条判读（合并为一组，不再有「瓣膜疾病评估」）
-  check('瓣膜评估组合并为 21 条（5 专用计算器 + 9 通用计算 + 6 判读 + 1 解剖示意图）', dirById('valve').items.length, 21, 0);
+  check('瓣膜评估组合并为 23 条（5 专用计算器 + 9 通用计算 + 8 判读 + 1 解剖示意图）', dirById('valve').items.length, 23, 0);
   check('瓣膜评估组含 7 条瓣膜通用计算（wilkins / vcw / rf / mva / pisav / avav / ppm）',
     ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
       .every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -647,7 +647,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('心肌病变含 ' + id,
       dirById('myopathy').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('大血管与急症 6 条（主动脉 / 肺栓塞 / 肺高压 / 心腔占位 / 中国 PH 分层 / 心梗并发症）', dirById('vascular').items.length, 6, 0);
+  check('急症与特殊场景 15 条（大血管 6 + 特殊人群 8 + 肺超声）', dirById('vascular').items.length, 15, 0);
   ['aorta', 'pe', 'thrombus'].forEach(id => {
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
@@ -673,16 +673,43 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   });
   check('造影、伪影与图像优化含 contrast-echo',
     dirById('views-atlas').items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
-  check('切面与图像优化 7 条（3 切面 + 造影 + 伪影 + 假病变 + 3D TEE）', dirById('views-atlas').items.length, 7, 0);
+  check('切面、图像与质控 10 条（3 切面 + 造影 + 伪影 + 假病变 + 3D TEE + 多普勒 + 报告 + 危急值）', dirById('views-atlas').items.length, 10, 0);
   check('造影、伪影与图像优化含 artifact-guide',
     dirById('views-atlas').items.some(i => i.id === 'artifact-guide' && i.kind === 'brief') ? 1 : 0, 1, 0);
-  check('特殊场景与人群 8 条（含妊娠 2 条 / 脓毒症 / 术后 ICU）', dirById('special').items.length, 8, 0);
-  check('报告与质控 2 条', dirById('report').items.length, 2, 0);
+  check('特殊场景已并入急症组（妊娠 2 条 / 脓毒症 / 术后 ICU 仍在）', dirById('vascular').items.filter(i => ['pregnancy-echo','ppcm','sepsis','postop-icu'].indexOf(i.id) !== -1).length, 4, 0);
+  check('报告与质控 2 条（已并入切面图像组）',
+    dirById('views-atlas').items.filter(i => ['report-std', 'critical'].indexOf(i.id) !== -1).length, 2, 0);
   check('v1.3.18 新增 6 条均已进入目录',
     ['dse', 'asd-close', 'coa-echo', 'ppcm', 'mimic', 'critical'].every(function (id) {
       return dirs.some(s => s.items.some(i => i.id === id));
     }) ? 1 : 0, 1, 0);
   check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
+
+  // —— 相关内容（rel）与页尾跳转（2026-10-22） ——
+  // 目录页不消费 rel（只有详情页需要），所以从数据源直接取
+  const EXREL = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
+  const briefAll = EXREL.BRIEF_SECTIONS.reduce(function (a, s2) {
+    return a.concat(s2.items);
+  }, []);
+  const briefIdsAll = briefAll.map(function (i) { return i.id; });
+  check('条目带相关内容交叉引用（rel）≥ 60 条',
+    briefAll.filter(function (i) { return i.rel && i.rel.length; }).length >= 60 ? 1 : 0, 1, 0);
+  check('rel 引用全部指向存在的条目',
+    briefAll.every(function (i) {
+      return (i.rel || []).every(function (r) { return briefIdsAll.indexOf(r) !== -1; });
+    }) ? 1 : 0, 1, 0);
+  check('rel 不指向自身',
+    briefAll.every(function (i) { return (i.rel || []).indexOf(i.id) === -1; }) ? 1 : 0, 1, 0);
+  const fxWxml = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.wxml'), 'utf8');
+  const fxJs = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.js'), 'utf8');
+  check('详情页含「相关内容」区块与点击处理',
+    fxWxml.indexOf('相关内容') !== -1 && fxWxml.indexOf('bindtap="onRel"') !== -1 ? 1 : 0, 1, 0);
+  check('详情页含页尾「其他页面」跳转',
+    fxWxml.indexOf('pagefoot') !== -1 && fxWxml.indexOf('bindtap="onGo"') !== -1 ? 1 : 0, 1, 0);
+  check('onGo 区分 switchTab / navigateTo',
+    /switchTab/.test(fxJs) && /navigateTo/.test(fxJs) ? 1 : 0, 1, 0);
 
   // 跳转
   pgA.onOpen({ currentTarget: { dataset: { kind: 'calc', id: 'bernoulli' } } });

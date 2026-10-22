@@ -74,6 +74,7 @@ Page({
     note: '',
     blocks: [],
     refs: [],
+    rels: [],
     collapse: CG.COLLAPSE,
     signs: CG.SIGNS,
     inputs: [],
@@ -109,6 +110,11 @@ Page({
         refs: (brief.source || []).map(function (rid) {
           const r = EX.REFS.filter(function (x) { return x.id === rid; })[0];
           return r ? { id: r.id, zh: r.zh, where: r.where } : null;
+        }).filter(Boolean),
+        // 相关内容：条目间的交叉引用（同组或跨组），点一下换到那条
+        rels: (brief.rel || []).map(function (rid) {
+          const r = findBrief(rid);
+          return r ? { id: r.id, t: r.title } : null;
         }).filter(Boolean),
         inputs: inputs,
         isReference: !(brief.fields && brief.fields.length),
@@ -193,6 +199,25 @@ Page({
     patch['optsV.' + d.k] = d.v;
     this.setData(patch);
     this.refresh();
+  },
+
+  /** 相关内容胶囊：跳到另一条目（同目录页点击同一路径） */
+  onRel(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    wx.navigateTo({ url: '/pages/formula/formula?id=' + id });
+  },
+
+  /** 页尾「其他页面」：tabBar 页用 switchTab，其余用 navigateTo */
+  onGo(e) {
+    const p = e.currentTarget.dataset.go;
+    if (!p) return;
+    const url = '/pages/' + p + '/' + p;
+    if (['index', 'pediatric', 'segments', 'calculators'].indexOf(p) !== -1) {
+      wx.switchTab({ url: url });
+    } else {
+      wx.navigateTo({ url: url });
+    }
   },
 
   onClear() {
