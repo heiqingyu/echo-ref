@@ -176,10 +176,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 15) ok('评估内容 15 个分组（… + 妊娠与特殊人群 + 特殊临床场景 + 报告与质控）');
+if (EX.BRIEF_SECTIONS.length === 16) ok('评估内容 16 个分组（切面图解速查 + … + 妊娠与特殊人群 + 特殊临床场景 + 报告与质控）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,asload,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,tr-interv,mv-interv,tavr,contrast-echo,echo-interv,artifact-guide,pregnancy-echo,takotsubo,osa,myowork,ecmo,report-std') ok('评估条目 = 51 条（… + 妊娠期 1 + 特殊临床场景 4 + 报告与质控 1）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,asload,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,hcm-stress,tr-interv,mv-interv,ttvr,tavr,contrast-echo,echo-interv,artifact-guide,pregnancy-echo,takotsubo,osa,myowork,ecmo,report-std') ok('评估条目 = 58 条（切面图解 3 + … + 负荷与功能试验 2 + 报告与质控 1）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -189,11 +189,29 @@ const briefBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   !it.title || !it.sub || !it.blocks || !it.blocks.length || !it.source));
 if (!briefBad) ok('每条评估内容含标题/说明/内容块/引用编号');
 else bad('评估内容定义不完整');
+// 加粗标记必须成对：奇数个 ** 会让正文把字面量 ** 显示出来（用户 2026-10-21 / 10-22 两次反馈）
+const mdBalanced = (function () {
+  let badCell = '';
+  EX.BRIEF_SECTIONS.forEach(sec => sec.items.forEach(it => (it.blocks || []).forEach((b, i) => {
+    const chk = (s) => {
+      if (badCell) return;
+      if (typeof s === 'string' && (s.match(/\*\*/g) || []).length % 2) {
+        badCell = sec.id + '/' + it.id + ' 第 ' + (i + 1) + ' 块';
+      }
+    };
+    if (b.text) chk(b.text);
+    if (b.heads) b.heads.forEach(chk);
+    if (b.rows) b.rows.forEach(r => r.forEach(chk));
+  })));
+  return badCell;
+})();
+if (!mdBalanced) ok('全部评估内容的 ** 加粗标记成对（不会漏出字面量）');
+else bad('存在未闭合的 ** 加粗标记：' + mdBalanced);
 const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 69) ok('参考文献 69 条（含 7 条本站托管指南 PDF）');
+if (EX.REFS.length === 71) ok('参考文献 71 条（含 7 条本站托管指南 PDF + Fabry/ACM 2 条）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：只挂官方/免费可直连的 PDF，需登录下载的坚决不挂
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
