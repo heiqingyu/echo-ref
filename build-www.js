@@ -908,7 +908,7 @@ function buildPublicHtml() {
   });
 
   // 2b) 页尾「继续看其他页面」：发布版没有瓣膜评估页，对应按钮要一并摘掉，
-  //     否则点下去是死链（页尾由 v1.5.0 引入）
+  //     否则点下去是死链（页尾由 v1.4.1 引入）
   {
     const re = /^[ \t]*<button type="button" class="pagefoot__i" data-go="valves">[\s\S]*?\n[ \t]*<\/button>\n?/m;
     if (!re.test(out)) throw new Error('发布版：未找到页尾的瓣膜评估按钮');
@@ -1008,7 +1008,7 @@ function buildPublicHtml() {
    //   「瓣膜专页」注释之前——stripCssBlock 会把该注释到 </style> 整段删掉。
    //   曾经把 .fx-nav 追加到文件末尾，发布版跳转条退化成无样式蓝色裸链接。
    '.fx-nav {', '.fx-nav__c {', '.ref-dl__i {', '.chip {',
-   // 页尾「继续看其他页面」（v1.5.0）：容器 + 按钮样式 + 至少一个跳转目标
+   // 页尾「继续看其他页面」（v1.4.1）：容器 + 按钮样式 + 至少一个跳转目标
    'id="pagefoot"', 'data-go="calc"', '.pagefoot__i {', '.pagefoot__grid']
     .forEach((s) => {
       if (out.indexOf(s) === -1) throw new Error('发布版：公式集依赖缺失 ' + s);
