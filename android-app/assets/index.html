@@ -1338,10 +1338,15 @@ html, body {
 
 /* ★ 以上公式集样式（.fx-nav / .fx-group / .ref-dl / .chip 等）必须留在
    下面「已裁掉的瓣膜专页」注释块之前：build-www.js 的 stripCssBlock 会把
-   那个标记到 </style> 之间整段删掉（发布版不带瓣膜页 CSS）。
+   那个标记到 style 闭标签之间整段删掉（发布版不带瓣膜页 CSS）。
    2026-10-21 就因把 .fx-nav 追加在文件末尾，导致 docs/index.html
    （即 APK 内嵌页）里跳转条退化成无样式的蓝色裸链接——
-   新增 .fx-* 规则请加在本块内，不要 append 到文件末尾。 */
+   新增 .fx-* 规则请加在本块内，不要 append 到文件末尾。
+
+   ★★ 本文件内严禁书写 style 元素的闭合标签字面量（连注释里也不行）：
+   CSS 会被 build-www.js 原样内联进 style 元素，HTML 解析器在 style 内容中
+   一见到该字符串就提前结束样式表，剩余注释会变成页面顶部的可见文字
+   （2026-10-22 就因此泄漏了一段说明文字）。要提它请写成「style 闭标签」。*/
 
 </style>
 </head>
@@ -1495,7 +1500,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.3.19</div>
+    <div class="verline">心脏超声参考值 · v1.3.20</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1533,7 +1538,7 @@ html, body {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.3.19</div>
+      <div class="verline">心脏超声参考值 · v1.3.20</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。

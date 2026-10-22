@@ -750,6 +750,23 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
   }
 }
 
+/* ---- 159. CSS 不得泄漏 style 闭标签字面量 ---- *
+ * app.css 会被 build-www.js 原样内联进 <style> 元素。HTML 解析器在 style
+ * 内容中一见到闭标签字符串就提前结束样式表，其后的注释会变成页面可见文字
+ * （2026-10-22 因此泄漏了「跳转条退化成蓝色裸链接」那段说明）。
+ */
+console.log('\n=== 159. style 闭标签字面量（会被 HTML 解析器提前结束样式表）===');
+{
+  const cssPath = path.join(ROOT, 'android-app', 'app.css');
+  const lines = fs.readFileSync(cssPath, 'utf8').split(/\r?\n/);
+  const hits = [];
+  lines.forEach(function (l, i) {
+    if (l.indexOf('<' + '/style>') !== -1) hits.push((i + 1) + ' 行: ' + l.trim().slice(0, 50));
+  });
+  if (hits.length) bad('app.css 含 style 闭标签字面量（会被提前截断）→ ' + hits.join(' | '));
+  else ok('app.css 不含 style 闭标签字面量（内联进页面不会被截断）');
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {
