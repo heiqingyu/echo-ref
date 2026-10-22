@@ -874,6 +874,13 @@ function check(name, ok, detail) {
     (await c.evalJs('document.querySelectorAll("#page-valveana g[data-part]").length')) > 0);
   check('色块按钮存在',
     (await c.evalJs('document.querySelectorAll("#page-valveana [data-vap]").length')) > 0);
+  const refCopy = await c.evalJs(`(function(){
+    const el = document.querySelector('#calcRefs .refs-copy');
+    return el ? el.textContent.replace(/\\s+/g, '') : '';
+  })()`);
+  check('参考文献末尾含版权声明（三端一致）',
+    /著作权归原作者与发布机构所有/.test(refCopy) ? 1 : 0, 1, 0);
+
   check('瓣膜解剖页不再单列教学资源（与切面学习/模拟器重复）',
     (await c.evalJs('document.querySelectorAll("#page-valveana .va-lesson").length')) === 0);
 

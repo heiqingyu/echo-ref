@@ -75,6 +75,11 @@
         </view>
       </view>
     </view>
+
+    <view class="refs-copy">
+      带「中文 PDF」标记的条目为本站收录的公开指南 / 专家共识原文，著作权归原作者与发布机构所有，
+      仅供个人学习参考，不作商业用途；若权利人认为不宜转载，请联系删除。
+    </view>
   </view>
 
   <view class="verline">心脏超声参考值 · v{{appVersion}}</view>
