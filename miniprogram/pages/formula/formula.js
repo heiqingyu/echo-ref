@@ -29,7 +29,17 @@ function toBlocks(blocks) {
   let secIdx = -1;
   return (blocks || []).map(function (b) {
     if (b.kind === 'table') {
-      return { kind: 'table', heads: b.heads, rows: b.rows, cols: b.heads.length, warn: !!b.warn };
+      // ★ 表格单元格也要拆行内标记：以前直接 {{c}} 输出，219 个格子会把
+      //   字面量 ** 漏到屏幕上（用户 2026-10-22 第二次反馈）
+      return {
+        kind: 'table',
+        heads: (b.heads || []).map(function (t) { return MD.parseInline(t); }),
+        rows: (b.rows || []).map(function (r) {
+          return (r || []).map(function (c) { return MD.parseInline(c); });
+        }),
+        cols: b.heads.length,
+        warn: !!b.warn,
+      };
     }
     const o = { kind: b.kind, text: b.text, warn: !!b.warn };
     // 行内标记：**加粗** 拆成片段，渲染时用 <text class="fx-b"> 包裹
@@ -73,6 +83,7 @@ Page({
     mode: 'calc',
     title: '',
     note: '',
+    noteSegs: [],
     blocks: [],
     refs: [],
     rels: [],
@@ -106,6 +117,7 @@ Page({
         mode: 'brief',
         title: brief.title,
         note: brief.note || '',
+        noteSegs: MD.parseInline(brief.note || ''),
         blocks: toBlocks(brief.blocks),
         toc: buildToc(brief.blocks),
         refs: (brief.source || []).map(function (rid) {
@@ -151,6 +163,7 @@ Page({
         mode: 'calc',
         title: g.title,
         note: g.note,
+        noteSegs: MD.parseInline(g.note || ''),
         blocks: toBlocks(calcBlocks),
         toc: buildToc(calcBlocks),
         refs: [],

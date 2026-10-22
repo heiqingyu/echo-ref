@@ -24,10 +24,14 @@
 
         <view wx:elif="{{b.kind === 'table'}}" class="vtbl vtbl--{{b.cols}}">
           <view class="vtbl__r vtbl__r--h">
-            <text class="vtbl__c" wx:for="{{b.heads}}" wx:for-item="h" wx:key="index">{{h}}</text>
+            <text class="vtbl__c" wx:for="{{b.heads}}" wx:for-item="h" wx:for-index="hi" wx:key="hi"><text
+                  wx:for="{{h}}" wx:for-item="sg" wx:for-index="hsi" wx:key="hsi"
+                  class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text></text>
           </view>
-          <view class="vtbl__r" wx:for="{{b.rows}}" wx:for-item="r" wx:key="index">
-            <text class="vtbl__c" wx:for="{{r}}" wx:for-item="c" wx:key="index">{{c}}</text>
+          <view class="vtbl__r" wx:for="{{b.rows}}" wx:for-item="r" wx:for-index="ri" wx:key="ri">
+            <text class="vtbl__c" wx:for="{{r}}" wx:for-item="cell" wx:for-index="ci" wx:key="ci"><text
+                  wx:for="{{cell}}" wx:for-item="sg" wx:for-index="si" wx:key="si"
+                  class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text></text>
           </view>
         </view>
 
@@ -91,7 +95,9 @@
       </view>
     </block>
 
-    <view class="note">{{note}}</view>
+    <view wx:if="{{noteSegs.length}}" class="note"><text wx:for="{{noteSegs}}" wx:for-item="sg"
+            wx:for-index="ni" wx:key="ni"
+            class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text></view>
 
     <block wx:if="{{!isReference}}">
       <view wx:if="{{hasOut}}" class="calc-out">
