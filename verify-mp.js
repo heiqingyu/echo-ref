@@ -376,7 +376,7 @@ console.log('\n=== 21. 合并后首页（EF 计算 + 参考值同页）===');
   check('参考值列表恢复实测对照', pg.data.hasMeasurements ? 1 : 0, 1, 0);
 }
 
-console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
+console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部）===');
 {
   const calcWxml = fsW.readFileSync(
     pathW.join(__dirname, 'miniprogram', 'pages', 'calculators', 'calculators.wxml'), 'utf8');
@@ -387,20 +387,19 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
   const calcJs = fsW.readFileSync(
     pathW.join(__dirname, 'miniprogram', 'pages', 'calculators', 'calculators.js'), 'utf8');
 
-  // 延展阅读已从首页搬到公式集页
-  check('首页不再含延展阅读卡片', idxWxml.indexOf('延展阅读') === -1 ? 1 : 0, 1, 0);
-  check('公式集页含延展阅读卡片',
-    calcWxml.indexOf('card__title">延展阅读') !== -1 ? 1 : 0, 1, 0);
-  check('外链条目 2 条（bindtap onCopyLink）',
-    (calcWxml.match(/bindtap="onCopyLink"/g) || []).length, 1, 0);
+  // ★ v1.3.18：延展阅读整块删除（用户要求，三端一致）
+  check('首页不含延展阅读卡片', idxWxml.indexOf('延展阅读') === -1 ? 1 : 0, 1, 0);
+  check('公式集页已删除延展阅读卡片',
+    calcWxml.indexOf('延展阅读') === -1 ? 1 : 0, 1, 0);
+  check('公式集页已无外链条目', calcWxml.indexOf('extlink') === -1 ? 1 : 0, 1, 0);
   const calcJsSrc = fsW.readFileSync(
     pathW.join(__dirname, 'miniprogram', 'pages', 'calculators', 'calculators.js'), 'utf8');
-  check('条目 1 链接 zs-echo.com',
-    calcJsSrc.indexOf('https://zs-echo.com') !== -1 ? 1 : 0, 1, 0);
-  check('条目 2 链接 tte-quickref',
-    calcJsSrc.indexOf('https://bdrwss.github.io/tte-quickref/dist/') !== -1 ? 1 : 0, 1, 0);
-  check('calculators.wxss 含 .extlink 样式',
-    calcWxss.indexOf('.extlink {') !== -1 ? 1 : 0, 1, 0);
+  check('data 里已无 extLinks 清单', calcJsSrc.indexOf('extLinks') === -1 ? 1 : 0, 1, 0);
+  check('不再引用 zs-echo.com', calcJsSrc.indexOf('zs-echo.com') === -1 ? 1 : 0, 1, 0);
+  check('不再引用 tte-quickref', calcJsSrc.indexOf('tte-quickref') === -1 ? 1 : 0, 1, 0);
+  // onCopyLink 仍被参考文献直链胶囊使用，必须保留
+  check('onCopyLink 仍存在（参考文献 PDF 胶囊用）',
+    calcJsSrc.indexOf('onCopyLink(') !== -1 ? 1 : 0, 1, 0);
 
   // 参考文献区（默认折叠：49 条平铺会把页面拉得极长）
   check('公式集页含参考文献区（折叠头）',
@@ -456,10 +455,8 @@ console.log('\n=== 22. 延展阅读 + 参考文献（公式集页底部）===');
 
   // 目录顺序：延展阅读与参考文献都在分组之后
   const lastGroupEnd = calcWxml.lastIndexOf('fx-item__a');
-  check('延展阅读位于所有条目之后',
-    calcWxml.indexOf('card__title">延展阅读') > lastGroupEnd ? 1 : 0, 1, 0);
-  check('参考文献位于延展阅读之前或紧邻上方',
-    calcWxml.indexOf('card__title">参考文献') < calcWxml.indexOf('card__title">延展阅读') ? 1 : 0, 1, 0);
+  check('参考文献位于所有条目之后（页尾）',
+    calcWxml.indexOf('refs-hd') > lastGroupEnd ? 1 : 0, 1, 0);
 
   // 版本号：三处一致
   const VD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'version.js'));
@@ -531,7 +528,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 135 条（62 计算 + 11 瓣膜 + 58 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 135, 0);
+  check('目录共 141 条（62 计算 + 11 瓣膜 + 64 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 141, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
@@ -653,7 +650,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病 5 条（分流判读 / 可手术性 / TOF 术后 PR / Ebstein / DORV）', dirById('chd').items.length, 5, 0);
+  check('先天性心脏病 7 条（分流 / 可手术性 / TOF 术后 PR / Ebstein / DORV / ASD 封堵 / CoA）', dirById('chd').items.length, 7, 0);
   ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
     check('先天性心脏病含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
@@ -663,7 +660,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('先心术后含 ' + id,
       dirById('chd-post').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('负荷与功能试验 2 条（运动负荷超声 + HCM 激发试验）', dirById('stress').items.length, 2, 0);
+  check('负荷与功能试验 3 条（运动负荷 + HCM 激发 + DSE）', dirById('stress').items.length, 3, 0);
   check('负荷试验含 stress-echo',
     dirById('stress').items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
   check('介入 TEE 评估 4 条（三尖瓣 / 二尖瓣 / 三尖瓣介入术式 / TAVR）', dirById('tee-interv').items.length, 4, 0);
@@ -675,12 +672,19 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('造影与特殊检查含 contrast-echo',
     dirById('contrast').items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
   check('有创操作与介入超声 1 条（超声引导有创操作）', dirById('intervention').items.length, 1, 0);
-  check('伪影识别与规避 1 条（超声伪影指南）', dirById('artifact').items.length, 1, 0);
+  check('伪影识别与规避 2 条（伪影指南 + 高频假病变）', dirById('artifact').items.length, 2, 0);
   check('伪影识别与规避含 artifact-guide',
     dirById('artifact').items.some(i => i.id === 'artifact-guide' && i.kind === 'brief') ? 1 : 0, 1, 0);
 
   check('有创操作与介入超声含 echo-interv',
     dirById('intervention').items.some(i => i.id === 'echo-interv' && i.kind === 'brief') ? 1 : 0, 1, 0);
+  check('妊娠与特殊人群 2 条', dirById('pregnancy').items.length, 2, 0);
+  check('特殊临床场景 4 条', dirById('special').items.length, 4, 0);
+  check('报告与质控 2 条', dirById('report').items.length, 2, 0);
+  check('v1.3.18 新增 6 条均已进入目录',
+    ['dse', 'asd-close', 'coa-echo', 'ppcm', 'mimic', 'critical'].every(function (id) {
+      return dirs.some(s => s.items.some(i => i.id === id));
+    }) ? 1 : 0, 1, 0);
   check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
 
   // 跳转
@@ -697,8 +701,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const teeSvUrl = EXD23.LINK_SECTIONS[0].items.filter(i => i.id === 'tee-sv')[0].url;
   pgA.onOpen({ currentTarget: { dataset: { kind: 'link', id: 'tee-sv', url: teeSvUrl } } });
   check('点击切面条目 → 复制链接到剪贴板', clip === teeSvUrl ? 1 : 0, 1, 0);
-  pgA.onCopyLink({ currentTarget: { dataset: { url: 'https://zs-echo.com' } } });
-  check('延展阅读点击 → 复制链接', clip === 'https://zs-echo.com' ? 1 : 0, 1, 0);
+  const pdfUrl = 'https://heiqingyu.github.io/echo-ref/materials/x.pdf';
+  pgA.onCopyLink({ currentTarget: { dataset: { url: pdfUrl } } });
+  check('文献 PDF 胶囊点击 → 复制直链', clip === pdfUrl ? 1 : 0, 1, 0);
 
   // —— 计算公式详情：flow ——
   pgF.onLoad({ id: 'flow' });

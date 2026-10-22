@@ -344,7 +344,7 @@ const REQUIRED_IDS = [
   'inHeight', 'inWeight', 'outBsa', 'bsaHint', 'stdNote',
   'jumpRef', 'refBlock', 'refList', 'refDesc', 'refSource', 'aseUnitNote',
   'calcGroups', 'calcClear', 'calcBsaNote', 'calcIndex', 'calcList', 'calcDetail', 'calcBack',
-  'calcRefs', 'calcRefList', 'extLinks',
+  'calcRefs', 'calcRefList',
   'valveSwitch', 'valveClear', 'valveSecs',
   'efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd', 'efResult', 'efKv', 'efMark', 'efGrade',
   'pdHeight', 'pdWeight', 'pdAge', 'pdBsa', 'pdWarn', 'pdInputs', 'pdMore',
@@ -540,7 +540,8 @@ check('判读页桥接文案已内联（相关计算（通用量））',
 /* 桥接是运行时挂到 blocks 上的，静态 HTML 里只应出现机制本身，不指望 23 份文案 */
 check('桥接机制已内联（CALC_HINTS + attachCalcHints）',
   html.indexOf('var CALC_HINTS') !== -1 && html.indexOf('attachCalcHints') !== -1, true);
-check('首页已无延展阅读卡片', html.indexOf('page-index') < html.indexOf('id="extLinks"'), true);
+check('已删除延展阅读卡片（三端一致）',
+  html.indexOf('延展阅读') === -1 && html.indexOf('id="extLinks"') === -1, true);
 check('评估内容块样式已内联', html.indexOf('.fx-tbl__c {') !== -1, true);
 check('参考文献样式已内联', html.indexOf('.ref-item__zh {') !== -1, true);
 check('版本行样式已内联', html.indexOf('.verline {') !== -1, true);
@@ -578,15 +579,13 @@ check('外链渲染为 a[target=_blank]',
 check('页签含公式集（完整版 5 页签之一）',
   html.indexOf('data-tab="calc"') !== -1, true);
 
-/* 延展阅读：外链卡片（APK 端点击链接由 MainActivity 交给系统浏览器） */
-check('APK 页面含延展阅读卡片', html.indexOf('延展阅读') !== -1 ? 1 : 0, 1, 0);
-check('APK 外链条目 2 条',
-  (html.match(/class="extlink"/g) || []).length, 2, 0);
-check('APK 外链 zs-echo.com',
-  html.indexOf('href="https://zs-echo.com"') !== -1 ? 1 : 0, 1, 0);
-check('APK 外链 tte-quickref',
-  html.indexOf('href="https://bdrwss.github.io/tte-quickref/dist/"') !== -1 ? 1 : 0, 1, 0);
-check('APK 外链样式已内联', html.indexOf('.extlink {') !== -1 ? 1 : 0, 1, 0);
+/* ★ v1.3.18：延展阅读整块删除，三端都不应再出现 */
+check('APK 页面已无延展阅读卡片',
+  html.indexOf('延展阅读') === -1 ? 1 : 0, 1, 0);
+check('APK 页面已无外链卡片',
+  (html.match(/class="extlink"/g) || []).length, 0, 0);
+check('APK 页面不再出现第三方工具站',
+  html.indexOf('zs-echo.com') === -1 && html.indexOf('tte-quickref') === -1 ? 1 : 0, 1, 0);
 
 /* ══════════════════════════════════════════════════════════ */
 

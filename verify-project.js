@@ -179,7 +179,7 @@ const EX = require(exPath);
 if (EX.BRIEF_SECTIONS.length === 16) ok('评估内容 16 个分组（切面图解速查 + … + 妊娠与特殊人群 + 特殊临床场景 + 报告与质控）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,asload,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,mustard,fontan,as-switch,stress-echo,hcm-stress,tr-interv,mv-interv,ttvr,tavr,contrast-echo,echo-interv,artifact-guide,pregnancy-echo,takotsubo,osa,myowork,ecmo,report-std') ok('评估条目 = 58 条（切面图解 3 + … + 负荷与功能试验 2 + 报告与质控 1）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,crt,la,lvad,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,mitral,aortic,asload,bav,lf-lg,ie,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,aorta,pe,ph,thrombus,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,stress-echo,hcm-stress,dse,tr-interv,mv-interv,ttvr,tavr,contrast-echo,echo-interv,artifact-guide,mimic,pregnancy-echo,ppcm,takotsubo,osa,myowork,ecmo,report-std,critical') ok('评估条目 = 64 条（切面图解 3 + … + DSE / ASD 封堵 / CoA / PPCM / 假病变 / 危急值）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
