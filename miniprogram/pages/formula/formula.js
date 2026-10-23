@@ -1202,7 +1202,7 @@ Page({
           const detail = w.items.map(function (it) {
             return it.n.replace('瓣叶', '') + ' ' + it.score;
           }).join(' · ');
-          parts.push('形态 Wilkins ' + w.total + '/16（' + detail + '）· ' + w.text);
+          parts.push('形态 Wilkins ' + w.total + '/16（' + detail + '）· ' + w.text + '；' + w.worstText);
         }
       }
 

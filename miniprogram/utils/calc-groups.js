@@ -318,20 +318,6 @@ const GROUPS = [
 
   /* ══ v1.3.0 第三批：瓣膜与舒张细节 ══ */
   {
-    id: 'wilkins',
-    sec: 'valve',
-    title: 'Wilkins 二尖瓣形态评分',
-    sub: '4 项 × 1–4 分 · ≤8 适合 PBMV',
-    fields: [
-      { k: 'wk1', n: '① 瓣叶活动度', u: '分' },
-      { k: 'wk2', n: '② 瓣叶增厚', u: '分' },
-      { k: 'wk3', n: '③ 瓣叶钙化', u: '分' },
-      { k: 'wk4', n: '④ 瓣下增厚', u: '分' },
-    ],
-    blocks: wilkinsBlocks(),
-    note: '四项按**原始文献顺序**：活动度 → 增厚 → 钙化 → 瓣下。每项 1–4 分（1 最轻、4 最重），总分 4–16。≤8 适合 PBMV；9–11 边缘区；≥12 优先外科。评分受操作者主观影响，建议由有经验的医师复核，并在报告里写明扣分最多的那一项',
-  },
-  {
     id: 'vcw',
     sec: 'valve',
     title: '缩流颈宽度 VCW 分级',
@@ -354,21 +340,6 @@ const GROUPS = [
       { k: 'rfsv', n: '每搏量 SV', u: 'mL' },
     ],
     note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷',
-  },
-  {
-    // ★ 2026-10-21 合并：原 mvav（PHT）/ mvac（连续性方程）两条合一，
-    //   同一屏出两个结果并给出差值，MS 判读页内嵌的也是这一套（mvaBoth）
-    id: 'mva',
-    sec: 'valve',
-    title: '二尖瓣面积 MVA（两法对照）',
-    sub: 'PHT 法 + 连续性方程，同屏出结果',
-    fields: [
-      { k: 'mpht', n: '① 压力减半时间 PHT', u: 'ms' },
-      { k: 'mvd', n: '② LVOT 直径', u: 'cm' },
-      { k: 'mvlvti', n: '② LVOT VTI', u: 'cm' },
-      { k: 'mvmvti', n: '② 二尖瓣 VTI', u: 'cm' },
-    ],
-    note: '① **PHT 法** MVA = 220/PHT，省事但**要求窦性心律、无明显主动脉瓣反流**，房颤 / AR / 重度钙化 / 术后会失真；② **连续性方程** MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV，不受心率与反流影响，房颤 / AR 时首选，但要有可靠的 LVOT 直径与 VTI 且无分流、无显著 MR。分级：>1.5 轻度、1.0–1.5 中度、<1.0 重度。两法差 >0.3 cm² 时回到图像找原因，不要取平均',
   },
   {
     id: 'laef',
@@ -535,31 +506,6 @@ const GROUPS = [
   /* ══════════════════════════════════════════════════════════
      瓣膜与舒张定量（sec: 'vq'）
      ══════════════════════════════════════════════════════════ */
-  {
-    id: 'pisav',
-    sec: 'valve',
-    title: '反流定量（PISA）',
-    sub: 'EROA · RVol · 反流分级',
-    fields: [
-      { k: 'prad', n: 'PISA 半球半径 r', u: 'cm' },
-      { k: 'palias', n: 'Nyquist 速度（默认 40）', u: 'cm/s' },
-      { k: 'pvmax', n: '反流峰速 Vmax', u: 'm/s' },
-      { k: 'pvti', n: '反流 VTI', u: 'cm' },
-    ],
-    note: '流量 = 2πr²×Nyquist；EROA = 流量 ÷ Vmax(cm/s)；RVol = EROA × VTI。MR：EROA ≥0.4 / RVol ≥60 为重度。PISA 假设半球形，偏心束会低估',
-  },
-  {
-    id: 'avav',
-    sec: 'valve',
-    title: '主动脉瓣面积（连续性方程）',
-    sub: 'AVA · AVAi · DVI',
-    fields: [
-      { k: 'ald', n: 'LVOT 直径', u: 'cm' },
-      { k: 'alvti', n: 'LVOT VTI', u: 'cm' },
-      { k: 'aavti', n: '主动脉瓣 VTI', u: 'cm' },
-    ],
-    note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；AVAi = AVA/BSA（≤0.6 重度）。DVI = VTI_LVOT/VTI_AV，≤0.25 支持重度 AS',
-  },
   {
     id: 'asload',
     sec: 'valve',

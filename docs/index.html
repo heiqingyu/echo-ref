@@ -1528,7 +1528,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.4.4</div>
+    <div class="verline">心脏超声参考值 · v1.4.5</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1567,7 +1567,7 @@ html, body {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.4.4</div>
+      <div class="verline">心脏超声参考值 · v1.4.5</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -8902,7 +8902,7 @@ const BRIEF_SECTIONS = [
         rel: ['mv-interv', 'rheumatic', 'prosthetic', 'ie'],
         // ★ v1.4.4 合并：原公式集里独立的「MS 二尖瓣狭窄定量」「MR 二尖瓣反流定量」
         //   两条并入本页，输入框按「① 形态 / ② 狭窄 / ③ 反流」分三段，一次填完出全套结果。
-        //   键名带前缀（mit_ / mr_），避免和「二尖瓣面积 MVA（两法对照）」等条目串值。
+        //   键名带前缀（mit_ / mr_），避免与 mva / pisav 等同名输入串值。
         fields: [
           { g: '① 形态 · Wilkins 评分（1 最轻 / 4 最重）' },
           { k: 'wk1', n: '瓣叶活动度', u: '分' },
@@ -9031,7 +9031,31 @@ const BRIEF_SECTIONS = [
           { kind: 'h', text: '七、重度 MR 的干预时机' },
           { kind: 'text', text: '重度原发 MR：**LVEF ≤60%、LVESD ≥40 mm** 是左室已受累的标志；ESC/EACTS 2025 另纳入 **LVESDi ≥20 mm/m²**。也就是说，EF 还「正常」的 58% 已经不是好消息，等到 EF <60% 才转诊会丢掉修复窗口。' },
           { kind: 'note', text: '除左室尺寸外，**新发房颤、静息肺动脉高压（PASP >50 mmHg）、左房显著扩大**、以及修复可能性（Ⅱ 型 > Ⅰ 型 > Ⅲ 型）都影响时机。继发 MR 的 TEER 阈值更严：EROA ≥0.4 cm² 且 LVEF 30–50%（COAPT 标准），LVEF <30% 或不可逆左室扩大者获益有限。', warn: true },
-          { kind: 'h', text: '八、把两个瓣的问题串起来' },
+          { kind: 'h', text: '八、MS 的后果：左房、房颤与肺高压' },
+          { kind: 'text', text: '风湿性 MS 的病程由「压力后传」决定：左房压升高 → 左房扩大 → 房颤 → 血栓与栓塞；肺静脉压升高 → 肺高压 → 右心受累。所以报告不能只写面积，还要同时给**左房容积指数、心律、PASP、右室大小**——这四项决定抗凝策略与介入时机。' },
+          {
+            kind: 'table',
+            heads: ['后果', '超声指标', '临床意义'],
+            rows: [
+              ['左房扩大', 'LAVI >34 mL/m²（重度 >48）', '房颤与血栓的基质；PMBV 前必须 TEE'],
+              ['心房颤动', 'A 峰消失 / 心律不齐', 'PHT 法失真，改用描记或连续方程；需抗凝'],
+              ['肺高压', 'PASP >50 mmHg', '介入的最强理由之一，术后多可逆转'],
+              ['右心受累', 'RV/LV >1、TAPSE <17 mm', '提示病程晚期，围术期风险升高'],
+            ],
+          },
+          { kind: 'note', text: '**房颤患者的 MVA 怎么定**：PHT 法在房颤时因舒张期长短不一而失真，取多个周期平均仍不可靠；优先二维描记或连续方程。房颤合并左房自发显影是 PMBV 的相对禁忌，需先规范抗凝再评估。', warn: true },
+          { kind: 'h', text: '九、TEER 缘对缘修复：适应证与解剖门槛' },
+          {
+            kind: 'table',
+            heads: ['类型', '关键条件', '说明'],
+            rows: [
+              ['原发 MR（退行性）', '重度 + 有症状，或 LVEF ≤60% / LVESD ≥40 mm；外科高危或拒绝手术', '解剖适合时优先修复；瓣叶长度与对合深度要够'],
+              ['继发 MR（功能性）', 'EROA ≥0.30 cm²、LVEF 20–50%、LVESD ≤70 mm、PASP ≤70 mmHg', '先优化心衰药物治疗；LVEF <20% 获益有限'],
+              ['解剖禁忌', '瓣叶短、对合深度浅、重度钙化、腱索断裂游离端、活动性心内膜炎', '夹合器抓不住或不稳定，术后易复发'],
+            ],
+          },
+          { kind: 'text', text: 'TEER 的术前超声任务不是「再测一次 EROA」，而是回答**能不能夹**：瓣叶长度（≥8–10 mm 更稳）、对合深度、瓣口面积（术后不能 <1.5 cm²）、有无钙化与裂隙。术后评估看平均压差（>5 mmHg 提示狭窄）与残余 MR。' },
+          { kind: 'h', text: '十、把两个瓣的问题串起来' },
           { kind: 'text', text: '同一个患者常常「狭窄 + 反流」并存（风湿性 MS 伴 MR、退行性脱垂伴 MS）。判读顺序：**先定主病变**（哪一个造成症状与后果）、**再用主病变的阈值决策**、**最后把合并病变当作风险修正**。合并中度 MR 的 MS 患者做 PMBV 前必须单独评估反流会不会被放大。' },
         ],
         note: '本页把狭窄与反流放在同一屏：填 PHT 与 LVOT / 二尖瓣 VTI 出三种 MVA，填平均压差与 PASP 出「严重度 → 后果」两行，填 Wilkins 四项出形态分与 PMBV 适合度，填 PISA 四项出 EROA / RVol / 分级，填 VC 与 dP/dt 出缩流颈分级与收缩功能。只填关心的部分也可以，结果行会给已填部分的分段结论。',
@@ -9134,7 +9158,34 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'text', text: 'ESC/EACTS 2025：有症状的重度 AR 推荐手术；**无症状但 LVEF ≤55%、或 LVESDi >22 mm/m²、或 LVESVi >45 mL/m²** 者应考虑（Ⅱa / Ⅱb，非一律手术）；主动脉根部或升主动脉 ≥45 mm（二叶瓣 ≥50 mm 或年增 ≥3 mm）需同期置换。' },
-          { kind: 'h', text: '六、混合瓣膜病怎么判' },
+          { kind: 'h', text: '六、急性 AR 与慢性 AR 不是一回事' },
+          {
+            kind: 'table',
+            heads: ['项目', '急性重度 AR', '慢性重度 AR'],
+            rows: [
+              ['常见病因', '主动脉夹层、感染性心内膜炎、外伤', '退行性、二叶瓣、风湿'],
+              ['左室大小', '常正常 —— 来不及扩大', '扩大（LVEDD >60–65 mm 或 LVESD >45–50 mm）'],
+              ['二尖瓣', '提前关闭（左室压快速升高）', '舒张期扑动或正常'],
+              ['PHT', '<200 ms，甚至 <150 ms', '<200 ms，频谱致密'],
+              ['临床', '肺水肿、低血压、休克，需急诊手术', '长期无症状，按尺寸与 EF 决策'],
+            ],
+          },
+          { kind: 'note', text: '**急性 AR 不能用「左室没扩大」排除重度**：这是最容易漏诊的一类。夹层患者的心动过速、脉压大、舒张压极低，配合二尖瓣提前关闭与短 PHT 就是重度，必须直接进手术室评估。', warn: true },
+          { kind: 'h', text: '七、TAVR / SAVR 术前超声清单' },
+          {
+            kind: 'table',
+            heads: ['项目', '测什么', '为什么'],
+            rows: [
+              ['主动脉瓣环', '3D 面积 / 周长推导的直径（不用二维）', '决定瓣膜型号与 oversizing，二维常低估'],
+              ['主动脉根部', '窦部直径、窦管交界、升主动脉', '决定瓣膜类型与远期根部事件风险'],
+              ['冠脉开口高度', '左 / 右冠开口至瓣环平面的距离', '过低（常以 <10 mm 为界）→ 遮挡风险，需预判保护'],
+              ['钙化分布', '瓣叶、瓣环、LVOT 的钙化程度与对称性', '影响释放位置、瓣周漏与环破裂风险'],
+              ['二叶瓣', '分型（0 / 1 / 2 型）、嵴位置与钙化', '决定是否适合 TAVR，多数需个体化评估'],
+              ['入路', '髂股动脉内径、钙化与扭曲', '经股入路的可行性'],
+            ],
+          },
+          { kind: 'text', text: '术后评估沿用同一套口径：**EOAi（看 PPM）、平均跨瓣压差、瓣周漏（VC 与周向范围）、有效开口面积**。压差高不一定是 PPM，也可能是高流量（贫血、甲亢、AR），先算 SVi 再下结论。' },
+          { kind: 'h', text: '八、混合瓣膜病怎么判' },
           { kind: 'text', text: '**AS + AR 并存**（常见于二叶瓣、退行性钙化）：先定哪一个是主病变——若 AS 为重度，用 AS 的阈值决策；AR 只作为「换瓣后可能更明显」的风险提示。**MS + MR 并存**（风湿性）：先定面积，再用 MR 修正 PMBV 可行性。**多瓣膜病变**时按「左心瓣 → 右心瓣」顺序评估，右心瓣的阈值在左心病变纠正后会变。' },
           { kind: 'note', text: '两条禁忌：**① 不要把两个瓣的压差相加**当作「总负荷」，压差是跨单个瓣口的；**② 不要把一个瓣的 PISA 半径套到另一个瓣**，每个瓣的 Nyquist 标尺、反流峰速、VTI 都要单独取。', warn: true },
         ],
@@ -12667,7 +12718,7 @@ var CALC_HINTS = {
   /* 心肌病变 */
   diastolic: '舒张功能定量 · 舒张功能分级（四步法）；E/Vp 左房压估测；重构与心肌功能 · 左房僵硬度',
   ph: '右心与肺循环 · 超声肺高压可能性；肺动脉收缩压 PASP；阻力指数 PVRI / SVRI',
-  bav: '瓣膜评估 · 主动脉瓣面积（连续性方程）；血流动力学与心功能 · 无量纲指数 DVI；介入尺寸与先心 · 主动脉分节段 Z 值；TAVR 瓣环尺寸与 oversizing',
+  bav: '瓣膜评估 · 主动脉瓣疾病评估；血流动力学与心功能 · 无量纲指数 DVI；介入尺寸与先心 · 主动脉分节段 Z 值；TAVR 瓣环尺寸与 oversizing',
   dcm: '血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · 致密化不全 NC/C 比；容积指数与重构分级',
   athlete: '血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · LVMI 身高^2.7；左室质量与几何构型',
   amyloid: '重构与心肌功能 · 心尖保留比值 RAS；LVMI 身高^2.7；应变离散度 MDS',
@@ -12685,7 +12736,7 @@ var CALC_HINTS = {
   /* 瓣膜评估 */
   mitral: '瓣膜评估 · 缩流颈宽度 VCW 分级；反流分数 RF；人工瓣 EOAi 与 PPM',
   aortic: '瓣膜评估 · AS 负荷量化（ELI · Zva · SWL）；压力恢复（PR）校正；缩流颈宽度 VCW 分级',
-  asload: '瓣膜评估 · AS 负荷量化（ELI · Zva · SWL）；压力恢复（PR）校正；主动脉瓣面积（连续性方程）',
+  asload: '瓣膜评估 · 压力恢复（PR）校正；主动脉瓣疾病评估；人工瓣 EOAi 与 PPM',
   'lf-lg': '重构与心肌功能 · 每搏功 SW / SWi；血流动力学与心功能 · 有效动脉弹性 Ea',
   /* 先天性心脏病 */
   shd: '介入尺寸与先心 · McGoon 比值与 Nakata 指数；血流动力学与心功能 · Qp/Qs',
@@ -12695,7 +12746,7 @@ var CALC_HINTS = {
   'stress-echo': '血流动力学与心功能 · 肺动脉收缩压 PASP；右心与肺循环 · PAPi',
   tavr: '介入尺寸与先心 · TAVR 瓣环尺寸与 oversizing；主动脉分节段 Z 值',
   'mv-interv': '瓣膜评估 · 二尖瓣疾病评估；缩流颈宽度 VCW 分级；人工瓣 EOAi 与 PPM',
-  'tr-interv': '瓣膜评估 · 缩流颈宽度 VCW 分级；反流定量（PISA）',
+  'tr-interv': '瓣膜评估 · TR 三尖瓣反流定量；缩流颈宽度 VCW 分级',
   /* 特殊临床场景 */
   takotsubo: '重构与心肌功能 · 心尖相对基底段应变保留比 RAS；左室球形度指数',
   osa: '右心与肺循环 · 肺动脉收缩压 PASP；右室容积指数；血流动力学与心功能 · IVC 估右房压',
@@ -12706,7 +12757,7 @@ var CALC_HINTS = {
   'tte-std': '血流动力学与心功能 · 左室容积与射血分数；左室质量与几何构型；MAPSE 长轴收缩',
   'tee-safety': '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · 肺动脉收缩压 PASP',
   'artifact-guide': '血流动力学与心功能 · 简化伯努利压差；无量纲指数 DVI；瓣膜评估 · 缩流颈宽度 VCW 分级',
-  mimic: '血流动力学与心功能 · 简化伯努利压差；瓣膜评估 · 反流定量（PISA）；缩流颈宽度 VCW 分级',
+  mimic: '血流动力学与心功能 · 简化伯努利压差；瓣膜评估 · 二尖瓣疾病评估；缩流颈宽度 VCW 分级',
   'contrast-echo': '血流动力学与心功能 · 左室容积与射血分数；Qp/Qs 肺体循环血流比',
   '3d-tee': '瓣膜评估 · 二尖瓣疾病评估；介入尺寸与先心 · TAVR 瓣环尺寸与 oversizing',
   'report-std': '评分与室壁运动 · WMSI 室壁运动积分；血流动力学与心功能 · 左室容积与射血分数',
@@ -12718,8 +12769,8 @@ var CALC_HINTS = {
   'zh-normal': '血流动力学与心功能 · 心房容积指数；重构与心肌功能 · LVMI 身高^2.7（肥胖适用）',
   mass: '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · 右房压（IVC 法）',
   'hcm-stress': '重构与心肌功能 · LVMI 身高^2.7（肥胖适用）；心尖保留比值 RAS；每搏功 SW / SWi',
-  dse: '瓣膜评估 · 主动脉瓣面积（连续性方程）；血流动力学与心功能 · 无量纲指数 DVI；左室容积与射血分数',
-  ie: '瓣膜评估 · 反流定量（PISA）；缩流颈宽度 VCW 分级；血流动力学与心功能 · 左室容积与射血分数',
+  dse: '瓣膜评估 · 主动脉瓣疾病评估；血流动力学与心功能 · 无量纲指数 DVI；左室容积与射血分数',
+  ie: '瓣膜评估 · 主动脉瓣疾病评估；缩流颈宽度 VCW 分级；血流动力学与心功能 · 左室容积与射血分数',
   'aortic-root': '介入尺寸与先心 · 主动脉分节段 Z 值；重构与心肌功能 · 升主动脉直径指数；TAVR 瓣环尺寸与 oversizing',
   rheumatic: '瓣膜评估 · 二尖瓣疾病评估（含 Wilkins 形态评分）；右心与肺循环 · 肺动脉收缩压 PASP',
   fabry: '重构与心肌功能 · LVMI 身高^2.7（肥胖适用）；心尖保留比值 RAS；应变离散度 MDS',
@@ -12733,7 +12784,7 @@ var CALC_HINTS = {
   mustard: '右心与肺循环 · 右室容积指数 RVEDVi / RVESVi；右室游离壁应变 RVFWS；肺动脉收缩压 PASP',
   fontan: '右心与肺循环 · PAPi 肺动脉搏动指数；肺血管阻力 PVR；阻力指数 PVRI / SVRI',
   'as-switch': '瓣膜评估 · 主动脉瓣疾病评估；TR 三尖瓣反流定量；血流动力学与心功能 · 左室容积与射血分数',
-  ttvr: '瓣膜评估 · TR 三尖瓣反流定量；缩流颈宽度 VCW 分级；反流定量（PISA）',
+  ttvr: '瓣膜评估 · TR 三尖瓣反流定量；缩流颈宽度 VCW 分级；反流分数 RF',
   'echo-interv': '右心与肺循环 · 肺动脉收缩压 PASP；右房压（IVC 法）；血流动力学与心功能 · 左室容积与射血分数',
   crt: '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · 右室游离壁应变 RVFWS',
   la: '血流动力学与心功能 · 心房容积指数；重构与心肌功能 · 左房应变三值；左房排空分数 LAEF',
@@ -12770,8 +12821,8 @@ var CALC_LINKS = {
   /* 瓣膜 */
   mitral: ['vcw', 'rf', 'ppm'],
   aortic: ['asload', 'pr', 'vcw'],
-  asload: ['asload', 'pr', 'avav'],
-  bav: ['avav', 'dvi', 'aortaz', 'tavrsz'],
+  asload: ['pr', 'aortic', 'vcw'],
+  bav: ['aortic', 'dvi', 'aortaz', 'tavrsz'],
   'lf-lg': ['swv', 'ea'],
   /* 心肌病变 */
   hcm: ['lvmih', 'lvmass', 'spher'],
@@ -12791,7 +12842,7 @@ var CALC_LINKS = {
   'stress-echo': ['paspv', 'papi'],
   tavr: ['tavrsz', 'aortaz'],
   'mv-interv': ['mitral', 'vcw'],
-  'tr-interv': ['vcw', 'pisav'],
+  'tr-interv': ['tr', 'vcw'],
   /* 特殊临床场景 */
   takotsubo: ['ras', 'spher'],
   osa: ['paspv', 'rvvol', 'rapv'],
@@ -12801,7 +12852,7 @@ var CALC_LINKS = {
   'tte-std': ['ef', 'lvmass', 'mapse'],
   'tee-safety': ['ef', 'paspv'],
   'artifact-guide': ['bernoulli', 'dvi', 'vcw'],
-  mimic: ['bernoulli', 'pisav', 'vcw'],
+  mimic: ['bernoulli', 'mitral', 'vcw'],
   'contrast-echo': ['ef', 'shunt'],
   '3d-tee': ['mitral', 'tavrsz'],
   'report-std': ['wmsi', 'ef'],
@@ -12813,8 +12864,8 @@ var CALC_LINKS = {
   'zh-normal': ['atrial', 'lvmih'],
   mass: ['ef', 'rapv'],
   'hcm-stress': ['lvmih', 'ras', 'swv'],
-  dse: ['avav', 'dvi', 'ef'],
-  ie: ['pisav', 'vcw', 'ef'],
+  dse: ['aortic', 'dvi', 'ef'],
+  ie: ['aortic', 'vcw', 'ef'],
   'aortic-root': ['aortaz', 'aortaidx', 'tavrsz'],
   rheumatic: ['mitral', 'paspv', 'vcw'],
   fabry: ['lvmih', 'ras', 'mdsv'],
@@ -12828,7 +12879,7 @@ var CALC_LINKS = {
   mustard: ['rvvol', 'rvfws', 'paspv'],
   fontan: ['papi', 'pvrv', 'residx'],
   'as-switch': ['aortic', 'tr', 'ef'],
-  ttvr: ['tr', 'vcw', 'pisav'],
+  ttvr: ['tr', 'vcw', 'rf'],
   'echo-interv': ['paspv', 'rapv', 'ef'],
   crt: ['ef', 'rvfws'],
   la: ['atrial', 'lastrain', 'laef'],
@@ -13909,10 +13960,6 @@ const MATERIALS = [];
       note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_TR；TR 峰速按 4V² 得压差，配合 IVC 内径估右房压算出 PASP。填了 VC 会给缩流颈分级' },
 
     /* ── v1.3.0 第三批：瓣膜与舒张细节 ── */
-    { id: 'wilkins', sec: 'valve', title: 'Wilkins 二尖瓣形态评分',
-      fields: [['wk1', '瓣叶活动度', '分'], ['wk2', '瓣叶增厚', '分'],
-        ['wk3', '瓣叶钙化', '分'], ['wk4', '瓣下增厚', '分']],
-      note: '四项各 1–4 分（1 最轻、4 最重），总分 4–16。≤8 分提示形态尚好、适合经皮球囊二尖瓣成形（PBMV）；>8 分优先外科。评分受主观影响，建议由有经验医师复核' },
     { id: 'vcw', sec: 'valve', title: '缩流颈宽度 VCW 分级',
       opts: [{ k: 'vsite', n: '瓣膜', list: [['mr', 'MR 二尖瓣'], ['ar', 'AR 主动脉瓣'], ['tr', 'TR 三尖瓣']] }],
       fields: [['vcwv', '缩流颈宽度', 'mm']],
@@ -13920,10 +13967,6 @@ const MATERIALS = [];
     { id: 'rf', sec: 'valve', title: '反流分数 RF',
       fields: [['rfvol', '反流量 RVol', 'mL'], ['rfsv', '每搏量 SV', 'mL']],
       note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷' },
-    { id: 'mva', sec: 'valve', title: '二尖瓣面积 MVA（两法对照）',
-      fields: [['mpht', '① 压力减半时间 PHT', 'ms'], ['mvd', '② LVOT 直径', 'cm'],
-        ['mvlvti', '② LVOT VTI', 'cm'], ['mvmvti', '② 二尖瓣 VTI', 'cm']],
-      note: '① PHT 法 MVA = 220/PHT，要求窦性心律、无明显主动脉瓣反流，房颤 / AR / 重度钙化 / 术后会失真；② 连续性方程 MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV，不受心率与反流影响，房颤 / AR 时首选。分级：>1.5 轻度、1.0–1.5 中度、<1.0 重度。两法差 >0.3 cm² 时回到图像找原因，不要取平均' },
     { id: 'evp', sec: 'vq', title: 'E/Vp 左房压估测',
       fields: [['evpe', 'E 峰速度', 'cm/s'], ['evpvp', 'Vp 血流传播速度', 'cm/s']],
       note: 'E/Vp ≤1.5 正常；>1.5 提示 PCWP >15 mmHg，>2.5 提示 >18 mmHg。Vp 用彩色 M 型在四腔切面测（正常 ≥45 cm/s）。Vp 正常而 E/Vp 升高时，E 峰多被容量负荷或 MR 抬高，不等于松弛受损' },
@@ -13959,13 +14002,6 @@ const MATERIALS = [];
       note: '四个位点可只填测到的。Z 值由站内成人参考区间反推（均值 = 区间中点，SD = 半径 ÷ 1.96），口径与「Z > 2 视为扩张」一致，但不是人群实测 SD，不能与儿童 Z 值或 CT 的 Z 值互换。近段升主动脉另按 BSA 指数化：男 ≥2.1、女 ≥2.0 cm/m² 提示扩张' },
 
     /* ── 舒张功能定量（sec: vq） ── */
-    { id: 'pisav', sec: 'valve', title: '反流定量（PISA）',
-      fields: [['prad', 'PISA 半球半径 r', 'cm'], ['palias', 'Nyquist 速度（默认 40）', 'cm/s'],
-        ['pvmax', '反流峰速 Vmax', 'm/s'], ['pvti', '反流 VTI', 'cm']],
-      note: '流量 = 2πr²×Nyquist；EROA = 流量 ÷ Vmax(cm/s)；RVol = EROA × VTI。MR：EROA ≥0.4 / RVol ≥60 为重度' },
-    { id: 'avav', sec: 'valve', title: '主动脉瓣面积（连续性方程）',
-      fields: [['ald', 'LVOT 直径', 'cm'], ['alvti', 'LVOT VTI', 'cm'], ['aavti', '主动脉瓣 VTI', 'cm']],
-      note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；AVAi ≤0.6 为重度；DVI ≤0.25 支持重度 AS' },
     { id: 'asload', sec: 'valve', title: 'AS 负荷量化（ELI · Zva · SWL）',
       fields: [['alvmax', '主动脉瓣峰值流速 Vmax', 'm/s'], ['almean', '平均跨瓣压差', 'mmHg'],
         ['alava', '有效瓣口面积 EOA', 'cm²'], ['alao', '升主动脉直径', 'cm'],
@@ -15938,7 +15974,7 @@ const MATERIALS = [];
           const detail = w.items.map(function (it) {
             return it.n.replace('瓣叶', '') + ' ' + it.score;
           }).join(' · ');
-          parts.push('形态 Wilkins ' + w.total + '/16（' + detail + '）· ' + w.text);
+          parts.push('形态 Wilkins ' + w.total + '/16（' + detail + '）· ' + w.text + '；' + w.worstText);
         }
       }
 

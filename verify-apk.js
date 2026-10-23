@@ -515,8 +515,8 @@ check('右心引擎函数已内联（rvVolumeIndex / rvFreeWallStrain / pulmonar
    'function pulmonaryDiastolicPressure', 'function resistanceIndices', 'function rvDpDt']
     .every(function (k) { return html.indexOf(k) !== -1; }), true);
 /* v1.3.0 第三批：瓣膜与舒张细节 */
-check('含 7 个新计算器（wilkins / vcw / rf / mva / laef / quickratio / lvmih）',
-  ['wilkins', 'vcw', 'rf', 'mva', 'laef', 'quickratio', 'lvmih'].every(function (id) {
+check('含 5 个新计算器（vcw / rf / laef / quickratio / lvmih；wilkins 与 mva 已并入评估页）',
+  ['vcw', 'rf', 'laef', 'quickratio', 'lvmih'].every(function (id) {
     return html.indexOf("id: '" + id + "'") !== -1;
   }), true);
 check('第三批引擎函数已内联（wilkinsScore / vcwGrade / regurgFraction / laEmptying / quickRatios / lvmHeightIndex）',

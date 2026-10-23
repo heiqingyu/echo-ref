@@ -316,7 +316,7 @@ function check(name, ok, detail) {
     check('公式集分组 = 7 个计算组 + 瓣膜 + 6 组评估 + 2 组外链（评估组已合并到 6 组）',
       d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|切面、图像与质控|心腔、应变与负荷|心肌病变|先天性心脏病（含术后）|器械与介入操作|急症与特殊场景|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 149 条（63 计算 + 10 瓣膜判读与解剖 + 68 评估 + 8 外链）', d.items === 149, d.items);
+    check('条目 145 条（59 计算 + 10 瓣膜判读与解剖 + 68 评估 + 8 外链）', d.items === 145, d.items);
     check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -324,7 +324,7 @@ function check(name, ok, detail) {
     check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
-    check('发布版瓣膜评估组含 10 条计算（TR + 9 个通用）', d.valveCalc === 10, d.valveCalc);
+    check('发布版瓣膜评估组含 6 条计算（TR + 5 个通用）', d.valveCalc === 6, d.valveCalc);
     check('参考文献 78 条', d.refs === 78, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
@@ -448,6 +448,23 @@ function check(name, ok, detail) {
     await c.evalJs(`(function(){var b=document.getElementById('calcBack'); if(b) b.click();})()`);
     await new Promise((r) => setTimeout(r, 200));
   };
+  // 评估页（brief 条目）：进卡后先清空所有输入，避免上一条用例的缓存值串进来
+  const openBrief = async (id) => {
+    await backToList();
+    await c.evalJs(`(function(){
+      var e=document.querySelector('#calcList .fx-item[data-kind="brief"][data-id="${id}"]');
+      if(e) e.click();
+    })()`);
+    await new Promise((r) => setTimeout(r, 250));
+    await c.evalJs(`(function(){
+      var box=document.querySelector('#calcGroups .card[data-g="${id}"]');
+      if(!box) return;
+      [].slice.call(box.querySelectorAll('input[data-ck]')).forEach(function(i){
+        i.value=''; i.dispatchEvent(new Event('input',{bubbles:true}));
+      });
+    })()`);
+    await new Promise((r) => setTimeout(r, 200));
+  };
   const openCalc = async (id) => {
     await backToList();
     await c.evalJs(`(function(){
@@ -526,13 +543,15 @@ function check(name, ok, detail) {
   o = await outOf('pvrv');
   check('PVR 33/5 → 6.6 WU 重度', /6\.6/.test(o) && /重度/.test(o), o);
 
-  await openCalc('pisav');
-  await fillCalc('pisav', 'prad', '0.8');
-  await fillCalc('pisav', 'pvmax', '5.0');
-  await fillCalc('pisav', 'pvti', '150');
+  // v1.4.5：PISA 独立计算器并入二尖瓣评估页，改在评估页 MR 段验证
+  await openBrief('mitral');
+  await fillCalc('mitral', 'mr_radius', '0.8');
+  await fillCalc('mitral', 'mr_aliasVa', '40');
+  await fillCalc('mitral', 'mr_regV', '5.0');
+  await fillCalc('mitral', 'mr_regVti', '150');
   await new Promise((r) => setTimeout(r, 300));
-  o = await outOf('pisav');
-  check('PISA r=0.8 → EROA 0.32 / RVol 48', /0\.32/.test(o) && /48/.test(o), o);
+  o = await outOf('mitral');
+  check('二尖瓣页 PISA r=0.8 → EROA 0.32 / RVol 48', /0\.32/.test(o) && /48/.test(o), o);
 
   await openCalc('dfun');
   await fillCalc('dfun', 'dfe', '80');
@@ -652,14 +671,15 @@ function check(name, ok, detail) {
   check('PVRI 6 WU × BSA → 指数化结果', /PVRI 1[0-9]\./.test(o), o);
 
   // ── v1.3.0 第三批：瓣膜与舒张细节 ──
-  await openCalc('wilkins');
-  await fillCalc('wilkins', 'wk1', '2');
-  await fillCalc('wilkins', 'wk2', '2');
-  await fillCalc('wilkins', 'wk3', '2');
-  await fillCalc('wilkins', 'wk4', '2');
+  // v1.4.5：Wilkins 独立计算器并入二尖瓣评估页
+  await openBrief('mitral');
+  await fillCalc('mitral', 'wk1', '2');
+  await fillCalc('mitral', 'wk2', '2');
+  await fillCalc('mitral', 'wk3', '2');
+  await fillCalc('mitral', 'wk4', '2');
   await new Promise((r) => setTimeout(r, 300));
-  o = await outOf('wilkins');
-  check('Wilkins 四面 2 分 → 8 分适合 PBMV', /8/.test(o) && /PBMV/.test(o), o);
+  o = await outOf('mitral');
+  check('二尖瓣页 Wilkins 四面 2 分 → 8/16 适合 PBMV', /Wilkins 8\/16/.test(o) && /PBMV/.test(o), o);
 
   await openCalc('vcw');
   await fillCalc('vcw', 'vcwv', '4');
@@ -679,13 +699,13 @@ function check(name, ok, detail) {
   o = await outOf('rf');
   check('RF 60/86 → 69.8% 重度', /69\.8%/.test(o) && /重度/.test(o), o);
 
-  await openCalc('mva');
-  await fillCalc('mva', 'mvd', '2.0');
-  await fillCalc('mva', 'mvlvti', '20');
-  await fillCalc('mva', 'mvmvti', '8');
+  await openBrief('mitral');
+  await fillCalc('mitral', 'mit_lvotD', '2.0');
+  await fillCalc('mitral', 'mit_lvotVti', '20');
+  await fillCalc('mitral', 'mit_mvVti', '8');
   await new Promise((r) => setTimeout(r, 300));
-  o = await outOf('mva');
-  check('MVA 连续性方程 2.0/20/8 → 7.85', /7\.85/.test(o), o);
+  o = await outOf('mitral');
+  check('二尖瓣页 MVA 连续性方程 2.0/20/8 → 7.85', /7\.85/.test(o), o);
 
   await openCalc('laef');
   await fillCalc('laef', 'lavmax', '80');

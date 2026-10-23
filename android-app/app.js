@@ -620,10 +620,6 @@
       note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_TR；TR 峰速按 4V² 得压差，配合 IVC 内径估右房压算出 PASP。填了 VC 会给缩流颈分级' },
 
     /* ── v1.3.0 第三批：瓣膜与舒张细节 ── */
-    { id: 'wilkins', sec: 'valve', title: 'Wilkins 二尖瓣形态评分',
-      fields: [['wk1', '瓣叶活动度', '分'], ['wk2', '瓣叶增厚', '分'],
-        ['wk3', '瓣叶钙化', '分'], ['wk4', '瓣下增厚', '分']],
-      note: '四项各 1–4 分（1 最轻、4 最重），总分 4–16。≤8 分提示形态尚好、适合经皮球囊二尖瓣成形（PBMV）；>8 分优先外科。评分受主观影响，建议由有经验医师复核' },
     { id: 'vcw', sec: 'valve', title: '缩流颈宽度 VCW 分级',
       opts: [{ k: 'vsite', n: '瓣膜', list: [['mr', 'MR 二尖瓣'], ['ar', 'AR 主动脉瓣'], ['tr', 'TR 三尖瓣']] }],
       fields: [['vcwv', '缩流颈宽度', 'mm']],
@@ -631,10 +627,6 @@
     { id: 'rf', sec: 'valve', title: '反流分数 RF',
       fields: [['rfvol', '反流量 RVol', 'mL'], ['rfsv', '每搏量 SV', 'mL']],
       note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷' },
-    { id: 'mva', sec: 'valve', title: '二尖瓣面积 MVA（两法对照）',
-      fields: [['mpht', '① 压力减半时间 PHT', 'ms'], ['mvd', '② LVOT 直径', 'cm'],
-        ['mvlvti', '② LVOT VTI', 'cm'], ['mvmvti', '② 二尖瓣 VTI', 'cm']],
-      note: '① PHT 法 MVA = 220/PHT，要求窦性心律、无明显主动脉瓣反流，房颤 / AR / 重度钙化 / 术后会失真；② 连续性方程 MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV，不受心率与反流影响，房颤 / AR 时首选。分级：>1.5 轻度、1.0–1.5 中度、<1.0 重度。两法差 >0.3 cm² 时回到图像找原因，不要取平均' },
     { id: 'evp', sec: 'vq', title: 'E/Vp 左房压估测',
       fields: [['evpe', 'E 峰速度', 'cm/s'], ['evpvp', 'Vp 血流传播速度', 'cm/s']],
       note: 'E/Vp ≤1.5 正常；>1.5 提示 PCWP >15 mmHg，>2.5 提示 >18 mmHg。Vp 用彩色 M 型在四腔切面测（正常 ≥45 cm/s）。Vp 正常而 E/Vp 升高时，E 峰多被容量负荷或 MR 抬高，不等于松弛受损' },
@@ -670,13 +662,6 @@
       note: '四个位点可只填测到的。Z 值由站内成人参考区间反推（均值 = 区间中点，SD = 半径 ÷ 1.96），口径与「Z > 2 视为扩张」一致，但不是人群实测 SD，不能与儿童 Z 值或 CT 的 Z 值互换。近段升主动脉另按 BSA 指数化：男 ≥2.1、女 ≥2.0 cm/m² 提示扩张' },
 
     /* ── 舒张功能定量（sec: vq） ── */
-    { id: 'pisav', sec: 'valve', title: '反流定量（PISA）',
-      fields: [['prad', 'PISA 半球半径 r', 'cm'], ['palias', 'Nyquist 速度（默认 40）', 'cm/s'],
-        ['pvmax', '反流峰速 Vmax', 'm/s'], ['pvti', '反流 VTI', 'cm']],
-      note: '流量 = 2πr²×Nyquist；EROA = 流量 ÷ Vmax(cm/s)；RVol = EROA × VTI。MR：EROA ≥0.4 / RVol ≥60 为重度' },
-    { id: 'avav', sec: 'valve', title: '主动脉瓣面积（连续性方程）',
-      fields: [['ald', 'LVOT 直径', 'cm'], ['alvti', 'LVOT VTI', 'cm'], ['aavti', '主动脉瓣 VTI', 'cm']],
-      note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；AVAi ≤0.6 为重度；DVI ≤0.25 支持重度 AS' },
     { id: 'asload', sec: 'valve', title: 'AS 负荷量化（ELI · Zva · SWL）',
       fields: [['alvmax', '主动脉瓣峰值流速 Vmax', 'm/s'], ['almean', '平均跨瓣压差', 'mmHg'],
         ['alava', '有效瓣口面积 EOA', 'cm²'], ['alao', '升主动脉直径', 'cm'],
@@ -2649,7 +2634,7 @@
           const detail = w.items.map(function (it) {
             return it.n.replace('瓣叶', '') + ' ' + it.score;
           }).join(' · ');
-          parts.push('形态 Wilkins ' + w.total + '/16（' + detail + '）· ' + w.text);
+          parts.push('形态 Wilkins ' + w.total + '/16（' + detail + '）· ' + w.text + '；' + w.worstText);
         }
       }
 
