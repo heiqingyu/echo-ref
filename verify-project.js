@@ -122,7 +122,7 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 63) ok('公式集定义 63 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 59) ok('公式集定义 59 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
@@ -130,7 +130,7 @@ if (calcSecIds.join('/') === 'hemo/right/vq/recon/score/ivs/fu')
   ok('计算组 7 个（血流动力学 / 右心肺循环 / 瓣膜舒张 / 重构心肌 / 评分与室壁运动 / 介入尺寸与先心 / 随访与术中）');
 else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1 && g.sec !== 'valve');
-if (!badSec.length) ok('63 条公式的 sec 归属均合法（含 valve 瓣膜评估组 + fu 随访与术中组）');
+if (!badSec.length) ok('59 条公式的 sec 归属均合法（含 valve 瓣膜评估组 + fu 随访与术中组）');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
@@ -140,8 +140,8 @@ const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
 const nScore = CG.GROUPS.filter(g => g.sec === 'score').length;
 const nIvs = CG.GROUPS.filter(g => g.sec === 'ivs').length;
 const nFu = CG.GROUPS.filter(g => g.sec === 'fu').length;
-if (nHemo === 14 && nRight === 13 && nVq === 3 && nRecon === 12 && nScore === 3 && nIvs === 5 && nValveCalc === 10 && nFu === 3)
-  ok('分组条目数 14 / 13 / 3 / 12 / 3 / 5 + 瓣膜评估 10 + 随访与术中 3');
+if (nHemo === 14 && nRight === 13 && nVq === 3 && nRecon === 12 && nScore === 3 && nIvs === 5 && nValveCalc === 6 && nFu === 3)
+  ok('分组条目数 14 / 13 / 3 / 12 / 3 / 5 + 瓣膜评估 6 + 随访与术中 3');
 else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs, nValveCalc, nFu].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
@@ -846,10 +846,15 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   if (trG && trG.sec === 'valve' && (trG.fields || []).length) {
     ok('瓣膜计算器进公式集：tr（' + trG.title + '）');
   } else bad('公式集缺少瓣膜计算器：tr');
-  ['as', 'ar', 'ms', 'mr'].forEach(function (id) {
+  ['as', 'ar', 'ms', 'mr', 'wilkins', 'mva', 'pisav', 'avav'].forEach(function (id) {
     if (!CG160.GROUPS.filter(x => x.id === id)[0]) ok('已并入评估页、公式集不再单列：' + id);
     else bad('仍在公式集单列：' + id);
   });
+  // 瓣膜组剩下的 6 条：TR 定量 + 5 条通用（不与评估页重复的才算合格）
+  const valveRest = CG160.GROUPS.filter(g => g.sec === 'valve').map(g => g.id).join(',');
+  (valveRest === 'tr,vcw,rf,asload,pr,ppm')
+    ? ok('瓣膜组剩 6 条且与评估页无重复：' + valveRest)
+    : bad('瓣膜组条目异常：' + valveRest);
   // 并入评估页的输入键必须带前缀，否则网页端全局 calcVal 会串值
   [['mitral', ['mit_', 'mr_', 'wk']], ['aortic', ['as_', 'ar_']]].forEach(function (pair) {
     const id = pair[0];

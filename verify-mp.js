@@ -530,7 +530,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 150 条（58 计算 + 11 瓣膜 + 77 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 150, 0);
+  check('目录共 146 条（57 计算 + 8 瓣膜 + 77 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 146, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
@@ -611,7 +611,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     ['tavrsz', 'laasz', 'paidx', 'coa']
       .every(id => dirById('ivs').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('第三四批条目齐全',
-    ['wilkins', 'vcw', 'rf', 'mva', 'laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
+    ['vcw', 'rf', 'laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
       .every(id => ['hemo', 'right', 'vq', 'recon', 'score', 'ivs', 'valve'].some(g => dirById(g).items.some(i => i.id === id)))
       ? 1 : 0, 1, 0);
   check('器械与介入操作含 CRT / LAD / LVAD（device 组已并入）', dirById('tee-interv').items.length, 8, 0);
@@ -627,12 +627,16 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 9 条通用/专用计算 + 8 条判读 + 1 个解剖示意图（v1.4.4 起 AS/AR/MS/MR 并入两个评估页）
-  check('瓣膜评估组合并为 19 条（9 计算 + 8 判读 + 1 解剖示意图）', dirById('valve').items.length, 19, 0);
-  check('瓣膜评估组含 7 条瓣膜通用计算（wilkins / vcw / rf / mva / pisav / avav / ppm）',
-    ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
+  check('瓣膜评估组合并为 15 条（6 计算 + 8 判读 + 1 解剖示意图）', dirById('valve').items.length, 15, 0);
+  // v1.4.5：Wilkins / MVA / PISA / AVA 四台与两个评估页重复的通用计算器也已并入，组内只剩 5 条不重复的
+  check('瓣膜评估组含 5 条不重复的通用计算（vcw / rf / asload / pr / ppm）',
+    ['vcw', 'rf', 'asload', 'pr', 'ppm']
       .every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('与评估页重复的通用计算已并入、不再单列（wilkins / mva / pisav / avav）',
+    ['wilkins', 'mva', 'pisav', 'avav']
+      .every(id => !dirById('valve').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
   check('瓣膜通用计算不再出现在舒张功能定量组',
-    ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
+    ['vcw', 'rf', 'asload', 'pr', 'ppm']
       .every(id => !dirById('vq').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
   // v1.4.4：AS / AR / MS / MR 四条并入「二尖瓣疾病评估」「主动脉瓣疾病评估」，
   // 公式集里只剩 TR 还是独立的瓣膜计算条目
@@ -782,10 +786,12 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   mpCalc('rcratiov', { ctapse: 17, cpasp: 60 }, /0\.28.*失耦联/, 'TAPSE/PASP 0.28 失耦联');
   mpCalc('pvrv', { hmmpap: 45, hmpawp: 12, hmco: 5 }, /6\.60 WU.*重度/, 'PVR 6.6 WU 重度');
   mpCalc('svrv', { smap: 65, srap: 5, sco: 5 }, /960.*正常/, 'SVR 960 正常');
-  mpCalc('pisav', { prad: 0.8, palias: 40, pvmax: 5.0, pvti: 150 },
-    /EROA 0\.32/, 'PISA EROA 0.32');
-  mpCalc('avav', { ald: 2.0, alvti: 20, aavti: 30 }, /AVA 2\.09/, 'AVA 2.09');
-  mpCalc('mva', { mpht: 100 }, /MVA 2\.20 cm²（PHT 法）.*轻度/, 'MVA PHT 100 → 2.2');
+  // v1.4.5：PISA / AVA / MVA 三台独立计算器并入两个评估页，这里改在评估页验证同一套算法
+  mpCalc('aortic', { ar_radius: 0.8, ar_aliasVa: 40, ar_regV: 5.0, ar_regVti: 150 },
+    /EROA 0\.32/, '主动脉瓣页 AR 段 PISA EROA 0.32');
+  mpCalc('aortic', { as_lvotD: 2.0, as_lvotVti: 20, as_avVti: 30 },
+    /AVA 连续方程 2\.09/, '主动脉瓣页 AS 段 AVA 2.09');
+  mpCalc('mitral', { mit_pht: 100 }, /MVA · PHT 法（220÷PHT） 2\.20 cm²（不显著）/, '二尖瓣页 MVA PHT 100 → 2.2');
   mpCalc('ppm', { peoa: 1.4, ppos: 1 }, /0\.80.*中度 PPM/, 'EOAi 0.78 中度 PPM（R17 切点）');
   mpCalc('dfun', { dfe: 80, dfa: 60, dfes: 10, dfel: 14 },
     /E\/A 1\.33.*正常充盈/, '舒张四步法 正常充盈');
@@ -866,21 +872,22 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   mpCalc2('rvdvdt', { rdt: 40 }, /dP\/dt ≈ 300.*减低/, 'RV dP/dt Δt40 = 300 减低');
 
   // —— v1.3.0 第三批：瓣膜与舒张细节 ——
-  mpCalc2('wilkins', { wk1: 2, wk2: 2, wk3: 2, wk4: 2 },
-    /Wilkins 8 \/ 16（活动度 2 · 增厚 2 · 钙化 2 · 瓣下增厚 2）.*PBMV/,
-    'Wilkins 8 分逐项列出且适合 PBMV');
-  mpCalc2('wilkins', { wk1: 3, wk2: 4, wk3: 3, wk4: 4 },
-    /Wilkins 14 \/ 16.*≥12.*外科/, 'Wilkins 14 分优先外科');
-  mpCalc2('wilkins', { wk1: 4, wk2: 3, wk3: 3, wk4: 2 },
+  // v1.4.5：Wilkins 独立计算器并入二尖瓣评估页，输入键不变（wk1–wk4）
+  mpCalc2('mitral', { wk1: 2, wk2: 2, wk3: 2, wk4: 2 },
+    /Wilkins 8\/16（活动度 2 · 增厚 2 · 钙化 2 · 瓣下增厚 2）.*PBMV/,
+    '二尖瓣页 Wilkins 8 分逐项列出且适合 PBMV');
+  mpCalc2('mitral', { wk1: 3, wk2: 4, wk3: 3, wk4: 4 },
+    /Wilkins 14\/16.*≥12.*外科/, '二尖瓣页 Wilkins 14 分优先外科');
+  mpCalc2('mitral', { wk1: 4, wk2: 3, wk3: 3, wk4: 2 },
     /扣分最多的是「瓣叶活动度」（4 分：瓣叶无活动，全部僵硬）/,
-    'Wilkins 指出扣分最重项及其形态描述');
+    '二尖瓣页 Wilkins 指出扣分最重项及其形态描述');
 
   mpCalc2('vcw', { vcwv: 7 }, /MR 重度（≥7 mm）/, 'VCW 7mm MR 重度');
   mpCalc2('vcw', { vcwv: 6 }, /AR 重度（≥6 mm）/, 'VCW 6mm AR 重度', { vsite: 'ar' });
   mpCalc2('vcw', { vcwv: 4 }, /MR 中度/, 'VCW 4mm MR 中度');
   mpCalc2('rf', { rfvol: 60, rfsv: 86 }, /RF = 69\.8%.*重度/, 'RF 69.8% 重度');
-  mpCalc2('mva', { mvd: 2.0, mvlvti: 20, mvmvti: 8 },
-    /MVA 7\.85 cm²（连续方程.*轻度/, 'MVA 连续性方程 7.85');
+  mpCalc2('mitral', { mit_lvotD: 2.0, mit_lvotVti: 20, mit_mvVti: 8 },
+    /MVA 连续方程 7\.85 cm²（不显著）/, '二尖瓣页 MVA 连续性方程 7.85');
   mpCalc2('laef', { lavmax: 80, lavmin: 40 },
     /LAEF 50\.0%.*扩张指数 100\.0%.*保留/, 'LAEF 50% 扩张指数 100%');
   mpCalc2('quickratio', { qla: 40, qao: 32, qrv: 40, qlv: 50 },
@@ -1163,29 +1170,21 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('PASP 30→62 判运动诱发肺高压',
     /运动诱发肺高压/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
-  // —— v1.3.2 Wilkins 细化 + 二尖瓣内嵌 + 相关计算胶囊 ——
+  // —— v1.3.2 Wilkins 细化 → v1.4.5 起并入二尖瓣评估页（不再有独立 wilkins 条目）——
   const CG2 = require(pathW.join(__dirname, 'miniprogram', 'utils', 'calc-groups.js'));
-  const wkG = CG2.GROUPS.filter(function (g) { return g.id === 'wilkins'; })[0];
-  check('Wilkins 计算器带分项评分表（4 项 × 2 块 + 1 条提示）', (wkG.blocks || []).length, 9, 0);
-  check('Wilkins 字段按原始顺序（活动度 → 增厚 → 钙化 → 瓣下）',
-    wkG.fields.map(function (f) { return f.n.replace(/^[①②③④] /, ''); }).join('/') ===
-      '瓣叶活动度/瓣叶增厚/瓣叶钙化/瓣下增厚' ? 1 : 0, 1, 0);
+  check('Wilkins 计算器已并入评估页、公式集不再单列',
+    CG2.GROUPS.filter(function (g) { return g.id === 'wilkins'; }).length === 0 ? 1 : 0, 1, 0);
 
-  pgF.onLoad({ id: 'wilkins' });
-  pgF.onShow();
-  check('Wilkins 页渲染出 15 个说明块（9 条评分细则 + 6 条临床意义/参考标准/判读要点）', pgF.data.blocks.length, 15, 0);
-  check('Wilkins 页说明块以「这个指标是干什么用的」开头',
-    pgF.data.blocks[0].text.indexOf('这个指标是干什么用的') !== -1 ? 1 : 0, 1, 0);
-  check('Wilkins 页含「参考标准 / 正常值」小节',
-    pgF.data.blocks.some(function (b) { return b.text.indexOf('参考标准') !== -1; }) ? 1 : 0, 1, 0);
-  check('Wilkins 页评分细则仍在说明之后',
-    pgF.data.blocks.some(function (b) { return b.text.indexOf('① 瓣叶活动度') !== -1; }) ? 1 : 0, 1, 0);
-  check('Wilkins 页末块提示不要倒推打分',
-    pgF.data.blocks[pgF.data.blocks.length - 1].text.indexOf('倒推') !== -1 ? 1 : 0, 1, 0);
-
-  // 二尖瓣页内嵌同一套评分
   pgF.onLoad({ id: 'mitral' });
   pgF.onShow();
+  check('二尖瓣页 Wilkins 字段按原始顺序（活动度 → 增厚 → 钙化 → 瓣下）',
+    pgF.data.inputs.filter(function (r) { return !r.head; }).slice(0, 4)
+      .map(function (r) { return r.name; }).join('/') ===
+      '瓣叶活动度/瓣叶增厚/瓣叶钙化/瓣下增厚' ? 1 : 0, 1, 0);
+  check('二尖瓣页说明块以「一、狭窄 MS」开头',
+    pgF.data.blocks[0].text.indexOf('一、狭窄 MS') !== -1 ? 1 : 0, 1, 0);
+  check('二尖瓣页 Wilkins 评分小节在说明之后',
+    pgF.data.blocks.some(function (b) { return (b.text || '').indexOf('三、Wilkins 形态评分') !== -1; }) ? 1 : 0, 1, 0);
   check('二尖瓣页 17 个输入（Wilkins 4 + MS 7 + MR 6）',
     pgF.data.inputs.filter(function (r) { return !r.head; }).length, 17, 0);
   check('二尖瓣页输入框分 3 段（形态 / 狭窄 / 反流）',
