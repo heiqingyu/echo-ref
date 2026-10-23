@@ -58,7 +58,7 @@ check('www 完整版体积 < 1050 KB', Buffer.byteLength(html, 'utf8') < 1050 * 
 check('docs 发布版存在（APK 打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 1000 KB（6 组 77 条评估 + 78 条文献）', Buffer.byteLength(dh, 'utf8') < 1000 * 1024, true);
+  check('docs 发布版体积 < 1000 KB（6 组 76 条评估 + 78 条文献）', Buffer.byteLength(dh, 'utf8') < 1000 * 1024, true);
   check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
   check('docs 发布版含瓣膜解剖页', dh.indexOf('id="page-valveana"') !== -1, true);
