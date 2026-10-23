@@ -530,7 +530,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 146 条（57 计算 + 8 瓣膜 + 77 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 146, 0);
+  check('目录共 145 条（57 计算 + 8 瓣膜 + 76 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 145, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
@@ -614,7 +614,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     ['vcw', 'rf', 'laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
       .every(id => ['hemo', 'right', 'vq', 'recon', 'score', 'ivs', 'valve'].some(g => dirById(g).items.some(i => i.id === id)))
       ? 1 : 0, 1, 0);
-  check('器械与介入操作含 CRT / LAD / LVAD（device 组已并入）', dirById('tee-interv').items.length, 8, 0);
+  check('器械与介入操作含 CRT / LAD / LVAD（device 组已并入）', dirById('tee-interv').items.length, 7, 0);
   check('器械与介入操作含 CRT 同步化',
     dirById('tee-interv').items.some(i => i.id === 'crt') ? 1 : 0, 1, 0);
   check('器械与介入操作含 LAA 参数',
@@ -674,7 +674,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('负荷试验 3 条已并入心腔组（运动负荷 + HCM 激发 + DSE）', dirById('chamber').items.filter(i => ['stress-echo','hcm-stress','dse'].indexOf(i.id) !== -1).length, 3, 0);
   check('负荷试验含 stress-echo',
     dirById('chamber').items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
-  check('器械与介入操作 8 条（三尖瓣 / 二尖瓣 / TTVR / TAVR / 有创操作 + CRT / LAA / LVAD）', dirById('tee-interv').items.length, 8, 0);
+  check('器械与介入操作 7 条（三尖瓣 / 二尖瓣 / TAVR / 有创操作 + CRT / LAA / LVAD；TTVR 已并入三尖瓣条目）', dirById('tee-interv').items.length, 7, 0);
   ['tr-interv', 'mv-interv', 'tavr', 'echo-interv'].forEach(id => {
     check('介入与操作超声含 ' + id,
       dirById('tee-interv').items.some(i => i.id === id) ? 1 : 0, 1, 0);

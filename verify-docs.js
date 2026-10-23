@@ -316,7 +316,7 @@ function check(name, ok, detail) {
     check('公式集分组 = 7 个计算组 + 瓣膜 + 6 组评估 + 2 组外链（评估组已合并到 6 组）',
       d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|切面、图像与质控|心腔、应变与负荷|心肌病变|先天性心脏病（含术后）|器械与介入操作|急症与特殊场景|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 145 条（59 计算 + 10 瓣膜判读与解剖 + 68 评估 + 8 外链）', d.items === 145, d.items);
+    check('条目 144 条（59 计算 + 10 瓣膜判读与解剖 + 67 评估 + 8 外链）', d.items === 144, d.items);
     check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -941,7 +941,7 @@ function check(name, ok, detail) {
   })()`);
   const navN = await c.evalJs(
     'document.querySelectorAll(\'#calcGroups .card[data-g="tavr"] .fx-nav--sec .fx-nav__c\').length');
-  check('TAVR 条目渲染出 7 个小节导航胶囊', navN === 7, navN);
+  check('TAVR 条目渲染出 8 个小节导航胶囊', navN === 8, navN);
   await c.evalJs(
     'document.querySelector(\'#calcGroups .card[data-g="tavr"] .fx-nav--sec .fx-nav__c:nth-child(5)\').click()');
   await new Promise((r) => setTimeout(r, 900));
