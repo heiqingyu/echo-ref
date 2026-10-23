@@ -8,8 +8,8 @@
   res/mipmap-{mdpi..xxxhdpi}/ic_launcher.png      传统图标 48/72/96/144/192
   res/drawable-{mdpi..xxxhdpi}/ic_launcher_fg.png 自适应前景（108dp 系列，已按 72% 内缩）
   res/drawable-{mdpi..xxxhdpi}/ic_launcher_bg.png 自适应背景（纯底色）
-  ../miniprogram/images/app-icon.png              小程序后台头像 144×144
-  ../miniprogram/images/app-icon-512.png          备用大图 512×512
+  icons/app-icon.png                              小程序后台头像 144×144（不放进小程序包）
+  icons/app-icon-512.png                          备用大图 512×512（不放进小程序包）
 
 源图是"深蓝底 + 圆角矩形、四角为白"，因此：
   · 先把四角白角填成图内底色（否则 launcher 圆角处会露白边）
@@ -21,7 +21,7 @@ from PIL import Image, ImageDraw
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 RES = os.path.join(ROOT, 'res')
-MP_DIR = os.path.join(ROOT, '..', 'miniprogram', 'images')
+MP_DIR = os.path.join(ROOT, 'icons')  # 后台头像素材，不能放进小程序包（代码质量检查：图片总量 ≤200K）
 SRC = os.path.join(ROOT, 'icon-src.jpg')
 
 im = Image.open(SRC).convert('RGB')
@@ -107,7 +107,7 @@ print('  背景层用 @color/icon_bg（纯色不必存 PNG）')
 # ── 3) 小程序头像 ──
 force(os.path.join(MP_DIR, 'app-icon.png'), flat.resize((144, 144), Image.LANCZOS), optimize=True)
 force(os.path.join(MP_DIR, 'app-icon-512.png'), flat.resize((512, 512), Image.LANCZOS), optimize=True)
-print('  miniprogram/images/app-icon.png（144）+ app-icon-512.png')
+print('  icons/app-icon.png（144）+ app-icon-512.png（小程序后台手动上传用，不进包体）')
 
 # ── 4) favicon 用图（64px，128 色量化约 3KB） ──
 b = io.BytesIO()
