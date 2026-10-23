@@ -610,30 +610,8 @@
       fields: [['phv', 'TR Vmax', 'm/s'], ['phrvotat', 'RVOT 加速时间（可选）', 'ms']],
       note: 'TR Vmax ≤2.8 无征象 → 低；≤2.8 有征象 或 2.9–3.4 无征象 → 中；2.9–3.4 有征象 或 >3.4 → 高。右心征象指 RV/LV >1、室间隔变平 / 矛盾运动、RVOT AT <105 ms、右房面积 >18 cm²、IVC >21 mm 不塌陷、收缩期切迹。超声只给「可能性」，确诊必须右心导管' },
 
-    /* ── 瓣膜专用定量（v1.4.1：与小程序 calc-groups.js 同源，走 valve-calc 引擎） ── */
-    { id: 'as', sec: 'valve', title: 'AS 主动脉瓣狭窄定量',
-      fields: [['as_lvotD', 'LVOT 直径', 'cm'], ['as_lvotVti', 'LVOT VTI', 'cm'],
-        ['as_avVti', 'AV VTI（连续方程）', 'cm'], ['as_avVmax', 'AV Vmax', 'm/s'],
-        ['as_lvotVmax', 'LVOT Vmax（峰速法，可选）', 'm/s'], ['as_mg', '平均跨瓣压差（可选）', 'mmHg']],
-      note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；DVI = VTI_LVOT ÷ VTI_AV；峰速法 AVA = SV_LVOT ÷ (Vmax_AV × 100)。连续方程与峰速法互相印证，两法差 >0.2 cm² 时回图像找原因' },
-    { id: 'ar', sec: 'valve', title: 'AR 主动脉瓣反流定量',
-      fields: [['ar_radius', 'PISA 半径', 'cm'], ['ar_aliasVa', '混叠速度 Va', 'cm/s'],
-        ['ar_regV', '反流峰速', 'm/s'], ['ar_regVti', '反流 VTI', 'cm'],
-        ['ar_vc', '缩流颈 VC（可选）', 'cm'], ['ar_pht', '压力半降时间 PHT（可选）', 'ms'],
-        ['ar_lvotD', 'LVOT 直径（算 RF，可选）', 'cm'], ['ar_lvotVti', 'LVOT VTI（算 RF，可选）', 'cm']],
-      note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_AR，反流分数 RF = RVol ÷ SV_LVOT。填了 PHT 会给压力半降时间分级，填了 VC 会给缩流颈分级' },
-    { id: 'ms', sec: 'valve', title: 'MS 二尖瓣狭窄定量',
-      fields: [['ms_mvaPlani', 'MVA 直接描记（首选）', 'cm²'], ['ms_pht', '压力半降时间 PHT', 'ms'],
-        ['ms_mg', '平均跨瓣压差', 'mmHg'], ['ms_pasp', '估测 PASP（可选）', 'mmHg'],
-        ['ms_lvotD', 'LVOT 直径（连续方程，可选）', 'cm'], ['ms_lvotVti', 'LVOT VTI（连续方程，可选）', 'cm'],
-        ['ms_mvVti', '二尖瓣流入 VTI（连续方程，可选）', 'cm']],
-      note: 'MVA = 220 ÷ PHT；连续性方程 MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV。直接描记、PHT、连续方程三法同屏对照，差值 >0.3 cm² 时回图像核对' },
-    { id: 'mr', sec: 'valve', title: 'MR 二尖瓣反流定量',
-      fields: [['mr_radius', 'PISA 半径', 'cm'], ['mr_aliasVa', '混叠速度 Va', 'cm/s'],
-        ['mr_regV', '反流峰速', 'm/s'], ['mr_regVti', '反流 VTI', 'cm'],
-        ['mr_vc', '缩流颈 VC（可选）', 'cm'], ['mr_dt', 'dP/dt：1→3 m/s 时间（可选）', 'ms'],
-        ['mr_lvotD', 'LVOT 直径（算 RF，可选）', 'cm'], ['mr_lvotVti', 'LVOT VTI（算 RF，可选）', 'cm']],
-      note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_MR；dP/dt = 32 ÷ Δt（1→3 m/s）。填了 VC 给缩流颈分级，填了 LVOT 直径与 VTI 会算反流分数' },
+    /* ── 瓣膜专用定量（v1.4.1 起与小程序 calc-groups.js 同源，走 valve-calc 引擎）
+       ★ v1.4.4：AS / AR / MS / MR 并入两个评估页，此处只留 TR ── */
     { id: 'tr', sec: 'valve', title: 'TR 三尖瓣反流定量',
       fields: [['tr_radius', 'PISA 半径', 'cm'], ['tr_aliasVa', '混叠速度 Va', 'cm/s'],
         ['tr_regV', '反流峰速', 'm/s'], ['tr_regVti', '反流 VTI', 'cm'],
@@ -643,8 +621,8 @@
 
     /* ── v1.3.0 第三批：瓣膜与舒张细节 ── */
     { id: 'wilkins', sec: 'valve', title: 'Wilkins 二尖瓣形态评分',
-      fields: [['wk1', '瓣叶厚度', '分'], ['wk2', '瓣叶钙化', '分'],
-        ['wk3', '瓣叶活动度', '分'], ['wk4', '瓣下增厚', '分']],
+      fields: [['wk1', '瓣叶活动度', '分'], ['wk2', '瓣叶增厚', '分'],
+        ['wk3', '瓣叶钙化', '分'], ['wk4', '瓣下增厚', '分']],
       note: '四项各 1–4 分（1 最轻、4 最重），总分 4–16。≤8 分提示形态尚好、适合经皮球囊二尖瓣成形（PBMV）；>8 分优先外科。评分受主观影响，建议由有经验医师复核' },
     { id: 'vcw', sec: 'valve', title: '缩流颈宽度 VCW 分级',
       opts: [{ k: 'vsite', n: '瓣膜', list: [['mr', 'MR 二尖瓣'], ['ar', 'AR 主动脉瓣'], ['tr', 'TR 三尖瓣']] }],
@@ -1111,21 +1089,38 @@
     hd.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
-  /** 一组输入框（两两一行） */
+  /**
+   * 一组输入框（两两一行）
+   *
+   * fields 里可以混入 `{ g: '① 形态 …' }` 这种无 k 的分段标题项：
+   * 输入框按段成组显示，一段内仍两两一行。
+   * 评估页（mitral / aortic）把「狭窄 / 反流」塞进同一条目，靠它分区。
+   */
   function fieldsHtml(fields) {
     let h = '';
-    for (let i = 0; i < fields.length; i += 2) {
-      h += '<div class="row">';
-      for (let j = i; j < i + 2 && j < fields.length; j++) {
-        const f = fields[j];
-        h += '<div class="field"><label class="field__l">' + esc(f.n) +
-          (f.u ? ' / ' + esc(f.u) : '') + '</label>' +
-          '<input class="field__i" type="number" inputmode="decimal" step="any" ' +
-          'data-ck="' + f.k + '" placeholder="未填写" value="' +
-          (calcVal[f.k] !== undefined ? calcVal[f.k] : '') + '"></div>';
+    let buf = [];
+    const flush = function () {
+      for (let i = 0; i < buf.length; i += 2) {
+        h += '<div class="row">';
+        for (let j = i; j < i + 2 && j < buf.length; j++) {
+          const f = buf[j];
+          h += '<div class="field"><label class="field__l">' + esc(f.n) +
+            (f.u ? ' / ' + esc(f.u) : '') + '</label>' +
+            '<input class="field__i" type="number" inputmode="decimal" step="any" ' +
+            'data-ck="' + f.k + '" placeholder="未填写" value="' +
+            (calcVal[f.k] !== undefined ? calcVal[f.k] : '') + '"></div>';
+        }
+        h += '</div>';
       }
-      h += '</div>';
-    }
+      buf = [];
+    };
+    fields.forEach(function (f) {
+      if (f.g) {
+        flush();
+        h += '<div class="fx-fgrp">' + esc(f.g) + '</div>';
+      } else buf.push(f);
+    });
+    flush();
     return h;
   }
 
@@ -1546,6 +1541,13 @@
       h += '<div class="seg__i' + (o[0] === cur ? ' seg__i--on' : '') + '" data-v="' + o[0] + '">' + esc(o[1]) + '</div>';
     });
     return h + '</div></div>';
+  }
+
+  /** valve-calc 的 rows → 一行文本：`k v（分级）`，用 · 连接（评估页分段结果用） */
+  function rowsText(rows) {
+    return (rows || []).map(function (r) {
+      return r.k + ' ' + r.v + (r.tag ? '（' + r.tag + '）' : '');
+    }).join(' · ');
   }
 
   /** 重算全部计算组 */
@@ -2633,7 +2635,9 @@
       put('strain', partsOf(parts));
     }
 
-    // 二尖瓣疾病评估页：内嵌 Wilkins 形态评分 + MVA 两法（与公式集同一套引擎）
+    // 二尖瓣疾病评估页（v1.4.4：原「MS 狭窄定量」「MR 反流定量」两条并入本页）
+    //   形态（Wilkins）→ 狭窄（MVA 三法 + 压差 + PASP）→ 反流（PISA / VC / dP/dt / RF）
+    //   → PMBV 适合度。只填关心的段也能出结论。
     {
       const parts = [];
       let wkTotal = null;
@@ -2648,35 +2652,94 @@
           parts.push('形态 Wilkins ' + w.total + '/16（' + detail + '）· ' + w.text);
         }
       }
-      const m = Calc.mvaBoth(
-        has('mpht') ? v.mpht : null,
-        has('mvd') ? v.mvd : null,
-        has('mvlvti') ? v.mvlvti : null,
-        has('mvmvti') ? v.mvmvti : null
-      );
-      if (m.pht !== undefined) {
-        parts.push('MVA ' + Calc.fmt(m.pht, 2) + ' cm²（PHT 法）→ ' + m.phtText);
-      }
-      if (m.cont !== undefined) {
-        parts.push('MVA ' + Calc.fmt(m.cont, 2) + ' cm²（连续方程，SV ' +
-          Calc.fmt(m.sv, 1) + ' mL）→ ' + m.contText);
-      }
-      if (m.diffText) parts.push(m.diffText);
-      // PMBV 适合度：平均压差 + PASP + Wilkins 串成「严重度 → 后果 → 形态」一条流程
-      const s = Calc.pmbvSuit({
-        mva: m.cont !== undefined ? m.cont : (m.pht !== undefined ? m.pht : null),
-        mvaHow: m.cont !== undefined ? '连续方程' : (m.pht !== undefined ? 'PHT 法' : ''),
-        gra: has('mgrad') ? v.mgrad : null,
-        pasp: has('pasp') ? v.pasp : null,
-        wilkins: wkTotal,
+
+      // 狭窄：mit_ 前缀还原成引擎认的键名
+      const msv = {};
+      Object.keys(v).forEach(function (k) {
+        if (k.indexOf('mit_') === 0) msv[k.slice(4)] = v[k];
       });
-      s.parts.forEach(function (p) {
-        if (p.indexOf('① 严重度：MVA') === 0 && (m.pht !== undefined || m.cont !== undefined)) return;
-        if (p.indexOf('③ 形态：Wilkins') === 0 && wkTotal !== null) return;
-        parts.push(p);
+      const msr = ValveCalc ? ValveCalc.valveCalc('ms', msv, bsa) : { rows: [] };
+      if (msr.rows && msr.rows.length) {
+        parts.push('狭窄 ' + rowsText(msr.rows) + ' → ' + msr.summary);
+      }
+
+      // 反流：mr_ 前缀；LVOT 直径与 VTI 与狭窄段共用（同一次测量算了 SV 与 RF）
+      const mrv = {};
+      Object.keys(v).forEach(function (k) {
+        if (k.indexOf('mr_') === 0) mrv[k.slice(3)] = v[k];
       });
-      if (s.verdict) parts.push(s.verdict);
-      put('mitral', partsOf(parts));
+      if (mrv.lvotD === undefined && v.mit_lvotD !== undefined) mrv.lvotD = v.mit_lvotD;
+      if (mrv.lvotVti === undefined && v.mit_lvotVti !== undefined) mrv.lvotVti = v.mit_lvotVti;
+      const mrr = ValveCalc ? ValveCalc.valveCalc('mr', mrv, bsa) : { rows: [] };
+      if (mrr.rows && mrr.rows.length) {
+        parts.push('反流 ' + rowsText(mrr.rows) + ' → ' + mrr.summary);
+      }
+
+      // PMBV 适合度：面积优先取描记，其次连续方程，最后 PHT
+      let mvaUsed = null;
+      let mvaHow = '';
+      if (has('mit_mvaPlani') && v.mit_mvaPlani > 0) {
+        mvaUsed = v.mit_mvaPlani;
+        mvaHow = '直接描记';
+      } else if (has('mit_lvotD', 'mit_lvotVti', 'mit_mvVti') && v.mit_mvVti > 0) {
+        mvaUsed = (Math.PI * v.mit_lvotD * v.mit_lvotD / 4 * v.mit_lvotVti) / v.mit_mvVti;
+        mvaHow = '连续方程';
+      } else if (has('mit_pht') && v.mit_pht > 0) {
+        mvaUsed = 220 / v.mit_pht;
+        mvaHow = 'PHT 法';
+      }
+      if (mvaUsed !== null || wkTotal !== null || has('mit_pasp')) {
+        const s = Calc.pmbvSuit({
+          mva: mvaUsed,
+          mvaHow: mvaHow,
+          gra: has('mit_mgrad') ? v.mit_mgrad : null,
+          pasp: has('mit_pasp') ? v.mit_pasp : null,
+          wilkins: wkTotal,
+        });
+        // 已单独成段展示过的不重复（MVA 三法在「狭窄」段、Wilkins 在「形态」段）
+        const ps = s.parts.filter(function (p) {
+          if (p.indexOf('① 严重度：MVA') === 0 && mvaUsed !== null) return false;
+          if (p.indexOf('③ 形态：Wilkins') === 0 && wkTotal !== null) return false;
+          return true;
+        });
+        const flow = ps.join('；');
+        if (flow) parts.push('PMBV 适合度 ' + flow);
+        // verdict 自带「PMBV 适合度：」前缀，单独一段，避免与前缀重复
+        if (s.verdict) parts.push(s.verdict);
+      }
+      put('mitral', parts.join('\n'));
+    }
+
+    // 主动脉瓣疾病评估页（v1.4.4：原「AS 狭窄定量」「AR 反流定量」两条并入本页）
+    //   狭窄（AVA / DVI / 峰速法 + 压差）→ 反流（PISA / VC / PHT / RF）
+    {
+      const parts = [];
+      const asv = {};
+      const arv = {};
+      Object.keys(v).forEach(function (k) {
+        if (k.indexOf('as_') === 0) asv[k.slice(3)] = v[k];
+        else if (k.indexOf('ar_') === 0) arv[k.slice(3)] = v[k];
+      });
+      const asr = ValveCalc ? ValveCalc.valveCalc('as', asv, bsa) : { rows: [] };
+      if (asr.rows && asr.rows.length) {
+        parts.push('狭窄 ' + rowsText(asr.rows) + ' → ' + asr.summary);
+      }
+      const arr = ValveCalc ? ValveCalc.valveCalc('ar', arv, bsa) : { rows: [] };
+      if (arr.rows && arr.rows.length) {
+        parts.push('反流 ' + rowsText(arr.rows) + ' → ' + arr.summary);
+      }
+      // 三联不一致时补一句低流量低压差的提示（引擎只给分级，不给这条判读路径）
+      if (has('as_mg', 'as_avVti', 'as_lvotD', 'as_lvotVti')) {
+        const ava = Math.PI * v.as_lvotD * v.as_lvotD / 4 * v.as_lvotVti / v.as_avVti;
+        if (ava <= 1.0 && v.as_mg < 40) {
+          parts.push('⚠ AVA ≤1.0 而平均压差 <40 mmHg：属低流量低压差档，先查 SVi 是否 ≤35 mL/m²，' +
+            '再决定低剂量多巴酚丁胺或 CT 钙化评分');
+        }
+      }
+      if (has('as_avVmax') && v.as_avVmax >= 5) {
+        parts.push('⚠ Vmax ≥5 m/s，属极重度线索');
+      }
+      put('aortic', parts.join('\n'));
     }
   }
 
@@ -2685,7 +2748,9 @@
     const b = briefOf(curCalcGroup);
     const fields = g
       ? g.fields.map(function (f) { return f[0]; })
-      : (b && b.fields ? b.fields.map(function (f) { return f.k; }) : []);
+      : (b && b.fields
+        ? b.fields.filter(function (f) { return f.k; }).map(function (f) { return f.k; })
+        : []);
     if (!fields.length) return;
     fields.forEach(function (k) {
       delete calcVal[k];

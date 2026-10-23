@@ -122,7 +122,7 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 67) ok('公式集定义 67 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 63) ok('公式集定义 63 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
@@ -130,7 +130,7 @@ if (calcSecIds.join('/') === 'hemo/right/vq/recon/score/ivs/fu')
   ok('计算组 7 个（血流动力学 / 右心肺循环 / 瓣膜舒张 / 重构心肌 / 评分与室壁运动 / 介入尺寸与先心 / 随访与术中）');
 else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1 && g.sec !== 'valve');
-if (!badSec.length) ok('67 条公式的 sec 归属均合法（含 valve 瓣膜评估组 + fu 随访与术中组）');
+if (!badSec.length) ok('63 条公式的 sec 归属均合法（含 valve 瓣膜评估组 + fu 随访与术中组）');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
@@ -140,8 +140,8 @@ const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
 const nScore = CG.GROUPS.filter(g => g.sec === 'score').length;
 const nIvs = CG.GROUPS.filter(g => g.sec === 'ivs').length;
 const nFu = CG.GROUPS.filter(g => g.sec === 'fu').length;
-if (nHemo === 14 && nRight === 13 && nVq === 3 && nRecon === 12 && nScore === 3 && nIvs === 5 && nValveCalc === 14 && nFu === 3)
-  ok('分组条目数 14 / 13 / 3 / 12 / 3 / 5 + 瓣膜评估 14 + 随访与术中 3');
+if (nHemo === 14 && nRight === 13 && nVq === 3 && nRecon === 12 && nScore === 3 && nIvs === 5 && nValveCalc === 10 && nFu === 3)
+  ok('分组条目数 14 / 13 / 3 / 12 / 3 / 5 + 瓣膜评估 10 + 随访与术中 3');
 else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs, nValveCalc, nFu].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
@@ -163,7 +163,7 @@ else bad('组 id 重复: ' + dupIds.join(','));
 const calcWxml = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.wxml'), 'utf8');
 if (calcWxml.indexOf('bindtap="onOpen"') !== -1) ok('目录条目已绑定 onOpen 跳转');
 else bad('目录条目未绑定 onOpen');
-['AS 主动脉瓣狭窄定量', 'MS 二尖瓣狭窄定量', 'TR 三尖瓣反流定量'].forEach(t => {
+['TR 三尖瓣反流定量', '缩流颈宽度 VCW 分级', '人工瓣 EOAi 与 PPM'].forEach(t => {
   if (calcWxml.indexOf(t) === -1 && calcJs.indexOf(t) !== -1) ok('瓣膜条目在目录数据中：「' + t + '」');
   else if (calcJs.indexOf(t) !== -1) ok('瓣膜条目在目录数据中：「' + t + '」');
   else if (fs.readFileSync(cgPath, 'utf8').indexOf(t) !== -1) ok('瓣膜条目在 calc-groups 中：「' + t + '」');
@@ -592,8 +592,9 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
 {
   const EC = require(path.join(MP, 'utils', 'echo-calc.js'));
 
-  // 11.1 CALC_LINKS 的 id 必须真实存在于公式集
-  const allIds = CG.GROUPS.map(g => g.id);
+  // 11.1 CALC_LINKS 的 id 必须真实存在于公式集（或两个评估页 brief 条目）
+  const briefIds11 = EX.BRIEF_SECTIONS.reduce((a, s) => a.concat((s.items || []).map(i => i.id)), []);
+  const allIds = CG.GROUPS.map(g => g.id).concat(briefIds11);
   const badId = [];
   Object.keys(EX.CALC_LINKS).forEach(function (k) {
     (EX.CALC_LINKS[k] || []).forEach(function (id) {
@@ -658,13 +659,16 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
   (!mismatch.length) ? ok('二尖瓣页评分表与引擎分档逐字一致')
     : bad('二尖瓣页评分表与引擎不一致：' + mismatch.join(' / '));
 
-  // 11.6 二尖瓣页必须内嵌 wilkins 计算器（用户要求归位到病种页）
-  (mit.calc === 'wilkins') ? ok('二尖瓣页内嵌 Wilkins 计算器')
-    : bad('二尖瓣页未挂 calc: wilkins');
-  ((mit.fields || []).length === 10) ? ok('二尖瓣页 10 个输入（Wilkins 4 + MVA 4 + 压差/PASP 2）')
-    : bad('二尖瓣页打分输入 ' + (mit.fields || []).length + ' 个');
+  // 11.6 二尖瓣页内嵌 Wilkins + MVA 三法 + MR 定量（v1.4.4 起 MS / MR 并入本页）
+  const mitKeys = (mit.fields || []).filter(f => f.k).map(f => f.k);
+  (['wk1', 'wk2', 'wk3', 'wk4'].every(k => mitKeys.indexOf(k) !== -1))
+    ? ok('二尖瓣页内嵌 Wilkins 评分输入')
+    : bad('二尖瓣页缺 Wilkins 输入');
+  (mitKeys.length === 17) ? ok('二尖瓣页 17 个输入（Wilkins 4 + MS 7 + MR 6）')
+    : bad('二尖瓣页输入 ' + mitKeys.length + ' 个（期望 17）');
   // 11.7 PMBV 适合度流程：三个指标必须都在输入里，且页面有串流程的小节
-  const pmbvFields = ['mpht', 'mvd', 'mvlvti', 'mvmvti', 'mgrad', 'pasp', 'wk1', 'wk2', 'wk3', 'wk4'];
+  const pmbvFields = ['mit_pht', 'mit_lvotD', 'mit_lvotVti', 'mit_mvVti',
+    'mit_mgrad', 'mit_pasp', 'wk1', 'wk2', 'wk3', 'wk4'];
   const missF = pmbvFields.filter(k => !(mit.fields || []).some(f => f.k === k));
   (!missF.length) ? ok('PMBV 流程输入齐全（MVA 两法 + 平均压差 + PASP + Wilkins）')
     : bad('PMBV 流程缺输入：' + missF.join(','));
@@ -821,9 +825,9 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   if (css160.indexOf('.chip--rel') !== -1) ok('「相关内容」胶囊专用配色已定义');
   else bad('缺少 .chip--rel 配色');
 
-  // 「相关计算」桥接：77 条判读全有，且目标计算器真实存在
+  // 「相关计算」桥接：77 条判读全有，且目标计算器真实存在（brief 评估页也算合法目标）
   const CG160 = require(path.join(ROOT, 'miniprogram', 'utils', 'calc-groups.js'));
-  const calcIds160 = CG160.GROUPS.map(g => g.id);
+  const calcIds160 = CG160.GROUPS.map(g => g.id).concat(briefs160.map(b => b.id));
   const links160 = EX160.CALC_LINKS || {};
   const missingLinks = briefs160.filter(b => !(links160[b.id] || []).length).map(b => b.id);
   if (!missingLinks.length) ok('77 条判读全部带「相关计算」跳转目标');
@@ -837,23 +841,28 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   if (!badTarget.length) ok('相关计算的目标计算器全部存在');
   else bad('相关计算悬空目标：' + badTarget.join(' | '));
 
-  // ★ 三端目录一致：瓣膜 AS/AR/MS/MR/TR 必须是普通计算条目（不是「只有小程序有」）
-  ['as', 'ar', 'ms', 'mr', 'tr'].forEach(function (id) {
-    const g = CG160.GROUPS.filter(x => x.id === id)[0];
-    if (g && g.sec === 'valve' && (g.fields || []).length) {
-      ok('瓣膜计算器进公式集：' + id + '（' + g.title + '）');
-    } else bad('公式集缺少瓣膜计算器：' + id);
+  // ★ 三端目录一致（v1.4.4）：AS / AR / MS / MR 并入两个评估页，公式集只剩 TR 独立
+  const trG = CG160.GROUPS.filter(x => x.id === 'tr')[0];
+  if (trG && trG.sec === 'valve' && (trG.fields || []).length) {
+    ok('瓣膜计算器进公式集：tr（' + trG.title + '）');
+  } else bad('公式集缺少瓣膜计算器：tr');
+  ['as', 'ar', 'ms', 'mr'].forEach(function (id) {
+    if (!CG160.GROUPS.filter(x => x.id === id)[0]) ok('已并入评估页、公式集不再单列：' + id);
+    else bad('仍在公式集单列：' + id);
   });
-  // 字段键必须带条目前缀，否则网页端全局 calcVal 会串值
-  const badPrefix = [];
-  ['as', 'ar', 'ms', 'mr', 'tr'].forEach(function (id) {
-    const g = CG160.GROUPS.filter(x => x.id === id)[0] || { fields: [] };
-    g.fields.forEach(function (f) {
-      if (f.k.indexOf(id + '_') !== 0) badPrefix.push(id + '.' + f.k);
-    });
+  // 并入评估页的输入键必须带前缀，否则网页端全局 calcVal 会串值
+  [['mitral', ['mit_', 'mr_', 'wk']], ['aortic', ['as_', 'ar_']]].forEach(function (pair) {
+    const id = pair[0];
+    const b = briefs160.filter(x => x.id === id)[0];
+    if (!b) { bad('缺少评估条目：' + id); return; }
+    const ks = (b.fields || []).filter(f => f.k).map(f => f.k);
+    const badK = ks.filter(k => !pair[1].some(w => k.indexOf(w) === 0));
+    if (ks.length && !badK.length) ok('评估页输入键带前缀：' + id + '（' + ks.length + ' 项）');
+    else bad('评估页输入键前缀异常：' + id + ' ' + badK.join(','));
+    const gs = (b.fields || []).filter(f => f.g);
+    if (gs.length >= 2) ok('评估页输入框已分「狭窄 / 反流」段：' + id + '（' + gs.length + ' 段）');
+    else bad('评估页输入框未分段：' + id);
   });
-  if (!badPrefix.length) ok('瓣膜计算器输入键带条目前缀（不会与其它条目串值）');
-  else bad('输入键未加前缀：' + badPrefix.join(','));
 
   // ★★ 加粗标记「渲染覆盖」断言（2026-10-22 第二次漏出后加的）
   //    真实事故：表格单元格 rows[][] 与条目 note 都是直接 esc() 输出，
