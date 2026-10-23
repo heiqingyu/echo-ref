@@ -530,7 +530,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 154 条（62 计算 + 11 瓣膜 + 77 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 154, 0);
+  check('目录共 150 条（58 计算 + 11 瓣膜 + 77 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 150, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
@@ -626,18 +626,20 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('心腔、应变与负荷含 ' + id,
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  // 瓣膜评估组 = 5 个瓣膜计算器 + 4 条判读（合并为一组，不再有「瓣膜疾病评估」）
-  check('瓣膜评估组合并为 23 条（5 专用计算器 + 9 通用计算 + 8 判读 + 1 解剖示意图）', dirById('valve').items.length, 23, 0);
+  // 瓣膜评估组 = 9 条通用/专用计算 + 8 条判读 + 1 个解剖示意图（v1.4.4 起 AS/AR/MS/MR 并入两个评估页）
+  check('瓣膜评估组合并为 19 条（9 计算 + 8 判读 + 1 解剖示意图）', dirById('valve').items.length, 19, 0);
   check('瓣膜评估组含 7 条瓣膜通用计算（wilkins / vcw / rf / mva / pisav / avav / ppm）',
     ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
       .every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('瓣膜通用计算不再出现在舒张功能定量组',
     ['wilkins', 'vcw', 'rf', 'mva', 'pisav', 'avav', 'ppm']
       .every(id => !dirById('vq').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
-  // v1.4.1：5 个瓣膜计算器从小程序瓣膜页搬进公式集，kind 由 valve 变 calc，
-  // 这样三端目录一致（网页 / APK 也在这组里算）
-  check('瓣膜评估组含 5 个瓣膜计算器（AS/AR/MS/MR/TR，kind=calc）',
-    ['as', 'ar', 'ms', 'mr', 'tr'].every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  // v1.4.4：AS / AR / MS / MR 四条并入「二尖瓣疾病评估」「主动脉瓣疾病评估」，
+  // 公式集里只剩 TR 还是独立的瓣膜计算条目
+  check('瓣膜评估组含 TR 计算条目（kind=calc）',
+    dirById('valve').items.some(i => i.id === 'tr' && i.kind === 'calc') ? 1 : 0, 1, 0);
+  check('AS/AR/MS/MR 不再单列（已并入两个评估页）',
+    ['as', 'ar', 'ms', 'mr'].every(id => !dirById('valve').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
   ['mitral', 'aortic', 'lf-lg', 'ie'].forEach(id => {
     check('瓣膜评估组含判读条目 ' + id,
       dirById('valve').items.some(i => i.id === id && i.kind === 'brief') ? 1 : 0, 1, 0);
@@ -977,6 +979,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // v1.4.1：AS/AR/MS/MR/TR 搬进公式集后，小程序端必须能算（与网页同一套 valve-calc）
   (function () {
     const put = function (id, pairs) {
+      gData23.calcCache[id] = {};   // 每组测试从干净状态开始（否则缓存值会把空值用例顶掉）
       pgF.onLoad({ id: id });
       pgF.onShow();
       pairs.forEach(function (pr) {
@@ -986,18 +989,25 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       pgF.refresh();
       return pgF.data.out || '';
     };
-    const asOut = put('as', [['as_lvotD', '2.0'], ['as_lvotVti', '20'],
+    // v1.4.4：AS/AR 并入「主动脉瓣疾病评估」，MS/MR 并入「二尖瓣疾病评估」
+    const asOut = put('aortic', [['as_lvotD', '2.0'], ['as_lvotVti', '20'],
       ['as_avVti', '45'], ['as_avVmax', '4.2']]);
-    check('AS 计算条目出 AVA 与 DVI', /AVA 连续方程 1\.4/.test(asOut) && /DVI/.test(asOut) ? 1 : 0, 1, 0);
-    check('AS 四项指标不一致时提示「重度」', /重度/.test(asOut) ? 1 : 0, 1, 0);
-    const mrOut = put('mr', [['mr_radius', '0.9'], ['mr_aliasVa', '40'],
+    check('主动脉瓣页 AS 段出 AVA 与 DVI', /AVA 连续方程 1\.4/.test(asOut) && /DVI/.test(asOut) ? 1 : 0, 1, 0);
+    check('主动脉瓣页 AS 段给出「重度」分级', /重度/.test(asOut) ? 1 : 0, 1, 0);
+    const arOut = put('aortic', [['ar_radius', '0.9'], ['ar_aliasVa', '40'],
+      ['ar_regV', '5.0'], ['ar_regVti', '120'], ['ar_vc', '0.7']]);
+    check('主动脉瓣页 AR 段出 EROA 与缩流颈', /EROA 0\.4/.test(arOut) && /缩流颈/.test(arOut) ? 1 : 0, 1, 0);
+    const msOut = put('mitral', [['mit_pht', '180'], ['mit_mgrad', '12'], ['mit_pasp', '55']]);
+    check('二尖瓣页 MS 段出 MVA 与 PASP', /MVA .*PHT 法/.test(msOut) && /PASP/.test(msOut) ? 1 : 0, 1, 0);
+    check('二尖瓣页给出 PMBV 适合度结论', /PMBV 适合度/.test(msOut) ? 1 : 0, 1, 0);
+    const mrOut = put('mitral', [['mr_radius', '0.9'], ['mr_aliasVa', '40'],
       ['mr_regV', '5.0'], ['mr_regVti', '120'], ['mr_vc', '0.7']]);
-    check('MR 计算条目出 EROA 与缩流颈', /EROA 0\.4/.test(mrOut) && /缩流颈/.test(mrOut) ? 1 : 0, 1, 0);
+    check('二尖瓣页 MR 段出 EROA 与缩流颈', /EROA 0\.4/.test(mrOut) && /缩流颈/.test(mrOut) ? 1 : 0, 1, 0);
     const trOut = put('tr', [['tr_radius', '0.9'], ['tr_aliasVa', '40'],
       ['tr_regV', '3.4'], ['tr_regVti', '100']]);
     check('TR 计算条目可算（含 PASP 相关行）', trOut.length > 10 ? 1 : 0, 1, 0);
-    const emptyOut = put('ms', []);
-    check('瓣膜计算条目不填值时不报错、不出结果', emptyOut === '' ? 1 : 0, 1, 0);
+    const emptyOut = put('mitral', []);
+    check('评估页不填值时不报错、不出结果', emptyOut === '' ? 1 : 0, 1, 0);
   })();
   // 上面把我切到了 ms，这里要切回 strain 再继续
   pgF.onLoad({ id: 'strain' });
@@ -1176,12 +1186,21 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // 二尖瓣页内嵌同一套评分
   pgF.onLoad({ id: 'mitral' });
   pgF.onShow();
-  check('二尖瓣页内嵌 10 个输入（Wilkins 4 + MVA 4 + 压差/PASP 2）', pgF.data.inputs.length, 10, 0);
+  check('二尖瓣页 17 个输入（Wilkins 4 + MS 7 + MR 6）',
+    pgF.data.inputs.filter(function (r) { return !r.head; }).length, 17, 0);
+  check('二尖瓣页输入框分 3 段（形态 / 狭窄 / 反流）',
+    pgF.data.inputs.filter(function (r) { return r.head; }).length, 3, 0);
   check('二尖瓣页输入名带序号',
-    pgF.data.inputs[0].name.indexOf('① 瓣叶活动度') !== -1 ? 1 : 0, 1, 0);
+    (pgF.data.inputs.filter(function (r) { return !r.head; })[0].name.indexOf('瓣叶活动度') !== -1) ? 1 : 0, 1, 0);
   check('二尖瓣页内含 4 张 Wilkins 分档表',
     pgF.data.blocks.filter(function (b) { return b.kind === 'table'; }).length >= 6 ? 1 : 0, 1, 0);
-  pgF.data.inputs.forEach(function (r, i) { r.value = String(i === 0 ? 4 : 3); });
+  (function () {
+    let n = 0;
+    pgF.data.inputs.forEach(function (r) {
+      if (r.head) return;
+      r.value = String(n++ === 0 ? 4 : 3);
+    });
+  })();
   pgF.refresh();
   check('二尖瓣页算 Wilkins：4+3+3+3 = 13 → 优先外科',
     /Wilkins 13\/16.*≥12.*外科/.test(pgF.data.out) ? 1 : 0, 1, 0);
@@ -1197,19 +1216,19 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     });
     pgF.refresh();
   };
-  setMit({ wk1: 1, wk2: 2, wk3: 2, wk4: 2, mpht: 220, mgrad: 12, pasp: 55 });
+  setMit({ wk1: 1, wk2: 2, wk3: 2, wk4: 2, mit_pht: 220, mit_mgrad: 12, mit_pasp: 55 });
   check('PMBV 流程：重度 MS + PASP >50 + Wilkins ≤8 → 理想候选',
     /PMBV 适合度：重度 MS \+ 形态适合/.test(pgF.data.out) ? 1 : 0, 1, 0);
   check('PMBV 流程：串出 ①严重度 ②后果 ③形态 与 TEE 排除项',
     /② 后果：PASP 55/.test(pgF.data.out) &&
       pgF.data.out.indexOf('TEE 排除左房血栓') !== -1 ? 1 : 0, 1, 0);
-  setMit({ wk1: 4, wk2: 4, wk3: 4, wk4: 4, mpht: 220, mgrad: 12, pasp: 55 });
+  setMit({ wk1: 4, wk2: 4, wk3: 4, wk4: 4, mit_pht: 220, mit_mgrad: 12, mit_pasp: 55 });
   check('PMBV 流程：Wilkins ≥12 → 优先外科',
     /形态不适合（Wilkins ≥12），优先外科换瓣/.test(pgF.data.out) ? 1 : 0, 1, 0);
-  setMit({ wk1: 1, wk2: 1, wk3: 1, wk4: 1, mpht: 120, mgrad: 4, pasp: 28 });
+  setMit({ wk1: 1, wk2: 1, wk3: 1, wk4: 1, mit_pht: 120, mit_mgrad: 4, mit_pasp: 28 });
   check('PMBV 流程：轻度 MS → 暂不考虑 PMBV',
     /暂不考虑 PMBV/.test(pgF.data.out) ? 1 : 0, 1, 0);
-  setMit({ wk1: 2, wk2: 2, wk3: 2, wk4: 2, mgrad: 11, pasp: 52 });
+  setMit({ wk1: 2, wk2: 2, wk3: 2, wk4: 2, mit_mgrad: 11, mit_pasp: 52 });
   check('PMBV 流程：缺 MVA 时按压差定重度、并提示补面积',
     /重度 MS \+ 形态适合/.test(pgF.data.out) &&
       pgF.data.out.indexOf('未测 MVA，补一项面积确认') !== -1 ? 1 : 0, 1, 0);
@@ -1218,9 +1237,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.onLoad({ id: 'mitral' });
   pgF.onShow();
   const lastBlk = pgF.data.blocks[pgF.data.blocks.length - 1];
-  check('二尖瓣页末块挂 2 个计算器胶囊（MVA 已合并）', (lastBlk.links || []).length, 2, 0);
+  check('二尖瓣页末块挂 3 个计算器胶囊（VCW / RF / 人工瓣）', (lastBlk.links || []).length, 3, 0);
   check('胶囊名称取自 calc-groups 标题',
-    (lastBlk.links || []).some(function (l) { return l.n.indexOf('二尖瓣面积 MVA（两法对照）') !== -1; }) ? 1 : 0, 1, 0);
+    (lastBlk.links || []).some(function (l) { return l.n.indexOf('缩流颈宽度 VCW 分级') !== -1; }) ? 1 : 0, 1, 0);
   check('胶囊 id 与标题一一对应（无 fallback 原名）',
     (lastBlk.links || []).every(function (l) { return l.n !== l.id; }) ? 1 : 0, 1, 0);
   navTo = null;

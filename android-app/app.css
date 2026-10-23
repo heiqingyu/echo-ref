@@ -942,6 +942,8 @@ html, body {
   font-weight: 600;
   line-height: 1.7;
   word-break: break-all;
+  /* 评估页（二尖瓣 / 主动脉瓣）结果按「形态 / 狭窄 / 反流」分段，用换行而不是一坨 */
+  white-space: pre-line;
 }
 
 /* ────────── 节段划分页 ────────── */
@@ -1332,6 +1334,21 @@ html, body {
 
 .totop--on { display: flex; }
 .totop:active { transform: scale(.94); }
+
+/* 输入框分段标题（评估页把「狭窄 / 反流」并进同一条目时用来分区） */
+.fx-fgrp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: .2px;
+}
+.fx-fgrp:first-child { margin-top: 4px; }
 
 @media (min-width: 720px) {
   .totop { right: calc(50% - 400px); }

@@ -297,71 +297,8 @@ const GROUPS = [
    * 字段与 miniprogram/utils/valve-data.js 的 VALVE_SECTIONS 一一对应，
    * 计算统一走 valve-calc.js 的 valveCalc(id, v, bsa)，不另写一套公式。
    */
-  {
-    id: 'as',
-    sec: 'valve',
-    title: 'AS 主动脉瓣狭窄定量',
-    sub: 'AVA 连续性方程 · DVI · 峰速法',
-    fields: [
-      { k: 'as_lvotD', n: 'LVOT 直径', u: 'cm' },
-      { k: 'as_lvotVti', n: 'LVOT VTI', u: 'cm' },
-      { k: 'as_avVti', n: 'AV VTI（连续方程）', u: 'cm' },
-      { k: 'as_avVmax', n: 'AV Vmax', u: 'm/s' },
-      { k: 'as_lvotVmax', n: 'LVOT Vmax（峰速法，可选）', u: 'm/s', opt: true },
-      { k: 'as_mg', n: '平均跨瓣压差（可选）', u: 'mmHg', opt: true },
-    ],
-    note: 'AVA = (πd²/4 × VTI_LVOT) ÷ VTI_AV；DVI = VTI_LVOT ÷ VTI_AV；峰速法 AVA = SV_LVOT ÷ (Vmax_AV × 100)。连续方程与峰速法互相印证，两法差 >0.2 cm² 时回图像找原因',
-  },
-  {
-    id: 'ar',
-    sec: 'valve',
-    title: 'AR 主动脉瓣反流定量',
-    sub: 'PISA EROA · 缩流颈 VC · PHT · 反流分数',
-    fields: [
-      { k: 'ar_radius', n: 'PISA 半径', u: 'cm' },
-      { k: 'ar_aliasVa', n: '混叠速度 Va', u: 'cm/s' },
-      { k: 'ar_regV', n: '反流峰速', u: 'm/s' },
-      { k: 'ar_regVti', n: '反流 VTI', u: 'cm' },
-      { k: 'ar_vc', n: '缩流颈 VC（可选）', u: 'cm', opt: true },
-      { k: 'ar_pht', n: '压力半降时间 PHT（可选）', u: 'ms', opt: true },
-      { k: 'ar_lvotD', n: 'LVOT 直径（算 RF 用，可选）', u: 'cm', opt: true },
-      { k: 'ar_lvotVti', n: 'LVOT VTI（算 RF 用，可选）', u: 'cm', opt: true },
-    ],
-    note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_AR，反流分数 RF = RVol ÷ SV_LVOT。填了 PHT 会给压力半降时间分级，填了 VC 会给缩流颈分级',
-  },
-  {
-    id: 'ms',
-    sec: 'valve',
-    title: 'MS 二尖瓣狭窄定量',
-    sub: 'MVA 描记 / PHT · 平均压差 · PASP',
-    fields: [
-      { k: 'ms_mvaPlani', n: 'MVA 直接描记（首选）', u: 'cm²', opt: true },
-      { k: 'ms_pht', n: '压力半降时间 PHT', u: 'ms', opt: true },
-      { k: 'ms_mg', n: '平均跨瓣压差', u: 'mmHg', opt: true },
-      { k: 'ms_pasp', n: '估测 PASP（可选）', u: 'mmHg', opt: true },
-      { k: 'ms_lvotD', n: 'LVOT 直径（连续方程，可选）', u: 'cm', opt: true },
-      { k: 'ms_lvotVti', n: 'LVOT VTI（连续方程，可选）', u: 'cm', opt: true },
-      { k: 'ms_mvVti', n: '二尖瓣流入 VTI（连续方程，可选）', u: 'cm', opt: true },
-    ],
-    note: 'MVA = 220 ÷ PHT；连续性方程 MVA = (πd²/4 × VTI_LVOT) ÷ VTI_MV。直接描记、PHT、连续方程三法同屏对照，差值 >0.3 cm² 时回图像核对',
-  },
-  {
-    id: 'mr',
-    sec: 'valve',
-    title: 'MR 二尖瓣反流定量',
-    sub: 'PISA EROA · RVol · dP/dt',
-    fields: [
-      { k: 'mr_radius', n: 'PISA 半径', u: 'cm' },
-      { k: 'mr_aliasVa', n: '混叠速度 Va', u: 'cm/s' },
-      { k: 'mr_regV', n: '反流峰速', u: 'm/s' },
-      { k: 'mr_regVti', n: '反流 VTI', u: 'cm' },
-      { k: 'mr_vc', n: '缩流颈 VC（可选）', u: 'cm', opt: true },
-      { k: 'mr_dt', n: 'dP/dt：1→3 m/s 时间（可选）', u: 'ms', opt: true },
-      { k: 'mr_lvotD', n: 'LVOT 直径（算 RF 用，可选）', u: 'cm', opt: true },
-      { k: 'mr_lvotVti', n: 'LVOT VTI（算 RF 用，可选）', u: 'cm', opt: true },
-    ],
-    note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_MR；dP/dt = 32 ÷ Δt（1→3 m/s）。填了 VC 给缩流颈分级，填了 LVOT 直径与 VTI 会算反流分数',
-  },
+  /* ★ v1.4.4：AS / AR / MS / MR 四条并入「二尖瓣疾病评估」「主动脉瓣疾病评估」两个评估页，
+   *   输入与结果都在评估页内完成，公式集目录不再单列；TR 仍为独立计算条目。 */
   {
     id: 'tr',
     sec: 'valve',

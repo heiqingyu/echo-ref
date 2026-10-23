@@ -57,11 +57,16 @@
       </block>
     </block>
 
-    <view wx:for="{{inputs}}" wx:key="key" class="field">
-      <text class="field__label">{{item.name}} / {{item.unit}}</text>
-      <input class="field__input" type="digit" value="{{item.value}}"
-             data-idx="{{index}}" bindinput="onInput" placeholder="未填写" />
-    </view>
+    <!-- 输入框：评估页（二尖瓣 / 主动脉瓣）按「① 形态 / ② 狭窄 / ③ 反流」分段，
+         item.head 为段标题项（无输入框），其余为普通数值输入 -->
+    <block wx:for="{{inputs}}" wx:key="key">
+      <view wx:if="{{item.head}}" class="fx-fgrp">{{item.head}}</view>
+      <view wx:else class="field">
+        <text class="field__label">{{item.name}} / {{item.unit}}</text>
+        <input class="field__input" type="digit" value="{{item.value}}"
+               data-idx="{{index}}" bindinput="onInput" placeholder="未填写" />
+      </view>
+    </block>
 
     <!-- 选项组（性别 / 心律 / 节段总数 等，来自 calc-groups.js 的 opts） -->
     <view wx:for="{{opts}}" wx:key="k" wx:for-item="o" class="field">
