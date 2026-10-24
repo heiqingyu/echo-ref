@@ -3,7 +3,10 @@
   <view class="card">
     <view class="card__title">瓣膜解剖 · TEE 标准切面</view>
     <view class="card__desc">
-      只放 TEE 切面（TTE 短轴与四腔心见「切面学习」）。每张图下方是「探头位置 + 扫描平面」示意：右侧竖条是食管，三角是探头晶片面，蓝虚线是当前切面方向。点击下方色块，所有示意图同步高亮同一解剖结构；再次点击取消。
+      只放 TEE 切面（TTE 短轴与四腔心见「切面学习」）。每张图下方是「探头位置 + 扫描平面」示意：右侧竖条是食管，三角是探头晶片面，浅蓝扇面是这次扫查的切面，红点是要看的瓣膜。点击下方色块，所有示意图同步高亮同一解剖结构；再次点击取消。
+    </view>
+    <view class="card__desc">
+      方位总则：TEE 与 TTE 上下颠倒、左右不变 —— 近场（上方）是心房侧，屏幕左＝患者右。
     </view>
 
     <view wx:if="{{sel}}" class="hi-line hi-line--sel">{{selInfo}}</view>
@@ -18,8 +21,8 @@
       <view class="wall-card" wx:for="{{g.views}}" wx:key="id" wx:for-item="v">
         <view class="wall-card__t">{{v.title}}</view>
         <view class="wall-card__s">{{v.sub}}</view>
-        <image class="wall-img" src="{{v.src}}" mode="aspectFit" />
-        <image wx:if="{{v.probe}}" class="wall-img wall-img--probe" src="{{v.probe}}" mode="aspectFit" />
+        <image class="wall-img" src="{{v.src}}" mode="widthFix" />
+        <image wx:if="{{v.probe}}" class="wall-img wall-img--probe" src="{{v.probe}}" mode="widthFix" />
         <view class="wall-group">
           <text class="wall-group__l">解剖分区</text>
           <view class="wall-chips">
@@ -33,13 +36,13 @@
   </block>
 
   <view class="note">
-    主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC，闭合时铺满整个瓣口。TEE 短轴 30–60° 与 TTE 上下颠倒（探头在左房后方）：LCC 右上、NCC 左上并紧邻房间隔、RCC 下方靠近 RVOT，冠脉开口约在 2 点（左冠）与 6 点（右冠）。长轴 120–140° 只看得到 RCC 与 NCC，LCC 通常不显示。
+    主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC，闭合时铺满整个瓣口。TEE 短轴 30–60° 与 TTE 上下颠倒（探头在左房后方）：NCC 左上并紧邻房间隔、LCC 右上贴肺动脉、RCC 下方靠近 RVOT。左冠开口在 LCC、右冠开口在 RCC。长轴 120–140° 只看得到 NCC 与 RCC（NCC 在上、RCC 在下），LCC 通常不显示。
   </view>
   <view class="note">
-    二尖瓣分叶（Carpentier–ASE/SCA 命名）：前叶 A1–A3（贴主动脉瓣侧）、后叶 P1–P3（贴左室后壁侧）。P1 邻前外侧交界、P3 邻后内侧交界；A1 与 P1、A3 与 P3 分别在两侧相邻。后叶附着约 2/3 瓣环、前叶约 1/3，但前叶更长，两叶面积大致相当。四腔心（0°）只显示 A2 与 P2，两腔心（90°）是 A2 与 P3，精确分叶需 45–60° 交界切面（左 P3 · 中 A2 · 右 P1）或 3D 全容积。
+    二尖瓣分叶（Carpentier–ASE/SCA 命名）：前叶 A1–A3（贴主动脉瓣侧）、后叶 P1–P3（贴左室后壁侧）。P1 邻前外侧交界、P3 邻后内侧交界；A1 与 P1、A3 与 P3 分别在两侧相邻。后叶附着约 2/3 瓣环、前叶约 1/3，但前叶更长，两叶面积大致相当。四腔心（0°）切在瓣口中部：间隔侧是 A3、侧壁侧是 P1（也有文献写作 A2 / P2）；两腔心（90°）下壁侧是 P3、前壁侧是前叶；精确分叶需 45–60° 交界切面（左 P3 · 中 A2 · 右 P1）或 3D 全容积。
   </view>
   <view class="note">
-    三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心看隔叶＋前叶；60–90° 右室流入-流出道看后叶（贴游离壁）＋前叶（贴主动脉瓣）；经胃底短轴（约 30°）是唯一能同屏看全三叶的 2D 切面。
+    三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心看隔叶（间隔侧）＋前叶（游离壁侧）；60–90° 右室流入-流出道看后叶（贴游离壁）＋前叶（贴主动脉瓣）；经胃底短轴（约 30°）是唯一能同屏看全三叶的 2D 切面。
   </view>
   <view class="note">
     本页为教学示意图，不替代真实超声图像；示意图仅标注解剖分区与切面关系，测量与判读请以本工具「公式集 → 瓣膜评估」里 AS / AR / MS / MR / TR 条目为准。

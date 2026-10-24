@@ -1415,9 +1415,9 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
     'tvTee4c,tvTeeRvin,tvTeeTgsax,pvTeeSax' ? 1 : 0, 1, 0);
   check('全部是 TEE 切面（标题里都有 TEE / 经胃底 / 3D）',
     VS.VALVE_VIEWS.every(function (v) { return /TEE|经胃底|3D/.test(v.title); }) ? 1 : 0, 1, 0);
-  check('每个视图都有探头位置元数据（pos / deg / cut）',
+  check('每个视图都有探头位置元数据（pos / deg / target）',
     VS.VALVE_VIEWS.every(function (v) {
-      return v.tee && v.tee.pos && v.tee.deg && v.tee.cut && v.tee.target;
+      return v.tee && v.tee.pos && v.tee.deg && v.tee.target && v.tee.target.length === 2;
     }) ? 1 : 0, 1, 0);
   check('每个视图都能生成探头小图且无 NaN',
     VS.VALVE_VIEWS.every(function (v) {
@@ -1439,6 +1439,19 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
     VS.VALVE_VIEWS.every(function (v) { return v.fn({ sel: null }).indexOf('NaN') === -1; }) ? 1 : 0, 1, 0);
   check('每张 SVG 都含可点击分区标记',
     VS.VALVE_VIEWS.every(function (v) { return v.fn({ sel: null }).indexOf('data-part=') !== -1; }) ? 1 : 0, 1, 0);
+  // ★ 2026-10-24 踩过的坑：只描边不写 fill 的 <path> 会被默认填成黑色，
+  //   一条弯曲虚线就变成一个大黑三角。这里一条都不许漏。
+  check('所有 <path> 都显式写了 fill（防默认黑色填充）',
+    VS.VALVE_VIEWS.every(function (v) {
+      const s = v.fn({ sel: null });
+      const segs = s.split('<path').slice(1);
+      return segs.every(function (p) { return p.slice(0, p.indexOf('>')).indexOf('fill=') !== -1; });
+    }) ? 1 : 0, 1, 0);
+  check('13 张图 + 13 张探头图共用统一画布（480×400 / 320×228）',
+    VS.VALVE_VIEWS.every(function (v) {
+      return v.fn({ sel: null }).indexOf('viewBox="0 0 480 400"') !== -1 &&
+        VS.probeOf(v.id).indexOf('viewBox="0 0 320 228"') !== -1;
+    }) ? 1 : 0, 1, 0);
   check('base64 编码无 NaN',
     VS.utf8ToBase64('<svg>').indexOf('NaN') === -1 ? 1 : 0, 1, 0);
   check('分区说明含名称与出现视图',
