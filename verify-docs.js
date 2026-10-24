@@ -316,7 +316,7 @@ function check(name, ok, detail) {
     check('公式集分组 = 4 个计算组 + 瓣膜 + 5 组评估 + 2 组外链（v1.4.8 精简）',
       d.groups.join('|') === '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|介入尺寸、先心与随访|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 144 条（59 计算 + 10 瓣膜判读与解剖 + 67 评估 + 8 外链）', d.items === 144, d.items);
+    check('条目 137 条（52 计算 + 10 瓣膜判读与解剖 + 67 评估 + 8 外链）', d.items === 137, d.items);
     check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -324,7 +324,7 @@ function check(name, ok, detail) {
     check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
-    check('发布版瓣膜评估组含 6 条计算（TR + 5 个通用）', d.valveCalc === 6, d.valveCalc);
+    check('发布版瓣膜评估组含 2 条计算（TR / 人工瓣 PPM）', d.valveCalc === 2, d.valveCalc);
     check('参考文献 78 条', d.refs === 78, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
@@ -683,23 +683,8 @@ function check(name, ok, detail) {
   o = await outOf('mitral');
   check('二尖瓣页 Wilkins 四面 2 分 → 8/16 适合 PBMV', /Wilkins 8\/16/.test(o) && /PBMV/.test(o), o);
 
-  await openCalc('vcw');
-  await fillCalc('vcw', 'vcwv', '4');
-  await new Promise((r) => setTimeout(r, 300));
-  o = await outOf('vcw');
-  check('VCW 4mm（MR 默认）→ 中度', /MR/.test(o) && /中度/.test(o), o);
-  await fillCalc('vcw', 'vcwv', '6');
-  await pickOpt('vcw', 'vsite', 'ar');
-  await new Promise((r) => setTimeout(r, 300));
-  o = await outOf('vcw');
-  check('VCW 6mm 切到 AR → 判重度', /AR/.test(o) && /重度/.test(o), o);
-
-  await openCalc('rf');
-  await fillCalc('rf', 'rfvol', '60');
-  await fillCalc('rf', 'rfsv', '86');
-  await new Promise((r) => setTimeout(r, 300));
-  o = await outOf('rf');
-  check('RF 60/86 → 69.8% 重度', /69\.8%/.test(o) && /重度/.test(o), o);
+  // v1.4.9：VCW 分级 / RF 反流分数两个纯查表计算器已删（分级参考值写在 MR / AR / TR 评估页里），
+  // 对应的三条断言一并移除。
 
   await openBrief('mitral');
   await fillCalc('mitral', 'mit_lvotD', '2.0');
