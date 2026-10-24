@@ -648,13 +648,13 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('器械与介入组已拆散：CRT / LAD 进心腔组、LVAD 进急症组',
     ['crt', 'la'].every(id => dirById('chamber').items.some(i => i.id === id)) &&
     dirById('vascular').items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
-  check('心腔、心肌与应变 30 条（心腔 17 + 心肌病变 9 + CRT / LAD + 左心耳封堵 / CFR）', dirById('chamber').items.length, 30, 0);
-  ['lv', 'rv', 'rcoupling', 'rvfail', 'rv-strain', 'strain', 'la-strain', 'peri', 'cp-rm', 'prosthetic', 'ctrcd'].forEach(id => {
+  check('心腔、心肌与应变 29 条（心腔 16 + 心肌病变 9 + CRT / LAD + 左心耳封堵 / CFR）', dirById('chamber').items.length, 29, 0);
+  ['lv', 'rv', 'rcoupling', 'rvfail', 'rv-strain', 'strain', 'la-strain', 'peri', 'cp-rm', 'ctrcd'].forEach(id => {
     check('心腔、应变与负荷含 ' + id,
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 9 条通用/专用计算 + 8 条判读 + 1 个解剖示意图（v1.4.4 起 AS/AR/MS/MR 并入两个评估页）
-  check('瓣膜评估组 17 条（4 计算 + 12 判读含器械介入 + 1 解剖示意图）', dirById('valve').items.length, 17, 0);
+  check('瓣膜评估组 18 条（4 计算 + 13 判读含器械介入 + 1 解剖示意图）', dirById('valve').items.length, 18, 0);
   // v1.4.9：VCW/RF/PR/AS 负荷/DVI/TAPSE-PASP/RAP 这些纯查表或已被评估页覆盖的也删了，只剩 2 条
   check('瓣膜评估组 4 条计算（tr / ppm / tavrsz / pvfu）',
     ['tr', 'ppm', 'tavrsz', 'pvfu']
