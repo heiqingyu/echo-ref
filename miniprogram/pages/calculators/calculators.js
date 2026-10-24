@@ -121,6 +121,22 @@ function buildSections() {
     });
   });
 
+  // ★ moveTo：把标注了 moveTo 的评估条目挪到另一个分组显示（与网页端 app.js 同逻辑）
+  //   条目定义仍留在 BRIEF_SECTIONS 里（详情页靠它取内容），只是目录换位置。
+  //   2026-10-24：用户要求把「TTE 标准切面与测量项目」从节段划分页移到「切面学习」。
+  EX.BRIEF_SECTIONS.forEach(function (s) {
+    s.items.forEach(function (it) {
+      if (!it.moveTo || it.moveTo === s.id) return;
+      const host = sections.filter(function (x) { return x.id === it.moveTo; })[0];
+      if (!host) return;
+      const from = sections.filter(function (x) { return x.id === s.id; })[0];
+      if (from) {
+        from.items = from.items.filter(function (x) { return x.id !== it.id; });
+      }
+      host.items.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
+    });
+  });
+
   // 本地资料（PDF / 图片 / 视频直链）：docs/materials/ 里放了东西才出现这一组
   // ★ 只存 URL，不内嵌文件，所以工具体积不随资料变大
   if (MT.MATERIALS && MT.MATERIALS.length) {

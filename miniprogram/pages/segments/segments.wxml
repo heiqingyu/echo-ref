@@ -64,22 +64,7 @@
     <view class="note">LV 左室 · RV 右室 · LA 左房 · RA 右房 · Ao 主动脉 · MV 二尖瓣 · TV 三尖瓣 · LAA 左心耳 · LVOT 左室流出道</view>
   </view>
 
-  <!-- ③ 标准切面与测量项目 -->
-  <view class="card">
-    <view class="card__title">标准切面与测量项目</view>
-    <view class="card__desc">ASE 成人完整 TTE 检查建议</view>
-
-    <view class="tbl">
-      <view class="tbl__head tbl--3"><text>切面</text><text>观察结构</text><text>主要测量</text></view>
-      <view class="tbl__row tbl--3" wx:for="{{viewRows}}" wx:key="index">
-        <text class="tbl__c1">{{item[0]}}</text>
-        <text class="tbl__c2">{{item[1]}}</text>
-        <text class="tbl__c2">{{item[2]}}</text>
-      </view>
-    </view>
-
-    <view class="note">主动脉瓣狭窄测速需要多声窗比较。必要时用非成像连续波探头（Pedoff）从心尖、右胸骨旁、胸骨上窝寻找最高的可靠流速。</view>
-  </view>
+  <!-- ③「标准切面与测量项目」已移到公式集「切面学习」组（2026-10-24），本页只讲节段 -->
 
   <view class="note note--strong">
     本页为速查资料整理，内容依据 ASE 系列指南；具体应用请回看指南原文并结合临床判断。
