@@ -1,14 +1,14 @@
 const VS = require('../../utils/valve-svg.js');
 
 /**
- * 瓣膜解剖页：瓣叶分区 / 分叶 / 分段的 TTE/TEE 示意图
+ * 瓣膜解剖页：只放 TEE 切面（TTE 短轴/四腔心见「切面学习」），13 个标准切面
  *
  * 与「节段划分」页同一套交互范式：
  *   - 示意图用 SVG data URI 渲染（小程序 image 组件）
  *   - 下方色块按钮选择解剖分区 → 全部视图同步高亮同一结构
  *
  * 视图按瓣膜分组（主动脉瓣 / 二尖瓣 / 三尖瓣 / 肺动脉瓣），
- * 每个瓣膜只显示自己相关的视图，避免一屏 7 张图过于拥挤。
+ * 每个瓣膜只显示自己相关的视图，避免一屏十几张图过于拥挤。
  */
 Page({
   data: {
@@ -47,6 +47,8 @@ Page({
           sub: v.sub,
           chips: chips,
           src: 'data:image/svg+xml;base64,' + VS.utf8ToBase64(v.fn({ sel: sel })),
+          // 探头位置 + 扫描平面小图（静态，不随选中变化）
+          probe: VS.probeOf(v.id) ? 'data:image/svg+xml;base64,' + VS.utf8ToBase64(VS.probeOf(v.id)) : '',
         };
       });
       return { id: g, title: g, views: views };

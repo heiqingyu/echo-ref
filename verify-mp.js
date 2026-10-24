@@ -716,9 +716,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgA.onOpen({ currentTarget: { dataset: { kind: 'calc', id: 'bernoulli' } } });
   check('点击公式条目 → navigateTo formula?id=…',
     navTo === '/pages/formula/formula?id=bernoulli' ? 1 : 0, 1, 0);
-  pgA.onOpen({ currentTarget: { dataset: { kind: 'valve', id: 'ms' } } });
-  check('点击瓣膜条目 → navigateTo valves?tab=ms',
-    navTo === '/pages/valves/valves?tab=ms' ? 1 : 0, 1, 0);
+  // v1.5.0：瓣膜评估页已删，公式集里改成弹提示 / 走判读条目；这里改为验证瓣膜解剖条目
+  pgA.onOpen({ currentTarget: { dataset: { kind: 'valveana', id: 'valveana' } } });
+  check('点击瓣膜解剖条目 → navigateTo valveana',
+    navTo === '/pages/valveana/valveana' ? 1 : 0, 1, 0);
   pgA.onOpen({ currentTarget: { dataset: { kind: 'brief', id: 'crt' } } });
   check('点击评估条目 → navigateTo formula?id=crt',
     navTo === '/pages/formula/formula?id=crt' ? 1 : 0, 1, 0);
@@ -1407,16 +1408,34 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
     });
   };
 
-  check('视图数 = 8（主动脉瓣 2 / 二尖瓣 3 / 三尖瓣 2 / 肺动脉瓣 1）', VS.VALVE_VIEWS.length, 8, 0);
-  check('视图 id 齐全',
+  check('视图数 = 13（主动脉瓣 3 / 二尖瓣 6 / 三尖瓣 3 / 肺动脉瓣 1）', VS.VALVE_VIEWS.length, 13, 0);
+  check('视图 id 齐全（v1.5.0 只留 TEE 切面）',
     VS.VALVE_VIEWS.map(function (v) { return v.id; }).join(',') ===
-    'avTteSax,avTeeSax,mvArea,mvTteA4c,mvTeeCommissural,tvTte,tvTeeRvin,tvTeeTgsax' ? 1 : 0, 1, 0);
+    'avTeeSax,avTeeLax,avTgDeepLax,mvTee4c,mvTee2c,mvTeeLax,mvTeeCommissural,mvTee3d,mvTgSax,' +
+    'tvTee4c,tvTeeRvin,tvTeeTgsax,pvTeeSax' ? 1 : 0, 1, 0);
+  check('全部是 TEE 切面（标题里都有 TEE / 经胃底 / 3D）',
+    VS.VALVE_VIEWS.every(function (v) { return /TEE|经胃底|3D/.test(v.title); }) ? 1 : 0, 1, 0);
+  check('每个视图都有探头位置元数据（pos / deg / cut）',
+    VS.VALVE_VIEWS.every(function (v) {
+      return v.tee && v.tee.pos && v.tee.deg && v.tee.cut && v.tee.target;
+    }) ? 1 : 0, 1, 0);
+  check('每个视图都能生成探头小图且无 NaN',
+    VS.VALVE_VIEWS.every(function (v) {
+      const p = VS.probeOf(v.id);
+      return p && p.indexOf('NaN') === -1 && p.indexOf('<svg') === 0;
+    }) ? 1 : 0, 1, 0);
+  check('探头位置覆盖 食管中段 / 经胃底 两个窗口',
+    (function () {
+      const set = {};
+      VS.VALVE_VIEWS.forEach(function (v) { set[v.tee.pos] = 1; });
+      return set.ME === 1 && set.TG === 1 ? 1 : 0;
+    })(), 1, 0);
   check('主动脉瓣 3 分区（rcc/lcc/ncc）', VS.AV_CUSPS.length, 3, 0);
   check('二尖瓣 6 分段（p1–p3/a1–a3）', VS.MV_SEGMENTS.length, 6, 0);
   check('三尖瓣 3 瓣叶', VS.TV_LEAFLETS.length, 3, 0);
   check('每个视图都绑定了渲染函数',
     VS.VALVE_VIEWS.every(function (v) { return typeof v.fn === 'function'; }) ? 1 : 0, 1, 0);
-  check('8 张 SVG 全部无 NaN',
+  check('13 张 SVG 全部无 NaN',
     VS.VALVE_VIEWS.every(function (v) { return v.fn({ sel: null }).indexOf('NaN') === -1; }) ? 1 : 0, 1, 0);
   check('每张 SVG 都含可点击分区标记',
     VS.VALVE_VIEWS.every(function (v) { return v.fn({ sel: null }).indexOf('data-part=') !== -1; }) ? 1 : 0, 1, 0);
@@ -1427,7 +1446,7 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
 
   // —— 页面 ——
   pgV.onLoad();
-  check('页面按瓣膜分组（3 组：主动脉瓣 / 二尖瓣 / 三尖瓣）', pgV.data.groups.length, 3, 0);
+  check('页面按瓣膜分组（4 组：主动脉瓣 / 二尖瓣 / 三尖瓣 / 肺动脉瓣）', pgV.data.groups.length, 4, 0);
   check('肺动脉瓣视图已删除',
     VS.VALVE_VIEWS.some(function (v) { return v.id === 'pv'; }) ? 0 : 1, 1, 0);
   check('三尖瓣 3 张视图（四腔心 + TEE 流入流出道 + TEE 经胃底短轴）',
@@ -1436,7 +1455,11 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('瓣膜解剖页不再单列教学资源（与切面学习/模拟器重复）',
     pgV.data.lessons === undefined ? 1 : 0, 1, 0);
   const allImgs = pgV.data.groups.reduce(function (n, g) { return n + g.views.length; }, 0);
-  check('示意图条目 = 8', allImgs, 8, 0);
+  check('示意图条目 = 13', allImgs, 13, 0);
+  check('每张示意图都配了探头小图',
+    pgV.data.groups.every(function (g) {
+      return g.views.every(function (v) { return /^data:image\/svg\+xml;base64,/.test(v.probe || ''); });
+    }) ? 1 : 0, 1, 0);
   check('示意图为 base64 data URI',
     pgV.data.groups[0].views[0].src.indexOf('data:image/svg+xml;base64,') === 0 ? 1 : 0, 1, 0);
   pgV.onPart({ currentTarget: { dataset: { p: 'rcc' } } });
