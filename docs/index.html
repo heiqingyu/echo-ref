@@ -1659,7 +1659,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.6.6</div>
+    <div class="verline">心脏超声参考值 · v1.6.7</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1701,7 +1701,7 @@ button.fx-nav__c {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.6.6</div>
+      <div class="verline">心脏超声参考值 · v1.6.7</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -1927,7 +1927,7 @@ button.fx-nav__c {
       <div class="note note--warn">
         <b>数据来源</b>　Pediatric Heart Network Normal Echocardiogram Database，
         n = 3566，0–18 岁健康非肥胖儿童，19 个中心。<br>
-        Lopez L, Colan S, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.<br>
+        Lopez L, Colan S, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.（参考文献 R8）<br>
         LVESD / LVESV 系数来自 PHN 后续补充发表（PMC7870534）。
       </div>
     </div>
@@ -7698,7 +7698,7 @@ const BRIEF_SECTIONS = [
         segOnly: true,   // ★ v1.6.4：只在「切面学习」页签列出，不进公式集目录
         title: 'TEE 20 个标准切面速查',
         sub: '角度 · 显示结构 · 必测项 · 三档探头位置',
-        source: ['R64', 'R12', 'R47'],
+        source: ['R60', 'R10', 'R44'],
         rel: ['tee-safety', '3d-tee'],
         fields: [],
         blocks: [
@@ -7783,7 +7783,7 @@ const BRIEF_SECTIONS = [
         segOnly: true,   // ★ v1.6.4：只在「切面学习」页签列出，不进公式集目录
         title: 'TTE 规范切面与必测项',
         sub: '五个声窗 · 采集顺序 · 每个切面该测什么',
-        source: ['R68', 'R11'],
+        source: ['R64', 'R9'],
         rel: ['zh-normal', 'doppler-basics'],
         fields: [],
         blocks: [
@@ -7799,7 +7799,7 @@ const BRIEF_SECTIONS = [
               ['右胸骨旁', '右侧卧，探头在右第 2–3 肋间', '升主动脉、上腔静脉（常规少用，主动脉扩张时补充）'],
             ],
           },
-          { kind: 'text', text: '**顺序固定下来的意义**：超声是「按流程扫完」而不是「看到什么算什么」。固定顺序（左胸骨旁 → 心尖 → 剑下 → 胸骨上窝）能保证不漏结构，也让复查时前后两次的条件可比。ASE 2019（R11）与国内规范化共识（R68）都是这个顺序。' },
+          { kind: 'text', text: '**顺序固定下来的意义**：超声是「按流程扫完」而不是「看到什么算什么」。固定顺序（左胸骨旁 → 心尖 → 剑下 → 胸骨上窝）能保证不漏结构，也让复查时前后两次的条件可比。ASE 2019（R9）与国内规范化共识（R64）都是这个顺序。' },
 
           { kind: 'h', text: '二、胸骨旁切面：测量的主战场' },
           {
@@ -7869,7 +7869,7 @@ const BRIEF_SECTIONS = [
         id: 'tee-safety',
         title: 'TEE 适应证、禁忌与并发症处理',
         sub: '什么情况必须做 TEE · 相对禁忌 · 并发症识别',
-        source: ['R64', 'R65', 'R12'],
+        source: ['R60', 'R61', 'R10'],
         rel: ['tee-20', '3d-tee'],
         fields: [],
         blocks: [
@@ -7926,7 +7926,7 @@ const BRIEF_SECTIONS = [
         id: 'artifact-guide',
         title: '超声伪影识别与规避（2026 ASE 指南）',
         sub: '混响 · 镜像 · 声影 · 侧瓣 · 多普勒 · 3D 与造影伪影',
-        source: ['R53'],
+        source: ['R50'],
         rel: ['mimic', 'contrast-echo'],
         blocks: [
           { kind: 'h', text: '一、先搞清楚机器在"相信"什么' },
@@ -8065,7 +8065,7 @@ const BRIEF_SECTIONS = [
         id: 'mimic',
         title: '正常结构被误判为病变（高频假病变）',
         sub: '调节束 · Chiari 网 · 假腱索 · 左心耳分叶 · 右室小梁',
-        source: ['R53', 'R11'],
+        source: ['R50', 'R9'],
         rel: ['artifact-guide', 'mass'],
         fields: [],
         blocks: [
@@ -8088,7 +8088,7 @@ const BRIEF_SECTIONS = [
         id: 'contrast-echo',
         title: '超声造影（CEUS）规范与判读',
         sub: '适应证 · MI 与机器设置 · 制剂剂量 · EBD 手法 · 判读 · 安全性',
-        source: ['R50', 'R51'],
+        source: ['R47', 'R48'],
         rel: ['mass', 'artifact-guide'],
         blocks: [
           { kind: 'h', text: '一、什么时候该做造影' },
@@ -8097,7 +8097,7 @@ const BRIEF_SECTIONS = [
             kind: 'table',
             heads: ['场景', '造影能解决什么'],
             rows: [
-              ['经胸图像欠佳', '「图像欠佳」有明确定义：**三个心尖切面中任一有 2 个以上连续节段显示不清**（R51）——满足这条才值得做造影'],
+              ['经胸图像欠佳', '「图像欠佳」有明确定义：**三个心尖切面中任一有 2 个以上连续节段显示不清**（R48）——满足这条才值得做造影'],
               ['急诊胸痛、拟诊 ACS', '节段运动正常者 24 小时不良事件率仅 **0.4%**；节段运动异常者早期事件风险高 **6 倍**。造影把「有没有节段异常」这个关键问题答清楚'],
               ['心尖部占位', '心尖血栓 vs 假性瘤（后者与心肌连续、有颈、有血流灌注）、心尖型 HCM vs 心肌致密化不全'],
               ['心腔内团块性质', '血栓 / 黏液瘤 / 赘生物——造影显示无灌注（血栓）或富血流（血管性肿物）'],
@@ -8133,7 +8133,7 @@ const BRIEF_SECTIONS = [
               ['Imagify', '2.0', '十氟丁烷 / 合成聚合物', 'LVO + MCE'],
             ],
           },
-          { kind: 'text', text: '**团注剂量（R51 技师操作指南）**：Definity 一支用 8.5 mL 生理盐水稀释后取 **0.5 mL**；或 Optison 原液 **0.3 mL**。两种都用后接约 3 mL 生理盐水、10 秒推完冲管。' },
+          { kind: 'text', text: '**团注剂量（R48 技师操作指南）**：Definity 一支用 8.5 mL 生理盐水稀释后取 **0.5 mL**；或 Optison 原液 **0.3 mL**。两种都用后接约 3 mL 生理盐水、10 秒推完冲管。' },
           { kind: 'note', text: '**团注会造成左室腔严重衰减**（图像发白），需要时间消散。所以做 LVO 更推荐**连续灌注**（3–5 mL、5–10 秒推完）——图像均匀稳定，不受衰减干扰。', warn: true },
 
           { kind: 'h', text: '四、EBD 增敏三招（振荡盐水）' },
@@ -8175,7 +8175,7 @@ const BRIEF_SECTIONS = [
               ['相对注意', '严重心律失常、心衰、肝衰；既往超声造影剂过敏史'],
             ],
           },
-          { kind: 'text', text: '**科里必须常备**：肾上腺素、激素、抗组胺药与抢救车；R51 明确要求**急救包每月检查一次有效期**。造影全程应有能处理严重过敏反应经验的医师在场或可即时呼叫。' },
+          { kind: 'text', text: '**科里必须常备**：肾上腺素、激素、抗组胺药与抢救车；R48 明确要求**急救包每月检查一次有效期**。造影全程应有能处理严重过敏反应经验的医师在场或可即时呼叫。' },
           { kind: 'note', text: '**造影后要不要观察、要观察多久，取决于基础病而不是造影剂本身**：肺动脉高压与不稳定心肺状态者才需要 30 分钟监护；其余患者不常规要求监护——但**过敏反应多发生在给药后即刻**，注射时床旁不能离人。', warn: true },
         ],
         note: '造影的完整链条是「**为什么做（适应证）→ MI 调多少（机器）→ 怎么打（剂量与手法）→ 看到什么（判读）→ 出事怎么办（安全）**」。技师环节最容易翻车的是两点：**MI 调太高把微泡打碎**，以及**右向左分流阳性时Valsalva 时机没掐准**（晚了就只能看到肺内分流，误判为没有 PFO）。',
@@ -8184,7 +8184,7 @@ const BRIEF_SECTIONS = [
         id: '3d-tee',
         title: '3D TEE：采集、多平面重建与术前规划',
         sub: '窄角与全容积 · 六个重建平面 · 二尖瓣与左心耳定量 · 拼接伪影',
-        source: ['R12', 'R41'],
+        source: ['R10', 'R38'],
         rel: ['mv-interv', 'tr-interv'],
         blocks: [
           { kind: 'h', text: '一、什么时候值得开 3D' },
@@ -8258,12 +8258,12 @@ const BRIEF_SECTIONS = [
         id: 'report-std',
         title: '超声报告标准化清单（ASE 2025）',
         sub: '完整 · 简洁 · 正确 · 有临床用途 · 危急值清单',
-        source: ['R44'],
+        source: ['R41'],
         rel: ['critical', 'tee-20'],
         fields: [],
         blocks: [
           { kind: 'h', text: '一份好报告要满足四件事' },
-          { kind: 'text', text: '**完整**（该有的都有）、**简洁**（不写废话）、**正确**（数值与结论对得上）、**有临床用途**（临床看完知道下一步做什么）。这四条是 ASE 2025 报告标准化建议（R44）的评价框架，写报告时按这四条自检。' },
+          { kind: 'text', text: '**完整**（该有的都有）、**简洁**（不写废话）、**正确**（数值与结论对得上）、**有临床用途**（临床看完知道下一步做什么）。这四条是 ASE 2025 报告标准化建议（R41）的评价框架，写报告时按这四条自检。' },
           { kind: 'h', text: '报告顶部必须有的信息' },
           {
             kind: 'table',
@@ -8327,7 +8327,7 @@ const BRIEF_SECTIONS = [
         id: 'critical',
         title: '超声危急值与报告措辞分级',
         sub: '必须电话通知的十类 · 措辞三级 · 复查间隔',
-        source: ['R44', 'R1'],
+        source: ['R41', 'R1'],
         rel: ['report-std', 'peri'],
         fields: [],
         blocks: [
@@ -8362,7 +8362,7 @@ const BRIEF_SECTIONS = [
         id: 'doppler-basics',
         title: '多普勒定量：五种最常见的错',
         sub: '角度误差 · 增益与壁滤波 · 混叠 · 压差与 VTI · 流量计算',
-        source: ['R8', 'R11'],
+        source: ['R7', 'R9'],
         rel: ['asload', 'aortic'],
         blocks: [
           { kind: 'h', text: '一、角度：误差不是线性的，是余弦' },
@@ -8436,7 +8436,7 @@ const BRIEF_SECTIONS = [
         id: 'echo-interv',
         title: '超声引导下有创操作（心包穿刺 · 活检 · 房间隔 · 消融）',
         sub: 'TTE/TEE/ICE 选谁 · 12 类操作对照表 · 心包穿刺要点 · 活检与消融',
-        source: ['R52'],
+        source: ['R49'],
         rel: ['peri', 'critical'],
         blocks: [
           { kind: 'h', text: '一、三种超声在导管室里的分工' },
@@ -8538,11 +8538,11 @@ const BRIEF_SECTIONS = [
         segOnly: true,   // ★ v1.6.4：只在「切面学习」页签列出，不进公式集目录
         title: 'TTE 标准切面与测量项目',
         sub: '13 个切面 × 观察结构 × 主要测量 · ASE 成人完整检查建议',
-        source: ['R11'],
+        source: ['R9'],
         rel: ['tte-std', 'zh-normal', 'doppler-basics'],
         fields: [],
         blocks: [
-          { kind: 'text', text: '按 **ASE 成人完整 TTE 检查建议（R11）** 的顺序整理：左边是切面，中间是这个切面**该看清什么**，右边是**必须落到报告里的测量**。声窗顺序固定下来（左胸骨旁 → 心尖 → 剑下 → 胸骨上窝）比记住多少技巧更有用——它保证不漏结构，也让前后两次复查的条件可比。' },
+          { kind: 'text', text: '按 **ASE 成人完整 TTE 检查建议（R9）** 的顺序整理：左边是切面，中间是这个切面**该看清什么**，右边是**必须落到报告里的测量**。声窗顺序固定下来（左胸骨旁 → 心尖 → 剑下 → 胸骨上窝）比记住多少技巧更有用——它保证不漏结构，也让前后两次复查的条件可比。' },
           {
             kind: 'table',
             heads: ['切面', '看什么 · 测什么'],
@@ -8577,7 +8577,7 @@ const BRIEF_SECTIONS = [
         id: 'lv',
         title: '左心评估',
         sub: 'EF 分级 · 室壁厚度 · 质量指数 · 肥厚鉴别',
-        source: ['R2', 'R1', 'R7'],
+        source: ['R2', 'R1'],
         rel: ['zh-normal', 'strain'],
         blocks: [
           { kind: 'h', text: '左室收缩功能分级（2D 改良 Simpson）' },
@@ -8649,7 +8649,7 @@ const BRIEF_SECTIONS = [
         id: 'rv',
         title: '右心评估',
         sub: 'RAP · PASP · PVR · PADP · PH 概率 · 右室功能',
-        source: ['R5', 'R7', 'R13', 'R14'],
+        source: ['R5', 'R11', 'R12'],
         rel: ['ph', 'rvfail'],
         blocks: [
           { kind: 'h', text: '一、右房压 RAP 估算' },
@@ -8745,7 +8745,7 @@ const BRIEF_SECTIONS = [
         id: 'rcoupling',
         title: '右室-肺动脉耦联',
         sub: 'TAPSE / PASP 比值 · 右室储备与预后',
-        source: ['R18', 'R14'],
+        source: ['R16', 'R12'],
         rel: ['ph', 'rvfail'],
         blocks: [
           { kind: 'h', text: '一、这个比值解决什么问题' },
@@ -8793,7 +8793,7 @@ const BRIEF_SECTIONS = [
         id: 'rvfail',
         title: '右室功能分级与右心衰',
         sub: '六指标积分 · RV 应变 · 右心衰分期',
-        source: ['R23', 'R14'],
+        source: ['R12'],
         rel: ['rv', 'rcoupling'],
         blocks: [
           { kind: 'h', text: '一、右室功能障碍分级（ASE 2015 六指标积分）' },
@@ -8868,7 +8868,7 @@ const BRIEF_SECTIONS = [
         id: 'rv-strain',
         title: '右室应变与 RVFWS 细化',
         sub: '两种测法 · 基底-心尖梯度 · 储备与耦联',
-        source: ['R27', 'R23', 'R5', 'R39'],
+        source: ['R24', 'R5', 'R36'],
         rel: ['rvfail', 'strain'],
         blocks: [
           { kind: 'h', text: '一、RVFWS 有两种测法，别混用' },
@@ -8965,7 +8965,7 @@ const BRIEF_SECTIONS = [
         id: 'strain',
         title: '心肌应变',
         sub: 'GLS · 分层应变 · 左房/右室应变',
-        source: ['R3', 'R4', 'R43'],
+        source: ['R3', 'R4', 'R40'],
         rel: ['ctrcd', 'myowork'],
         blocks: [
           { kind: 'h', text: '采集规范（先规范，再看数值）' },
@@ -8981,7 +8981,7 @@ const BRIEF_SECTIONS = [
               ['追踪质量', '切勿自动追踪后直接取数，务必目视核对每段曲线'],
             ],
           },
-          { kind: 'h', text: '常用应变指标与判读（R43 · ASE/EACVI 2025 口径）' },
+          { kind: 'h', text: '常用应变指标与判读（R40 · ASE/EACVI 2025 口径）' },
           {
             kind: 'table',
             heads: ['指标', '分界', '意义'],
@@ -8991,16 +8991,16 @@ const BRIEF_SECTIONS = [
               ['左室 GLS 异常', '＞ −16%（绝对值 <16）', '提示心肌受累，随访加密'],
               ['右室游离壁应变 RVFWLS', '＜ −20%（男）/ ＜ −21%（女）', '比这两个值「更不负」即为异常'],
               ['左房储备应变 LASr', '正常 30–60%，下限 23%', '＜23% 提示左房压升高；＜18% 判断充盈压升高最均衡'],
-              ['左房管道 / 收缩应变', '参考值随平台差异大', 'R43 未给统一分界，只把 LASr 列为可用指标'],
+              ['左房管道 / 收缩应变', '参考值随平台差异大', 'R40 未给统一分界，只把 LASr 列为可用指标'],
               ['分层应变（层间差）', '内层—外层差值越小越好', '差值增大提示心肌纤维化、浸润'],
             ],
           },
-          { kind: 'note', text: '**软件版本是硬约束（R43 共识第 2 条）**：同一台机器跨版本、或不同厂家的绝对值不能直接比；随访必须同厂家 + 同软件版本，否则「变差」可能只是算法换了。', warn: true },
+          { kind: 'note', text: '**软件版本是硬约束（R40 共识第 2 条）**：同一台机器跨版本、或不同厂家的绝对值不能直接比；随访必须同厂家 + 同软件版本，否则「变差」可能只是算法换了。', warn: true },
           { kind: 'h', text: '临床落点' },
           { kind: 'text', text: '· 射血分数正常时，GLS 可提前发现心肌收缩受损（化疗、瓣膜病、心肌病早期）。' },
           { kind: 'text', text: '· CRT / 抗肿瘤治疗后 |GLS| 相对改善 ≥15%（绝对改善 ≥5%）提示治疗有效。' },
           { kind: 'text', text: '· 左房应变降低常先于左房容积增大出现，是房颤风险评估的补充指标。' },
-          { kind: 'h', text: '各瓣膜病里的具体切点（R43）' },
+          { kind: 'h', text: '各瓣膜病里的具体切点（R40）' },
           {
             kind: 'table',
             heads: ['场景', '切点', '含义'],
@@ -9012,20 +9012,20 @@ const BRIEF_SECTIONS = [
               ['心尖保留（淀粉样变）', '心尖平均 ＞ 2 × 其余节段平均', '指向心脏淀粉样变'],
             ],
           },
-          { kind: 'note', text: '机械离散度（MD）在左室可用于致心律失常风险分层（ARVC / 室性心律失常），但 R43 明确**不建议**把右室、左房的 MD 用于临床判断——证据还不够。' },
+          { kind: 'note', text: '机械离散度（MD）在左室可用于致心律失常风险分层（ARVC / 室性心律失常），但 R40 明确**不建议**把右室、左房的 MD 用于临床判断——证据还不够。' },
         ],
         fields: [
           { k: 'gls', n: '左室整体纵向应变 GLS', u: '%（负值）' },
           { k: 'rvstrain', n: '右室游离壁应变（可选）', u: '%（负值）' },
         ],
         calc: 'strain',
-        note: 'GLS 越接近 0（绝对值越小）提示纵向收缩越差。R43（ASE/EACVI 2025）分界：正常 ＜ −18%、灰区 −16% ~ −18%、异常 ＞ −16%；数值必须在同一厂家同一软件版本下比较。',
+        note: 'GLS 越接近 0（绝对值越小）提示纵向收缩越差。R40（ASE/EACVI 2025）分界：正常 ＜ −18%、灰区 −16% ~ −18%、异常 ＞ −16%；数值必须在同一厂家同一软件版本下比较。',
       },
       {
         id: 'la-strain',
         title: '左房应变与 HFpEF 诊断路径',
         sub: 'LASr 三时相 · HFA-PEFF 超声计分 · 负荷试验',
-        source: ['R27', 'R28'],
+        source: ['R24', 'R25'],
         rel: ['diastolic', 'zh-normal'],
         blocks: [
           { kind: 'h', text: '一、左房应变看三个时相，不是只有一个数' },
@@ -9103,7 +9103,7 @@ const BRIEF_SECTIONS = [
         id: 'diastolic',
         title: '左室舒张功能分级',
         sub: '2016 ASE/EACVI 四步法 · 2022 更新',
-        source: ['R16', 'R42'],
+        source: ['R14', 'R39'],
         rel: ['la-strain', 'zh-normal'],
         fields: [],
         blocks: [
@@ -9150,7 +9150,7 @@ const BRIEF_SECTIONS = [
           { kind: 'note', text: '**没有单一指标能定舒张功能**。E/e′ 在年轻人与高动力状态可 >14，而房颤、重度 MR 时反而低估。分级是概率判断，不是判决——报告应写明用了哪几项、是否定级。', warn: true },
           { kind: 'h', text: 'HFpEF 的两条评分路径' },
           { kind: 'text', text: '**H2FPEF**（6 项，0–9 分，≥6 高度可能）偏临床 + 超声；**HFA-PEFF**（形态 / 功能 / 标志物三类，0–6 分）先算分再决定是否做负荷或侵入性检查。两者都在公式集「评分与室壁运动」组，可直接算分。' },
-          { kind: 'note', text: '**ASE 2025 已发布舒张功能与 HFpEF 诊断更新（R42）**，官方 PDF 直链见公式集页「参考文献」R42。本页仍按 2016 四步法组织（它仍是国内报告的主流口径），遇到与 2025 版不一致的阈值，以 R42 原文为准并在报告里写明依据版本。' },
+          { kind: 'note', text: '**ASE 2025 已发布舒张功能与 HFpEF 诊断更新（R39）**，官方 PDF 直链见公式集页「参考文献」R39。本页仍按 2016 四步法组织（它仍是国内报告的主流口径），遇到与 2025 版不一致的阈值，以 R39 原文为准并在报告里写明依据版本。' },
         ],
         note: '分级依赖图像质量与节律；同一患者随访务必用同一套指标，否则「分级变化」可能只是测量方式变了。',
       },
@@ -9158,7 +9158,7 @@ const BRIEF_SECTIONS = [
         id: 'peri',
         title: '心包积液与心脏压塞',
         sub: '半定量 · 压塞征象 · 缩窄鉴别',
-        source: ['R15'],
+        source: ['R13'],
         rel: ['cp-rm', 'critical'],
         fields: [],
         blocks: [
@@ -9210,7 +9210,7 @@ const BRIEF_SECTIONS = [
         id: 'cp-rm',
         title: '缩窄性心包炎 vs 限制型心肌病',
         sub: '呼吸变异量化 · 瓣环反转 · 鉴别要点',
-        source: ['R24', 'R15'],
+        source: ['R21', 'R13'],
         rel: ['peri', 'amyloid'],
         blocks: [
           { kind: 'h', text: '一、为什么要量化呼吸变异' },
@@ -9258,7 +9258,7 @@ const BRIEF_SECTIONS = [
         id: 'ctrcd',
         title: '肿瘤治疗相关心功能不全（CTRCD）',
         sub: 'GLS 相对下降 · 三级分档 · 监测节点',
-        source: ['R32', 'R3', 'R43'],
+        source: ['R29', 'R3', 'R40'],
         rel: ['strain', 'myowork'],
         fields: [
           { k: 'g0', n: '基线 GLS（负值）', u: '%' },
@@ -9360,7 +9360,7 @@ const BRIEF_SECTIONS = [
         id: 'mass',
         title: '心脏占位：血栓 / 黏液瘤 / 赘生物 / 恶性肿瘤',
         sub: '部位→概率 · 四条鉴别主线 · 易误判的正常结构 · 下一步查什么',
-        source: ['R50', 'R19', 'R44'],
+        source: ['R47', 'R17', 'R41'],
         rel: ['contrast-echo', 'thrombus'],
         blocks: [
           { kind: 'h', text: '一、先定位：部位几乎决定了一半诊断' },
@@ -9428,7 +9428,7 @@ const BRIEF_SECTIONS = [
         id: 'stress-echo',
         title: '运动负荷超声缺血判读',
         sub: '室壁运动评分 · 阳性标准 · Duke 评分',
-        source: ['R29'],
+        source: ['R26'],
         rel: ['dse', 'hcm-stress'],
         blocks: [
           { kind: 'h', text: '一、判读的基本语言：室壁运动评分（WMS）' },
@@ -9522,7 +9522,7 @@ const BRIEF_SECTIONS = [
         id: 'hcm-stress',
         title: 'HCM 激发负荷试验（隐匿性梗阻）',
         sub: '什么情况要激发 · 阳性阈值 · SAM 判读 · 风险控制',
-        source: ['R69', 'R69', 'R42'],
+        source: ['R65', 'R65', 'R39'],
         rel: ['hcm', 'dse'],
         fields: [],
         blocks: [
@@ -9585,7 +9585,7 @@ const BRIEF_SECTIONS = [
         id: 'dse',
         title: '多巴酚丁胺负荷超声（DSE）',
         sub: '存活心肌 · 低流速低梯度 AS · 剂量方案与终止指征',
-        source: ['R29', 'R39', 'R54'],
+        source: ['R26', 'R36'],
         rel: ['stress-echo', 'hcm-stress'],
         fields: [],
         blocks: [
@@ -9619,7 +9619,7 @@ const BRIEF_SECTIONS = [
         id: 'hcm',
         title: '肥厚型心肌病评估',
         sub: '最大壁厚 · SAM · LVOT 压差 · 心尖型',
-        source: ['R20'],
+        source: ['R18'],
         rel: ['hcm-stress', 'fabry'],
         blocks: [
           { kind: 'h', text: '一、诊断阈值（舒张末最大壁厚）' },
@@ -9663,7 +9663,7 @@ const BRIEF_SECTIONS = [
         id: 'amyloid',
         title: '心脏淀粉样变超声提示',
         sub: '室壁增厚 +「苹果核」应变 · 心尖保留',
-        source: ['R21'],
+        source: ['R19'],
         rel: ['rcm-strain', 'cp-rm'],
         blocks: [
           { kind: 'h', text: '一、结构线索（不止是「壁厚」）' },
@@ -9708,7 +9708,7 @@ const BRIEF_SECTIONS = [
         id: 'rcm-strain',
         title: '限制型心肌病 vs 淀粉样变的应变鉴别',
         sub: '心尖保留比值 · 分层应变 · 三类限制性表型对照',
-        source: ['R21', 'R34', 'R3'],
+        source: ['R19', 'R31', 'R3'],
         rel: ['amyloid', 'cp-rm'],
         blocks: [
           { kind: 'h', text: '一、三种「限制性表型」的应变长什么样' },
@@ -9846,7 +9846,7 @@ const BRIEF_SECTIONS = [
         id: 'athlete',
         title: '运动员心脏与生理性重构',
         sub: '生理性 vs 病理性 · 灰区处理',
-        source: ['R20'],
+        source: ['R18'],
         rel: ['hcm'],
         fields: [],
         blocks: [
@@ -9892,7 +9892,7 @@ const BRIEF_SECTIONS = [
         id: 'fabry',
         title: '法布雷病心脏受累的超声识别',
         sub: '向心性肥厚 · 基底下侧壁应变 · 与 HCM/淀粉样变鉴别',
-        source: ['R70', 'R43', 'R42'],
+        source: ['R66', 'R40', 'R39'],
         rel: ['hcm', 'amyloid'],
         fields: [],
         blocks: [
@@ -9939,12 +9939,12 @@ const BRIEF_SECTIONS = [
         id: 'arvc',
         title: '致心律失常性心肌病（ACM / ARVC）',
         sub: 'Padua 标准 · 右室局部运动异常 · 与运动员右室鉴别',
-        source: ['R71', 'R43'],
+        source: ['R67', 'R40'],
         rel: ['sarcoid', 'rvfail'],
         fields: [],
         blocks: [
           { kind: 'h', text: '一、先更新一个概念：从 ARVC 到 ACM' },
-          { kind: 'text', text: '这个病原来叫「致心律失常性右室心肌病（ARVC）」，因为最早认为它只累及右室。后来的尸检与 CMR 研究证明，**纤维脂肪替代同时累及双心室**，左室受累可以与右室相当甚至更重。因此现在统一叫**致心律失常性心肌病（ACM）**，并按受累优势分为三种表型：**右优势型（经典 ARVC）、双室型、左优势型（ALVC）**。Padua 标准（R71）就是为覆盖这三种表型而提出的。' },
+          { kind: 'text', text: '这个病原来叫「致心律失常性右室心肌病（ARVC）」，因为最早认为它只累及右室。后来的尸检与 CMR 研究证明，**纤维脂肪替代同时累及双心室**，左室受累可以与右室相当甚至更重。因此现在统一叫**致心律失常性心肌病（ACM）**，并按受累优势分为三种表型：**右优势型（经典 ARVC）、双室型、左优势型（ALVC）**。Padua 标准（R67）就是为覆盖这三种表型而提出的。' },
           { kind: 'text', text: '这个命名变化对超声判读有直接影响：**只在右室里找病变会漏掉左优势型**。左优势型表现为左室下侧壁运动异常、EF 下降、LGE，而右室可以完全正常。' },
 
           { kind: 'h', text: '二、超声能提供的是「形态功能」这一栏' },
@@ -9997,7 +9997,7 @@ const BRIEF_SECTIONS = [
         id: 'myocarditis',
         title: '急性心肌炎：超声能看出什么',
         sub: '四种表型 · 与 takotsubo / 心梗的鉴别 · 应变与水肿线索 · 暴发性心肌炎的床旁要点',
-        source: ['R59', 'R74'],
+        source: ['R55', 'R70'],
         rel: ['takotsubo', 'strain'],
         blocks: [
           { kind: 'h', text: '一、先摆正位置：超声不确诊，但决定处置' },
@@ -10065,7 +10065,7 @@ const BRIEF_SECTIONS = [
         id: 'sarcoid',
         title: '心脏结节病：最会伪装的心肌病',
         sub: '与 ARVC / 心肌炎 / DCM 的鉴别 · 节段性变薄 · 应变与 PET 的分工 · 随访',
-        source: ['R78', 'R70'],
+        source: ['R74', 'R66'],
         rel: ['arvc', 'myocarditis'],
         blocks: [
           { kind: 'h', text: '一、为什么会漏：它长得什么都不像，又什么都像' },
@@ -10226,7 +10226,7 @@ const BRIEF_SECTIONS = [
         id: 'mitral',
         title: '二尖瓣疾病评估',
         sub: '狭窄 MS：MVA 三法 · 压差 · PASP · Wilkins → PMBV 适合度｜反流 MR：PISA · VC · dP/dt · RF',
-        source: ['R9', 'R45', 'R46', 'R22', 'R26', 'R79'],
+        source: ['R42', 'R43', 'R20', 'R23', 'R75'],
         rel: ['mv-interv', 'rheumatic', 'prosthetic', 'ie'],
         // ★ v1.4.4 合并：原公式集里独立的「MS 二尖瓣狭窄定量」「MR 二尖瓣反流定量」
         //   两条并入本页，输入框按「① 形态 / ② 狭窄 / ③ 反流」分三段，一次填完出全套结果。
@@ -10265,7 +10265,7 @@ const BRIEF_SECTIONS = [
               ['肺动脉收缩压 PASP', '<30', '30–50', '>50 mmHg'],
             ],
           },
-          { kind: 'note', text: '**这张表按 ESC/EACTS 2021（R26）**：MVA 1.0–1.5 为中度、<1.0 为重度。《中国成人心脏瓣膜病超声心动图规范化检查专家共识（2021，R79）》同样以 MVA <1.0 cm² 为重度，与 ESC 一致。ACC/AHA 2020（R22）则把 **MVA ≤1.5 cm² 直接判为重度**（≤1.0 为极重度）——同一份 1.2 cm²，前者写中度、后者写重度。上面的计算器已同时给出两套判读，交接班与转诊时务必注明用的是哪一套。', warn: true },
+          { kind: 'note', text: '**这张表按 ESC/EACTS 2021（R23）**：MVA 1.0–1.5 为中度、<1.0 为重度。《中国成人心脏瓣膜病超声心动图规范化检查专家共识（2021，R75）》同样以 MVA <1.0 cm² 为重度，与 ESC 一致。ACC/AHA 2020（R20）则把 **MVA ≤1.5 cm² 直接判为重度**（≤1.0 为极重度）——同一份 1.2 cm²，前者写中度、后者写重度。上面的计算器已同时给出两套判读，交接班与转诊时务必注明用的是哪一套。', warn: true },
           { kind: 'text', text: 'MVA 有三种测法：**直接描记**（PSAX 瓣尖最小开口，必要时 3D 辅助，最可靠）、**PHT 法**（220 ÷ PHT，最省事）、**连续性方程**（SV ÷ 二尖瓣 VTI，不受心率与反流影响）。PISA 法只用于反流定量，不用来测狭窄面积。' },
           { kind: 'note', text: '**两个面积不一致时不要取平均**：差 >0.3 cm² 说明其中一法的前提被破坏了（节律不齐、合并 AR、重度钙化、LVOT 测量不准），回到图像找原因；仍不能统一时用二维描记裁决。本页输入框可同时算三法，结果行会直接给出差值。', warn: true },
           { kind: 'h', text: '二、平均压差必须带上心率' },
@@ -10394,7 +10394,7 @@ const BRIEF_SECTIONS = [
         id: 'aortic',
         title: '主动脉瓣疾病评估',
         sub: '狭窄 AS：AVA / DVI / 压差 三联 · 低流量低压差｜反流 AR：PISA · VC · PHT · RF',
-        source: ['R9', 'R46', 'R47'],
+        source: ['R43', 'R44'],
         rel: ['asload', 'aortic-root', 'bav', 'lf-lg'],
         // ★ v1.4.4 合并：原「AS 主动脉瓣狭窄定量」「AR 主动脉瓣反流定量」两条并入本页，
         //   输入框分「① 狭窄 / ② 反流」两段；键名沿用 as_ / ar_ 前缀。
@@ -10526,7 +10526,7 @@ const BRIEF_SECTIONS = [
         id: 'asload',
         title: 'AS 负荷量化（压力恢复 · ELI · Zva）',
         sub: '瓣膜阻力 + 动脉阻力的合成量化',
-        source: ['R54', 'R55', 'R56'],
+        source: ['R51', 'R52'],
         rel: ['aortic', 'lf-lg'],
         fields: [
           { k: 'alvmax', n: '主动脉瓣峰值流速 Vmax', u: 'm/s' },
@@ -10605,7 +10605,7 @@ const BRIEF_SECTIONS = [
         id: 'bav',
         title: '主动脉瓣二叶式畸形（BAV）',
         sub: 'Sievers 分型 · 主动脉扩张随访',
-        source: ['R9', 'R26', 'R30', 'R46'],
+        source: ['R23', 'R27', 'R43'],
         rel: ['aortic-root', 'tavr'],
         fields: [],
         blocks: [
@@ -10655,7 +10655,7 @@ const BRIEF_SECTIONS = [
         id: 'lf-lg',
         title: '主动脉瓣狭窄 LF-LG 判读',
         sub: '低流量低压差 · 真性 / 假性重度 · 负荷试验',
-        source: ['R22', 'R9', 'R46'],
+        source: ['R20', 'R43'],
         rel: ['asload', 'doppler-basics'],
         blocks: [
           { kind: 'h', text: '一、为什么「重度」会测不出来' },
@@ -10707,7 +10707,7 @@ const BRIEF_SECTIONS = [
         id: 'ie',
         title: '感染性心内膜炎赘生物评估',
         sub: '赘生物特征 · Duke-ISCVID 2023 标准 · 栓塞风险 · TEE 指征',
-        source: ['R19', 'R49'],
+        source: ['R17', 'R46'],
         rel: ['prosthetic', 'mass'],
         blocks: [
           { kind: 'h', text: '一、赘生物的超声特征（支持诊断的形态学证据）' },
@@ -10741,7 +10741,7 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '经胸超声首次阴性不能排除诊断，指南建议在临床高度怀疑时于 5–7 天内重复经胸或改做 TEE。' },
 
           { kind: 'h', text: '四、Duke-ISCVID 2023 诊断标准：超声的发现算哪一级' },
-          { kind: 'text', text: '2023 版（R49）把临床标准拆成微生物、影像、外科三个域，超声仍是影像域的核心。最大的口径变化是**「必须与既往影像对比、确认是新发的」**——原有反流加重不算主要标准。' },
+          { kind: 'text', text: '2023 版（R46）把临床标准拆成微生物、影像、外科三个域，超声仍是影像域的核心。最大的口径变化是**「必须与既往影像对比、确认是新发的」**——原有反流加重不算主要标准。' },
           {
             kind: 'table',
             heads: ['级别', '标准', '具体所见'],
@@ -10766,7 +10766,7 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'text', text: '次要标准还包括：易感因素（人工瓣、既往 IE、先心病、中度以上反流 / 狭窄、心内 CIED、HOCM、静脉药瘾）、体温 >38.0 ℃、血管现象（动脉栓塞、脓毒性肺梗死、脑 / 脾脓肿、真菌性动脉瘤、Janeway 损害）、免疫现象（类风湿因子、Osler 结节、Roth 斑、免疫复合物肾小球肾炎）、血培养阳性但够不上主要标准。' },
-          { kind: 'note', text: '血培养口径也放宽了（R49）：不再要求采血时间间隔与不同静脉穿刺点。典型菌（金葡菌、S. lugdunensis、屎肠球菌、除肺炎 / 化脓链球菌外的所有链球菌、Granulicatella、Abiotrophia、Gemella 及 HACEK）≥2 套即主要标准，非典型菌要 ≥3 套；另有一批菌**仅在有人工材料时**才算典型（凝固酶阴性葡萄球菌、C. striatum、C. jeikeium、黏质沙雷菌、铜绿假单胞菌、C. acnes、非结核分枝杆菌、念珠菌）。' },
+          { kind: 'note', text: '血培养口径也放宽了（R46）：不再要求采血时间间隔与不同静脉穿刺点。典型菌（金葡菌、S. lugdunensis、屎肠球菌、除肺炎 / 化脓链球菌外的所有链球菌、Granulicatella、Abiotrophia、Gemella 及 HACEK）≥2 套即主要标准，非典型菌要 ≥3 套；另有一批菌**仅在有人工材料时**才算典型（凝固酶阴性葡萄球菌、C. striatum、C. jeikeium、黏质沙雷菌、铜绿假单胞菌、C. acnes、非结核分枝杆菌、念珠菌）。' },
           { kind: 'h', text: '六、超声阴性之后怎么办' },
           { kind: 'text', text: 'TTE 阴性而临床仍高度怀疑 → TEE；TEE 仍不能确诊 → PET/CT：人工瓣心内膜炎中敏感度 0.86、特异度 0.84，可把大量「可能 IE」升级为「确诊」。自体瓣膜的 PET/CT 敏感度低（0.31）但阳性预测值极高。心脏 CT 与超声互补：CT 更擅长瓣周脓肿 / 假性动脉瘤（78% vs TEE 69%），超声更擅长赘生物（94% vs CT 64%）、瓣叶穿孔（81% vs 41%）与瓣周漏（69% vs 44%）。' },
 
@@ -10780,7 +10780,7 @@ const BRIEF_SECTIONS = [
         id: 'aortic-root',
         title: '主动脉根部与升主动脉：测在哪一条线上',
         sub: '瓣环 / 窦部 / 窦管交界 / 升主动脉 · 四个正常上限 · 与 CT 的对齐',
-        source: ['R2', 'R30'],
+        source: ['R2', 'R27'],
         rel: ['aortic', 'tavr'],
         blocks: [
           { kind: 'h', text: '一、四个部位，四条不同的线' },
@@ -10840,7 +10840,7 @@ const BRIEF_SECTIONS = [
         id: 'rheumatic',
         title: '风湿性瓣膜病：中国患者仍常见',
         sub: '交界融合 · 与退行性变的鉴别 · Wilkins 与 PMBV 适合度 · 左心耳血栓',
-        source: ['R45', 'R9'],
+        source: ['R42'],
         rel: ['mitral', 'ie'],
         blocks: [
           { kind: 'h', text: '一、风湿性与退行性：两套完全不同的判读逻辑' },
@@ -10906,7 +10906,7 @@ const BRIEF_SECTIONS = [
         id: 'tr-interv',
         title: '三尖瓣介入（TTVI）：机制 · 术式 · 术前术后',
         sub: '机制五型 · 夹合 / 环成形 / 置换怎么选 · 术前 TEE 清单 · 术后随访',
-        source: ['R25', 'R14', 'R47', 'R63'],
+        source: ['R22', 'R12', 'R44', 'R59'],
         rel: ['3d-tee', 'mv-interv', 'rv'],
         blocks: [
           { kind: 'h', text: '一、机制分型：先分清「瓣叶本身有病」还是「被拉开的」' },
@@ -10941,7 +10941,7 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'text', text: '两项不一致时取较重的一档。介入临床试验普遍以**极重与瀑布型**为主要人群——真正的重度 TR 往往被「轻中度」的旧标准低估。' },
-          { kind: 'note', text: '**分级体系版本差异**：日常报告多按 ASE 2017 的**三级制**（轻 / 中 / 重）；TVARC 2023（R25）把「重度」再拆成 重度 / massive 4+ / torrential 5+ 三档，专为经导管三尖瓣介入的入组与终点设计。同一患者按三级制可能只报「重度」，按五级制已是 massive——数值没变，分档更细。', warn: true },
+          { kind: 'note', text: '**分级体系版本差异**：日常报告多按 ASE 2017 的**三级制**（轻 / 中 / 重）；TVARC 2023（R22）把「重度」再拆成 重度 / massive 4+ / torrential 5+ 三档，专为经导管三尖瓣介入的入组与终点设计。同一患者按三级制可能只报「重度」，按五级制已是 massive——数值没变，分档更细。', warn: true },
 
           { kind: 'h', text: '四、三种术式怎么选：它不是「一种手术」' },
           { kind: 'text', text: '经导管三尖瓣介入（TTVI）现在有三大类：**缘对缘夹合（TTVA）**、**瓣环成形（annuloplasty，直接或间接环缩）**、**原位瓣膜置换（TTVR）**。它们的适应证几乎不重叠，**选错术式比不做更糟**——三尖瓣位置没有钙化环可依靠，一旦器械失败，补救选项很少。' },
@@ -11014,7 +11014,7 @@ const BRIEF_SECTIONS = [
         id: 'mv-interv',
         title: '二尖瓣介入（TEER）：术前评估与术后判读',
         sub: 'Carpentier 分型 · 解剖适配 · TEER 还是外科 · 术后压差',
-        source: ['R26', 'R9', 'R41'],
+        source: ['R23', 'R38'],
         rel: ['mitral', '3d-tee'],
         fields: [],
         blocks: [
@@ -11075,7 +11075,7 @@ const BRIEF_SECTIONS = [
         id: 'tavr',
         title: '主动脉瓣介入（TAVR）：术前评估与术后随访',
         sub: '瓣环测量 · 二叶瓣分型 · TAVR 还是 SAVR · 冠脉高度 · PPM 预测',
-        source: ['R66', 'R33', 'R22', 'R41'],
+        source: ['R62', 'R30', 'R20', 'R38'],
         rel: ['aortic-root', 'prosthetic'],
         fields: [],
         blocks: [
@@ -11164,7 +11164,7 @@ const BRIEF_SECTIONS = [
         id: 'prosthetic',
         title: '人工瓣膜评估',
         sub: '正常压差 · PPM · 瓣周漏',
-        source: ['R17'],
+        source: ['R15'],
         rel: ['ie', 'tavr'],
         fields: [],
         blocks: [
@@ -11178,7 +11178,7 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'text', text: '数值随瓣环尺寸增大而降低；小号瓣（19–21 mm）正常压差更高，判读需对照该型号基线。' },
-          { kind: 'h', text: '患者—瓣膜不匹配（PPM）· R17 / ASE 2024 切点' },
+          { kind: 'h', text: '患者—瓣膜不匹配（PPM）· R15 / ASE 2024 切点' },
           {
             kind: 'table',
             heads: ['位置', '正常', '中度 PPM', '重度 PPM', 'BMI ≥30 时'],
@@ -11188,7 +11188,7 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'text', text: '单位 cm²/m²（EOAi = EOA ÷ BSA）。**肥胖（BMI ≥30）患者整体下调一档**，否则会低估 PPM。判读前提：瓣膜结构与活动正常、实测 EOA 落在该型号参考 EOA 的 1 SD 内——不满足就先查血栓 / 血管翳 / 测量问题，不要急着扣 PPM 的帽子。' },
-          { kind: 'note', text: '★ 修正记录：旧版写「主动脉位 EOAi <0.85 为重度」是错的（真正的重度切点是 ≤0.65，0.85 只是中度上界），本页与公式集的 PPM 计算器已同步改成 R17 切点。', warn: true },
+          { kind: 'note', text: '★ 修正记录：旧版写「主动脉位 EOAi <0.85 为重度」是错的（真正的重度切点是 ≤0.65，0.85 只是中度上界），本页与公式集的 PPM 计算器已同步改成 R15 切点。', warn: true },
           { kind: 'note', text: '人工瓣膜少量中心性反流多为生理性；瓣周漏（PAR）为异常，常因缝合问题，需结合溶血与血流动力学。', warn: true },
           { kind: 'h', text: '按位置与类型分开判读' },
           {
@@ -11213,7 +11213,7 @@ const BRIEF_SECTIONS = [
               ['瓣周漏', '反流束位于瓣环外侧、高速射流', '评估溶血与心衰，重者封堵或再手术'],
             ],
           },
-          { kind: 'h', text: '结构衰败 SVD 的量化门槛（VARC-3 / R17 Table 6）' },
+          { kind: 'h', text: '结构衰败 SVD 的量化门槛（VARC-3 / R15 Table 6）' },
           {
             kind: 'table',
             heads: ['分级', '平均压差变化', '合并条件'],
@@ -11239,7 +11239,7 @@ const BRIEF_SECTIONS = [
         id: 'shd',
         title: '先心病分流判读（ASD / VSD / PDA）',
         sub: 'Qp/Qs 分级 · 取样位置 · 分型与封堵可行性',
-        source: ['R35', 'R36', 'R13'],
+        source: ['R32', 'R33', 'R11'],
         rel: ['pht-rev', 'asd-close'],
         blocks: [
           { kind: 'h', text: '一、Qp/Qs 的五档判读' },
@@ -11324,7 +11324,7 @@ const BRIEF_SECTIONS = [
         id: 'pht-rev',
         title: '分流性肺高压的可手术性',
         sub: 'Qp/Qs · PVR · 急性血管反应试验',
-        source: ['R36', 'R13', 'R7'],
+        source: ['R33', 'R11'],
         rel: ['ph', 'shd'],
         blocks: [
           { kind: 'h', text: '一、能不能关闭，看三组数字' },
@@ -11370,7 +11370,7 @@ const BRIEF_SECTIONS = [
         id: 'tof-pr',
         title: '法洛四联症术后肺动脉瓣反流评估',
         sub: 'PR 半定量 · RV 容量阈值 · 肺动脉瓣置换时机',
-        source: ['R35', 'R38'],
+        source: ['R32', 'R35'],
         rel: ['rv', 'ph'],
         blocks: [
           { kind: 'h', text: '一、为什么 TOF 术后几乎都存在 PR' },
@@ -11439,7 +11439,7 @@ const BRIEF_SECTIONS = [
         id: 'ebstein',
         title: 'Ebstein 畸形',
         sub: '三尖瓣下移 · Carpentier 分型 · 可修复性判断',
-        source: ['R35', 'R36'],
+        source: ['R32', 'R33'],
         rel: ['tr-interv', 'rv'],
         blocks: [
           { kind: 'h', text: '一、解剖本质：右室被「房化」了' },
@@ -11490,7 +11490,7 @@ const BRIEF_SECTIONS = [
         id: 'dorv',
         title: '右室双出口（DORV）',
         sub: '骑跨 >50% · Lev 分型 · 术式对应',
-        source: ['R35', 'R36'],
+        source: ['R32', 'R33'],
         rel: ['shd', 'tof-pr'],
         blocks: [
           { kind: 'h', text: '一、诊断只差「一半」' },
@@ -11523,7 +11523,7 @@ const BRIEF_SECTIONS = [
         id: 'asd-close',
         title: '房间隔缺损分型与封堵前 TEE',
         sub: '四型定位 · 五项边缘测量 · 选伞与即刻判读',
-        source: ['R41', 'R35', 'R12'],
+        source: ['R38', 'R32', 'R10'],
         rel: ['tee-20', 'shd'],
         fields: [],
         blocks: [
@@ -11561,7 +11561,7 @@ const BRIEF_SECTIONS = [
         id: 'coa-echo',
         title: '主动脉缩窄（CoA）与弓部评估',
         sub: '压差会骗人 · 分型与弓发育 · 术后再缩窄',
-        source: ['R35', 'R36', 'R30'],
+        source: ['R32', 'R33', 'R27'],
         rel: ['aorta', 'asload'],
         fields: [],
         blocks: [
@@ -11597,7 +11597,7 @@ const BRIEF_SECTIONS = [
         id: 'mustard',
         title: 'Mustard / Senning 术后（心房转流）',
         sub: '两套挡板 · 体循环右室 · 三尖瓣反流',
-        source: ['R35', 'R36'],
+        source: ['R32', 'R33'],
         rel: ['fontan', 'as-switch'],
         blocks: [
           { kind: 'h', text: '一、读片前先翻转默认假设' },
@@ -11638,7 +11638,7 @@ const BRIEF_SECTIONS = [
         id: 'fontan',
         title: 'Fontan 术后（腔肺连接）',
         sub: '管道通畅 · 开窗分流 · 肝静脉反向血流',
-        source: ['R36'],
+        source: ['R33'],
         rel: ['mustard', 'as-switch'],
         blocks: [
           { kind: 'h', text: '一、血流是「被动」的，评估逻辑要换' },
@@ -11679,7 +11679,7 @@ const BRIEF_SECTIONS = [
         id: 'as-switch',
         title: '大动脉调转术后（ASO）',
         sub: '新主动脉瓣反流 · 根部扩张 · 冠脉与肺动脉',
-        source: ['R35', 'R36'],
+        source: ['R32', 'R33'],
         rel: ['mustard', 'fontan'],
         blocks: [
           { kind: 'h', text: '一、术后解剖：主动脉跑到了前面' },
@@ -11721,7 +11721,7 @@ const BRIEF_SECTIONS = [
         id: 'aorta',
         title: '主动脉疾病评估',
         sub: '根部扩张 · 二叶式瓣 · 夹层征象',
-        source: ['R30', 'R1'],
+        source: ['R27', 'R1'],
         rel: ['aortic-root', 'peri'],
         fields: [],
         blocks: [
@@ -11770,7 +11770,7 @@ const BRIEF_SECTIONS = [
         id: 'pe',
         title: '肺栓塞超声征象',
         sub: '右心负荷 · McConnell 征 · 危险分层',
-        source: ['R31', 'R5'],
+        source: ['R28', 'R5'],
         rel: ['rv', 'ph'],
         fields: [],
         blocks: [
@@ -11804,7 +11804,7 @@ const BRIEF_SECTIONS = [
         id: 'ph',
         title: '肺动脉高压（PH）评估',
         sub: '2022 ESC/ERS · 超声只给可能性',
-        source: ['R13', 'R7'],
+        source: ['R11'],
         rel: ['zh-ph', 'rcoupling'],
         fields: [],
         blocks: [
@@ -11857,7 +11857,7 @@ const BRIEF_SECTIONS = [
         id: 'thrombus',
         title: '心腔内血栓与占位鉴别',
         sub: '形态鉴别 · 好发部位 · 造影增强',
-        source: ['R8', 'R2'],
+        source: ['R7', 'R2'],
         rel: ['mass', 'contrast-echo'],
         fields: [],
         blocks: [
@@ -11889,7 +11889,7 @@ const BRIEF_SECTIONS = [
         id: 'zh-ph',
         title: '中国肺高血压指南：超声三档分层',
         sub: 'TRV + 支持指标 → 低/中/高可能 · 右心功能与预后 · 与左心病的鉴别 · 三个高估低估陷阱',
-        source: ['R72', 'R7', 'R76'],
+        source: ['R68', 'R72'],
         rel: ['ph', 'rcoupling'],
         blocks: [
           { kind: 'h', text: '一、超声在 PH 里到底负责什么' },
@@ -11968,7 +11968,7 @@ const BRIEF_SECTIONS = [
         id: 'ami-comp',
         title: '急性心梗机械并发症：床旁超声抢先看',
         sub: '乳头肌断裂 · 室间隔穿孔 · 游离壁破裂 · 假性室壁瘤 · 附壁血栓',
-        source: ['R73', 'R44'],
+        source: ['R69', 'R41'],
         rel: ['postop-icu', 'peri'],
         blocks: [
           { kind: 'h', text: '一、这是少数「超声直接决定抢救路径」的场景' },
@@ -12030,7 +12030,7 @@ const BRIEF_SECTIONS = [
         id: 'takotsubo',
         title: '应激性心肌病（Takotsubo）超声判读',
         sub: '心尖球形 · 基底段应变保留 · 排除性诊断',
-        source: ['R59'],
+        source: ['R55'],
         rel: ['myocarditis', 'ami-comp'],
         fields: [],
         blocks: [
@@ -12081,7 +12081,7 @@ const BRIEF_SECTIONS = [
         id: 'osa',
         title: '睡眠呼吸暂停与心衰的超声视角',
         sub: '右心负荷 · 容量状态 · 判读陷阱',
-        source: ['R60'],
+        source: ['R56'],
         rel: ['ph', 'rvfail'],
         fields: [],
         blocks: [
@@ -12119,7 +12119,7 @@ const BRIEF_SECTIONS = [
         id: 'myowork',
         title: '心肌做功指数（Myocardial Work）解读',
         sub: 'GWI · GCW · GWE · 适用边界',
-        source: ['R61'],
+        source: ['R57'],
         rel: ['strain', 'ctrcd'],
         fields: [],
         blocks: [
@@ -12156,7 +12156,7 @@ const BRIEF_SECTIONS = [
         id: 'ecmo',
         title: 'ECMO 支持下的超声监测',
         sub: '心室卸载 · 插管位置 · 血栓 · 并发症',
-        source: ['R62'],
+        source: ['R58'],
         rel: ['postop-icu', 'lvad'],
         fields: [],
         blocks: [
@@ -12195,7 +12195,7 @@ const BRIEF_SECTIONS = [
         id: 'pregnancy-echo',
         title: '妊娠期心血管超声评估',
         sub: '生理性改变 · 参考值陷阱 · 瓣膜与主动脉',
-        source: ['R57', 'R58'],
+        source: ['R53', 'R54'],
         rel: ['ppcm', 'ecmo'],
         fields: [],
         blocks: [
@@ -12265,7 +12265,7 @@ const BRIEF_SECTIONS = [
         id: 'ppcm',
         title: '围产期心肌病与妊娠期高血压疾病',
         sub: '生理性改变基线 · PPCM 诊断门槛 · 子痫前期超声窗口',
-        source: ['R57', 'R58'],
+        source: ['R53', 'R54'],
         rel: ['pregnancy-echo', 'dcm'],
         fields: [],
         blocks: [
@@ -12303,7 +12303,7 @@ const BRIEF_SECTIONS = [
         id: 'sepsis',
         title: '脓毒症与感染性休克：床旁超声怎么用',
         sub: '容量反应性 · 脓毒症心肌病 · 液体过负荷的超声证据 · 四个不可靠指标',
-        source: ['R77', 'R44'],
+        source: ['R73', 'R41'],
         rel: ['postop-icu', 'ecmo'],
         blocks: [
           { kind: 'h', text: '一、只回答三个问题' },
@@ -12369,7 +12369,7 @@ const BRIEF_SECTIONS = [
         id: 'postop-icu',
         title: '心脏术后 ICU：低心排与并发症',
         sub: '术后 6 小时必查清单 · 填塞的术后特殊性 · 瓣膜与瓣周漏 · 撤机评估',
-        source: ['R37', 'R48', 'R17'],
+        source: ['R34', 'R45', 'R15'],
         rel: ['sepsis', 'tavr'],
         blocks: [
           { kind: 'h', text: '一、术后早期必查的六项' },
@@ -12431,7 +12431,7 @@ const BRIEF_SECTIONS = [
         id: 'lung-us',
         title: '肺超声：B 线、积液与气胸',
         sub: '八个分区的扫法 · B 线计数 · 积液定量 · 气胸的肺点',
-        source: ['R53', 'R44'],
+        source: ['R50', 'R41'],
         rel: ['sepsis', 'peri'],
         blocks: [
           { kind: 'h', text: '一、心脏超声医生为什么该会肺超声' },
@@ -12495,7 +12495,7 @@ const BRIEF_SECTIONS = [
         id: 'lvad',
         title: '机械辅助循环（LVAD）超声评估',
         sub: '入血道 / 出血道 · 泵速优化 · 抽吸事件',
-        source: ['R37', 'R5', 'R48'],
+        source: ['R34', 'R5', 'R45'],
         rel: ['ecmo', 'postop-icu'],
         blocks: [
           { kind: 'h', text: '一、先搞清楚血往哪里流' },
@@ -12574,7 +12574,7 @@ const BRIEF_SECTIONS = [
  * 其余为公开的 TEE 切面在线演示站点（外链，不嵌入本站页面）。
  *
  * ★ 2025-10 调整：原「切面指南」分组（4 份 ASE 官方 PDF）已并入「参考文献」
- *   —— R11（TTE 中/英文）、R12（TEE 2013）、R41（TEE 介入筛查）。
+ *   —— R9（TTE 中/英文）、R10（TEE 2013）、R38（TEE 介入筛查）。
  *   PDF 直链统一挂在参考文献条目下，点一下即复制，不再单独占一个分组。
  */
 
@@ -12759,16 +12759,9 @@ const REFS = [
   },
   {
     id: 'R7',
-    zh: '肺动脉高压诊断与治疗指南（2022）',
-    en: 'ESC/ERS Guidelines for the diagnosis and treatment of pulmonary hypertension',
-    where: 'Eur Respir J, 2022, 60(1): 2200879（与 R13 为同一文件，免费直链见 R13）',
-    use: 'PASP、右房压与 PH 超声概率',
-  },
-  {
-    id: 'R8',
     zh: '成人经胸超声心动图标准化报告建议（ASE 2002）',
     en: 'Gardin JM, Adams DB, Douglas PS, et al. Recommendations for a standardized report for adult transthoracic echocardiography: a report from the American Society of Echocardiography\'s Nomenclature and Standards Committee and Task Force for a Standardized Echocardiography Report',
-    where: 'J Am Soc Echocardiogr, 2002, 15(3): 275–290（报告规范现行版见 R44，TTE 操作见 R11）',
+    where: 'J Am Soc Echocardiogr, 2002, 15(3): 275–290（报告规范现行版见 R41，TTE 操作见 R9）',
     dl: [
       { t: '免费全文 PDF', u: 'https://www.onlinejase.com/article/S0894731702594712/pdf' },
     ],
@@ -12776,27 +12769,18 @@ const REFS = [
     use: '报告结构与必填条目的历史依据、测量时相与切面命名的统一写法',
   },
   {
+    id: 'R8',
+    zh: '儿童心脏 Z 值（PHN 正常值数据库）',
+    en: 'Reference values for echocardiographic Z scores in children (Pediatric Heart Network)',
+    where: 'Lopez L, Colan S, Stylianou M, et al. Relationship of echocardiographic Z scores adjusted for body surface area to age, sex, race, and ethnicity. Circ Cardiovasc Imaging, 2017, 10(11): e006979. DOI: 10.1161/CIRCIMAGING.117.006979',
+    dl: [
+      { t: '免费页面', u: 'https://www.pediatricheartnetwork.org/echo-z-scores/' },
+      { t: 'PMC 全文', u: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5812349/' },
+    ],
+    use: '儿童心脏尺寸按体表面积（Haycock 公式）标准化后的 Z 值判读（见「儿童 Z 值」页）',
+  },
+  {
     id: 'R9',
-    zh: '瓣膜性心脏病超声评估系列（AS / AR / MS / MR / TR）',
-    en: 'ASE valve assessment guideline series（含经导管瓣膜术后反流评估）',
-    where: 'J Am Soc Echocardiogr, 2017 / 2019（单篇分册按病种分散，见 ASE 指南总目录）',
-    dl: [
-      { t: '官网', u: 'https://www.asecho.org/practice-clinical-resources/ase-guidelines/' },
-    ],
-    use: '瓣膜专项计算与分级（完整版瓣膜页）',
-  },
-  {
-    id: 'R10',
-    zh: '儿童心脏 Z 值（PHN 数据库）',
-    en: 'Pediatric Heart Network normative data（Z 值标准化）',
-    where: 'Pediatric Heart Network 规范化数据',
-    dl: [
-      { t: '官网', u: 'https://www.pediatricheartnetwork.org/' },
-    ],
-    use: '儿童心脏尺寸按体表面积标准化（见儿童 Z 值页）',
-  },
-  {
-    id: 'R11',
     zh: '成人完整经胸超声心动图操作指南（ASE 2019）',
     en: 'Mitchell C, Rahko PS, Blauwet LAB, et al. Guidelines for Performing a Comprehensive Transthoracic Echocardiographic Examination in Adults',
     where: 'J Am Soc Echocardiogr, 2019, 32(1): 1–64（ASE 官网提供官方中文翻译版）',
@@ -12807,7 +12791,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R12',
+    id: 'R10',
     zh: '成人经食管超声心动图完整检查指南（ASE/SCA）',
     en: 'Hahn RT, Abraham T, Adams MS, et al. Guidelines for Performing a Comprehensive Transesophageal Echocardiographic Examination',
     where: 'J Am Soc Echocardiogr, 2013, 26(9): 921–964（28 个标准切面）',
@@ -12817,7 +12801,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R13',
+    id: 'R11',
     zh: '肺动脉高压诊断与治疗指南（ESC/ERS 2022）',
     en: 'Humbert M, et al. 2022 ESC/ERS Guidelines for the diagnosis and treatment of pulmonary hypertension',
     where: 'Eur Respir J, 2022, 60(1): 2200879',
@@ -12827,7 +12811,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R14',
+    id: 'R12',
     zh: '成人右心超声评估指南（ASE 2010）',
     en: 'Rudski LG, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults',
     where: 'J Am Soc Echocardiogr, 2010, 23(7): 685–713',
@@ -12838,7 +12822,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R15',
+    id: 'R13',
     zh: '心包疾病超声心动图评估指南（2013）',
     en: 'Klein AL, et al. ASE/EACVI Guidelines for Echocardiographic Evaluation of Pericardial Disease',
     where: 'J Am Soc Echocardiogr, 2013, 26(9): 965–1012',
@@ -12849,17 +12833,17 @@ const REFS = [
     ],
   },
   {
-    id: 'R16',
+    id: 'R14',
     zh: '左心室舒张功能评估指南（2016）',
     en: 'Nagueh SF, et al. Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography (2016 ASE/EACVI)',
     where: 'J Am Soc Echocardiogr, 2016, 29(4): 277–314',
-    use: '舒张功能分级四步法与灰区处理（ASE 2025 已发布更新，见 R42）',
+    use: '舒张功能分级四步法与灰区处理（ASE 2025 已发布更新，见 R39）',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/07/Eval-of-Left-Ventricular-Diastolic-Function-by-Echo-superseded.pdf' },
     ],
   },
   {
-    id: 'R17',
+    id: 'R15',
     zh: '人工心脏瓣膜功能评估指南（2024 版）',
     en: 'Zoghbi WA, Jone PN, Chamsi-Pasha MA, et al. Guidelines for the Evaluation of Prosthetic Valve Function With Cardiovascular Imaging',
     where: 'J Am Soc Echocardiogr, 2024, 37(1): 2–63（替代 2017 版）',
@@ -12869,7 +12853,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R18',
+    id: 'R16',
     zh: 'TAPSE/PASP 比值：右室-肺动脉耦联指标',
     en: 'Guazzi M, et al. Tricuspid annular plane systolic excursion and pulmonary arterial systolic pressure relationship in heart failure: an index of right ventricular contractile function and prognosis',
     where: 'Am J Physiol Heart Circ Physiol, 2013, 305(9): H1373–H1381',
@@ -12880,7 +12864,7 @@ const REFS = [
     use: '右室-肺动脉耦联比值 0.55 / 0.36 切点与预后意义',
   },
   {
-    id: 'R19',
+    id: 'R17',
     zh: '感染性心内膜炎管理指南（2023 ESC）',
     en: 'Delgado V, et al. 2023 ESC Guidelines for the management of endocarditis',
     where: 'Eur Heart J, 2023, 44(39): 3948–4042',
@@ -12890,7 +12874,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R20',
+    id: 'R18',
     zh: '肥厚型心肌病诊断与治疗指南（2020 AHA/ACC）',
     en: 'Ommen SR, et al. 2020 AHA/ACC Guideline for the Diagnosis and Treatment of Patients With Hypertrophic Cardiomyopathy',
     where: 'Circulation, 2020, 142(25): e558–e631',
@@ -12900,7 +12884,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R21',
+    id: 'R19',
     zh: '心脏淀粉样变诊断与治疗立场声明（2021 ESC）',
     en: 'Garcia-Pavia P, et al. Diagnosis and Treatment of Cardiac Amyloidosis: A Position Statement of the ESC Working Group on Myocardial and Pericardial Diseases',
     where: 'Eur Heart J, 2021, 42(16): 1554–1568',
@@ -12910,7 +12894,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R22',
+    id: 'R20',
     zh: '瓣膜性心脏病管理指南（2020 ACC/AHA）',
     en: 'Otto CM, et al. 2020 ACC/AHA Guideline for the Management of Patients With Valvular Heart Disease',
     where: 'Circulation, 2021, 143(4): e72–e227',
@@ -12920,14 +12904,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R23',
-    zh: '成人右心超声评估指南（ASE 2010 存档 + 2025 更新）',
-    en: 'Rudski LG, et al. 2010 Right Heart Guidelines（存档）；2025 更新另见 R5',
-    where: 'J Am Soc Echocardiogr, 2010, 23(7): 685–713；2025, 38(2): 141–186（两条直链分别见 R14 / R5，此处不重复挂）',
-    use: '右室功能障碍六指标积分分级、RV 应变与右心衰评估（六指标出自 2010 版，阈值以 2025 更新为准）',
-  },
-  {
-    id: 'R24',
+    id: 'R21',
     zh: '心包疾病诊断与管理指南（2015 ESC）',
     en: 'Adler Y, et al. 2015 ESC Guidelines for the Diagnosis and Management of Pericardial Diseases',
     where: 'Eur Heart J, 2015, 36(42): 2921–2964',
@@ -12937,7 +12914,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R25',
+    id: 'R22',
     zh: '三尖瓣反流学术研究联盟（TVARC）定义与分级',
     en: 'Hahn RT, Lawlor MK, Davidson CJ, et al. Tricuspid Valve Academic Research Consortium Definitions for Tricuspid Regurgitation and Study Design Principles',
     where: 'Eur Heart J, 2023, 44(43): 4508–4532',
@@ -12948,7 +12925,7 @@ const REFS = [
     use: 'TR 五级严重度、机制分型与经导管介入终点定义',
   },
   {
-    id: 'R26',
+    id: 'R23',
     zh: '瓣膜性心脏病管理指南（2021 ESC/EACTS）',
     en: 'Vahanian A, et al. 2021 ESC/EACTS Guidelines for the management of valvular heart disease',
     where: 'Eur Heart J, 2022, 43(7): 561–632',
@@ -12958,7 +12935,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R27',
+    id: 'R24',
     zh: '左房与右心应变成像标准化（2018 ASE/EACVI）',
     en: 'Badano LP, et al. Standardization of left atrial, right ventricular, and right atrial deformation imaging using two-dimensional speckle tracking echocardiography',
     where: 'Eur Heart J Cardiovasc Imaging, 2018, 19(6): 591–600',
@@ -12968,7 +12945,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R28',
+    id: 'R25',
     zh: 'HFpEF 诊断算法 HFA-PEFF（2019 ESC HFA）',
     en: 'Pieske B, et al. How to diagnose heart failure with preserved ejection fraction: the HFA-PEFF diagnostic algorithm',
     where: 'Eur Heart J, 2019, 40(40): 3297–3317',
@@ -12978,7 +12955,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R29',
+    id: 'R26',
     zh: '负荷超声心动图应用指南（2020 ASE）',
     en: 'Pellikka PA, et al. Guidelines for Performance, Interpretation, and Application of Stress Echocardiography in Ischemic Heart Disease',
     where: 'J Am Soc Echocardiogr, 2020, 33(1): 1–41',
@@ -12989,7 +12966,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R30',
+    id: 'R27',
     zh: '胸主动脉疾病多模态影像评估指南（2015 ASE）',
     where: 'J Am Soc Echocardiogr, 2015, 28(2): 119–182',
     use: '主动脉根部测量位点、扩张分级、二叶式瓣与夹层征象',
@@ -12999,7 +12976,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R31',
+    id: 'R28',
     zh: '急性肺栓塞诊断与管理指南（2019 ESC）',
     where: 'Eur Heart J, 2020, 41(4): 543–603',
     use: '右心功能不全的危险分层地位、McConnell 征与随访',
@@ -13008,7 +12985,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R32',
+    id: 'R29',
     zh: '肿瘤心脏病学指南（2022 ESC）',
     where: 'Eur Heart J, 2022, 43(41): 4229–4361',
     use: 'CTRCD 三级分档、GLS 相对下降 15% 阈值与监测节点',
@@ -13017,7 +12994,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R33',
+    id: 'R30',
     zh: '经导管瓣膜介入术后瓣膜反流评估指南（2019 ASE）',
     where: 'J Am Soc Echocardiogr, 2019, 32(4): 431–475',
     use: 'TAVR 术后跨瓣压差、瓣周漏半定量与随访基线',
@@ -13026,7 +13003,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R34',
+    id: 'R31',
     zh: '心尖保留比值诊断心脏淀粉样变（Phelan 等）',
     en: 'Phelan D, Collier P, Thavendiranathan P, et al. Relative apical sparing of longitudinal strain using two-dimensional speckle-tracking echocardiography is both sensitive and specific for the diagnosis of cardiac amyloidosis',
     where: 'Heart, 2012, 98(19): 1442–1448',
@@ -13037,7 +13014,7 @@ const REFS = [
     use: '心尖保留比值（RAR）的算法与 0.94 阈值',
   },
   {
-    id: 'R35',
+    id: 'R32',
     zh: '成人先天性心脏病管理指南（2018 AHA/ACC）',
     en: 'Stout KK, Daniels CJ, Aboulhosn JA, et al. 2018 AHA/ACC Guideline for the Management of Adults With Congenital Heart Disease',
     where: 'Circulation, 2019, 139(14): e698–e800',
@@ -13047,7 +13024,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R36',
+    id: 'R33',
     zh: '成人先天性心脏病管理指南（2020 ESC）',
     en: 'Baumgartner H, De Backer J, Babu-Narayan SV, et al. 2020 ESC Guidelines for the management of adult congenital heart disease',
     where: 'Eur Heart J, 2021, 42(6): 563–645',
@@ -13057,7 +13034,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R37',
+    id: 'R34',
     zh: '左心室辅助装置患者的超声心动图管理建议（2015 ASE）',
     en: 'Stainback RF, Estep JD, Agler DA, et al. Echocardiography in the Management of Patients with Left Ventricular Assist Devices: Recommendations from the American Society of Echocardiography',
     where: 'J Am Soc Echocardiogr, 2015, 28(8): 853–909',
@@ -13068,7 +13045,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R38',
+    id: 'R35',
     zh: '法洛四联症根治术后的 CMR 评估与肺动脉瓣置换决策',
     en: 'Geva T. Repaired tetralogy of Fallot: the roles of cardiovascular magnetic resonance in evaluating pathophysiology and for pulmonary valve replacement decision support',
     where: 'J Cardiovasc Magn Reson, 2011, 13: 9',
@@ -13078,7 +13055,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R39',
+    id: 'R36',
     zh: '多巴酚丁胺负荷评估肺动脉高压患者的右室收缩储备',
     en: 'Sharma T, Lau EMT, Choudhary P, et al. Dobutamine stress for evaluation of right ventricular reserve in pulmonary arterial hypertension',
     where: 'Eur Respir J, 2015, 45(3): 700–708',
@@ -13088,14 +13065,14 @@ const REFS = [
     ],
   },
   {
-    id: 'R40',
+    id: 'R37',
     zh: '实用超声规范化检查与操作',
     en: '王辉, 王小丛 主编. 实用超声规范化检查与操作',
     where: '科学技术文献出版社, 2021 年 9 月, 北京. ISBN 978-7-5189-8028-4',
     use: '第三章心血管系统配套动图（切面扫查 / 瓣口血流 / 典型病例）',
   },
   {
-    id: 'R41',
+    id: 'R38',
     zh: '经食道超声结构性心脏病介入筛查标准（ASE 2021）',
     en: 'Hahn RT, Saric M, Faletra FF, et al. Recommended Standards for the Performance of Transesophageal Echocardiographic Screening for Structural Heart Intervention',
     where: 'J Am Soc Echocardiogr, 2022, 35(1): 1–76',
@@ -13105,17 +13082,17 @@ const REFS = [
     ],
   },
   {
-    id: 'R42',
+    id: 'R39',
     zh: '左室舒张功能与 HFpEF 诊断更新（ASE 2025）',
     en: 'Nagueh SF, Sanborn DY, Oh JK, et al. Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography and for Heart Failure With Preserved Ejection Fraction Diagnosis: An Update From the ASE',
     where: 'J Am Soc Echocardiogr, 2025, 38(4): 537–569',
-    use: '舒张功能与左房压评估的最新口径（本工具四步法仍按 2016 版组织，见 R16）',
+    use: '舒张功能与左房压评估的最新口径（本工具四步法仍按 2016 版组织，见 R14）',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/07/Left-Ventricular-Diastolic-Function.pdf' },
     ],
   },
   {
-    id: 'R43',
+    id: 'R40',
     zh: '应变成像临床应用指南（ASE/EACVI 2025）',
     en: 'ASE/EACVI Clinical Applications of Strain Echocardiography（ASE 官网现行版）',
     where: 'ASE 官网 PDF, 2025',
@@ -13125,7 +13102,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R44',
+    id: 'R41',
     zh: '成人超声心动图报告标准化建议（ASE 2025）',
     en: 'Taub CC, Stainback RF, Abraham T, et al. Guidelines for the Standardization of Adult Echocardiography Reporting',
     where: 'J Am Soc Echocardiogr, 2025, 38(6): 735–774',
@@ -13135,7 +13112,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R45',
+    id: 'R42',
     zh: '风湿性心脏病超声评估建议（ASE 2022）',
     en: 'Pandian NG, Kim JK, Arias-Godinez JA, et al. Recommendations for the Use of Echocardiography in the Evaluation of Rheumatic Heart Disease',
     where: 'J Am Soc Echocardiogr, 2023, 36(1): 3–28',
@@ -13145,7 +13122,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R46',
+    id: 'R43',
     zh: '主动脉瓣狭窄超声评估更新（ASE/EACVI 2017）',
     en: 'Baumgartner H, Hung J, Bermejo J, et al. Recommendations on the Echocardiographic Assessment of Aortic Valve Stenosis: A Focused Update',
     where: 'J Am Soc Echocardiogr, 2017, 30(4): 372–392',
@@ -13156,7 +13133,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R47',
+    id: 'R44',
     zh: '自体瓣膜反流无创评估建议（ASE 2017）',
     en: 'Zoghbi WA, Adams D, Bonow RO, et al. Recommendations for Noninvasive Evaluation of Native Valvular Regurgitation',
     where: 'J Am Soc Echocardiogr, 2017, 30(4): 303–371',
@@ -13166,17 +13143,17 @@ const REFS = [
     ],
   },
   {
-    id: 'R48',
+    id: 'R45',
     zh: 'LVAD 与临时机械支持多模态影像建议（ASE 2024）',
     en: 'Estep JD, Nicoara A, Cavalcante J, et al. Recommendations for Multimodality Imaging of Patients With Left Ventricular Assist Devices and Temporary Mechanical Support',
     where: 'J Am Soc Echocardiogr, 2024, 37(8): 820–871',
-    use: '入 / 出血道、泵速优化与抽吸事件识别（替代 2015 版，见 R37）',
+    use: '入 / 出血道、泵速优化与抽吸事件识别（替代 2015 版，见 R34）',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/PIIS0894731724003183_2024-LVAD.pdf' },
     ],
   },
   {
-    id: 'R49',
+    id: 'R46',
     zh: '感染性心内膜炎 Duke-ISCVID 诊断标准（2023 更新）',
     en: 'Fowler VG, Durack DT, Selton-Suty C, et al. The 2023 Duke-International Society for Cardiovascular Infectious Diseases Criteria for Infective Endocarditis: Updating the Modified Duke Criteria',
     where: 'Clin Infect Dis, 2023, 77(8): 1097–1106（PMID 37138445）',
@@ -13186,7 +13163,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R50',
+    id: 'R47',
     zh: '超声造影剂临床应用 ASE 共识声明',
     en: 'Mulvagh SL, Otto CM, Bierman SM, et al. ASE Consensus Statement on Clinical Application of Ultrasonic Contrast Agents in Echocardiography',
     where: 'J Am Soc Echocardiogr, 2008, 20(11): 1321–1334',
@@ -13196,7 +13173,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R51',
+    id: 'R48',
     zh: '心脏超声技师造影检查操作指南（2014 聚焦更新）',
     en: 'Porter TR, Abdelmalek SA, Michell JR, et al. Guidelines for the Cardiac Sonographer in the Performance of Contrast Echocardiography: A Focused Update from the American Society of Echocardiography',
     where: 'J Am Soc Echocardiogr, 2014, 27(7): 797–810',
@@ -13207,7 +13184,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R52',
+    id: 'R49',
     zh: '超声引导下有创操作指南（TTE / TEE / ICE）',
     en: 'Silvestry FE, Sawicki SX, Ball CA, et al. Echocardiography-Guided Interventions: Recommendations for the Use of Echocardiography in Guidance of Percutaneous and Surgical Invasive Procedures',
     where: 'J Am Soc Echocardiogr, 2009, 22(3): 207–236',
@@ -13218,7 +13195,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R53',
+    id: 'R50',
     zh: '心脏超声伪影的识别与规避指南（2026）',
     en: 'Saric M, Sadeghpour A, Alizade L, et al. Recommendations for the Identification and Mitigation of Cardiac Ultrasound Artifacts: A Guideline from the American Society of Echocardiography',
     where: 'J Am Soc Echocardiogr, 2026, 39(5): 435–475',
@@ -13228,14 +13205,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R54',
-    zh: '主动脉瓣狭窄超声评估建议（EACVI/ASE 2017 聚焦更新）',
-    en: 'Baumgartner H, Hung J, Bermejo J, et al. Recommendations on the Echocardiographic Assessment of Aortic Valve Stenosis: A Focused Update from the European Association of Cardiovascular Imaging and the American Society of Echocardiography',
-    where: 'J Am Soc Echocardiogr, 2017, 30(4): 372–392（与 R46 为同一文件，直链见 R46，含中文版）',
-    use: 'asload 判读页：压力恢复公式 PR = 4v²×2×(EOA/AoA)×(1−EOA/AoA)、按流速-压差-EF 的 AS 分层算法、LVOT 测量优化、低流量低压差处理路径',
-  },
-  {
-    id: 'R55',
+    id: 'R51',
     zh: '瓣膜狭窄超声评估建议（EAE/ASE 2009 联合文件）',
     en: 'Baumgartner H, Hung J, Bermejo J, et al. Echocardiographic Assessment of Valve Stenosis: EAE/ASE Recommendations for Clinical Practice',
     where: 'J Am Soc Echocardiogr, 2009, 22(1): 1–23',
@@ -13245,7 +13215,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R56',
+    id: 'R52',
     zh: '瓣-动脉阻抗（Zva）预测无症状主动脉瓣狭窄的不良结局',
     en: 'Hachicha Z, Dumesnil JG, Bogaty P, Pibarot P. Usefulness of the valvuloarterial impedance to predict adverse outcome in asymptomatic aortic stenosis',
     where: 'J Am Coll Cardiol, 2009, 54(11): 1003–1011',
@@ -13256,7 +13226,7 @@ const REFS = [
     use: 'asload 判读页：Zva =（收缩压 + 平均跨瓣压差）/ 每搏量指数；Zva > 3.5 提示总负荷（瓣膜 + 动脉）升高，> 4.5 组心血管死亡风险约为低 Zva 组的 3.7 倍',
   },
   {
-    id: 'R57',
+    id: 'R53',
     zh: '妊娠期心脏超声评估立场声明（BSE / UK Maternal Cardiology Society）',
     en: 'Curtis SL, Belham M, Bennett S, et al. Transthoracic Echocardiographic Assessment of the Heart in Pregnancy—a position statement on behalf of the British Society of Echocardiography and the United Kingdom Maternal Cardiology Society',
     where: 'Echo Res Pract, 2023, 10(1): 7',
@@ -13266,7 +13236,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R58',
+    id: 'R54',
     zh: '心血管疾病与妊娠管理指南（2025 ESC）',
     en: 'De Backer J, Haugaa KH, Hasselberg NE, et al. 2025 ESC Guidelines for the management of cardiovascular disease and pregnancy',
     where: 'Eur Heart J, 2025, 46(43): 4462–4568',
@@ -13276,7 +13246,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R59',
+    id: 'R55',
     zh: '应激性心肌病（Takotsubo）国际专家共识 Part I（ESC 2018）',
     en: 'Ghadri JR, Wittstein IS, Prasad A, et al. International Expert Consensus Document on Takotsubo Syndrome (Part I): Clinical Characteristics, Diagnostic Criteria, and Pathophysiology',
     where: 'Eur Heart J, 2018, 39(22): 2032–2046',
@@ -13287,7 +13257,7 @@ const REFS = [
     use: 'takotsubo 判读页：心尖球形形态、基底段应变保留与 RAS ≥2.0 的鉴别思路、左室流出道梗阻的识别与处理禁忌、随访时间表',
   },
   {
-    id: 'R60',
+    id: 'R56',
     zh: '睡眠呼吸暂停与心血管疾病（AHA/ACC 科学声明）',
     en: 'Somers VK, White DP, Amin R, et al. Sleep Apnea and Cardiovascular Disease: An American Heart Association/American College of Cardiology Foundation Scientific Statement',
     where: 'Circulation, 2008, 118(10): 1080–1111',
@@ -13298,7 +13268,7 @@ const REFS = [
     use: 'osa 判读页：OSA 造成右心后负荷升高与慢性容量负荷的机制、右心负荷与容量过重的超声线索、把 OSA 相关肺高压误当原发性 PAH 的陷阱、CPAP 依从性对心衰结局的影响',
   },
   {
-    id: 'R61',
+    id: 'R57',
     zh: '左室心肌做功的压力–应变环测量方法（EACVI 方法学文件 2021）',
     en: 'Smiseth OA, Donal E, Penicka M, Sletten OJ. How to measure left ventricular myocardial work by pressure–strain loops',
     where: 'Eur Heart J Cardiovasc Imaging, 2021, 22(3): 259–261',
@@ -13309,7 +13279,7 @@ const REFS = [
     use: 'myowork 判读页：GWI / GCW / GWE 的定义与正常参考值、压力 - 应变环对软件与血压测量的依赖性、无法获得做功时的替代负荷评估（每搏功 + RWS）',
   },
   {
-    id: 'R62',
+    id: 'R58',
     zh: '成人体外膜肺氧合（ECMO）期间的超声评估',
     en: 'Platts DG, Sedgwick JF, Burstow DJ, Mullany DV, Fraser JF. The role of echocardiography in the management of patients supported by extracorporeal membrane oxygenation',
     where: 'J Am Soc Echocardiogr, 2012, 25(2): 131–141',
@@ -13322,7 +13292,7 @@ const REFS = [
 
   // ── 本站托管的中文指南 PDF（用户 2026-10-21 上传，链接到 docs/materials/） ──
   {
-    id: 'R63',
+    id: 'R59',
     zh: '经导管三尖瓣环成形术中国专家共识（试行版）',
     en: 'Chinese expert consensus on transcatheter tricuspid annuloplasty (draft)',
     where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
@@ -13332,7 +13302,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R64',
+    id: 'R60',
     zh: '浙江省经食管超声心动图实践应用专家共识（一）',
     en: 'Zhejiang expert consensus on the clinical practice of transoesophageal echocardiography (part 1)',
     where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
@@ -13342,7 +13312,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R65',
+    id: 'R61',
     zh: '浙江省经食管超声心动图实践应用专家共识（二）',
     en: 'Zhejiang expert consensus on the clinical practice of transoesophageal echocardiography (part 2)',
     where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
@@ -13352,7 +13322,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R66',
+    id: 'R62',
     zh: '经导管主动脉瓣置换术临床路径（2024 全文版）',
     en: 'Clinical pathway for transcatheter aortic valve replacement (2024, full text)',
     where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
@@ -13362,7 +13332,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R67',
+    id: 'R63',
     zh: '经导管二尖瓣介入修复技术临床实践指南',
     en: 'Clinical practice guideline for transcatheter mitral valve repair',
     where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
@@ -13372,7 +13342,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R68',
+    id: 'R64',
     zh: '经胸超声心动图检查规范化应用中国专家共识',
     en: 'Chinese expert consensus on standardized transthoracic echocardiography',
     where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
@@ -13382,7 +13352,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R69',
+    id: 'R65',
     zh: '肥厚型心肌病激发负荷超声心动图临床应用指南（2024 版）',
     en: 'Clinical application of stress echocardiography in hypertrophic cardiomyopathy (2024)',
     where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
@@ -13392,7 +13362,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R70',
+    id: 'R66',
     zh: '法布雷病心脏受累（JACC 综述）',
     en: 'Pieroni M, Moon JC, Arbustini E, et al. Cardiac Involvement in Fabry Disease: JACC Review Topic of the Week',
     where: 'J Am Coll Cardiol, 2021, 77(7): 922–936',
@@ -13403,7 +13373,7 @@ const REFS = [
     use: '法布雷病心肌病的超声与 CMR 表型、基底下侧壁应变减低、与 HCM / 淀粉样变的鉴别、酶替代与分子伴侣治疗的随访要点',
   },
   {
-    id: 'R71',
+    id: 'R67',
     zh: '致心律失常性心肌病诊断标准（Padua 标准 2020）',
     en: 'Corrado D, Perazzolo Marra M, Zorzi A, et al. Diagnosis of arrhythmogenic cardiomyopathy: The Padua criteria',
     where: 'Int J Cardiol, 2020, 319: 106–114',
@@ -13414,7 +13384,7 @@ const REFS = [
     use: 'ACM 的右优势 / 双室 / 左优势三种表型、形态功能与结构异常的分层标准、超声局部运动异常的判读与随访',
   },
   {
-    id: 'R72',
+    id: 'R68',
     zh: '中国肺动脉高压诊断与治疗指南（2021 版）',
     en: 'Chinese guidelines for the diagnosis and treatment of pulmonary hypertension (2021)',
     where: '中华医学杂志, 2021 · 中华医学知识库免费全文（点下方直链在线看）',
@@ -13424,7 +13394,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R73',
+    id: 'R69',
     zh: '急性 ST 段抬高型心肌梗死诊断和治疗指南（2019）',
     en: 'Chinese guideline for the diagnosis and treatment of patients with acute ST-elevation myocardial infarction (2019)',
     where: '中华心血管病杂志, 2019, 47(10): 766–783',
@@ -13435,7 +13405,7 @@ const REFS = [
     use: '再灌注策略与机械并发症（乳头肌断裂 / 室间隔穿孔 / 游离壁破裂）的识别与外科时机',
   },
   {
-    id: 'R74',
+    id: 'R70',
     zh: '成人暴发性心肌炎诊断与治疗中国专家共识',
     en: 'Chinese expert consensus on the diagnosis and treatment of adult fulminant myocarditis',
     where: '中华心血管病杂志, 2017, 45(9): 742–752',
@@ -13446,7 +13416,7 @@ const REFS = [
     use: '暴发性心肌炎的早期识别、机械循环支持时机与超声随访节点',
   },
   {
-    id: 'R75',
+    id: 'R71',
     zh: '心力衰竭早期筛查与一级预防中国专家共识（2024 年）',
     en: 'Chinese expert consensus on early screening and primary prevention of heart failure (2024)',
     where: '中华医学知识库免费全文（点下方直链在线看）',
@@ -13456,7 +13426,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R76',
+    id: 'R72',
     zh: '终末期左心疾病相关肺高血压中国专家共识',
     en: 'Chinese expert consensus on pulmonary hypertension associated with end-stage left heart disease',
     where: '中华医学知识库免费全文（点下方直链在线看）',
@@ -13466,7 +13436,7 @@ const REFS = [
     ],
   },
   {
-    id: 'R77',
+    id: 'R73',
     zh: '脓毒症与脓毒性休克管理国际指南（2021 SSC）',
     en: 'Evans L, Rhodes A, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021',
     where: 'Crit Care Med, 2021, 49(11): e1063–e1143 / Intensive Care Med, 2021, 47(11): 1181–1247',
@@ -13477,7 +13447,7 @@ const REFS = [
     use: '感染性休克的液体复苏策略、容量反应性评估的地位、去甲肾上腺素与强心药的时机',
   },
   {
-    id: 'R78',
+    id: 'R74',
     zh: '心脏结节病诊断与管理专家共识（HRS 2014）',
     en: 'Birnie DH, Sauer WH, Bogun F, et al. HRS expert consensus statement on the diagnosis and management of arrhythmias associated with cardiac sarcoidosis',
     where: 'Heart Rhythm, 2014, 11(7): 1304–1323',
@@ -13488,7 +13458,7 @@ const REFS = [
     use: '心脏结节病的诊断标准（超声 / CMR / PET / 活检）、ICD 适应证与免疫抑制治疗后的随访',
   },
   {
-    id: 'R79',
+    id: 'R75',
     zh: '中国成人心脏瓣膜病超声心动图规范化检查专家共识',
     en: 'Expert consensus for standard assessment by echocardiography in Chinese adults with valvular heart disease',
     where: '中华医学会心血管病学分会心血管影像学组, 北京医学会心血管病学会影像学组. 中国成人心脏瓣膜病超声心动图规范化检查专家共识. 中国循环杂志, 2021, 36(2): 109–125. DOI: 10.3969/j.issn.1000-3614.2021.02.002',
@@ -14845,7 +14815,7 @@ const MATERIALS = [];
     { id: 'ppm', sec: 'valve', title: '人工瓣 EOAi 与 PPM',
       fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', ''],
         ['pbmi', 'BMI（可选；≥30 用肥胖切点）', 'kg/m²']],
-      note: 'EOAi = EOA/BSA。R17（ASE 2024）：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65；二尖瓣位 正常 >1.2、中度 1.2–0.91、重度 ≤0.90（cm²/m²）。BMI ≥30 时整体下调：主动脉位 0.70 / 0.70–0.56 / ≤0.55，二尖瓣位 1.0 / 1.0–0.76 / ≤0.75' },
+      note: 'EOAi = EOA/BSA。R15（ASE 2024）：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65；二尖瓣位 正常 >1.2、中度 1.2–0.91、重度 ≤0.90（cm²/m²）。BMI ≥30 时整体下调：主动脉位 0.70 / 0.70–0.56 / ≤0.55，二尖瓣位 1.0 / 1.0–0.76 / ≤0.75' },
     { id: 'dfun', sec: 'hemo', title: '舒张功能分级（四步法）',
       fields: [['dfe', 'E 峰', 'cm/s'], ['dfa', 'A 峰', 'cm/s'], ['dfes', '间隔 e′', 'cm/s'],
         ['dfel', '侧壁 e′', 'cm/s'], ['dflavi', 'LAVi（可选）', 'mL/m²'], ['dftrv', 'TR Vmax（可选）', 'm/s']],
@@ -17102,14 +17072,14 @@ const MATERIALS = [];
       put('ctrcd', partsOf(parts));
     }
 
-    // 心肌应变判读（R43 · ASE/EACVI 2025：正常 <−18%、灰区 −16~−18%、异常 >−16%）
+    // 心肌应变判读（R40 · ASE/EACVI 2025：正常 <−18%、灰区 −16~−18%、异常 >−16%）
     {
       const parts = [];
       if (v.gls !== undefined) {
         let t;
-        if (v.gls > -16) t = '异常（R43：绝对值 <16）';
+        if (v.gls > -16) t = '异常（R40：绝对值 <16）';
         else if (v.gls > -18) t = '灰区（−16 ~ −18%，需合并其他异常）';
-        else t = '正常（R43：＜ −18%）';
+        else t = '正常（R40：＜ −18%）';
         parts.push('GLS ' + Calc.fmt(v.gls, 1) + '% · ' + t);
       }
       if (v.rvstrain !== undefined) {

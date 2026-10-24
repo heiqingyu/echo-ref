@@ -612,7 +612,7 @@ ${SEG_HTML}
       <div class="note note--warn">
         <b>数据来源</b>　Pediatric Heart Network Normal Echocardiogram Database，
         n = 3566，0–18 岁健康非肥胖儿童，19 个中心。<br>
-        Lopez L, Colan S, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.<br>
+        Lopez L, Colan S, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.（参考文献 R8）<br>
         LVESD / LVESV 系数来自 PHN 后续补充发表（PMC7870534）。
       </div>
     </div>
