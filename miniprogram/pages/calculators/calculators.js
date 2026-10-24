@@ -202,10 +202,10 @@ Page({
     }).length,
     refsOpen: false,
     appVersion: V.APP_VERSION,
-    // 组名跳转条：目录很长（113 条），横向滑动点一下定位到该组
+    // 组名跳转条：目录很长，点一下定位到该组；末尾挂「参考文献」直达页底文献卡（v1.6.6）
     navGroups: buildSections().map(function (s) {
       return { id: s.id, title: s.title.replace(/（.*?）/g, '') };
-    }),
+    }).concat([{ id: 'refs', title: '参考文献' }]),
     curGroup: '',
     showTop: false,
   },
@@ -252,17 +252,26 @@ Page({
     const id = e && e.currentTarget && e.currentTarget.dataset
       ? e.currentTarget.dataset.id : '';
     if (!id) return;
+    const self = this;
+    const scroll = function () {
+      const q = wx.createSelectorQuery().in(self);
+      q.select('#g-' + id).boundingClientRect();
+      q.selectViewport().scrollOffset();
+      q.exec(function (res) {
+        const rect = res && res[0];
+        if (!rect) return;                     // 搜索时该组可能被过滤掉了
+        const cur = (res[1] && res[1].scrollTop) || 0;
+        const top = Math.max(0, cur + rect.top - 8);
+        wx.pageScrollTo({ scrollTop: top, duration: 220 });
+      });
+    };
+    // 「参考文献」：先展开再量位置（setData 是异步的，位置要等回调里量）
+    if (id === 'refs') {
+      this.setData({ curGroup: id, refsOpen: true }, scroll);
+      return;
+    }
     this.setData({ curGroup: id });
-    const q = wx.createSelectorQuery().in(this);
-    q.select('#g-' + id).boundingClientRect();
-    q.selectViewport().scrollOffset();
-    q.exec(function (res) {
-      const rect = res && res[0];
-      if (!rect) return;                       // 搜索时该组可能被过滤掉了
-      const cur = (res[1] && res[1].scrollTop) || 0;
-      const top = Math.max(0, cur + rect.top - 8);
-      wx.pageScrollTo({ scrollTop: top, duration: 220 });
-    });
+    scroll();
   },
 
   /** 「共 N 项」/「找到 N 项」（hasKw 由调用方传入，避免读到还没刷新的 this.data.kw） */

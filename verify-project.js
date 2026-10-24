@@ -230,6 +230,15 @@ if (subDl.length >= 5 && subDl.length <= 12 &&
     subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)))
   ok('需订阅地址 ' + subDl.length + ' 条均为 DOI 解析页或中华医学期刊网页面（无死链、无自造地址）');
 else bad('需订阅地址不合规: ' + subDl.map(d => d.u).join(' '));
+// v1.6.6：R79 原来挂中国循环杂志官网首页，点进去站内搜不到这篇文章 → 改挂公开 PDF 全文
+const r79 = EX.REFS.filter(r => r.id === 'R79')[0];
+if (r79 && (r79.dl || []).length === 1 && r79.dl[0].t === '中文 PDF' &&
+    /^https:\/\/.+\.pdf$/.test(r79.dl[0].u))
+  ok('R79 挂公开 PDF 全文直链（不再挂官网首页）');
+else bad('R79 直链不合规: ' + JSON.stringify(r79 && r79.dl));
+if (!dlAll.some(d => /chinacirculation\.org/.test(d.u)))
+  ok('已无指向期刊官网首页的无效直链');
+else bad('仍挂着搜不到文章的期刊官网首页');
 // 能免费拿到的必须标成免费：免费页面 / 免费全文 PDF / PMC 全文 三类合计应远多于需订阅
 const freeDl = dlAll.filter(d => d.t !== '需订阅');
 if (freeDl.length >= 70)

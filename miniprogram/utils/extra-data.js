@@ -5826,7 +5826,7 @@ const REFS = [
     en: 'Expert consensus for standard assessment by echocardiography in Chinese adults with valvular heart disease',
     where: '中华医学会心血管病学分会心血管影像学组, 北京医学会心血管病学会影像学组. 中国成人心脏瓣膜病超声心动图规范化检查专家共识. 中国循环杂志, 2021, 36(2): 109–125. DOI: 10.3969/j.issn.1000-3614.2021.02.002',
     dl: [
-      { t: '官网', u: 'https://www.chinacirculation.org/' },
+      { t: '中文 PDF', u: 'https://www.ddzxhospital.com/library/up_f/file/20260526/202605261605484836.pdf' },
     ],
     use: '国内成人瓣膜病超声规范化检查与严重程度评估的权威共识；MS 按 MVA <1.0 cm² 为重度（与 ESC/EACTS 2021 一致），AS 按 AVA <1.0 cm² 或 Vmax ≥4.0 m/s 或平均压差 ≥40 mmHg 提示重度',
   },
