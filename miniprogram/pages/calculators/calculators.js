@@ -95,7 +95,7 @@ function buildSections() {
     }
   }
 
-  // 切面学习与 TEE 模拟器：纯链接条目
+  // 切面学习与 TEE 切面在线演示：纯链接条目
   // mp4 直链走站内播放页，其余外链仍复制到浏览器（小程序 web-view 受业务域名限制）
   EX.LINK_SECTIONS.forEach(function (s) {
     sections.push({

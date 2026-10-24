@@ -534,15 +534,15 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('公式集分 10 个大组（3 计算 + 1 瓣膜 + 4 评估 + 2 外链；v1.5.3 拆散「介入尺寸」组）', dirs.length, 10, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 切面在线演示' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 139 条（50 计算 + 2 瓣膜 + 77 评估 + 1 解剖 + 7 切面学习 + 3 模拟器）', nItems, 139, 0);
+  check('目录共 139 条（50 计算 + 2 瓣膜 + 77 评估 + 1 解剖 + 7 切面学习 + 3 在线演示）', nItems, 139, 0);
   check('切面学习 7 条（专辑入口 + 5 个外链 + 1 条标准切面速查表）', dirViews.items.length, 7, 0);
-  check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
+  check('TEE 切面在线演示 3 条', dirSim.items.length, 3, 0);
   // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
   check('公式集已接入「回到顶部」（onPageScroll + onToTop）',
     typeof pgA.onPageScroll === 'function' && typeof pgA.onToTop === 'function' ? 1 : 0, 1, 0);
@@ -592,7 +592,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     EXL.REFS.filter(x => x.id === 'R12')[0].dl.some(d => /2013_Performing-Comprehensive-TEE\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
   check('R41 含 TEE 介入筛查官方 PDF 直链',
     EXL.REFS.filter(x => x.id === 'R41')[0].dl.some(d => /PIIS0894731721005940\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
-  check('模拟器含 CT2TEE / TEE Simulator 图谱',
+  check('在线演示含 CT2TEE / TEE 切面交互图谱',
     dirSim.items.some(i => /ct2tee/.test(i.url)) &&
     dirSim.items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
@@ -1485,7 +1485,7 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('三尖瓣 3 张视图（四腔心 + TEE 流入流出道 + TEE 经胃底短轴）',
     VS.VALVE_VIEWS.filter(function (v) { return v.group === '三尖瓣'; }).length, 3, 0);
 
-  check('瓣膜解剖页不再单列教学资源（与切面学习/模拟器重复）',
+  check('瓣膜解剖页不再单列教学资源（与切面学习/在线演示重复）',
     pgV.data.lessons === undefined ? 1 : 0, 1, 0);
   const allImgs = pgV.data.groups.reduce(function (n, g) { return n + g.views.length; }, 0);
   check('示意图条目 = 13', allImgs, 13, 0);
