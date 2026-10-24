@@ -5021,7 +5021,11 @@ const REFS = [
     id: 'R1',
     zh: '中国成年人超声心动图检查测量指南',
     en: 'Echocardiography Group, Chinese Society of Ultrasonography in Medicine. 中国成人超声心动图检查测量指南',
-    where: '中华超声影像学杂志, 2016, 25(8): 645–666（需订阅，未挂直链）',
+    where: '中华超声影像学杂志, 2016, 25(8): 645–666',
+    dl: [
+      { t: '需订阅', u: 'https://rs.yiigle.com/cmaid/908663' },
+    ],
+
     use: '成人径线 / 面积 / 容积参考范围、瓣膜环与大动脉内径；EMINCA 中国人群正常值来源',
   },
   {
@@ -5037,16 +5041,24 @@ const REFS = [
   },
   {
     id: 'R3',
-    zh: '超声心肌应变成像的标准化建议（2019）',
-    en: 'Standardization of echocardiographic strain imaging（EACVI/ASE）',
-    where: 'Eur Heart J Cardiovasc Imaging, 2019',
+    zh: '超声二维斑点追踪应变成像标准化共识（EACVI/ASE/Industry 2015）',
+    en: 'Voigt JU, Pedrizzetti G, Lysyansky P, et al. Definitions for a Common Standard for 2D Speckle Tracking Echocardiography: Consensus Document of the EACVI/ASE/Industry Task Force to Standardize Deformation Imaging',
+    where: 'Eur Heart J Cardiovasc Imaging, 2015, 16(1): 1–11',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1093/ehjci/jeu184' },
+    ],
+
     use: '应变采集、追踪与报告规范',
   },
   {
     id: 'R4',
-    zh: '左心房应变多腔室评估指南（2019）',
-    en: 'Cameli S, et al. Multi-chamber assessment of left atrial function using strain imaging',
-    where: 'Eur Heart J Cardiovasc Imaging, 2019, 20(4): 459–470',
+    zh: '左心房应变正常参考值（EACVI NORRE 研究，2018）',
+    en: 'Sugimoto T, Robinet S, Dulgheru R, et al. Echocardiographic reference ranges for normal left atrial function parameters: results from the EACVI NORRE study',
+    where: 'Eur Heart J Cardiovasc Imaging, 2018, 19(6): 630–638',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1093/ehjci/jey018' },
+    ],
+
     use: 'LASr / LASa / LASc 的阈值与临床意义',
   },
   {
@@ -5063,35 +5075,49 @@ const REFS = [
     id: 'R6',
     zh: '心脏生理性起搏与 CRT 指南（HRS/APHRS/LAHRS 2023）',
     en: 'Chung MK, Patton KK, Lau CP, et al. 2023 HRS/APHRS/LAHRS guideline on cardiac physiologic pacing for the avoidance and mitigation of heart failure',
-    where: 'Heart Rhythm, 2023, 20(9): e17–e91（需订阅，未挂直链）',
+    where: 'Heart Rhythm, 2023, 20(9): e17–e91',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1016/j.hrthm.2023.03.1538' },
+    ],
+
     use: 'CRT 适应证分级（LVEF / QRS 宽度 / 形态）、超声不同步指标（SPWMD、纵向应变延迟）的现状与疗效随访',
   },
   {
     id: 'R7',
     zh: '肺动脉高压诊断与治疗指南（2022）',
     en: 'ESC/ERS Guidelines for the diagnosis and treatment of pulmonary hypertension',
-    where: 'Eur Respir J, 2022, 60(1): 2200879（与 R13 为同一文件，直链见 R13）',
+    where: 'Eur Respir J, 2022, 60(1): 2200879（与 R13 为同一文件，免费直链见 R13）',
     use: 'PASP、右房压与 PH 超声概率',
   },
   {
     id: 'R8',
     zh: '成人经胸超声心动图标准化报告建议（ASE 2002）',
     en: 'Gardin JM, Adams DB, Douglas PS, et al. Recommendations for a standardized report for adult transthoracic echocardiography: a report from the American Society of Echocardiography\'s Nomenclature and Standards Committee and Task Force for a Standardized Echocardiography Report',
-    where: 'J Am Soc Echocardiogr, 2002, 15(3): 275–290（需订阅；报告规范现行版见 R44，TTE 操作见 R11）',
+    where: 'J Am Soc Echocardiogr, 2002, 15(3): 275–290（报告规范现行版见 R44，TTE 操作见 R11）',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1067/mje.2002.121536' },
+    ],
+
     use: '报告结构与必填条目的历史依据、测量时相与切面命名的统一写法',
   },
   {
     id: 'R9',
     zh: '瓣膜性心脏病超声评估系列（AS / AR / MS / MR / TR）',
     en: 'ASE valve assessment guideline series（含经导管瓣膜术后反流评估）',
-    where: 'J Am Soc Echocardiogr, 2017 / 2019',
+    where: 'J Am Soc Echocardiogr, 2017 / 2019（单篇分册按病种分散，见 ASE 指南总目录）',
+    dl: [
+      { t: '官网', u: 'https://www.asecho.org/practice-clinical-resources/ase-guidelines/' },
+    ],
     use: '瓣膜专项计算与分级（完整版瓣膜页）',
   },
   {
     id: 'R10',
     zh: '儿童心脏 Z 值（PHN 数据库）',
     en: 'Pediatric Heart Network normative data（Z 值标准化）',
-    where: 'Pediatric Echocardiography',
+    where: 'Pediatric Heart Network 规范化数据',
+    dl: [
+      { t: '官网', u: 'https://www.pediatricheartnetwork.org/' },
+    ],
     use: '儿童心脏尺寸按体表面积标准化（见儿童 Z 值页）',
   },
   {
@@ -5172,6 +5198,10 @@ const REFS = [
     zh: 'TAPSE/PASP 比值：右室-肺动脉耦联指标',
     en: 'Guazzi M, et al. Tricuspid annular plane systolic excursion and pulmonary arterial systolic pressure relationship in heart failure: an index of right ventricular contractile function and prognosis',
     where: 'Am J Physiol Heart Circ Physiol, 2013, 305(9): H1373–H1381',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1152/ajpheart.00157.2013' },
+    ],
+
     use: '右室-肺动脉耦联比值 0.55 / 0.36 切点与预后意义',
   },
   {
@@ -5235,7 +5265,11 @@ const REFS = [
     id: 'R25',
     zh: '三尖瓣反流学术研究联盟（TVARC）定义与分级',
     en: 'Hahn RT, Lawlor MK, Davidson CJ, et al. Tricuspid Valve Academic Research Consortium Definitions for Tricuspid Regurgitation and Study Design Principles',
-    where: 'Eur Heart J, 2023, 44(43): 4509–4532',
+    where: 'Eur Heart J, 2023, 44(43): 4508–4532',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1093/eurheartj/ehad653' },
+    ],
+
     use: 'TR 五级严重度、机制分型与经导管介入终点定义',
   },
   {
@@ -5321,6 +5355,10 @@ const REFS = [
     zh: '心尖保留比值诊断心脏淀粉样变（Phelan 等）',
     en: 'Phelan D, Collier P, Thavendiranathan P, et al. Relative apical sparing of longitudinal strain using two-dimensional speckle-tracking echocardiography is both sensitive and specific for the diagnosis of cardiac amyloidosis',
     where: 'Heart, 2012, 98(19): 1442–1448',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1136/heartjnl-2012-302353' },
+    ],
+
     use: '心尖保留比值（RAR）的算法与 0.94 阈值',
   },
   {
@@ -5535,7 +5573,11 @@ const REFS = [
     id: 'R56',
     zh: '瓣-动脉阻抗（Zva）预测无症状主动脉瓣狭窄的不良结局',
     en: 'Hachicha Z, Dumesnil JG, Bogaty P, Pibarot P. Usefulness of the valvuloarterial impedance to predict adverse outcome in asymptomatic aortic stenosis',
-    where: 'J Am Coll Cardiol, 2009, 54(11): 1003–1011（需订阅，未挂直链）',
+    where: 'J Am Coll Cardiol, 2009, 54(11): 1003–1011',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1016/j.jacc.2009.04.079' },
+    ],
+
     use: 'asload 判读页：Zva =（收缩压 + 平均跨瓣压差）/ 每搏量指数；Zva > 3.5 提示总负荷（瓣膜 + 动脉）升高，> 4.5 组心血管死亡风险约为低 Zva 组的 3.7 倍',
   },
   {
@@ -5560,30 +5602,46 @@ const REFS = [
   },
   {
     id: 'R59',
-    zh: '急性心肌炎与心原性休克的超声诊断立场声明（ESC 2019）',
+    zh: '应激性心肌病（Takotsubo）国际专家共识 Part I（ESC 2018）',
     en: 'Ghadri JR, Wittstein IS, Prasad A, et al. International Expert Consensus Document on Takotsubo Syndrome (Part I): Clinical Characteristics, Diagnostic Criteria, and Pathophysiology',
-    where: 'Eur Heart J, 2020, 41(8): 848–880',
+    where: 'Eur Heart J, 2018, 39(22): 2032–2046',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1093/eurheartj/ehy076' },
+    ],
+
     use: 'takotsubo 判读页：心尖球形形态、基底段应变保留与 RAS ≥2.0 的鉴别思路、左室流出道梗阻的识别与处理禁忌、随访时间表',
   },
   {
     id: 'R60',
     zh: '睡眠呼吸暂停与心血管疾病（AHA/ACC 科学声明）',
     en: 'Somers VK, White DP, Amin R, et al. Sleep Apnea and Cardiovascular Disease: An American Heart Association/American College of Cardiology Foundation Scientific Statement',
-    where: 'Circulation, 2008, 118(10): 1080–1111（需订阅，未挂直链）',
+    where: 'Circulation, 2008, 118(10): 1080–1111',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1161/circulationaha.107.189420' },
+    ],
+
     use: 'osa 判读页：OSA 造成右心后负荷升高与慢性容量负荷的机制、右心负荷与容量过重的超声线索、把 OSA 相关肺高压误当原发性 PAH 的陷阱、CPAP 依从性对心衰结局的影响',
   },
   {
     id: 'R61',
-    zh: '超声心肌做功评估（EACVI/ASE 共识与标准化）',
-    en: 'Edwards A, et al. EACVI/ASE recommendations for the assessment of myocardial work；He B, et al. Myocardial work: a new approach to the assessment of myocardial function',
-    where: 'Eur Heart J Cardiovasc Imaging, 2022, 13(9): 1161–1170',
+    zh: '左室心肌做功的压力–应变环测量方法（EACVI 方法学文件 2021）',
+    en: 'Smiseth OA, Donal E, Penicka M, Sletten OJ. How to measure left ventricular myocardial work by pressure–strain loops',
+    where: 'Eur Heart J Cardiovasc Imaging, 2021, 22(3): 259–261',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1093/ehjci/jeaa301' },
+    ],
+
     use: 'myowork 判读页：GWI / GCW / GWE 的定义与正常参考值、压力 - 应变环对软件与血压测量的依赖性、无法获得做功时的替代负荷评估（每搏功 + RWS）',
   },
   {
     id: 'R62',
     zh: '成人体外膜肺氧合（ECMO）期间的超声评估',
     en: 'Platts DG, Sedgwick JF, Burstow DJ, Mullany DV, Fraser JF. The role of echocardiography in the management of patients supported by extracorporeal membrane oxygenation',
-    where: 'J Am Soc Echocardiogr, 2012, 25(2): 131–141（需订阅，未挂直链）',
+    where: 'J Am Soc Echocardiogr, 2012, 25(2): 131–141',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1016/j.echo.2011.11.009' },
+    ],
+
     use: 'ecmo 判读页：心室卸载过度（室间隔运动异常、左室被抽空）、主动脉瓣不开放与根部血栓倾向、插管贴壁与心包积液的鉴别、减流量撤机前的超声评估要点',
   },
 
@@ -5663,6 +5721,10 @@ const REFS = [
     zh: '法布雷病心脏受累（JACC 综述）',
     en: 'Pieroni M, Moon JC, Arbustini E, et al. Cardiac Involvement in Fabry Disease: JACC Review Topic of the Week',
     where: 'J Am Coll Cardiol, 2021, 77(7): 922–936',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1016/j.jacc.2020.12.024' },
+    ],
+
     use: '法布雷病心肌病的超声与 CMR 表型、基底下侧壁应变减低、与 HCM / 淀粉样变的鉴别、酶替代与分子伴侣治疗的随访要点',
   },
   {
@@ -5670,6 +5732,10 @@ const REFS = [
     zh: '致心律失常性心肌病诊断标准（Padua 标准 2020）',
     en: 'Corrado D, Perazzolo Marra M, Zorzi A, et al. Diagnosis of arrhythmogenic cardiomyopathy: The Padua criteria',
     where: 'Int J Cardiol, 2020, 319: 106–114',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1016/j.ijcard.2020.06.005' },
+    ],
+
     use: 'ACM 的右优势 / 双室 / 左优势三种表型、形态功能与结构异常的分层标准、超声局部运动异常的判读与随访',
   },
   {
@@ -5686,14 +5752,22 @@ const REFS = [
     id: 'R73',
     zh: '急性 ST 段抬高型心肌梗死诊断和治疗指南（2019）',
     en: 'Chinese guideline for the diagnosis and treatment of patients with acute ST-elevation myocardial infarction (2019)',
-    where: '中华心血管病杂志, 2019（需订阅，未挂直链）',
+    where: '中华心血管病杂志, 2019, 47(10): 766–783',
+    dl: [
+      { t: '需订阅', u: 'https://rs.yiigle.com/cmaid/1166130' },
+    ],
+
     use: '再灌注策略与机械并发症（乳头肌断裂 / 室间隔穿孔 / 游离壁破裂）的识别与外科时机',
   },
   {
     id: 'R74',
     zh: '成人暴发性心肌炎诊断与治疗中国专家共识',
     en: 'Chinese expert consensus on the diagnosis and treatment of adult fulminant myocarditis',
-    where: '中华心血管病杂志, 2017（需订阅，未挂直链）',
+    where: '中华心血管病杂志, 2017, 45(9): 742–752',
+    dl: [
+      { t: '需订阅', u: 'https://rs.yiigle.com/cmaid/1006823' },
+    ],
+
     use: '暴发性心肌炎的早期识别、机械循环支持时机与超声随访节点',
   },
   {
@@ -5720,14 +5794,22 @@ const REFS = [
     id: 'R77',
     zh: '脓毒症与脓毒性休克管理国际指南（2021 SSC）',
     en: 'Evans L, Rhodes A, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021',
-    where: 'Crit Care Med, 2021, 49(11): e1063–e1143 / Intensive Care Med, 2021, 47(11): 1181–1247（需订阅，未挂直链）',
+    where: 'Crit Care Med, 2021, 49(11): e1063–e1143 / Intensive Care Med, 2021, 47(11): 1181–1247',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1097/CCM.0000000000005337' },
+    ],
+
     use: '感染性休克的液体复苏策略、容量反应性评估的地位、去甲肾上腺素与强心药的时机',
   },
   {
     id: 'R78',
     zh: '心脏结节病诊断与管理专家共识（HRS 2014）',
     en: 'Birnie DH, Sauer WH, Bogun F, et al. HRS expert consensus statement on the diagnosis and management of arrhythmias associated with cardiac sarcoidosis',
-    where: 'Heart Rhythm, 2014, 11(7): 1305–1323（需订阅，未挂直链）',
+    where: 'Heart Rhythm, 2014, 11(7): 1304–1323',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1016/j.hrthm.2014.03.043' },
+    ],
+
     use: '心脏结节病的诊断标准（超声 / CMR / PET / 活检）、ICD 适应证与免疫抑制治疗后的随访',
   },
 ];

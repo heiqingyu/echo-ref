@@ -1005,7 +1005,13 @@
     box.innerHTML = h;
 
     const cnt = $('refsCount');
-    if (cnt) cnt.textContent = REFS.length + ' 条';
+    if (cnt) {
+      // 只数「点开就能看」的免费链；标「需订阅」的 DOI 页面不算直链
+      const free = REFS.filter(function (r) {
+        return (r.dl || []).some(function (d) { return d.t !== '需订阅'; });
+      }).length;
+      cnt.textContent = REFS.length + ' 条 · ' + free + ' 条附免费直链';
+    }
     const hd = $('refsToggle');
     if (hd && !hd.dataset.bound) {
       hd.dataset.bound = '1';
@@ -1016,12 +1022,13 @@
     }
   }
 
-  /** 文献直链（官方 / 免费 PDF，点开即下载，无需登录） */
+  /** 文献链接（官方 / 免费 PDF 点开即下载；标「需订阅」的是 DOI 解析页，仅供核对出处与题录） */
   function dlHtml(dl) {
     if (!dl || !dl.length) return '';
     let h = '<div class="ref-dl">';
     dl.forEach(function (d) {
-      h += '<a class="ref-dl__i" href="' + esc(d.u) + '" target="_blank" rel="noopener">' +
+      h += '<a class="ref-dl__i' + (d.t === '需订阅' ? ' ref-dl__i--sub' : '') +
+        '" href="' + esc(d.u) + '" target="_blank" rel="noopener">' +
         esc(d.t) + '</a>';
     });
     return h + '</div>';

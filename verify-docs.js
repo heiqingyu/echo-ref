@@ -846,6 +846,28 @@ function check(name, ok, detail) {
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 
+  // 「需订阅」地址：可见、样式与免费直链区分、且指向 doi.org / 中华医学期刊网
+  const subDl = await c.evalJs(`(function(){
+    var items = [].slice.call(document.querySelectorAll('#calcRefList .ref-dl__i--sub'));
+    var r1 = document.querySelector('#calcRefList .ref-item .ref-dl__i');
+    var styl = items.length ? getComputedStyle(items[0]) : null;
+    return JSON.stringify({
+      n: items.length,
+      txt: items.length ? items[0].textContent.trim() : '',
+      border: styl ? styl.borderTopStyle : '',
+      cnt: (document.getElementById('refsCount') || {}).textContent || '',
+      r1txt: r1 ? r1.textContent.trim() : '',
+      r1href: r1 ? r1.getAttribute('href') : ''
+    });
+  })()`);
+  const sd = JSON.parse(subDl);
+  check('「需订阅」胶囊渲染出 19 个', sd.n === 19, subDl);
+  check('「需订阅」胶囊文案为「需订阅」', sd.txt === '需订阅', subDl);
+  check('「需订阅」用虚线灰边与免费直链区分', sd.border === 'dashed', subDl);
+  check('折叠头同时给出免费直链条数', /条附免费直链/.test(sd.cnt), subDl);
+  check('R1 首链为需订阅页且指向中华医学期刊网',
+    sd.r1txt === '需订阅' && /^https:\/\/rs\.yiigle\.com\/cmaid\//.test(sd.r1href), subDl);
+
   await c.evalJs('(function(){document.getElementById("refsToggle").click();return 1;})()');
   const refsAgain = await c.evalJs(
     'JSON.stringify({hidden: !!document.getElementById("calcRefList").hidden})');

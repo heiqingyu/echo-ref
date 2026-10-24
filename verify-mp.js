@@ -426,11 +426,14 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     refIds === expRefIds ? 1 : 0, 1, 0);
   const allHave = EXD.REFS.every(r => r.zh && r.where && r.use);
   check('每条文献含名称/出处/用途', allHave ? 1 : 0, 1, 0);
-  // 文献直链：只放「点开就能看」的官方/免费 PDF，需要登录的一律不挂
+  // 文献直链：优先官方/免费 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
   const allDl = EXD.REFS.reduce((a, r) => a.concat(r.dl || []), []);
   check('文献直链均为 https 地址', allDl.every(d => String(d.u).indexOf('https://') === 0) ? 1 : 0, 1, 0);
-  check('文献直链均标注类型（PDF / 中文 PDF / 免费全文 / PMC）',
-    allDl.every(d => /PDF|全文/.test(d.t)) ? 1 : 0, 1, 0);
+  check('文献直链均标注类型（PDF / 中文 PDF / 免费全文 / PMC / 需订阅 / 官网）',
+    allDl.every(d => /PDF|全文|需订阅|官网/.test(d.t)) ? 1 : 0, 1, 0);
+  const subDl = allDl.filter(d => d.t === '需订阅');
+  check('需订阅地址均为 DOI 解析页或中华医学期刊网页面',
+    subDl.length >= 15 && subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)) ? 1 : 0, 1, 0);
   check('带直链的文献 ≥ 35 条', EXD.REFS.filter(r => (r.dl || []).length).length >= 35 ? 1 : 0, 1, 0);
   check('ASE 官方 PDF 直链 ≥ 20 条',
     allDl.filter(d => /asecho\.org\/wp-content\/uploads\/.+\.pdf$/.test(d.u)).length >= 20 ? 1 : 0, 1, 0);
@@ -438,8 +441,11 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('{{refsPdf}}') !== -1 &&
     /refsPdf:\s*EX\.REFS\.filter/.test(calcJs) ? 1 : 0, 1, 0);
   check('文献直链渲染成可点胶囊（data-url + catchtap）',
-    calcWxml.indexOf('class="ref-dl__i"') !== -1 &&
+    calcWxml.indexOf('class="ref-dl__i') !== -1 &&
     calcWxml.indexOf('catchtap="onCopyLink"') !== -1 ? 1 : 0, 1, 0);
+  check('「需订阅」胶囊与免费直链用不同样式区分',
+    calcWxml.indexOf('ref-dl__i--sub') !== -1 &&
+    calcWxss.indexOf('.ref-dl__i--sub') !== -1 ? 1 : 0, 1, 0);
 
   // ── 组名跳转条（目录 113 条，页面很长） ──
   check('目录页有组名跳转条（fx-nav）', calcWxml.indexOf('class="fx-nav"') !== -1 ? 1 : 0, 1, 0);

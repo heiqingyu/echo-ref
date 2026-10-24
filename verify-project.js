@@ -218,13 +218,17 @@ if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
 if (EX.REFS.length === 78) ok('参考文献 78 条（7 条本站托管指南 PDF + 4 条中文指南免费全文 + 中国指南与综述 7 条）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
-// 文献直链：只挂官方/免费可直连的 PDF，需登录下载的坚决不挂
+// 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
-if (dlAll.length >= 45) ok('文献直链 ' + dlAll.length + ' 条（官方 PDF / 免费全文）');
+if (dlAll.length >= 80) ok('文献直链 ' + dlAll.length + ' 条（官方 PDF / 免费全文 / 需订阅地址）');
 else bad('文献直链过少: ' + dlAll.length);
-if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文/.test(d.t)))
+if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文|需订阅|官网/.test(d.t)))
   ok('每条直链含 https 地址与类型标注');
 else bad('存在不合规的文献直链');
+const subDl = dlAll.filter(d => d.t === '需订阅');
+if (subDl.length >= 15 && subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)))
+  ok('需订阅地址 ' + subDl.length + ' 条均为 DOI 解析页或中华医学期刊网页面（无死链、无自造地址）');
+else bad('需订阅地址不合规: ' + subDl.map(d => d.u).join(' '));
 if (EX.REFS.filter(r => (r.dl || []).length).length >= 35)
   ok('带直链的文献 ' + EX.REFS.filter(r => (r.dl || []).length).length + ' 条（≥35）');
 else bad('带直链的文献过少');

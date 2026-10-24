@@ -209,7 +209,10 @@ Page({
     countText: '',
     refs: EX.REFS,
     refsCount: EX.REFS.length,
-    refsPdf: EX.REFS.filter(function (r) { return r.dl && r.dl.length; }).length,
+    // 只数「点开就能看」的免费链；标「需订阅」的 DOI 页面不算直链
+    refsPdf: EX.REFS.filter(function (r) {
+      return (r.dl || []).some(function (d) { return d.t !== '需订阅'; });
+    }).length,
     refsOpen: false,
     appVersion: V.APP_VERSION,
     // 组名跳转条：目录很长（113 条），横向滑动点一下定位到该组
