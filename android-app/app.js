@@ -556,7 +556,7 @@
     { id: 'atrial', title: '心房容积指数',
       fields: [['lav', '左房容积', 'mL'], ['rav', '右房容积', 'mL']],
       note: '容积 ÷ BSA；LAVI 正常 ≤34 mL/m²；右房正常值需匹配测量方法' },
-    { id: 'dias', sec: 'vq', title: '舒张功能基础比值',
+    { id: 'dias', sec: 'hemo', title: '舒张功能基础比值',
       fields: [['e', 'E 峰', 'cm/s'], ['a', 'A 峰', 'cm/s'], ['es', '间隔 e′', 'cm/s'], ['el', '侧壁 e′', 'cm/s']],
       note: 'E/e′ <8 左房压正常，>14 升高，8–14 为灰区；完整分级需结合 LAVI、肺静脉等' },
 
@@ -627,7 +627,7 @@
     { id: 'rf', sec: 'valve', title: '反流分数 RF',
       fields: [['rfvol', '反流量 RVol', 'mL'], ['rfsv', '每搏量 SV', 'mL']],
       note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷' },
-    { id: 'evp', sec: 'vq', title: 'E/Vp 左房压估测',
+    { id: 'evp', sec: 'hemo', title: 'E/Vp 左房压估测',
       fields: [['evpe', 'E 峰速度', 'cm/s'], ['evpvp', 'Vp 血流传播速度', 'cm/s']],
       note: 'E/Vp ≤1.5 正常；>1.5 提示 PCWP >15 mmHg，>2.5 提示 >18 mmHg。Vp 用彩色 M 型在四腔切面测（正常 ≥45 cm/s）。Vp 正常而 E/Vp 升高时，E 峰多被容量负荷或 MR 抬高，不等于松弛受损' },
     { id: 'laef', sec: 'recon', title: '左房排空分数 LAEF',
@@ -675,7 +675,7 @@
       fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', ''],
         ['pbmi', 'BMI（可选；≥30 用肥胖切点）', 'kg/m²']],
       note: 'EOAi = EOA/BSA。R17（ASE 2024）：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65；二尖瓣位 正常 >1.2、中度 1.2–0.91、重度 ≤0.90（cm²/m²）。BMI ≥30 时整体下调：主动脉位 0.70 / 0.70–0.56 / ≤0.55，二尖瓣位 1.0 / 1.0–0.76 / ≤0.75' },
-    { id: 'dfun', sec: 'vq', title: '舒张功能分级（四步法）',
+    { id: 'dfun', sec: 'hemo', title: '舒张功能分级（四步法）',
       fields: [['dfe', 'E 峰', 'cm/s'], ['dfa', 'A 峰', 'cm/s'], ['dfes', '间隔 e′', 'cm/s'],
         ['dfel', '侧壁 e′', 'cm/s'], ['dflavi', 'LAVi（可选）', 'mL/m²'], ['dftrv', 'TR Vmax（可选）', 'm/s']],
       note: '2016 ASE/EACVI 简化路径：E/A 加三个升高指标（E/e′ >14、LAVi >34、TR Vmax >2.8）分为 Ⅰ/Ⅱ/Ⅲ 级' },
@@ -716,18 +716,18 @@
       fields: [['mtdd', 'LVIDd（舒张末内径）', 'mm'], ['mtds', 'LVIDs（收缩末内径）', 'mm'],
         ['mtepss', 'EPSS（可选）', 'mm']],
       note: 'FS = (LVIDd − LVIDs)/LVIDd；Teichholz：V = 7D³/(2.4+D)（D 取 cm），EF = (EDV−ESV)/EDV。EPSS <7 mm 正常，>12 mm 提示 EF 显著减低。M 型受取样线偏斜与节段性室壁运动异常影响，条件允许时以 Simpson 双平面为准' },
-    { id: 'wmsi', sec: 'score', title: 'WMSI 室壁运动积分',
+    { id: 'wmsi', sec: 'recon', title: 'WMSI 室壁运动积分',
       opts: [{ k: 'wseg', n: '节段总数', list: [['17', '17 节段（推荐）'], ['16', '16 节段']] }],
       fields: [['wn1', '正常（1 分）节段数', '个'], ['wn2', '运动减弱（2 分）', '个'],
         ['wn3', '无运动（3 分）', '个'], ['wn4', '反常运动（4 分）', '个'],
         ['wn5', '室壁瘤（5 分）', '个']],
       note: 'WMSI = (1·n1 + 2·n2 + 3·n3 + 4·n4 + 5·n5) ÷ 节段总数。按各类节段个数录入，比逐段填 17 个格子快且不易漏段。1.0 正常，1.0–1.5 轻度，1.5–1.7 中度，≥1.7 提示大面积缺血且预后差' },
-    { id: 'h2fpef', sec: 'score', title: 'H2FPEF 评分',
+    { id: 'h2fpef', sec: 'recon', title: 'H2FPEF 评分',
       opts: [{ k: 'haf', n: '心房颤动', list: [['0', '无'], ['1', '有']] },
         { k: 'hbp', n: '降压药种数', list: [['0', '0–1 种'], ['1', '≥2 种']] }],
       fields: [['hbmi', 'BMI', 'kg/m²'], ['hage', '年龄', '岁'], ['hee', 'E/e′', ''], ['hpasp', 'PASP', 'mmHg']],
       note: '加权评分：BMI >30 计 2 分，心房颤动 3 分，年龄 >60 岁 1 分，≥2 种降压药 1 分，E/e′ >9 计 1 分，PASP >35 mmHg 计 1 分。≥6 分 HFpEF 可能性高，≤1 分可能性低，2–5 分需负荷超声或侵入性血流动力学' },
-    { id: 'hfapeff', sec: 'score', title: 'HFA-PEFF 评分',
+    { id: 'hfapeff', sec: 'recon', title: 'HFA-PEFF 评分',
       opts: [{ k: 'hsex', n: '性别', list: [['m', '男性'], ['f', '女性']] },
         { k: 'haf2', n: '心律', list: [['0', '窦性心律'], ['1', '心房颤动']] }],
       fields: [['hlavi', 'LAVi', 'mL/m²'], ['hlvmi', 'LVMI', 'g/m²'], ['hrwt', 'RWT', ''],
@@ -742,27 +742,24 @@
       fields: [['lzmax', '着陆区最大径', 'mm'], ['lzmin', '着陆区最小径（可选）', 'mm'],
         ['lzdepth', '着陆区深度（可选）', 'mm']],
       note: '按着陆区最大径 × 1.08 上取整落到常规型号（17/20/24/27/31/35 mm）。长短径比 >1.3 提示椭圆度大；深度不足时考虑小一号。多用于 Watchman FLX 类器械，其他产品按各自说明书' },
-    { id: 'aortagrow', sec: 'fu', title: '主动脉扩张增长率',
+    { id: 'aortagrow', sec: 'ivs', title: '主动脉扩张增长率',
       fields: [['d1', '上次直径', 'cm'], ['d2', '本次直径', 'cm'], ['yrs', '间隔时间', '年']],
       note: '增长率 = (本次 − 上次) × 10 ÷ 间隔年数（mm/年）。<3 低危；3–5 缩短随访间隔；≥5 倾向尽快干预。必须同切面同方法测量' },
-    { id: 'pvfu', sec: 'fu', title: '人工瓣术后跨瓣血流',
+    { id: 'pvfu', sec: 'ivs', title: '人工瓣术后跨瓣血流',
       fields: [['lvotD', 'LVOT 直径', 'cm'], ['lvotVti', 'LVOT VTI', 'cm'],
         ['valveVti', '人工瓣 VTI', 'cm'], ['fupvmax', '跨瓣峰值流速', 'm/s'], ['fupmean', '跨瓣平均压差', 'mmHg']],
       note: 'EOA = (π×LVOT 直径²÷4 × LVOT VTI) ÷ 人工瓣 VTI。术后平均压差 <20 mmHg、EOA ≥1.2 cm²（EOAi ≥0.8）为佳。压差高不等于故障：先排 undersizing、瓣周漏、LVOT 梗阻、压降恢复与高流量' },
-    { id: 'cfr', sec: 'fu', title: '冠脉血流储备 CFR',
+    { id: 'cfr', sec: 'ivs', title: '冠脉血流储备 CFR',
       fields: [['distal', '远端冠脉舒张期流速', 'cm/s'], ['proximal', '近端冠脉舒张期流速', 'cm/s']],
       note: 'CFR = 远端 ÷ 近端。>2.0 正常；1.6–2.0 可疑；<1.6 明显受限（缺血）。要求同一支冠脉、同一角度、同一心率与同一负荷状态下测量' },
   ];
 
   /** 计算类条目的目录分组（与 calc-groups.js 的 CALC_SECTIONS 同源同序） */
   const CALC_SECTIONS = [
-    { id: 'hemo', title: '血流动力学与心功能' },
+    { id: 'hemo', title: '血流动力学、舒张与心功能' },
     { id: 'right', title: '右心与肺循环' },
-    { id: 'vq', title: '舒张功能定量' },
-    { id: 'recon', title: '重构与心肌功能' },
-    { id: 'score', title: '评分与室壁运动' },
-    { id: 'ivs', title: '介入尺寸与先心' },
-    { id: 'fu', title: '随访与术中评估' },
+    { id: 'recon', title: '重构、室壁运动与心肌功能' },
+    { id: 'ivs', title: '介入尺寸、先心与随访' },
   ];
 
   const CALC_COLLAPSE = [['', 'IVC 塌陷未知'], ['yes', '吸气塌陷 >50%'], ['no', '吸气塌陷 ≤50%']];
@@ -1146,7 +1143,7 @@
     });
 
     const secs = [];
-    // 计算类条目按 CALC_SECTIONS 拆成 4 组（hemo / right / vq / recon）
+    // 计算类条目按 CALC_SECTIONS 拆成 4 组（hemo / right / recon / ivs）
     CALC_SECTIONS.forEach(function (cs) {
       secs.push({
         id: cs.id,

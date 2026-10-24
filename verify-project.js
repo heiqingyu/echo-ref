@@ -126,23 +126,20 @@ if (CG.GROUPS.length === 59) ok('公式集定义 59 组（' + CG.GROUPS.map(g =>
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
-if (calcSecIds.join('/') === 'hemo/right/vq/recon/score/ivs/fu')
-  ok('计算组 7 个（血流动力学 / 右心肺循环 / 瓣膜舒张 / 重构心肌 / 评分与室壁运动 / 介入尺寸与先心 / 随访与术中）');
+if (calcSecIds.join('/') === 'hemo/right/recon/ivs')
+  ok('计算组 4 个（血流动力学·舒张 / 右心肺循环 / 重构·室壁运动·心肌 / 介入尺寸·先心·随访）');
 else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1 && g.sec !== 'valve');
-if (!badSec.length) ok('59 条公式的 sec 归属均合法（含 valve 瓣膜评估组 + fu 随访与术中组）');
+if (!badSec.length) ok('59 条公式的 sec 归属均合法（含 valve 瓣膜评估组）');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
-const nVq = CG.GROUPS.filter(g => g.sec === 'vq').length;
 const nValveCalc = CG.GROUPS.filter(g => g.sec === 'valve').length;
 const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
-const nScore = CG.GROUPS.filter(g => g.sec === 'score').length;
 const nIvs = CG.GROUPS.filter(g => g.sec === 'ivs').length;
-const nFu = CG.GROUPS.filter(g => g.sec === 'fu').length;
-if (nHemo === 14 && nRight === 13 && nVq === 3 && nRecon === 12 && nScore === 3 && nIvs === 5 && nValveCalc === 6 && nFu === 3)
-  ok('分组条目数 14 / 13 / 3 / 12 / 3 / 5 + 瓣膜评估 6 + 随访与术中 3');
-else bad('分组条目数异常: ' + [nHemo, nRight, nVq, nRecon, nScore, nIvs, nValveCalc, nFu].join('/'));
+if (nHemo === 17 && nRight === 13 && nRecon === 15 && nIvs === 8 && nValveCalc === 6)
+  ok('分组条目数 17 / 13 / 15 / 8 + 瓣膜评估 6');
+else bad('分组条目数异常: ' + [nHemo, nRight, nRecon, nIvs, nValveCalc].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
 const SHARED_KEYS = { ld: 1, lvti: 1 };
@@ -177,10 +174,10 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 7) ok('评估内容 7 个分组（切面图像与质控 / 心腔应变与负荷 / 瓣膜 / 心肌 / 先心含术后 / 器械与介入 / 急症与特殊场景）');
+if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（切面图像与质控 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,mitral,aortic,asload,bav,lf-lg,ie,aortic-root,rheumatic,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,tr-interv,mv-interv,tavr,echo-interv,crt,la,lvad,aorta,pe,ph,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us') ok('评估条目 = 76 条（7 个分组）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,lf-lg,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,aorta,pe,ph,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 76 条（5 个分组）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -584,7 +581,7 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
   // 每个大组至少有一条桥接，避免只做了几个页面
   const secs = {};
   bridged.forEach(function (b) { secs[b.sec] = 1; });
-  (Object.keys(secs).length >= 6) ? ok('桥接覆盖 6 个以上判读分组（' + Object.keys(secs).join('/') + '）')
+  (Object.keys(secs).length >= 5) ? ok('桥接覆盖 5 个判读分组（' + Object.keys(secs).join('/') + '）')
     : bad('桥接只覆盖 ' + Object.keys(secs).length + ' 个判读分组');
 }
 
@@ -719,7 +716,7 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
   }
 
   // 11.10 超声引导下有创操作条目：12 类操作对照表、心包穿刺数据、活检部位、ICE 风险
-  const eiSec = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'tee-interv')[0];
+  const eiSec = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'views-atlas')[0];
   const ei = eiSec && eiSec.items.filter(i => i.id === 'echo-interv')[0];
   if (ei) {
     const eiText = JSON.stringify(ei.blocks || []);

@@ -460,8 +460,8 @@ check('页签顺序 = EF·参考值|瓣膜评估|儿童 Z 值|节段划分|瓣�
   }).join('|') === 'EF·参考值|瓣膜评估|儿童 Z 值|节段划分|瓣膜解剖|公式集', true);
 check('含评估内容数据 ExtraData', html.indexOf('window.ExtraData') !== -1, true);
 check('完整版也移除了页尾「继续看其他页面」', html.indexOf('pagefoot') === -1, true);
-check('含评估分组（切面、图像与质控 / 心腔、应变与负荷 / 器械与介入操作 / 急症与特殊场景）',
-  ['切面、图像与质控', '心腔、应变与负荷', '器械与介入操作', '急症与特殊场景'].every(function (t) {
+check('含评估分组（切面、图像与质控 / 心腔、心肌与应变 / 先心含术后 / 急症与特殊场景）',
+  ['切面、图像与质控', '心腔、心肌与应变', '先天性心脏病（含术后）', '急症与特殊场景'].every(function (t) {
     return html.indexOf("title: '" + t + "'") !== -1;
   }), true);
 check('含 5 个评估条目（crt/la/lv/rv/strain）',
@@ -492,9 +492,10 @@ check('含 6 个新计算器（mtype / wmsi / h2fpef / hfapeff / tavrsz / laasz�
   ['mtype', 'wmsi', 'h2fpef', 'hfapeff', 'tavrsz', 'laasz'].every(function (id) {
     return html.indexOf("id: '" + id + "'") !== -1;
   }), true);
-check('新增两个计算组（评分与室壁运动 / 介入尺寸与先心）',
-  html.indexOf("id: 'score', title: '评分与室壁运动'") !== -1 &&
-  html.indexOf("id: 'ivs', title: '介入尺寸与先心'") !== -1, true);
+check('计算组 4 个（血流动力学·舒张 / 右心 / 重构·室壁运动 / 介入尺寸·随访）',
+  html.indexOf("id: 'hemo', title: '血流动力学、舒张与心功能'") !== -1 &&
+  html.indexOf("id: 'recon', title: '重构、室壁运动与心肌功能'") !== -1 &&
+  html.indexOf("id: 'ivs', title: '介入尺寸、先心与随访'") !== -1, true);
 check('引擎函数已内联（mModeTriple / wmsiIndex / h2fpefScore / hfaPeffScore / tavrSizing / laaSize）',
   ['function mModeTriple', 'function wmsiIndex', 'function h2fpefScore',
    'function hfaPeffScore', 'function tavrSizing', 'function laaSize']
