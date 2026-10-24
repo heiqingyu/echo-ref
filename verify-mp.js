@@ -543,6 +543,18 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('目录共 139 条（50 计算 + 2 瓣膜 + 77 评估 + 1 解剖 + 7 切面学习 + 3 在线演示）', nItems, 139, 0);
   check('切面学习 7 条（专辑入口 + 5 个外链 + 1 条标准切面速查表）', dirViews.items.length, 7, 0);
   check('TEE 切面在线演示 3 条', dirSim.items.length, 3, 0);
+  // v1.5.8：微信规定「不定义 onShareAppMessage 则右上角转发按钮不显示」，
+  // 5 个页面必须都有，否则别人拿不到卡片入口（只能搜名称）。
+  const sharePages = ['index/index', 'pediatric/pediatric', 'segments/segments',
+    'calculators/calculators', 'formula/formula'];
+  check('5 个页面均支持「转发给朋友」',
+    sharePages.filter(function (p) {
+      return fsW.readFileSync(pathW.join(__dirname, 'miniprogram', 'pages', p + '.js'), 'utf8')
+        .indexOf('onShareAppMessage') !== -1;
+    }).length, 5, 0);
+  check('formula 转发路径带条目 id',
+    fsW.readFileSync(pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.js'), 'utf8')
+      .indexOf("/pages/formula/formula?id=") !== -1 ? 1 : 0, 1, 0);
   // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
   check('公式集已接入「回到顶部」（onPageScroll + onToTop）',
     typeof pgA.onPageScroll === 'function' && typeof pgA.onToTop === 'function' ? 1 : 0, 1, 0);

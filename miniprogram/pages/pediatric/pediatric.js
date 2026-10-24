@@ -247,4 +247,14 @@ Page({
     app.globalData.profile.weight = w;
     wx.showToast({ title: '已保存身高体重', icon: 'success' });
   },
+
+  /* ────────── 转发给朋友 / 收藏（v1.5.8）──────────
+     ★ 微信规定：不定义 onShareAppMessage，右上角「转发给朋友」根本不显示。
+     之前四个页面都没有，别人只能靠搜名字找到小程序 —— 这是「给别人用」最大的障碍。 */
+  onShareAppMessage() {
+    return { title: '儿童超声 Z 值计算 · 按 BSA 校正', path: '/pages/pediatric/pediatric' };
+  },
+  onAddToFavorites() {
+    return { title: '儿童超声 Z 值计算 · 按 BSA 校正', query: '/pages/pediatric/pediatric' };
+  },
 });

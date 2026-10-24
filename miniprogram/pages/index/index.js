@@ -285,4 +285,14 @@ Page({
         : 'ASE/EACVI 2015《Recommendations for Cardiac Chamber Quantification in Adults》',
     });
   },
+
+  /* ────────── 转发给朋友 / 收藏（v1.5.8）──────────
+     ★ 微信规定：不定义 onShareAppMessage，右上角「转发给朋友」根本不显示。
+     之前四个页面都没有，别人只能靠搜名字找到小程序 —— 这是「给别人用」最大的障碍。 */
+  onShareAppMessage() {
+    return { title: '心脏超声参考值速查 · EF 与参考区间', path: '/pages/index/index' };
+  },
+  onAddToFavorites() {
+    return { title: '心脏超声参考值速查 · EF 与参考区间', query: '/pages/index/index' };
+  },
 });

@@ -68,4 +68,14 @@ Page({
     this.setData({ sel: null });
     this.rebuild();
   },
+
+  /* ────────── 转发给朋友 / 收藏（v1.5.8）──────────
+     ★ 微信规定：不定义 onShareAppMessage，右上角「转发给朋友」根本不显示。
+     之前四个页面都没有，别人只能靠搜名字找到小程序 —— 这是「给别人用」最大的障碍。 */
+  onShareAppMessage() {
+    return { title: '左室 17 节段划分与供血对应', path: '/pages/segments/segments' };
+  },
+  onAddToFavorites() {
+    return { title: '左室 17 节段划分与供血对应', query: '/pages/segments/segments' };
+  },
 });
