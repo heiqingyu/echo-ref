@@ -4985,11 +4985,8 @@ const REFS = [
     id: 'R1',
     zh: '中国成年人超声心动图检查测量指南',
     en: 'Echocardiography Group, Chinese Society of Ultrasonography in Medicine. 中国成人超声心动图检查测量指南',
-    where: '中华超声影像学杂志, 2016, 25(8): 645–666',
+    where: '中华超声影像学杂志, 2016, 25(8): 645–666（需订阅，未挂直链）',
     use: '成人径线 / 面积 / 容积参考范围、瓣膜环与大动脉内径；EMINCA 中国人群正常值来源',
-    dl: [
-      { t: '中文全文', u: 'https://cmab.yiigle.com/uploads/guide_html/6664.html' },
-    ],
   },
   {
     id: 'R2',
@@ -5028,27 +5025,24 @@ const REFS = [
   },
   {
     id: 'R6',
-    zh: '心脏再同步化治疗（CRT）共识与指南',
-    en: 'HRS/ASA CRT consensus statement; 2023 HRS/LAHRS 等 CRT 适应证专家共识; PROSPECT 研究',
-    where: 'Heart Rhythm / Circulation',
-    use: 'CRT 适应证分级、超声不同步指标现状与疗效随访',
+    zh: '心脏生理性起搏与 CRT 指南（HRS/APHRS/LAHRS 2023）',
+    en: 'Chung MK, Patton KK, Lau CP, et al. 2023 HRS/APHRS/LAHRS guideline on cardiac physiologic pacing for the avoidance and mitigation of heart failure',
+    where: 'Heart Rhythm, 2023, 20(9): e17–e91（需订阅，未挂直链）',
+    use: 'CRT 适应证分级（LVEF / QRS 宽度 / 形态）、超声不同步指标（SPWMD、纵向应变延迟）的现状与疗效随访',
   },
   {
     id: 'R7',
     zh: '肺动脉高压诊断与治疗指南（2022）',
     en: 'ESC/ERS Guidelines for the diagnosis and treatment of pulmonary hypertension',
-    where: 'Eur Respir J, 2022',
+    where: 'Eur Respir J, 2022, 60(1): 2200879（与 R13 为同一文件，直链见 R13）',
     use: 'PASP、右房压与 PH 超声概率',
-    dl: [
-      { t: '免费全文 PDF', u: 'https://erj.ersjournals.com/content/erj/early/2022/08/25/13993003.00879-2022.full.pdf' },
-    ],
   },
   {
     id: 'R8',
-    zh: '成人超声心动图检查操作指南（2016 修订）',
-    en: 'Eagle FA, et al. 2016 ASE/SCA Guidelines for the Performance of Adult Echocardiography',
-    where: 'J Am Soc Echocardiogr, 2016, 27(10): 1–27',
-    use: '切面选择、时相、测量与报告规范',
+    zh: '成人经胸超声心动图标准化报告建议（ASE 2002）',
+    en: 'Gardin JM, Adams DB, Douglas PS, et al. Recommendations for a standardized report for adult transthoracic echocardiography: a report from the American Society of Echocardiography\'s Nomenclature and Standards Committee and Task Force for a Standardized Echocardiography Report',
+    where: 'J Am Soc Echocardiogr, 2002, 15(3): 275–290（需订阅；报告规范现行版见 R44，TTE 操作见 R11）',
+    use: '报告结构与必填条目的历史依据、测量时相与切面命名的统一写法',
   },
   {
     id: 'R9',
@@ -5188,12 +5182,8 @@ const REFS = [
     id: 'R23',
     zh: '成人右心超声评估指南（ASE 2010 存档 + 2025 更新）',
     en: 'Rudski LG, et al. 2010 Right Heart Guidelines（存档）；2025 更新另见 R5',
-    where: 'J Am Soc Echocardiogr, 2010, 23(7): 685–713；2025, 38(2): 141–186',
+    where: 'J Am Soc Echocardiogr, 2010, 23(7): 685–713；2025, 38(2): 141–186（两条直链分别见 R14 / R5，此处不重复挂）',
     use: '右室功能障碍六指标积分分级、RV 应变与右心衰评估（六指标出自 2010 版，阈值以 2025 更新为准）',
-    dl: [
-      { t: 'ASE PDF（中文版）', u: 'https://www.asecho.org/wp-content/uploads/2025/05/Archive-2010-Right-heart-guidelines_Chinese.pdf' },
-      { t: 'ASE PDF（2025 更新）', u: 'https://www.asecho.org/wp-content/uploads/2026/08/ASE-Right-Heart-Guidelines-May-2025.pdf' },
-    ],
   },
   {
     id: 'R24',
@@ -5492,11 +5482,8 @@ const REFS = [
     id: 'R54',
     zh: '主动脉瓣狭窄超声评估建议（EACVI/ASE 2017 聚焦更新）',
     en: 'Baumgartner H, Hung J, Bermejo J, et al. Recommendations on the Echocardiographic Assessment of Aortic Valve Stenosis: A Focused Update from the European Association of Cardiovascular Imaging and the American Society of Echocardiography',
-    where: 'J Am Soc Echocardiogr, 2017, 30(4): 372–392',
+    where: 'J Am Soc Echocardiogr, 2017, 30(4): 372–392（与 R46 为同一文件，直链见 R46，含中文版）',
     use: 'asload 判读页：压力恢复公式 PR = 4v²×2×(EOA/AoA)×(1−EOA/AoA)、按流速-压差-EF 的 AS 分层算法、LVOT 测量优化、低流量低压差处理路径',
-    dl: [
-      { t: 'ASE PDF', u: 'https://asecho.org/wp-content/uploads/2017/04/2017ValveStenosisGuideline.pdf' },
-    ],
   },
   {
     id: 'R55',
@@ -5510,13 +5497,10 @@ const REFS = [
   },
   {
     id: 'R56',
-    zh: '瓣膜性心脏病超声评估指南（ASE/EACVI 2020）',
-    en: 'Baumgartner H, Hung J, Bermejo J, et al. Guidelines for the Evaluation of Valve Prostheses and the Management of Native and Prosthetic Valve Disease: A Report of the American Society of Echocardiography and European Association of Cardiovascular Imaging',
-    where: 'J Am Soc Echocardiogr, 2020, 31(4): e1–e132',
-    use: 'asload 判读页：AS 严重度的多参数判读策略、瓣-动脉阻抗 Zva 的预后阈值（>3.5 识别不良预后、>4.5 高负荷）、压力恢复与能量指标的适用边界',
-    dl: [
-      { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2024/03/Guidelines-for-the-Evaluation-of-Valve-Prostheses-and-the-Management-of-Native-and-Prosthetic-Valve-Disease.pdf' },
-    ],
+    zh: '瓣-动脉阻抗（Zva）预测无症状主动脉瓣狭窄的不良结局',
+    en: 'Hachicha Z, Dumesnil JG, Bogaty P, Pibarot P. Usefulness of the valvuloarterial impedance to predict adverse outcome in asymptomatic aortic stenosis',
+    where: 'J Am Coll Cardiol, 2009, 54(11): 1003–1011（需订阅，未挂直链）',
+    use: 'asload 判读页：Zva =（收缩压 + 平均跨瓣压差）/ 每搏量指数；Zva > 3.5 提示总负荷（瓣膜 + 动脉）升高，> 4.5 组心血管死亡风险约为低 Zva 组的 3.7 倍',
   },
   {
     id: 'R57',
@@ -5547,9 +5531,9 @@ const REFS = [
   },
   {
     id: 'R60',
-    zh: '睡眠呼吸暂停与心血管疾病的关系（综述与临床意义）',
-    en: 'Yaggi D, et al. 睡眠呼吸暂停与心血管疾病；ESP 睡眠呼吸暂停指南中的心血管评估章节',
-    where: 'Sleep Med Rev / Eur Respir Rev, 相关年份见原文',
+    zh: '睡眠呼吸暂停与心血管疾病（AHA/ACC 科学声明）',
+    en: 'Somers VK, White DP, Amin R, et al. Sleep Apnea and Cardiovascular Disease: An American Heart Association/American College of Cardiology Foundation Scientific Statement',
+    where: 'Circulation, 2008, 118(10): 1080–1111（需订阅，未挂直链）',
     use: 'osa 判读页：OSA 造成右心后负荷升高与慢性容量负荷的机制、右心负荷与容量过重的超声线索、把 OSA 相关肺高压误当原发性 PAH 的陷阱、CPAP 依从性对心衰结局的影响',
   },
   {
@@ -5562,8 +5546,8 @@ const REFS = [
   {
     id: 'R62',
     zh: '成人体外膜肺氧合（ECMO）期间的超声评估',
-    en: 'Dreyfus A, et al. 超声在 ECMO 支持期间的作用；EACVI 关于 ECMO 超声监测的立场文件',
-    where: 'Eur Heart J Cardiovasc Imaging / J Am Soc Echocardiogr, 相关年份见原文',
+    en: 'Platts DG, Sedgwick JF, Burstow DJ, Mullany DV, Fraser JF. The role of echocardiography in the management of patients supported by extracorporeal membrane oxygenation',
+    where: 'J Am Soc Echocardiogr, 2012, 25(2): 131–141（需订阅，未挂直链）',
     use: 'ecmo 判读页：心室卸载过度（室间隔运动异常、左室被抽空）、主动脉瓣不开放与根部血栓倾向、插管贴壁与心包积液的鉴别、减流量撤机前的超声评估要点',
   },
 
