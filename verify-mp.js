@@ -418,7 +418,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 79 条（7 条本站托管中文指南 PDF + 4 条中文指南免费全文）', EXD.REFS.length, 79, 0);
+  check('参考文献 75 条（7 条本站托管中文指南 PDF + 4 条中文指南免费全文）', EXD.REFS.length, 75, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
@@ -436,9 +436,9 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     subDl.length >= 5 && subDl.length <= 12 &&
     subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)) ? 1 : 0, 1, 0);
   check('免费可获取链接 ≥ 70 条', allDl.filter(d => d.t !== '需订阅').length >= 70 ? 1 : 0, 1, 0);
-  // v1.6.6：R79 原挂中国循环杂志官网首页（站内搜不到这篇文章）→ 改挂公开 PDF 全文直链
-  const r79 = EXD.REFS.filter(r => r.id === 'R79')[0];
-  check('R79 挂公开 PDF 全文直链（不再挂官网首页）',
+  // v1.6.6：R75 原挂中国循环杂志官网首页（站内搜不到这篇文章）→ 改挂公开 PDF 全文直链
+  const r79 = EXD.REFS.filter(r => r.id === 'R75')[0];
+  check('R75 挂公开 PDF 全文直链（不再挂官网首页）',
     r79 && r79.dl && r79.dl.length === 1 && r79.dl[0].t === '中文 PDF' &&
       /^https:\/\/.+\.pdf$/.test(r79.dl[0].u) ? 1 : 0, 1, 0);
   check('已无指向期刊官网首页的无效直链',
@@ -666,21 +666,21 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segViews.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含 TEE 速查表',
     segViews.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
-  // 原「切面指南」4 条 ASE 官方 PDF 已并入参考文献（R11 中/英、R12、R41）
+  // 原「切面指南」4 条 ASE 官方 PDF 已并入参考文献（R9 中/英、R10、R38）
   check('切面指南已并入参考文献（不在目录里单列）',
     dirs.every(d => d.title !== '切面指南') ? 1 : 0, 1, 0);
   const EXL = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('R11 含 TTE 官方中英文 PDF 直链',
+  check('R9 含 TTE 官方中英文 PDF 直链',
     (function () {
-      const r = EXL.REFS.filter(x => x.id === 'R11')[0];
+      const r = EXL.REFS.filter(x => x.id === 'R9')[0];
       return (r.dl || []).length === 2 &&
         (r.dl || []).some(d => /2019_Comprehensive-TTE\.pdf$/.test(d.u)) &&
         (r.dl || []).some(d => /Adult-CompTTE_Chinese\.pdf$/.test(d.u)) ? 1 : 0;
     })(), 1, 0);
-  check('R12 含 TEE 2013 官方 PDF 直链',
-    EXL.REFS.filter(x => x.id === 'R12')[0].dl.some(d => /2013_Performing-Comprehensive-TEE\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
-  check('R41 含 TEE 介入筛查官方 PDF 直链',
-    EXL.REFS.filter(x => x.id === 'R41')[0].dl.some(d => /PIIS0894731721005940\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
+  check('R10 含 TEE 2013 官方 PDF 直链',
+    EXL.REFS.filter(x => x.id === 'R10')[0].dl.some(d => /2013_Performing-Comprehensive-TEE\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
+  check('R38 含 TEE 介入筛查官方 PDF 直链',
+    EXL.REFS.filter(x => x.id === 'R38')[0].dl.some(d => /PIIS0894731721005940\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
   check('在线演示含 CT2TEE / TEE 切面交互图谱',
     segSim.some(i => /ct2tee/.test(i.url)) &&
     segSim.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
@@ -893,7 +893,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   mpCalc('aortic', { as_lvotD: 2.0, as_lvotVti: 20, as_avVti: 30 },
     /AVA 连续方程 2\.09/, '主动脉瓣页 AS 段 AVA 2.09');
   mpCalc('mitral', { mit_pht: 100 }, /MVA · PHT 法（220÷PHT） 2\.20 cm²（不显著）/, '二尖瓣页 MVA PHT 100 → 2.2');
-  mpCalc('ppm', { peoa: 1.4, ppos: 1 }, /0\.80.*中度 PPM/, 'EOAi 0.78 中度 PPM（R17 切点）');
+  mpCalc('ppm', { peoa: 1.4, ppos: 1 }, /0\.80.*中度 PPM/, 'EOAi 0.78 中度 PPM（R15 切点）');
   mpCalc('dfun', { dfe: 80, dfa: 60, dfes: 10, dfel: 14 },
     /E\/A 1\.33.*正常充盈/, '舒张四步法 正常充盈');
   mpCalc('volidx', { vedv: 150, vesv: 60 }, /EDVi 85\.7.*轻度增大/, 'EDVi 85.7 轻度增大');
@@ -1384,7 +1384,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('运动员心脏：超声正常不能排除离子通道病',
     athTxt.indexOf('离子通道病') !== -1 ? 1 : 0, 1, 0);
 
-  // 感染性心内膜炎：Duke-ISCVID 2023 标准（R49，v1.3.5 新增）
+  // 感染性心内膜炎：Duke-ISCVID 2023 标准（R46，v1.3.5 新增）
   const ieTxt = briefText('ie');
   check('IE：Duke-ISCVID 2023 主要标准 + 「新发」口径',
     ieTxt.indexOf('Duke-ISCVID 2023') !== -1 && ieTxt.indexOf('新发的瓣膜反流') !== -1 ? 1 : 0, 1, 0);
@@ -1395,7 +1395,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('IE：术中直视为 2023 新增主要标准',
     ieTxt.indexOf('术中直视（2023 新增）') !== -1 ? 1 : 0, 1, 0);
 
-  // 超声造影 CEUS（R50 共识 + R51 技师指南，v1.3.6 新增）
+  // 超声造影 CEUS（R47 共识 + R48 技师指南，v1.3.6 新增）
   const ceTxt = briefText('contrast-echo');
   check('造影页：适应证限定 LVO / EBD',
     ceTxt.indexOf('LVO') !== -1 && ceTxt.indexOf('EBD') !== -1 ? 1 : 0, 1, 0);
@@ -1413,21 +1413,21 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     ceTxt.indexOf('30 分钟') !== -1 ? 1 : 0, 1, 0);
   check('造影页：右向左分流为绝对禁忌（除非本次目的就是 EBD）',
     ceTxt.indexOf('右向左分流') !== -1 && ceTxt.indexOf('动脉内注射') !== -1 ? 1 : 0, 1, 0);
-  // 参考文献挂 R50 / R51
+  // 参考文献挂 R47 / R48
   pgF.onLoad({ id: 'contrast-echo' });
   pgF.onShow();
-  check('造影页：参考文献挂 R50 + R51',
-    (pgF.data.refs || []).map(function (r) { return r.id; }).join(',') === 'R50,R51' ? 1 : 0, 1, 0);
-  // 文献直链：R51 含中文 PDF
+  check('造影页：参考文献挂 R47 + R48',
+    (pgF.data.refs || []).map(function (r) { return r.id; }).join(',') === 'R47,R48' ? 1 : 0, 1, 0);
+  // 文献直链：R48 含中文 PDF
   const EXDCE = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  const R51dl = (EXDCE.REFS.filter(function (r) { return r.id === 'R51'; })[0].dl || []);
-  check('R51 含 ASE 官方 PDF 与中文版 PDF 直链',
-    R51dl.length === 2 && R51dl.some(function (d) { return /2014_Contrast-Sonography\.pdf$/.test(d.u); }) &&
-      R51dl.some(function (d) { return /Chinese\.pdf$/.test(d.u) && d.t === '中文 PDF'; }) ? 1 : 0, 1, 0);
-  check('R50 含 ASE 共识声明官方 PDF 直链',
-    EXDCE.REFS.filter(function (r) { return r.id === 'R50'; })[0].dl.some(function (d) { return /Ultrasonic-Contrast-Agents/.test(d.u); }) ? 1 : 0, 1, 0);
+  const R48dl = (EXDCE.REFS.filter(function (r) { return r.id === 'R48'; })[0].dl || []);
+  check('R48 含 ASE 官方 PDF 与中文版 PDF 直链',
+    R48dl.length === 2 && R48dl.some(function (d) { return /2014_Contrast-Sonography\.pdf$/.test(d.u); }) &&
+      R48dl.some(function (d) { return /Chinese\.pdf$/.test(d.u) && d.t === '中文 PDF'; }) ? 1 : 0, 1, 0);
+  check('R47 含 ASE 共识声明官方 PDF 直链',
+    EXDCE.REFS.filter(function (r) { return r.id === 'R47'; })[0].dl.some(function (d) { return /Ultrasonic-Contrast-Agents/.test(d.u); }) ? 1 : 0, 1, 0);
 
-  // 超声引导下有创操作（R52 指南，v1.3.7 新增）
+  // 超声引导下有创操作（R49 指南，v1.3.7 新增）
   const eiTxt = briefText('echo-interv');
   check('介入页：12 类操作对照表含房间隔穿刺 / PMBV / 房间隔封堵 / LAA 封堵 / 活检',
     ['房间隔穿刺', 'PMBV', '房间隔封堵', 'LAA 封堵', '心肌与血管内活检'].every(function (k) { return eiTxt.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);
@@ -1445,17 +1445,17 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     eiTxt.indexOf('超声造影') !== -1 && eiTxt.indexOf('穿支') !== -1 ? 1 : 0, 1, 0);
   check('介入页：ICE 引导房间隔穿刺的帐篷征（tenting）',
     eiTxt.indexOf('帐篷') !== -1 ? 1 : 0, 1, 0);
-  // 参考文献挂 R52
+  // 参考文献挂 R49
   pgF.onLoad({ id: 'echo-interv' });
   pgF.onShow();
-  check('介入页：参考文献挂 R52',
-    (pgF.data.refs || []).map(function (r) { return r.id; }).join(',') === 'R52' ? 1 : 0, 1, 0);
-  const R52dl = (EXDCE.REFS.filter(function (r) { return r.id === 'R52'; })[0].dl || []);
-  check('R52 含 ASE 官方 PDF 与中文版 PDF 直链',
-    R52dl.length === 2 && R52dl.some(function (d) { return /2009_Echo-Guided-Interventions\.pdf$/.test(d.u); }) &&
-      R52dl.some(function (d) { return /Chinese\.pdf$/.test(d.u) && d.t === '中文 PDF'; }) ? 1 : 0, 1, 0);
+  check('介入页：参考文献挂 R49',
+    (pgF.data.refs || []).map(function (r) { return r.id; }).join(',') === 'R49' ? 1 : 0, 1, 0);
+  const R49dl = (EXDCE.REFS.filter(function (r) { return r.id === 'R49'; })[0].dl || []);
+  check('R49 含 ASE 官方 PDF 与中文版 PDF 直链',
+    R49dl.length === 2 && R49dl.some(function (d) { return /2009_Echo-Guided-Interventions\.pdf$/.test(d.u); }) &&
+      R49dl.some(function (d) { return /Chinese\.pdf$/.test(d.u) && d.t === '中文 PDF'; }) ? 1 : 0, 1, 0);
 
-  // 超声伪影指南（R53，v1.3.9 新增）
+  // 超声伪影指南（R50，v1.3.9 新增）
   const agTxt = briefText('artifact-guide');
   check('伪影页：按机器假设分类的框架',
     ['混响', '镜像', '声影', '侧瓣', '混叠'].every(function (k) { return agTxt.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);
@@ -1473,10 +1473,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     agTxt.indexOf('ring-down') !== -1 ? 1 : 0, 1, 0);
   pgF.onLoad({ id: 'artifact-guide' });
   pgF.onShow();
-  check('伪影页：参考文献挂 R53',
-    (pgF.data.refs || []).map(function (r) { return r.id; }).join(',') === 'R53' ? 1 : 0, 1, 0);
-  check('R53 含 ASE 官方免费全文 PDF 直链',
-    EXDCE.REFS.filter(function (r) { return r.id === 'R53'; })[0].dl.some(function (d) { return /PIIS0894731726000386\.pdf$/.test(d.u); }) ? 1 : 0, 1, 0);
+  check('伪影页：参考文献挂 R50',
+    (pgF.data.refs || []).map(function (r) { return r.id; }).join(',') === 'R50' ? 1 : 0, 1, 0);
+  check('R50 含 ASE 官方免费全文 PDF 直链',
+    EXDCE.REFS.filter(function (r) { return r.id === 'R50'; })[0].dl.some(function (d) { return /PIIS0894731726000386\.pdf$/.test(d.u); }) ? 1 : 0, 1, 0);
 
   // 性别按 profile 预填（避免每次手点）
   gData23.profile.sex = 'female';

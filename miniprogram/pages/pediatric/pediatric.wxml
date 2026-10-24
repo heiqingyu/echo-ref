@@ -254,7 +254,7 @@
         <text style="font-weight:600">数据来源</text>{{'\n'}}
         Pediatric Heart Network（PHN）Normal Echocardiogram Database，n = 3566，
         0–18 岁健康非肥胖儿童，19 个中心。{{'\n'}}
-        Lopez L, Colan S, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979.{{'\n'}}
+        Lopez L, Colan S, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979.（参考文献 R8）{{'\n'}}
         该研究表明 Z 值不受年龄、性别、种族临床显著影响，故本页不分性别。
       </view>
     </block>

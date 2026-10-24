@@ -216,7 +216,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 79) ok('参考文献 79 条（7 条本站托管指南 PDF + 4 条中文指南免费全文 + 中国指南与综述 7 条）');
+if (EX.REFS.length === 75) ok('参考文献 75 条（7 条本站托管指南 PDF + 4 条中文指南免费全文 + 中国指南与综述 7 条；已合并 4 条重复/占位条目）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -230,12 +230,12 @@ if (subDl.length >= 5 && subDl.length <= 12 &&
     subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)))
   ok('需订阅地址 ' + subDl.length + ' 条均为 DOI 解析页或中华医学期刊网页面（无死链、无自造地址）');
 else bad('需订阅地址不合规: ' + subDl.map(d => d.u).join(' '));
-// v1.6.6：R79 原来挂中国循环杂志官网首页，点进去站内搜不到这篇文章 → 改挂公开 PDF 全文
-const r79 = EX.REFS.filter(r => r.id === 'R79')[0];
+// v1.6.6：R75 原来挂中国循环杂志官网首页，点进去站内搜不到这篇文章 → 改挂公开 PDF 全文
+const r79 = EX.REFS.filter(r => r.id === 'R75')[0];
 if (r79 && (r79.dl || []).length === 1 && r79.dl[0].t === '中文 PDF' &&
     /^https:\/\/.+\.pdf$/.test(r79.dl[0].u))
-  ok('R79 挂公开 PDF 全文直链（不再挂官网首页）');
-else bad('R79 直链不合规: ' + JSON.stringify(r79 && r79.dl));
+  ok('R75 挂公开 PDF 全文直链（不再挂官网首页）');
+else bad('R75 直链不合规: ' + JSON.stringify(r79 && r79.dl));
 if (!dlAll.some(d => /chinacirculation\.org/.test(d.u)))
   ok('已无指向期刊官网首页的无效直链');
 else bad('仍挂着搜不到文章的期刊官网首页');
@@ -255,7 +255,7 @@ if (dlAll.filter(d => /asecho\.org\/wp-content\/uploads\/.+\.pdf$/.test(d.u)).le
 else bad('ASE 官方 PDF 直链不足');
 
 console.log('\n=== 4f. 切面学习（含操作规范专辑）/ TEE 切面在线演示（纯外链） ===');
-console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 R11 / R12 / R41）');
+console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 R9 / R10 / R38）');
 if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 切面在线演示）');
 else bad('外链分组数异常: ' + (EX.LINK_SECTIONS || []).length);
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
@@ -275,7 +275,7 @@ else bad('外链条目定义不完整');
 if (linkIds.indexOf('guide-tte-cn') === -1 && linkIds.indexOf('guide-tee-28') === -1)
   ok('切面指南条目已从外链移除（并入参考文献）');
 else bad('切面指南仍留在外链分组里');
-['R11', 'R12', 'R41'].forEach(function (rid) {
+['R9', 'R10', 'R38'].forEach(function (rid) {
   const r = EX.REFS.filter(function (x) { return x.id === rid; })[0];
   if (r && (r.dl || []).length && r.dl.some(function (d) { return /\.pdf$/.test(d.u); }))
     ok('切面指南 PDF 已并入文献 ' + rid);
@@ -751,9 +751,9 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
     (ceRows.length >= 3 && /加血/.test(ceRows[0][0]) && /股静脉/.test(ceRows[2][0]))
       ? ok('EBD 增敏三招齐全（加血 10% / 咳嗽 Valsalva / 股静脉）')
       : bad('EBD 增敏三招异常：' + JSON.stringify(ceRows.map(r => r[0])));
-    // 引用必须是 R50 / R51
-    (ce.source.join(',') === 'R50,R51')
-      ? ok('超声造影条目引用 R50（共识声明）+ R51（技师指南）')
+    // 引用必须是 R47 / R48
+    (ce.source.join(',') === 'R47,R48')
+      ? ok('超声造影条目引用 R47（共识声明）+ R48（技师指南）')
       : bad('超声造影条目引用异常：' + ce.source.join(','));
   } else {
     bad('超声造影条目 contrast-echo 缺失');
@@ -787,9 +787,9 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
     (riskRows.length === 5 && riskRows.some(r => /心脏穿孔/.test(r[1] || '')))
       ? ok('ICE 风险清单 5 类（含心脏穿孔与心包填塞）')
       : bad('ICE 风险清单异常：' + JSON.stringify(riskRows.map(r => r[0])));
-    // 引用 R52
-    (ei.source.join(',') === 'R52')
-      ? ok('有创操作条目引用 R52（超声引导下有创操作指南）')
+    // 引用 R49
+    (ei.source.join(',') === 'R49')
+      ? ok('有创操作条目引用 R49（超声引导下有创操作指南）')
       : bad('有创操作条目引用异常：' + ei.source.join(','));
   } else {
     bad('有创操作条目 echo-interv 缺失');
