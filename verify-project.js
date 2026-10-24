@@ -295,9 +295,22 @@ const extSrc = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js')
 if (extSrc.indexOf('EX.LINK_SECTIONS') !== -1) ok('目录页已接入 LINK_SECTIONS（搜索 / 专辑子条目仍复用）');
 else bad('目录页未接入 LINK_SECTIONS');
 // v1.6.3：专辑入口从公式集目录迁到「切面学习」页签，kind: album 的渲染逻辑随之移到 segments.js
-const segSrc3 = fs.readFileSync(path.join(MP, 'pages/segments/segments.js'), 'utf8');
+const segSrc3 = fs.readFileSync(path.join(MP, 'pages/segments', 'segments.js'), 'utf8');
 if (segSrc3.indexOf("kind: 'album'") !== -1) ok('切面学习页把专辑渲染为单条入口（kind: album）');
 else bad('切面学习页未把专辑收成单条入口');
+// v1.6.4：切面速查 / 标准切面条目打 segOnly 标记 → 只在「切面学习」页签列出，不进公式集目录
+const segOnlyIds = [];
+EX.BRIEF_SECTIONS.forEach(function (s3) {
+  (s3.items || []).forEach(function (it) { if (it.segOnly) segOnlyIds.push(it.id); });
+});
+if (segOnlyIds.join(',') === 'tee-20,tte-std,tte-measure') ok('切面速查 3 条打上 segOnly 标记（tee-20 / tte-std / tte-measure）');
+else bad('segOnly 标记异常: ' + (segOnlyIds.join(',') || '无'));
+if (segSrc3.indexOf('segOnly') !== -1) ok('切面学习页按 segOnly 装配速查列表（标题只维护一份）');
+else bad('切面学习页未按 segOnly 装配速查列表');
+const appSrc4 = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
+if (appSrc4.indexOf('viewOriginTab') !== -1 && appSrc4.indexOf('function leaveView') !== -1)
+  ok('网页 / APK：从切面学习进详情后返回会切回原页签（leaveView）');
+else bad('缺少「返回时切回来源页签」逻辑（viewOriginTab / leaveView）');
 if (/onSearch\s*\(/.test(extSrc) && /bindinput="onSearch"/.test(
   fs.readFileSync(path.join(MP, 'pages/calculators/calculators.wxml'), 'utf8')))
   ok('公式集目录带搜索框（输入即筛）');

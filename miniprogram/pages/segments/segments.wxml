@@ -1,9 +1,9 @@
 <view class="page-wrap">
 
-  <!-- 页签说明 + 页内导航（v1.6.3：节段划分 + 教学视频 + TEE 演示 + 更多入口） -->
+  <!-- 页签说明 + 页内导航（v1.6.4：节段划分 + 切面速查与图谱 + 教学视频 + TEE 演示） -->
   <view class="card">
     <view class="card__title">切面学习</view>
-    <view class="card__desc">节段划分、标准切面教学视频与 TEE 在线演示集中在本页签；点下方标签直达对应区块，切面与测量的判读正文仍在公式集。</view>
+    <view class="card__desc">节段划分、切面速查、标准切面教学视频与 TEE 在线演示集中在本页签；点下方标签直达对应区块，切面与测量的判读正文仍在公式集。</view>
     <view class="fx-nav">
       <view class="fx-nav__c {{curSeg === item.key ? 'fx-nav__c--on' : ''}}"
             wx:for="{{segNav}}" wx:key="key" data-seg="{{item.key}}" bindtap="onSegJump">{{item.t}}</view>
@@ -75,7 +75,16 @@
     </view>
   </view>
 
-  <!-- ② 教学视频 -->
+  <!-- ② 切面速查与图谱（原「切面、图像与质控」组里的切面速查 / 标准切面条目 + 瓣膜解剖） -->
+  <view class="card" id="lookpart">
+    <view class="card__title">切面速查与图谱</view>
+    <view class="card__desc">标准切面的角度、显示结构与必测项速查；瓣膜解剖为 TEE 交互图谱。点条目打开对应详情页，返回时回到本页。</view>
+    <view class="fx-list">
+      <block wx:for="{{lookList}}" wx:key="id"><template is="fxItem" data="{{item}}" /></block>
+    </view>
+  </view>
+
+  <!-- ③ 教学视频 -->
   <view class="card" id="viewspart">
     <view class="card__title">切面学习（视频）</view>
     <view class="card__desc">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</view>
@@ -85,21 +94,12 @@
     <view class="note">多伦多 PIE 站点建议用 360 极速浏览器兼容模式打开；《实用超声规范化检查与操作》视频为公开直链，点击即播。</view>
   </view>
 
-  <!-- ③ TEE 演示 -->
+  <!-- ④ TEE 演示 -->
   <view class="card" id="simpart">
     <view class="card__title">TEE 切面在线演示</view>
     <view class="card__desc">交互式 TEE 切面演示站点（外链，复制到浏览器打开，不嵌入本页）。</view>
     <view class="fx-list">
       <block wx:for="{{simList}}" wx:key="id"><template is="fxItem" data="{{item}}" /></block>
-    </view>
-  </view>
-
-  <!-- ④ 更多入口 -->
-  <view class="card" id="anapart">
-    <view class="card__title">更多切面入口</view>
-    <view class="card__desc">切面与测量的详细判读正文在公式集，点下方条目直达详情。</view>
-    <view class="fx-list">
-      <block wx:for="{{anaList}}" wx:key="id"><template is="fxItem" data="{{item}}" /></block>
     </view>
   </view>
 
@@ -109,7 +109,7 @@
 
 </view>
 
-<!-- 列表条目通用模板（视频 / 演示 / 更多入口共用） -->
+<!-- 列表条目通用模板（切面速查 / 教学视频 / TEE 演示共用） -->
 <template name="fxItem">
   <view class="fx-item" data-kind="{{item.kind}}" data-id="{{item.id}}"
         data-sec="{{item.sec}}" data-url="{{item.url}}" bindtap="onFxTap">

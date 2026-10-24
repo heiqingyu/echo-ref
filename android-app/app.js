@@ -47,6 +47,19 @@
   let currentTab = 'index';
 
   /**
+   * 子视图来源页签（v1.6.4）
+   *
+   * 用户 2026-10-24 反馈：「切面学习，进去后点击哪个，返回页变成了公式集」。
+   * 根因：切面学习页点条目要 switchTab('calc') 才能显示公式集的详情视图，
+   * 而返回时只还原了「公式集目录」，页签仍停在公式集。
+   *
+   * 做法：进详情前把来源页签与滚动位置记下来，返回时先还原公式集目录状态，
+   * 再把页签切回来源页并滚回原位。用户手动点页签时清空，避免误跳。
+   */
+  let viewOriginTab = 'calc';
+  let viewOriginY = 0;
+
+  /**
    * ── 视图栈（history） ──
    *
    * 用户 2026-10-21 反馈：「在公式集里点击返回就直接退出页面 / APP，
@@ -113,8 +126,25 @@
    * 随后到来的 popstate / hashchange 会再还原一次同样的界面（幂等，无副作用）
    */
   function popView() {
-    restoreCalcIndex();
+    leaveView();
     if (viewStack.length) history.back();
+  }
+
+  /**
+   * 退出子视图的统一出口（v1.6.4）
+   * 先把公式集还原成目录（子视图状态清干净），
+   * 若这次是从别的页签点条目进来的（切面学习），再把页签切回去并滚回原位置。
+   */
+  function leaveView() {
+    const from = viewOriginTab;
+    const y = viewOriginY;
+    viewOriginTab = 'calc';
+    viewOriginY = 0;
+    restoreCalcIndex();
+    if (from !== 'calc') {
+      switchTab(from);
+      if (y > 0) goToY(y);
+    }
   }
 
   /** 按视图状态还原界面 */
@@ -127,7 +157,7 @@
       switchTab('calc');
       openAlbum(v.sec, v.id, true);
     } else {
-      restoreCalcIndex();
+      leaveView();
     }
   }
 
@@ -172,11 +202,19 @@
   }
 
   document.querySelectorAll('.tab').forEach(function (el) {
-    el.addEventListener('click', function () { switchTab(el.dataset.tab); });
+    el.addEventListener('click', function () {
+      viewOriginTab = 'calc';   // 手动切页签：清掉「从切面学习进来的」记忆
+      viewOriginY = 0;
+      switchTab(el.dataset.tab);
+    });
   });
 
   document.querySelectorAll('[data-go]').forEach(function (el) {
-    el.addEventListener('click', function () { switchTab(el.dataset.go); });
+    el.addEventListener('click', function () {
+      viewOriginTab = 'calc';
+      viewOriginY = 0;
+      switchTab(el.dataset.go);
+    });
   });
 
   /* ══════════════════════════════════════════════════════════
@@ -1145,6 +1183,7 @@
     });
     (MERGED.valve || []).forEach(function (sec) {
       sec.items.forEach(function (it) {
+        if (it.segOnly) return;   // ★ 只在「切面学习」页签列出
         valveItems.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
       });
     });
@@ -1168,7 +1207,11 @@
       secs.push({
         id: sec.id,
         title: sec.title,
-        items: calcs.concat(sec.items.map(function (it) {
+        items: calcs.concat(sec.items.filter(function (it) {
+          // ★ v1.6.4：segOnly 条目（切面速查 / 标准切面）只在「切面学习」页签列出，
+          //   不进公式集目录；条目定义仍留在 BRIEF_SECTIONS 里，详情卡与 rel 照常可用。
+          return !it.segOnly;
+        }).map(function (it) {
           return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };
         })),
       });
@@ -1183,6 +1226,7 @@
     BRIEF.forEach(function (sec) {
       sec.items.forEach(function (it) {
         if (!it.moveTo || it.moveTo === sec.id) return;
+        if (it.segOnly) return;   // 已在「切面学习」页签，别再挪回目录
         const host = secs.filter(function (x) { return x.id === it.moveTo; })[0];
         if (!host) return;
         const from = secs.filter(function (x) { return x.id === sec.id; })[0];
@@ -1210,7 +1254,12 @@
   }
 
   /**
-   * 切面学习页（v1.6.3）：视频 / 演示外链列表 + 更多切面入口 + 页内导航
+   * 切面学习页（v1.6.4）：页内导航 + 四块内容
+   *
+   *  ① segpart   节段划分（构建时静态生成）
+   *  ② lookpart  切面速查与图谱：segOnly 的 brief 条目 + 瓣膜解剖 TEE 图谱
+   *  ③ viewspart 教学视频（LINK_SECTIONS.views）
+   *  ④ simpart   TEE 在线演示（LINK_SECTIONS.sim）
    *
    * 两组外链原在公式集目录（LINK_SECTIONS），现迁到本页签；专辑条目仍占 1 行，
    * 点击切到公式集的专辑视图（openAlbum 自带二级视图与返回栈）。
@@ -1220,7 +1269,7 @@
   function renderSegExtras() {
     const viewsBox = $('segViewsList');
     const simBox = $('segSimList');
-    const anaBox = $('segAnaList');
+    const lookBox = $('segLookList');
     function listOf(secId) {
       const sec = LINKS.filter(function (s) { return s.id === secId; })[0];
       let h = '';
@@ -1232,12 +1281,19 @@
     }
     if (viewsBox) viewsBox.innerHTML = listOf('views');
     if (simBox) simBox.innerHTML = listOf('sim');
-    if (anaBox) {
-      anaBox.innerHTML =
-        fxItemHtml('brief', 'tte-measure', 'TTE 标准切面与测量项目',
-          '13 个切面 × 观察结构 × 主要测量 · ASE 成人完整检查建议') +
-        fxItemHtml('valveana', 'valveana', '瓣膜解剖 · TEE 标准切面',
-          '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1');
+    if (lookBox) {
+      // 切面速查 / 标准切面：直接取 BRIEF_SECTIONS 里标了 segOnly 的条目，
+      // 标题与说明只有一份（extra-data.js），不在这里重复维护。
+      let h = '';
+      BRIEF.forEach(function (sec) {
+        sec.items.forEach(function (it) {
+          if (!it.segOnly) return;
+          h += fxItemHtml('brief', it.id, it.title, it.sub || '');
+        });
+      });
+      h += fxItemHtml('valveana', 'valveana', '瓣膜解剖 · TEE 标准切面',
+        '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1');
+      lookBox.innerHTML = h;
     }
     // 页内导航：点标签滚到对应区块（goToY 统一处理 APK WebView 兼容）
     document.querySelectorAll('#page-segments [data-segjump]').forEach(function (el) {
@@ -1247,6 +1303,7 @@
       });
     });
     // 条目点击委托：album 切到公式集的专辑视图，其余（brief / valveana）进详情视图
+    // ★ 跳转前记下来源页签与滚动位置：返回时 leaveView() 会切回本页（v1.6.4）
     const segPage = $('page-segments');
     if (segPage) {
       segPage.addEventListener('click', function (ev) {
@@ -1254,13 +1311,11 @@
         if (!el) return;
         const kind = el.dataset.kind;
         if (!kind) return;   // 纯外链 <a>：交给浏览器新窗口打开
-        if (kind === 'album') {
-          switchTab('calc');
-          openAlbum(el.dataset.sec, el.dataset.id);
-        } else {
-          switchTab('calc');
-          openCalcGroup(el.dataset.id);
-        }
+        viewOriginTab = currentTab;
+        viewOriginY = window.pageYOffset;
+        switchTab('calc');
+        if (kind === 'album') openAlbum(el.dataset.sec, el.dataset.id);
+        else openCalcGroup(el.dataset.id);
       });
     }
   }
@@ -1614,8 +1669,13 @@
     if ($('calcIndex')) $('calcIndex').hidden = false;
     if ($('calcDetail')) $('calcDetail').hidden = true;
     if ($('calcAlbum')) $('calcAlbum').hidden = true;
-    $('appbarTitle').textContent = TAB_TITLE.calc;
-    window.scrollTo(0, 0);
+    // ★ v1.6.4：页签已经不在公式集时（从「切面学习」点条目进来、返回时又被
+    //   history.back 的导航事件补调一次），别抢标题、别把页面滚回顶部 ——
+    //   否则会出现「切面学习页可见、顶栏却写着公式集，并且滚动位置被清零」。
+    if (currentTab === 'calc') {
+      $('appbarTitle').textContent = TAB_TITLE.calc;
+      window.scrollTo(0, 0);
+    }
   }
 
   /** 回到公式集目录（用户点了「返回公式集」按钮） */

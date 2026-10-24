@@ -140,16 +140,16 @@ function buildSegPage() {
       (w.note ? '<div class="wall-card__note">' + escHtml(w.note) + '</div>' : '') + '</div>';
   }).join('');
 
-  return `  <!-- ───── Tab3 切面学习（v1.6.3：节段划分 + 教学视频 + TEE 演示 + 更多入口） ───── -->
+  return `  <!-- ───── Tab3 切面学习（v1.6.4：节段划分 + 切面速查与图谱 + 教学视频 + TEE 演示） ───── -->
   <section class="page" id="page-segments" hidden>
     <div class="card">
       <div class="card__t">切面学习</div>
-      <div class="card__d">节段划分、标准切面教学视频与 TEE 在线演示集中在本页签；点下方标签直达对应区块，切面与测量的判读正文仍在公式集。</div>
+      <div class="card__d">节段划分、切面速查、标准切面教学视频与 TEE 在线演示集中在本页签；点下方标签直达对应区块，切面与测量的判读正文仍在公式集。</div>
       <div class="fx-nav" id="segNav">
         <button class="fx-nav__c" data-segjump="segpart">节段划分</button>
+        <button class="fx-nav__c" data-segjump="lookpart">切面速查</button>
         <button class="fx-nav__c" data-segjump="viewspart">教学视频</button>
         <button class="fx-nav__c" data-segjump="simpart">TEE 演示</button>
-        <button class="fx-nav__c" data-segjump="anapart">更多入口</button>
       </div>
     </div>
     <div id="segpart">
@@ -183,6 +183,11 @@ function buildSegPage() {
       <div class="note">LV 左室 · RV 右室 · LA 左房 · RA 右房 · Ao 主动脉 · MV 二尖瓣 · TV 三尖瓣 · LAA 左心耳 · LVOT 左室流出道</div>
     </div>
     </div>
+    <div class="card" id="lookpart">
+      <div class="card__t">切面速查与图谱</div>
+      <div class="card__d">标准切面的角度、显示结构与必测项速查；瓣膜解剖为 TEE 交互图谱。点条目直接打开公式集里的判读详情，返回时回到本页。</div>
+      <div class="fx-list" id="segLookList"></div>
+    </div>
     <div class="card" id="viewspart">
       <div class="card__t">切面学习（视频）</div>
       <div class="card__d">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</div>
@@ -193,11 +198,6 @@ function buildSegPage() {
       <div class="card__t">TEE 切面在线演示</div>
       <div class="card__d">交互式 TEE 切面演示站点（外链，新窗口打开，不嵌入本页）。</div>
       <div class="fx-list" id="segSimList"></div>
-    </div>
-    <div class="card" id="anapart">
-      <div class="card__t">更多切面入口</div>
-      <div class="card__d">切面与测量的详细判读正文在公式集，点下方条目直达详情。</div>
-      <div class="fx-list" id="segAnaList"></div>
     </div>
     <div class="note note--warn">本页为速查资料整理，内容依据 ASE 系列指南；具体应用请回看指南原文并结合临床判断。</div>
   </section>`;
@@ -232,7 +232,7 @@ const PUBNOTE_HTML = `<div class="pubnote">
     <b>关于本页</b><br>
     本页为个人整理的心脏超声（TTE）参考速查工具，四个页签：<b>EF·参考值</b>（M 型 / 二维 EF 计算、
     成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>切面学习</b>（ASE 17 节段模型与冠脉供血、
-    标准切面教学视频、TEE 在线演示与瓣膜 TEE 切面图谱入口）、
+    标准切面教学视频、TEE 在线演示，以及切面速查与瓣膜 TEE 切面图谱）、
     <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（多个计算器与评估清单，按主题分组，
     含二尖瓣狭窄 PMBV 适合度流程、人工瓣、超声造影、危急值清单与报告标准化）。
     公式集目录顶部有组名跳转条，点一下直接定位到对应分组；长条目详情页顶部另有小节导航。

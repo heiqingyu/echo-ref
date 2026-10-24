@@ -27,6 +27,7 @@ const BRIEF_SECTIONS = [
     items: [
       {
         id: 'tee-20',
+        segOnly: true,   // ★ v1.6.4：只在「切面学习」页签列出，不进公式集目录
         title: 'TEE 20 个标准切面速查',
         sub: '角度 · 显示结构 · 必测项 · 三档探头位置',
         source: ['R64', 'R12', 'R47'],
@@ -111,6 +112,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'tte-std',
+        segOnly: true,   // ★ v1.6.4：只在「切面学习」页签列出，不进公式集目录
         title: 'TTE 规范切面与必测项',
         sub: '五个声窗 · 采集顺序 · 每个切面该测什么',
         source: ['R68', 'R11'],
@@ -865,6 +867,7 @@ const BRIEF_SECTIONS = [
         // ★ v1.6.3：目录「切面学习」组整体迁到「切面学习」页签，moveTo 取消，
         //   本条回到宿主组；「切面学习」页尾部有跳转入口直达本条详情。
         id: 'tte-measure',
+        segOnly: true,   // ★ v1.6.4：只在「切面学习」页签列出，不进公式集目录
         title: 'TTE 标准切面与测量项目',
         sub: '13 个切面 × 观察结构 × 主要测量 · ASE 成人完整检查建议',
         source: ['R11'],
