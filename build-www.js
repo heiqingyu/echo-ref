@@ -235,6 +235,7 @@ const html = `<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <meta name="format-detection" content="telephone=no">
+<meta name="robots" content="index,follow,noai,noimageai">
 <title>心脏超声参考值</title>
 <link rel="icon" type="image/png" href="${FAVICON_DATA}">
 <link rel="apple-touch-icon" href="${FAVICON_DATA}">
@@ -579,6 +580,12 @@ ${SEG_HTML}
       </div>
     </div>
   </section>
+
+<footer class="copyfoot">
+  <b>EchoRef · 心脏超声参考工具</b><br>
+  内容为原创整理与公开指南摘编，仅供专业医务人员学习参考，不作为诊断依据。<br>
+  禁止去除署名后转载、镜像或用于商业用途。© 2026 heiqingyu
+</footer>
 
 </main>
 

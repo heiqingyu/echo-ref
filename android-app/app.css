@@ -1380,6 +1380,67 @@ html, body {
   .totop { right: calc(50% - 400px); }
 }
 
+/* ══════════ 版权防护：一次性提示条 / 左下淡水印 / 页脚版权行 ══════════
+   ★ 只做「提高搬运门槛」，不做禁 F12、不禁选中复制——
+     全站禁选中会打死「点一下复制文献链接」，得不偿失。
+   水印 pointer-events:none，绝不挡任何点击。 */
+.guardbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: calc(var(--appbar-h) + var(--safe-t));
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  background: rgba(30, 41, 59, .95);
+  color: #e2e8f0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, .18);
+}
+.guardbar__t { flex: 1; }
+.guardbar__b {
+  flex: none;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.guardbar__b:active { background: #2563eb; }
+
+.wmark {
+  position: fixed;
+  right: 10px;
+  bottom: calc(var(--tabbar-h) + var(--safe-b) + 5px);
+  z-index: 4;
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: .3px;
+  color: #94a3b8;
+  opacity: .28;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.copyfoot {
+  margin: 26px 2px 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+  line-height: 1.8;
+  color: var(--sub);
+  text-align: center;
+}
+.copyfoot b { color: #475569; font-weight: 600; }
+
 /* ★ 以上公式集样式（.fx-nav / .fx-group / .ref-dl / .chip 等）必须留在
    下面「已裁掉的瓣膜专页」注释块之前：build-www.js 的 stripCssBlock 会把
    那个标记到 style 闭标签之间整段删掉（发布版不带瓣膜页 CSS）。

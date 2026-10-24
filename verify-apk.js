@@ -568,6 +568,20 @@ check('含 utoronto 标准视图链接',
   html.indexOf('TEE-HTML5-SV-CH') !== -1, true);
 check('含 TEE 交互演示直达链接',
   html.indexOf('teeSimulation/index.html') !== -1, true);
+/* ── 版权防护（v1.5.7）：提示条 / 淡水印 / 页脚版权行，且水印不挡点击 ── */
+check('含首次进入的版权提示条',
+  html.indexOf('guardbar') !== -1 && html.indexOf('echoref.guard') !== -1, true);
+const wmStart = html.indexOf('.wmark {');
+const wmBlock = wmStart === -1 ? '' : html.slice(wmStart, wmStart + 420);
+check('含固定淡水印，且 pointer-events:none 不挡点击',
+  wmBlock.indexOf('pointer-events: none') !== -1, true);
+check('水印落在底部 tabbar 之上的空白区',
+  wmBlock.indexOf('var(--tabbar-h)') !== -1, true);
+check('水印不是竖排（避免压正文）',
+  wmBlock.indexOf('writing-mode') === -1, true);
+check('含页脚版权行（禁止去除署名后转载）',
+  html.indexOf('禁止去除署名后转载') !== -1, true);
+check('head 含 noai 抓取声明', html.indexOf('noai,noimageai') !== -1, true);
 check('含 TEE 速查表直达链接',
   html.indexOf('TEE-cheat-sheet/index.htm') !== -1, true);
 check('含 TTE 经胸直达交互链接',
