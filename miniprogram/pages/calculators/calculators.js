@@ -95,28 +95,8 @@ function buildSections() {
     }
   }
 
-  // 切面学习与 TEE 切面在线演示：纯链接条目
-  // mp4 直链走站内播放页，其余外链仍复制到浏览器（小程序 web-view 受业务域名限制）
-  EX.LINK_SECTIONS.forEach(function (s) {
-    sections.push({
-      id: s.id,
-      title: s.title,
-      note: s.note || '',
-      items: s.items.map(function (it) {
-        // 整本书 / 整套视频：目录只留一条入口，二级页里再列具体切面
-        if (it.album) {
-          return {
-            kind: 'album', id: it.id, sec: s.id, title: it.title,
-            sub: it.sub || '', count: (it.children || []).length,
-          };
-        }
-        return {
-          kind: 'link', id: it.id, title: it.title, sub: it.sub || '', url: it.url,
-          video: isVideo(it.url),
-        };
-      }),
-    });
-  });
+  // ★ 切面学习与 TEE 切面在线演示（LINK_SECTIONS 的 views / sim）已收进「切面学习」页签，
+  //   公式集目录不再重复列出（与网页 / APK 三端一致，v1.6.3）。
 
   // ★ moveTo：把标注了 moveTo 的评估条目挪到另一个分组显示（与网页端 app.js 同逻辑）
   //   条目定义仍留在 BRIEF_SECTIONS 里（详情页靠它取内容），只是目录换位置。

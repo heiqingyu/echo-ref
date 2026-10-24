@@ -164,3 +164,73 @@
   color: #8a9099;
   margin-top: 8rpx;
 }
+
+/* 页内导航 + 列表条目（与公式集目录同源样式，v1.6.3 引入「切面学习」页签） */
+.fx-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  width: 100%;
+  margin: 18rpx 0 4rpx;
+  padding: 4rpx 0;
+}
+
+.fx-nav__c {
+  flex: none;
+  padding: 10rpx 22rpx;
+  font-size: 23rpx;
+  color: #4b5563;
+  background: #f1f3f6;
+  border-radius: 999rpx;
+}
+
+.fx-nav__c--on {
+  color: #fff;
+  background: #2563eb;
+}
+
+.fx-list {
+  background: #fff;
+  border-radius: 18rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 10rpx rgba(16, 32, 64, 0.04);
+  margin-top: 6rpx;
+}
+
+.fx-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 26rpx 24rpx;
+  border-bottom: 1rpx solid #f0f1f3;
+}
+
+.fx-item:last-child {
+  border-bottom: none;
+}
+
+.fx-item__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.fx-item__n {
+  font-size: 29rpx;
+  font-weight: 600;
+  color: #1f2329;
+  line-height: 1.45;
+}
+
+.fx-item__d {
+  font-size: 23rpx;
+  color: #8a9099;
+  margin-top: 4rpx;
+  line-height: 1.5;
+}
+
+.fx-item__a {
+  flex: none;
+  font-size: 34rpx;
+  color: #c4c9d1;
+  line-height: 1;
+}

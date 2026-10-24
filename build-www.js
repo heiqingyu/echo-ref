@@ -21,7 +21,7 @@ const MP = path.join(ROOT, 'miniprogram');
 const OUT = path.join(ROOT, 'www', 'index.html');
 
 /**
- * 页签：v1.5.0 起完整版与发布版统一为 4 个（EF·参考值 / 儿童 Z 值 / 节段划分 / 公式集）。
+ * 页签：v1.5.0 起完整版与发布版统一为 4 个（EF·参考值 / 儿童 Z 值 / 切面学习 / 公式集）。
  * ★ 用户 2026-10-24：「网页下面标签页怎么变成了 6 组，瓣膜评估、瓣膜解剖放入公式集里，
  *   变四组和小程序统一」。瓣膜评估与瓣膜解剖已作为公式集里的条目存在，
  *   底部不再单列页签，也不再分完整版 / 发布版两套页签。
@@ -140,8 +140,19 @@ function buildSegPage() {
       (w.note ? '<div class="wall-card__note">' + escHtml(w.note) + '</div>' : '') + '</div>';
   }).join('');
 
-  return `  <!-- ───── Tab4 节段划分 ───── -->
+  return `  <!-- ───── Tab3 切面学习（v1.6.3：节段划分 + 教学视频 + TEE 演示 + 更多入口） ───── -->
   <section class="page" id="page-segments" hidden>
+    <div class="card">
+      <div class="card__t">切面学习</div>
+      <div class="card__d">节段划分、标准切面教学视频与 TEE 在线演示集中在本页签；点下方标签直达对应区块，切面与测量的判读正文仍在公式集。</div>
+      <div class="fx-nav" id="segNav">
+        <button class="fx-nav__c" data-segjump="segpart">节段划分</button>
+        <button class="fx-nav__c" data-segjump="viewspart">教学视频</button>
+        <button class="fx-nav__c" data-segjump="simpart">TEE 演示</button>
+        <button class="fx-nav__c" data-segjump="anapart">更多入口</button>
+      </div>
+    </div>
+    <div id="segpart">
     <div class="card">
       <div class="card__t">17 节段模型与冠脉供血</div>
       <div class="card__d">ASE 17 节段模型 · 供血分区为典型分布，存在个体差异。点击下方分区可高亮对应节段；点击节段色块或数字可在所有切面中同步定位。</div>
@@ -170,6 +181,23 @@ function buildSegPage() {
       <div class="note">常见旋转顺序：A4C → 约 60° 逆时针 → A2C → 再约 60° → A3C；角度只作操作参考。</div>
       <div class="note">前外侧乳头肌常有 LAD 对角支及 LCx 双重供血；后内侧乳头肌通常主要由后降支供血，来源随冠脉优势型改变。</div>
       <div class="note">LV 左室 · RV 右室 · LA 左房 · RA 右房 · Ao 主动脉 · MV 二尖瓣 · TV 三尖瓣 · LAA 左心耳 · LVOT 左室流出道</div>
+    </div>
+    </div>
+    <div class="card" id="viewspart">
+      <div class="card__t">切面学习（视频）</div>
+      <div class="card__d">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</div>
+      <div class="fx-list" id="segViewsList"></div>
+      <div class="note">多伦多 PIE 站点建议用 360 极速浏览器兼容模式打开；《实用超声规范化检查与操作》视频为公开直链，点击即播。</div>
+    </div>
+    <div class="card" id="simpart">
+      <div class="card__t">TEE 切面在线演示</div>
+      <div class="card__d">交互式 TEE 切面演示站点（外链，新窗口打开，不嵌入本页）。</div>
+      <div class="fx-list" id="segSimList"></div>
+    </div>
+    <div class="card" id="anapart">
+      <div class="card__t">更多切面入口</div>
+      <div class="card__d">切面与测量的详细判读正文在公式集，点下方条目直达详情。</div>
+      <div class="fx-list" id="segAnaList"></div>
     </div>
     <div class="note note--warn">本页为速查资料整理，内容依据 ASE 系列指南；具体应用请回看指南原文并结合临床判断。</div>
   </section>`;
@@ -203,8 +231,9 @@ const FAVICON_DATA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMA
 const PUBNOTE_HTML = `<div class="pubnote">
     <b>关于本页</b><br>
     本页为个人整理的心脏超声（TTE）参考速查工具，四个页签：<b>EF·参考值</b>（M 型 / 二维 EF 计算、
-    成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>节段划分</b>（ASE 17 节段模型与冠脉供血）、
-    <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（多个计算器与评估清单，按 10 个主题分组，
+    成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>切面学习</b>（ASE 17 节段模型与冠脉供血、
+    标准切面教学视频、TEE 在线演示与瓣膜 TEE 切面图谱入口）、
+    <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（多个计算器与评估清单，按主题分组，
     含二尖瓣狭窄 PMBV 适合度流程、人工瓣、超声造影、危急值清单与报告标准化）。
     公式集目录顶部有组名跳转条，点一下直接定位到对应分组；长条目详情页顶部另有小节导航。
     切面学习视频为第三方站点的文字链接，本工具不加载其任何内容。
@@ -597,7 +626,7 @@ ${SEG_HTML}
     <span class="tab__i">◎</span><span class="tab__t">儿童 Z 值</span>
   </div>
   <div class="tab" data-tab="segments">
-    <span class="tab__i">◭</span><span class="tab__t">节段划分</span>
+    <span class="tab__i">◭</span><span class="tab__t">切面学习</span>
   </div>
   <div class="tab" data-tab="calc">
     <span class="tab__i">∑</span><span class="tab__t">公式集</span>

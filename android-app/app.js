@@ -41,7 +41,7 @@
     index: 'EF·参考值',
     calc: '公式集',
     peds: '儿童 Z 值',
-    segments: '节段划分',
+    segments: '切面学习',
   };
 
   let currentTab = 'index';
@@ -1174,24 +1174,8 @@
       });
     });
 
-    LINKS.forEach(function (sec) {
-      secs.push({
-        id: sec.id,
-        title: sec.title,
-        note: sec.note || '',
-        items: sec.items.map(function (it) {
-          if (it.album) {
-            return {
-              kind: 'album', id: it.id, sec: sec.id, title: it.title,
-              sub: it.sub || '', count: (it.children || []).length,
-            };
-          }
-          return {
-            kind: 'link', id: it.id, title: it.title, sub: it.sub || '', url: it.url,
-          };
-        }),
-      });
-    });
+    // ★ v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两组外链整体迁到
+    //   「切面学习」页签（renderSegExtras 负责渲染），公式集目录不再重复列出。
 
     // ★ moveTo：把标注了 moveTo 的评估条目挪到另一个分组显示
     //   条目定义仍留在 BRIEF_SECTIONS 里（briefOf / 详情卡靠它），只是目录换位置。
@@ -1223,6 +1207,62 @@
     }
 
     return secs;
+  }
+
+  /**
+   * 切面学习页（v1.6.3）：视频 / 演示外链列表 + 更多切面入口 + 页内导航
+   *
+   * 两组外链原在公式集目录（LINK_SECTIONS），现迁到本页签；专辑条目仍占 1 行，
+   * 点击切到公式集的专辑视图（openAlbum 自带二级视图与返回栈）。
+   * 页内导航用 data-segjump + goToY（与全站滚动统一，不走 hash 锚点，
+   * 避免和 #/calc/… 的视图栈 hash 打架）。
+   */
+  function renderSegExtras() {
+    const viewsBox = $('segViewsList');
+    const simBox = $('segSimList');
+    const anaBox = $('segAnaList');
+    function listOf(secId) {
+      const sec = LINKS.filter(function (s) { return s.id === secId; })[0];
+      let h = '';
+      ((sec && sec.items) || []).forEach(function (it) {
+        h += fxItemHtml(it.album ? 'album' : 'link', it.id, it.title, it.sub,
+          it.url, (it.children || []).length, secId);
+      });
+      return h;
+    }
+    if (viewsBox) viewsBox.innerHTML = listOf('views');
+    if (simBox) simBox.innerHTML = listOf('sim');
+    if (anaBox) {
+      anaBox.innerHTML =
+        fxItemHtml('brief', 'tte-measure', 'TTE 标准切面与测量项目',
+          '13 个切面 × 观察结构 × 主要测量 · ASE 成人完整检查建议') +
+        fxItemHtml('valveana', 'valveana', '瓣膜解剖 · TEE 标准切面',
+          '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1');
+    }
+    // 页内导航：点标签滚到对应区块（goToY 统一处理 APK WebView 兼容）
+    document.querySelectorAll('#page-segments [data-segjump]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        const t = document.getElementById(el.dataset.segjump);
+        if (t) goToY(t.getBoundingClientRect().top + window.pageYOffset - 56);
+      });
+    });
+    // 条目点击委托：album 切到公式集的专辑视图，其余（brief / valveana）进详情视图
+    const segPage = $('page-segments');
+    if (segPage) {
+      segPage.addEventListener('click', function (ev) {
+        const el = ev.target.closest ? ev.target.closest('.fx-item') : null;
+        if (!el) return;
+        const kind = el.dataset.kind;
+        if (!kind) return;   // 纯外链 <a>：交给浏览器新窗口打开
+        if (kind === 'album') {
+          switchTab('calc');
+          openAlbum(el.dataset.sec, el.dataset.id);
+        } else {
+          switchTab('calc');
+          openCalcGroup(el.dataset.id);
+        }
+      });
+    }
   }
 
   /** 条目是否命中关键词（标题 + 说明，忽略大小写） */
@@ -1438,6 +1478,7 @@
     // ── 目录 ──
     bindCalcListEvents();
     renderCalcList($('fxSearch') ? $('fxSearch').value : '');
+    renderSegExtras();
 
     renderRefs();
 

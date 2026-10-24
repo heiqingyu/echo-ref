@@ -455,10 +455,10 @@ check('清空按钮改为「清空本组输入」', html.indexOf('清空本组�
 
 /* 公式集扩展：评估类内容 / 参考文献 / 版本号 / 页签顺序 */
 // 用户 2026-10-21：儿童 Z 值调到节段划分之前；新增瓣膜解剖页
-check('页签顺序 = EF·参考值|儿童 Z 值|节段划分|公式集（v1.5.0 起与小程序一致）',
+check('页签顺序 = EF·参考值|儿童 Z 值|切面学习|公式集（v1.6.3 起第 3 页签改名「切面学习」）',
   (html.match(/class="tab__t">([^<]+)</g) || []).map(function (x) {
     return x.replace(/^class="tab__t">/, '').replace(/<$/, '');
-  }).join('|') === 'EF·参考值|儿童 Z 值|节段划分|公式集', true);
+  }).join('|') === 'EF·参考值|儿童 Z 值|切面学习|公式集', true);
 check('含评估内容数据 ExtraData', html.indexOf('window.ExtraData') !== -1, true);
 check('完整版也移除了页尾「继续看其他页面」', html.indexOf('pagefoot') === -1, true);
 check('含评估分组（切面、图像与质控 / 心腔、心肌与应变 / 先心含术后 / 急症与特殊场景）',

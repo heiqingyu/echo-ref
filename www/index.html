@@ -1209,6 +1209,13 @@ html, body {
   text-decoration: none;
 }
 
+/* 切面学习页页内导航（v1.6.3）：fx-nav__c 用 button 承载，去掉 UA 默认边框 */
+button.fx-nav__c {
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 /* ── 组名快速跳转（目录很长，平铺全部组名一眼看全，不再横向拖动） ── */
 .fx-nav {
   display: flex;
@@ -1816,7 +1823,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.6.2</div>
+    <div class="verline">心脏超声参考值 · v1.6.3</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1858,7 +1865,7 @@ html, body {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.6.2</div>
+      <div class="verline">心脏超声参考值 · v1.6.3</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -1867,8 +1874,9 @@ html, body {
       <div class="pubnote">
     <b>关于本页</b><br>
     本页为个人整理的心脏超声（TTE）参考速查工具，四个页签：<b>EF·参考值</b>（M 型 / 二维 EF 计算、
-    成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>节段划分</b>（ASE 17 节段模型与冠脉供血）、
-    <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（多个计算器与评估清单，按 10 个主题分组，
+    成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>切面学习</b>（ASE 17 节段模型与冠脉供血、
+    标准切面教学视频、TEE 在线演示与瓣膜 TEE 切面图谱入口）、
+    <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（多个计算器与评估清单，按主题分组，
     含二尖瓣狭窄 PMBV 适合度流程、人工瓣、超声造影、危急值清单与报告标准化）。
     公式集目录顶部有组名跳转条，点一下直接定位到对应分组；长条目详情页顶部另有小节导航。
     切面学习视频为第三方站点的文字链接，本工具不加载其任何内容。
@@ -1899,8 +1907,19 @@ html, body {
     </div>
   </section>
 
-  <!-- ───── Tab4 节段划分 ───── -->
+  <!-- ───── Tab3 切面学习（v1.6.3：节段划分 + 教学视频 + TEE 演示 + 更多入口） ───── -->
   <section class="page" id="page-segments" hidden>
+    <div class="card">
+      <div class="card__t">切面学习</div>
+      <div class="card__d">节段划分、标准切面教学视频与 TEE 在线演示集中在本页签；点下方标签直达对应区块，切面与测量的判读正文仍在公式集。</div>
+      <div class="fx-nav" id="segNav">
+        <button class="fx-nav__c" data-segjump="segpart">节段划分</button>
+        <button class="fx-nav__c" data-segjump="viewspart">教学视频</button>
+        <button class="fx-nav__c" data-segjump="simpart">TEE 演示</button>
+        <button class="fx-nav__c" data-segjump="anapart">更多入口</button>
+      </div>
+    </div>
+    <div id="segpart">
     <div class="card">
       <div class="card__t">17 节段模型与冠脉供血</div>
       <div class="card__d">ASE 17 节段模型 · 供血分区为典型分布，存在个体差异。点击下方分区可高亮对应节段；点击节段色块或数字可在所有切面中同步定位。</div>
@@ -1929,6 +1948,23 @@ html, body {
       <div class="note">常见旋转顺序：A4C → 约 60° 逆时针 → A2C → 再约 60° → A3C；角度只作操作参考。</div>
       <div class="note">前外侧乳头肌常有 LAD 对角支及 LCx 双重供血；后内侧乳头肌通常主要由后降支供血，来源随冠脉优势型改变。</div>
       <div class="note">LV 左室 · RV 右室 · LA 左房 · RA 右房 · Ao 主动脉 · MV 二尖瓣 · TV 三尖瓣 · LAA 左心耳 · LVOT 左室流出道</div>
+    </div>
+    </div>
+    <div class="card" id="viewspart">
+      <div class="card__t">切面学习（视频）</div>
+      <div class="card__d">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</div>
+      <div class="fx-list" id="segViewsList"></div>
+      <div class="note">多伦多 PIE 站点建议用 360 极速浏览器兼容模式打开；《实用超声规范化检查与操作》视频为公开直链，点击即播。</div>
+    </div>
+    <div class="card" id="simpart">
+      <div class="card__t">TEE 切面在线演示</div>
+      <div class="card__d">交互式 TEE 切面演示站点（外链，新窗口打开，不嵌入本页）。</div>
+      <div class="fx-list" id="segSimList"></div>
+    </div>
+    <div class="card" id="anapart">
+      <div class="card__t">更多切面入口</div>
+      <div class="card__d">切面与测量的详细判读正文在公式集，点下方条目直达详情。</div>
+      <div class="fx-list" id="segAnaList"></div>
     </div>
     <div class="note note--warn">本页为速查资料整理，内容依据 ASE 系列指南；具体应用请回看指南原文并结合临床判断。</div>
   </section>
@@ -2069,7 +2105,7 @@ html, body {
     <span class="tab__i">◎</span><span class="tab__t">儿童 Z 值</span>
   </div>
   <div class="tab" data-tab="segments">
-    <span class="tab__i">◭</span><span class="tab__t">节段划分</span>
+    <span class="tab__i">◭</span><span class="tab__t">切面学习</span>
   </div>
   <div class="tab" data-tab="calc">
     <span class="tab__i">∑</span><span class="tab__t">公式集</span>
@@ -8650,12 +8686,11 @@ const BRIEF_SECTIONS = [
         note: '这一页的核心是**先选模态、再选切面、最后定监护点**。最容易犯的三个错：①房间隔封堵还用 TTE 盯着（封堵器一放就全挡了）；②酒精消融没做术中超声造影定位穿支；③ICE 以为「视野大就什么都能看」——**导管尖端不总能确定看见，房间隔下缘也受限**。',
       },
       {
-        // ★ moveTo: 'views' —— 目录里挪到「切面学习」组显示（内容属切面主题，
-        //   与「节段划分」页无关；2026-10-24 用户要求从节段划分页移走）。
+        // ★ v1.6.3：目录「切面学习」组整体迁到「切面学习」页签，moveTo 取消，
+        //   本条回到宿主组；「切面学习」页尾部有跳转入口直达本条详情。
         id: 'tte-measure',
         title: 'TTE 标准切面与测量项目',
         sub: '13 个切面 × 观察结构 × 主要测量 · ASE 成人完整检查建议',
-        moveTo: 'views',
         source: ['R11'],
         rel: ['tte-std', 'zh-normal', 'doppler-basics'],
         fields: [],
@@ -14166,7 +14201,7 @@ const CALC_NOTES = {
   wmsi: {
     use: '室壁运动评分指数（WMSI），半定量评价整体与节段性室壁运动异常，是心肌缺血与心肌病的常用描述性指标。',
     std: 'WMSI 1.0 正常；1.0–1.5 轻度、1.5–1.7 中度、≥1.7 提示大面积缺血且预后差。',
-    tip: '按各类节段的个数录入（比逐段填 17 个格子快且不易漏段），与「节段划分」页对照定位。评估者主观性较强，必要时用 3D 或 CMR 佐证。',
+    tip: '按各类节段的个数录入（比逐段填 17 个格子快且不易漏段），与「切面学习」页的节段划分对照定位。评估者主观性较强，必要时用 3D 或 CMR 佐证。',
   },
   h2fpef: {
     use: 'H₂FPEF 评分，用「表型 + 评分」把 HFpEF 从排除性诊断转为可操作性诊断，是心脏专科门诊最常用的 HFpEF 筛查工具。',
@@ -14303,7 +14338,7 @@ const MATERIALS = [];
     index: 'EF·参考值',
     calc: '公式集',
     peds: '儿童 Z 值',
-    segments: '节段划分',
+    segments: '切面学习',
   };
 
   let currentTab = 'index';
@@ -15436,24 +15471,8 @@ const MATERIALS = [];
       });
     });
 
-    LINKS.forEach(function (sec) {
-      secs.push({
-        id: sec.id,
-        title: sec.title,
-        note: sec.note || '',
-        items: sec.items.map(function (it) {
-          if (it.album) {
-            return {
-              kind: 'album', id: it.id, sec: sec.id, title: it.title,
-              sub: it.sub || '', count: (it.children || []).length,
-            };
-          }
-          return {
-            kind: 'link', id: it.id, title: it.title, sub: it.sub || '', url: it.url,
-          };
-        }),
-      });
-    });
+    // ★ v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两组外链整体迁到
+    //   「切面学习」页签（renderSegExtras 负责渲染），公式集目录不再重复列出。
 
     // ★ moveTo：把标注了 moveTo 的评估条目挪到另一个分组显示
     //   条目定义仍留在 BRIEF_SECTIONS 里（briefOf / 详情卡靠它），只是目录换位置。
@@ -15485,6 +15504,62 @@ const MATERIALS = [];
     }
 
     return secs;
+  }
+
+  /**
+   * 切面学习页（v1.6.3）：视频 / 演示外链列表 + 更多切面入口 + 页内导航
+   *
+   * 两组外链原在公式集目录（LINK_SECTIONS），现迁到本页签；专辑条目仍占 1 行，
+   * 点击切到公式集的专辑视图（openAlbum 自带二级视图与返回栈）。
+   * 页内导航用 data-segjump + goToY（与全站滚动统一，不走 hash 锚点，
+   * 避免和 #/calc/… 的视图栈 hash 打架）。
+   */
+  function renderSegExtras() {
+    const viewsBox = $('segViewsList');
+    const simBox = $('segSimList');
+    const anaBox = $('segAnaList');
+    function listOf(secId) {
+      const sec = LINKS.filter(function (s) { return s.id === secId; })[0];
+      let h = '';
+      ((sec && sec.items) || []).forEach(function (it) {
+        h += fxItemHtml(it.album ? 'album' : 'link', it.id, it.title, it.sub,
+          it.url, (it.children || []).length, secId);
+      });
+      return h;
+    }
+    if (viewsBox) viewsBox.innerHTML = listOf('views');
+    if (simBox) simBox.innerHTML = listOf('sim');
+    if (anaBox) {
+      anaBox.innerHTML =
+        fxItemHtml('brief', 'tte-measure', 'TTE 标准切面与测量项目',
+          '13 个切面 × 观察结构 × 主要测量 · ASE 成人完整检查建议') +
+        fxItemHtml('valveana', 'valveana', '瓣膜解剖 · TEE 标准切面',
+          '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1');
+    }
+    // 页内导航：点标签滚到对应区块（goToY 统一处理 APK WebView 兼容）
+    document.querySelectorAll('#page-segments [data-segjump]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        const t = document.getElementById(el.dataset.segjump);
+        if (t) goToY(t.getBoundingClientRect().top + window.pageYOffset - 56);
+      });
+    });
+    // 条目点击委托：album 切到公式集的专辑视图，其余（brief / valveana）进详情视图
+    const segPage = $('page-segments');
+    if (segPage) {
+      segPage.addEventListener('click', function (ev) {
+        const el = ev.target.closest ? ev.target.closest('.fx-item') : null;
+        if (!el) return;
+        const kind = el.dataset.kind;
+        if (!kind) return;   // 纯外链 <a>：交给浏览器新窗口打开
+        if (kind === 'album') {
+          switchTab('calc');
+          openAlbum(el.dataset.sec, el.dataset.id);
+        } else {
+          switchTab('calc');
+          openCalcGroup(el.dataset.id);
+        }
+      });
+    }
   }
 
   /** 条目是否命中关键词（标题 + 说明，忽略大小写） */
@@ -15700,6 +15775,7 @@ const MATERIALS = [];
     // ── 目录 ──
     bindCalcListEvents();
     renderCalcList($('fxSearch') ? $('fxSearch').value : '');
+    renderSegExtras();
 
     renderRefs();
 

@@ -1198,6 +1198,13 @@ html, body {
   text-decoration: none;
 }
 
+/* 切面学习页页内导航（v1.6.3）：fx-nav__c 用 button 承载，去掉 UA 默认边框 */
+button.fx-nav__c {
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 /* ── 组名快速跳转（目录很长，平铺全部组名一眼看全，不再横向拖动） ── */
 .fx-nav {
   display: flex;

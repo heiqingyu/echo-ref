@@ -292,10 +292,12 @@ else bad('专辑内存在非 mp4 或缺字段的条目');
 if (bvAlb && /王辉/.test(bvAlb.note || '') && /978-7-5189-8028-4/.test(bvAlb.note || '')) ok('专辑标注编者与 ISBN');
 else bad('专辑缺少书籍出处');
 const extSrc = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
-if (extSrc.indexOf('EX.LINK_SECTIONS') !== -1) ok('目录页已接入 LINK_SECTIONS');
+if (extSrc.indexOf('EX.LINK_SECTIONS') !== -1) ok('目录页已接入 LINK_SECTIONS（搜索 / 专辑子条目仍复用）');
 else bad('目录页未接入 LINK_SECTIONS');
-if (extSrc.indexOf("kind: 'album'") !== -1) ok('目录把专辑渲染为单条入口（kind: album）');
-else bad('目录未把专辑收成单条入口');
+// v1.6.3：专辑入口从公式集目录迁到「切面学习」页签，kind: album 的渲染逻辑随之移到 segments.js
+const segSrc3 = fs.readFileSync(path.join(MP, 'pages/segments/segments.js'), 'utf8');
+if (segSrc3.indexOf("kind: 'album'") !== -1) ok('切面学习页把专辑渲染为单条入口（kind: album）');
+else bad('切面学习页未把专辑收成单条入口');
 if (/onSearch\s*\(/.test(extSrc) && /bindinput="onSearch"/.test(
   fs.readFileSync(path.join(MP, 'pages/calculators/calculators.wxml'), 'utf8')))
   ok('公式集目录带搜索框（输入即筛）');
