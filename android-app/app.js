@@ -1178,6 +1178,22 @@
       });
     });
 
+    // ★ moveTo：把标注了 moveTo 的评估条目挪到另一个分组显示
+    //   条目定义仍留在 BRIEF_SECTIONS 里（briefOf / 详情卡靠它），只是目录换位置。
+    //   2026-10-24：用户要求把「TTE 标准切面与测量项目」从节段划分页移到「切面学习」。
+    BRIEF.forEach(function (sec) {
+      sec.items.forEach(function (it) {
+        if (!it.moveTo || it.moveTo === sec.id) return;
+        const host = secs.filter(function (x) { return x.id === it.moveTo; })[0];
+        if (!host) return;
+        const from = secs.filter(function (x) { return x.id === sec.id; })[0];
+        if (from) {
+          from.items = from.items.filter(function (x) { return x.id !== it.id; });
+        }
+        host.items.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
+      });
+    });
+
     // 本地资料（PDF / 图片 / 视频直链）：docs/materials/ 里有东西才出现
     const MT = window.Materials;
     if (MT && MT.MATERIALS && MT.MATERIALS.length) {

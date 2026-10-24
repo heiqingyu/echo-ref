@@ -122,10 +122,7 @@ function buildSegPage() {
   const layerRows = SEG_DATA.LAYER_ROWS.map((r) =>
     '<div class="tbl__row tbl--2"><span class="tbl__c1">' + escHtml(r[0]) +
     '</span><span class="tbl__c2">' + escHtml(r[1]) + '</span></div>').join('');
-  const viewRows = SEG_DATA.VIEW_ROWS.map((r) =>
-    '<div class="tbl__row tbl--3"><span class="tbl__c1">' + escHtml(r[0]) +
-    '</span><span class="tbl__c2">' + escHtml(r[1]) +
-    '</span><span class="tbl__c2">' + escHtml(r[2]) + '</span></div>').join('');
+
 
   // 7 张切面示意图卡片（SVG 由 SegSvg 运行时渲染进 wd-* 容器）
   const wallCards = SEG_SVG.WALL_VIEWS.map((w) => {
@@ -173,15 +170,6 @@ function buildSegPage() {
       <div class="note">常见旋转顺序：A4C → 约 60° 逆时针 → A2C → 再约 60° → A3C；角度只作操作参考。</div>
       <div class="note">前外侧乳头肌常有 LAD 对角支及 LCx 双重供血；后内侧乳头肌通常主要由后降支供血，来源随冠脉优势型改变。</div>
       <div class="note">LV 左室 · RV 右室 · LA 左房 · RA 右房 · Ao 主动脉 · MV 二尖瓣 · TV 三尖瓣 · LAA 左心耳 · LVOT 左室流出道</div>
-    </div>
-    <div class="card">
-      <div class="card__t">标准切面与测量项目</div>
-      <div class="card__d">ASE 成人完整 TTE 检查建议</div>
-      <div class="tbl">
-        <div class="tbl__head tbl--3"><span>切面</span><span>观察结构</span><span>主要测量</span></div>
-        ${viewRows}
-      </div>
-      <div class="note">主动脉瓣狭窄测速需要多声窗比较。必要时用非成像连续波探头（Pedoff）从心尖、右胸骨旁、胸骨上窝寻找最高的可靠流速。</div>
     </div>
     <div class="note note--warn">本页为速查资料整理，内容依据 ASE 系列指南；具体应用请回看指南原文并结合临床判断。</div>
   </section>`;

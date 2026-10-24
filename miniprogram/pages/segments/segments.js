@@ -12,8 +12,6 @@ Page({
     layerRows: DATA.LAYER_ROWS,
     // ── ② 切面与室壁对应（示意图） ──
     wallViews: [],
-    // ── ③ 标准切面与测量项目 ──
-    viewRows: DATA.VIEW_ROWS,
     hiName: '',
   },
 

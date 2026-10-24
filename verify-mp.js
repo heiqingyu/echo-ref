@@ -530,8 +530,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 138 条（50 计算 + 2 瓣膜 + 76 评估 + 1 解剖 + 6 切面学习 + 3 模拟器）', nItems, 138, 0);
-  check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
+  check('目录共 139 条（50 计算 + 2 瓣膜 + 77 评估 + 1 解剖 + 7 切面学习 + 3 模拟器）', nItems, 139, 0);
+  check('切面学习 7 条（专辑入口 + 5 个外链 + 1 条标准切面速查表）', dirViews.items.length, 7, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
   check('公式集已接入「回到顶部」（onPageScroll + onToTop）',
@@ -546,8 +546,13 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirViews.items[0] && dirViews.items[0].kind === 'album' && dirViews.items[0].id === 'bookvid' ? 1 : 0, 1, 0);
   check('专辑标题为「实用超声规范化检查与操作（视频）」',
     dirViews.items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
-  check('外链条目为 link 类型（专辑除外）',
-    dirViews.items.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+  // v1.5.1：组内混入 1 条 brief（TTE 标准切面与测量项目，由 moveTo 从评估组挪来），故先排除 brief
+  check('外链条目为 link 类型（专辑 / brief 除外）',
+    dirViews.items.slice(1).filter(i => i.kind !== 'brief')
+      .every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+  check('切面学习组末尾是「TTE 标准切面与测量项目」brief 条目',
+    dirViews.items[dirViews.items.length - 1].id === 'tte-measure' &&
+      dirViews.items[dirViews.items.length - 1].kind === 'brief' ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
     dirViews.items[0] && dirViews.items[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进目录数据（省 setData）',

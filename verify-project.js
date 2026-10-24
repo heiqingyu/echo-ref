@@ -181,7 +181,7 @@ const EX = require(exPath);
 if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（切面图像与质控 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,lf-lg,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,aorta,pe,ph,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 76 条（5 个分组）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,lf-lg,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,aorta,pe,ph,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 77 条（5 个分组）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -549,8 +549,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
       }
     });
   });
-  (bridged.length === 76) ? ok('76 个判读条目全部挂上「相关计算」桥接')
-    : bad('桥接条目数 ' + bridged.length + '（期望 76）');
+  (bridged.length === 77) ? ok('77 个判读条目全部挂上「相关计算」桥接')
+    : bad('桥接条目数 ' + bridged.length + '（期望 77）');
   bridged.every(function (b) { return b.text.indexOf('公式集 → ') !== -1; })
     ? ok('桥接文案统一指向「公式集 → 组 · 计算器」')
     : bad('桥接文案格式不一致');
@@ -831,7 +831,7 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   const calcIds160 = CG160.GROUPS.map(g => g.id).concat(briefs160.map(b => b.id));
   const links160 = EX160.CALC_LINKS || {};
   const missingLinks = briefs160.filter(b => !(links160[b.id] || []).length).map(b => b.id);
-  if (!missingLinks.length) ok('76 条判读全部带「相关计算」跳转目标');
+  if (!missingLinks.length) ok('77 条判读全部带「相关计算」跳转目标');
   else bad('缺相关计算的条目：' + missingLinks.join(','));
   const badTarget = [];
   Object.keys(links160).forEach(function (k) {
