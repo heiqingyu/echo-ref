@@ -521,10 +521,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 11 个大组（4 计算 + 1 瓣膜 + 5 评估 + 2 外链；v1.4.8 精简）', dirs.length, 11, 0);
+  check('公式集分 10 个大组（3 计算 + 1 瓣膜 + 4 评估 + 2 外链；v1.5.3 拆散「介入尺寸」组）', dirs.length, 10, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|介入尺寸、先心与随访|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
+      '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 模拟器' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const dirViews = dirById('views');
@@ -605,32 +605,37 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('重构组条目齐全',
     ['volidx', 'rwsv', 'spher', 'lastrain', 'aortaidx', 'mdsv', 'swv']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('计算类条目合计 50 条（4 个计算组；另 2 条在瓣膜评估组，合计 52）',
-    dirs.slice(0, 4).reduce((n, d) => n + d.items.length, 0), 50, 0);
+  check('计算类条目 3 个计算组合计 42 条（另 10 条并入瓣膜 4 / 先心 4 / 心腔 2，合计 52）',
+    dirs.slice(0, 3).reduce(function (n, d) { return n + d.items.length; }, 0), 42, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('介入尺寸、先心与随访 8 条（TAVR / LAA / McGoon / CoA / 主动脉 Z 值 + 主动脉增长 / 人工瓣随访 / CFR）', dirById('ivs').items.length, 8, 0);
-  check('介入组条目齐全',
-    ['tavrsz', 'laasz', 'paidx', 'coa']
-      .every(id => dirById('ivs').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  // v1.5.3：原「介入尺寸、先心与随访」组已拆散，8 个计算器分别并入瓣膜 / 先心 / 心腔组
+  check('原「介入尺寸」组已不存在', dirById('ivs') ? 0 : 1, 1, 0);
+  check('TAVR 瓣环 / 人工瓣术后 → 瓣膜评估组',
+    ['tavrsz', 'pvfu'].every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('McGoon / CoA / 主动脉 Z 值 / 主动脉增长率 → 先心组',
+    ['paidx', 'coa', 'aortaz', 'aortagrow']
+      .every(id => dirById('chd').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('左心耳封堵 / CFR → 心腔组',
+    ['laasz', 'cfr'].every(id => dirById('chamber').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('第三四批条目齐全',
     ['laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
-      .every(id => ['hemo', 'right', 'recon', 'ivs', 'valve'].some(g => dirById(g).items.some(i => i.id === id)))
+      .every(id => ['hemo', 'right', 'recon', 'valve', 'chd', 'chamber'].some(g => dirById(g).items.some(i => i.id === id)))
       ? 1 : 0, 1, 0);
   check('器械与介入组已拆散：CRT / LAD 进心腔组、LVAD 进急症组',
     ['crt', 'la'].every(id => dirById('chamber').items.some(i => i.id === id)) &&
     dirById('vascular').items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
-  check('心腔、心肌与应变 28 条（心腔 17 + 心肌病变 9 + CRT / LAD）', dirById('chamber').items.length, 28, 0);
+  check('心腔、心肌与应变 30 条（心腔 17 + 心肌病变 9 + CRT / LAD + 左心耳封堵 / CFR）', dirById('chamber').items.length, 30, 0);
   ['lv', 'rv', 'rcoupling', 'rvfail', 'rv-strain', 'strain', 'la-strain', 'peri', 'cp-rm', 'prosthetic', 'ctrcd'].forEach(id => {
     check('心腔、应变与负荷含 ' + id,
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 9 条通用/专用计算 + 8 条判读 + 1 个解剖示意图（v1.4.4 起 AS/AR/MS/MR 并入两个评估页）
-  check('瓣膜评估组 14 条（2 计算 + 11 判读含器械介入 + 1 解剖示意图）', dirById('valve').items.length, 14, 0);
+  check('瓣膜评估组 16 条（4 计算 + 11 判读含器械介入 + 1 解剖示意图）', dirById('valve').items.length, 16, 0);
   // v1.4.9：VCW/RF/PR/AS 负荷/DVI/TAPSE-PASP/RAP 这些纯查表或已被评估页覆盖的也删了，只剩 2 条
-  check('瓣膜评估组只剩 2 条计算（tr / ppm）',
-    ['tr', 'ppm']
+  check('瓣膜评估组 4 条计算（tr / ppm / tavrsz / pvfu）',
+    ['tr', 'ppm', 'tavrsz', 'pvfu']
       .every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('与评估页重复的通用计算已并入、不再单列（wilkins / mva / pisav / avav）',
     ['wilkins', 'mva', 'pisav', 'avav']
@@ -659,7 +664,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病（含术后）7 条（分流 / 可手术性 / TOF 术后 PR / Ebstein / DORV / ASD 封堵 / CoA）', dirById('chd').items.length, 10, 0);
+  check('先天性心脏病（含术后）14 条（10 判读 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率）', dirById('chd').items.length, 14, 0);
   ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
     check('先天性心脏病含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);

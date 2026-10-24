@@ -59,23 +59,20 @@ function buildSections() {
     sections.push({ id: s.id, title: s.title, items: s.items.slice() });
   });
 
-  // ★ 瓣膜通用计算（calc-groups.js 里 sec: 'valve'）并入「瓣膜评估」组，
-  //   紧跟在 5 个瓣膜专用计算器之后 —— 瓣膜相关的量都收在一组里，
-  //   不用在「舒张功能定量」和「瓣膜评估」之间来回跳。
-  const valveHost = sections.filter(function (x) { return x.id === 'valve'; })[0];
-  if (valveHost) {
-    const valveCalc = CG.GROUPS.filter(function (g) {
-      return g.sec === 'valve';
+  // ★ 瓣膜组（sec: 'valve'）的计算器由下面的 BRIEF 循环统一并入（mergeInto 分支），
+  //   v1.5.3 起不再在这里单独拼一遍，否则 tavrsz / pvfu 会重复出现两次。
+
+  EX.BRIEF_SECTIONS.forEach(function (s) {
+    // ★ v1.5.3：sec 指向本组的计算器直接并进来，排在判读条目之前
+    //   （原「介入尺寸、先心与随访」组已拆散，8 个计算器归到 valve / chd / chamber）
+    const calcs = CG.GROUPS.filter(function (g) {
+      return g.sec === s.id;
     }).map(function (g) {
       return { kind: 'calc', id: g.id, title: g.title, sub: g.sub || '' };
     });
-    valveHost.items = valveHost.items.concat(valveCalc);
-  }
-
-  EX.BRIEF_SECTIONS.forEach(function (s) {
-    const items = s.items.map(function (it) {
+    const items = calcs.concat(s.items.map(function (it) {
       return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };
-    });
+    }));
     // mergeInto：并入同名组（如「瓣膜评估」计算器组），不另起一个组
     if (s.mergeInto) {
       const host = sections.filter(function (x) { return x.id === s.mergeInto; })[0];

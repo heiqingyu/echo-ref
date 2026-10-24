@@ -493,10 +493,10 @@ check('含 6 个新计算器（mtype / wmsi / h2fpef / hfapeff / tavrsz / laasz�
   ['mtype', 'wmsi', 'h2fpef', 'hfapeff', 'tavrsz', 'laasz'].every(function (id) {
     return html.indexOf("id: '" + id + "'") !== -1;
   }), true);
-check('计算组 4 个（血流动力学·舒张 / 右心 / 重构·室壁运动 / 介入尺寸·随访）',
+check('计算组 3 个（血流动力学·舒张 / 右心 / 重构·室壁运动）；「介入尺寸」组 v1.5.3 已拆散',
   html.indexOf("id: 'hemo', title: '血流动力学、舒张与心功能'") !== -1 &&
   html.indexOf("id: 'recon', title: '重构、室壁运动与心肌功能'") !== -1 &&
-  html.indexOf("id: 'ivs', title: '介入尺寸、先心与随访'") !== -1, true);
+  html.indexOf("id: 'ivs', title: '介入尺寸、先心与随访'") === -1, true);
 check('引擎函数已内联（mModeTriple / wmsiIndex / h2fpefScore / hfaPeffScore / tavrSizing / laaSize）',
   ['function mModeTriple', 'function wmsiIndex', 'function h2fpefScore',
    'function hfaPeffScore', 'function tavrSizing', 'function laaSize']

@@ -317,7 +317,7 @@ function check(name, ok, detail) {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
     check('公式集分组 = 4 个计算组 + 瓣膜 + 5 组评估 + 2 组外链（v1.4.8 精简）',
-      d.groups.join('|') === '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|介入尺寸、先心与随访|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 模拟器',
+      d.groups.join('|') === '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
     // v1.5.0：瓣膜解剖成了公式集里的一条，目录从 137 变 138
     // v1.5.2：新增「TTE 标准切面与测量项目」（切面学习组）→ 139
@@ -329,7 +329,7 @@ function check(name, ok, detail) {
     check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
-    check('发布版瓣膜评估组含 2 条计算（TR / 人工瓣 PPM）', d.valveCalc === 2, d.valveCalc);
+    check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
     check('参考文献 78 条', d.refs === 78, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
@@ -584,11 +584,11 @@ function check(name, ok, detail) {
   check('左房应变三值自洽', /LASr/.test(o) && /自洽/.test(o), o);
 
   // ── v1.2.8 新增两组：评分与室壁运动 / 介入尺寸与先心 ──
-  check('评分与随访已并入 recon / ivs，旧组名不再出现',
+  check('评分与随访已并入 recon；「介入尺寸、先心与随访」组 v1.5.3 起已拆散，旧组名不再出现',
     newGroupTitles.indexOf('评分与室壁运动') === -1 &&
     newGroupTitles.indexOf('随访与术中评估') === -1 &&
     newGroupTitles.indexOf('重构、室壁运动与心肌功能') !== -1 &&
-    newGroupTitles.indexOf('介入尺寸、先心与随访') !== -1, newGroupTitles);
+    newGroupTitles.indexOf('介入尺寸、先心与随访') === -1, newGroupTitles);
 
   // 选项组点击（性别 / 心律 / 节段总数 …）
   const pickOpt = async (gid, key, val) => {

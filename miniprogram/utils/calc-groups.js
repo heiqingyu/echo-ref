@@ -325,7 +325,7 @@ const GROUPS = [
   /* ══ v1.3.0 第四批：先心 / 心肌 / 耦联 ══ */
   {
     id: 'paidx',
-    sec: 'ivs',
+    sec: 'chd',
     title: 'McGoon 比值与 Nakata 指数',
     sub: '肺动脉发育 · 先心根治可行性',
     fields: [
@@ -360,7 +360,7 @@ const GROUPS = [
   },
   {
     id: 'coa',
-    sec: 'ivs',
+    sec: 'chd',
     title: '主动脉缩窄压差与拖尾',
     sub: '峰值压差 · 舒张末期持续血流',
     fields: [
@@ -371,7 +371,7 @@ const GROUPS = [
   },
   {
     id: 'aortaz',
-    sec: 'ivs',
+    sec: 'chd',
     title: '主动脉分节段 Z 值',
     sub: '瓣环 / 窦部 / 窦管交界 / 升主动脉 · 成人参考区间',
     opts: [
@@ -637,7 +637,7 @@ const GROUPS = [
   },
   {
     id: 'tavrsz',
-    sec: 'ivs',
+    sec: 'valve',
     title: 'TAVR 瓣环尺寸与 oversizing',
     sub: '周长/面积导出直径 · 面积 oversizing 判读',
     fields: [
@@ -649,7 +649,7 @@ const GROUPS = [
   },
   {
     id: 'laasz',
-    sec: 'ivs',
+    sec: 'chamber',
     title: '左心耳封堵尺寸推荐',
     sub: '着陆区最大径 → 推荐型号 · 深度与椭圆度提示',
     fields: [
@@ -661,7 +661,7 @@ const GROUPS = [
   },
   {
     id: 'aortagrow',
-    sec: 'ivs',
+    sec: 'chd',
     title: '主动脉扩张增长率',
     sub: '两次测量之差 ÷ 间隔年数',
     fields: [
@@ -673,7 +673,7 @@ const GROUPS = [
   },
   {
     id: 'pvfu',
-    sec: 'ivs',
+    sec: 'valve',
     title: '人工瓣术后跨瓣血流',
     sub: 'TAVR / 换瓣后 EOA 与压差',
     fields: [
@@ -687,7 +687,7 @@ const GROUPS = [
   },
   {
     id: 'cfr',
-    sec: 'ivs',
+    sec: 'chamber',
     title: '冠脉血流储备 CFR',
     sub: '远端 ÷ 近端冠脉舒张期流速',
     fields: [
@@ -708,7 +708,6 @@ const CALC_SECTIONS = [
   { id: 'hemo', title: '血流动力学、舒张与心功能' },
   { id: 'right', title: '右心与肺循环' },
   { id: 'recon', title: '重构、室壁运动与心肌功能' },
-  { id: 'ivs', title: '介入尺寸、先心与随访' },
 ];
 
 /** IVC 塌陷选项 */
