@@ -1,5 +1,6 @@
 const CG = require('../../utils/calc-groups.js');
 const EX = require('../../utils/extra-data.js');
+const XS = require('../../utils/cross-search.js');
 const V = require('../../utils/version.js');
 const MT = require('../../utils/materials.js');
 const app = getApp();
@@ -190,6 +191,7 @@ Page({
     sections: buildSections(),
     kw: '',
     searching: false,
+    segCrossN: 0,   // 「切面学习」页签里的命中数（v1.6.5 跨页签提示）
     bsaText: '—',
     countText: '',
     refs: EX.REFS,
@@ -217,6 +219,12 @@ Page({
   onShow() {
     const p = app.globalData.profile;
     this.setData({ bsaText: p && p.bsa ? p.bsa.toFixed(2) : '—' });
+    // 从「切面学习」跨页签搜过来：接着刚才的关键词继续筛
+    const pend = app.globalData.pendingCalcKw;
+    if (pend) {
+      app.globalData.pendingCalcKw = '';
+      this.applySearch(pend);
+    }
   },
 
   /** 参考文献默认折叠（40 条会把页面拉得很长），点标题才展开全部 */
@@ -266,29 +274,42 @@ Page({
 
   /** 搜索框输入：实时过滤（条目总量不大，直接过滤，无需防抖） */
   onSearch(e) {
-    const kw = ((e.detail && e.detail.value) || '').trim();
+    this.applySearch((e.detail && e.detail.value) || '');
+  },
+
+  /** 搜索主体（从搜索框、清空、跨页签跳转三处共用） */
+  applySearch(raw) {
+    const kw = (raw || '').trim();
+    // allSections 是 onLoad 里缓存的原始目录；理论上 onShow 之前一定已 onLoad，
+    // 但这里给个回退，免得任何调用顺序下都炸掉整页。
+    const all = this.allSections || this.data.sections;
     if (!kw) {
       this.setData({
-        kw: '', searching: false, sections: this.allSections,
-        countText: this.countTextOf(this.allSections),
+        kw: '', searching: false, sections: all,
+        countText: this.countTextOf(all), segCrossN: 0,
       });
       return;
     }
-    const secs = searchSections(this.allSections, kw);
+    const secs = searchSections(all, kw);
     this.setData({
       kw: kw,
       searching: true,
       sections: secs,
       countText: secs.length ? '找到 ' + kw : '没有匹配「' + kw + '」',
+      // v1.6.5：切面学习页签的速查/视频/演示不在本目录里，命中就给一条过去的入口
+      segCrossN: XS.segCount(kw),
     });
   },
 
   /** 清空搜索 */
   onClearSearch() {
-    this.setData({
-      kw: '', searching: false, sections: this.allSections,
-      countText: this.countTextOf(this.allSections),
-    });
+    this.applySearch('');
+  },
+
+  /** 跨页签：带着关键词跳到「切面学习」（switchTab 不能带参数，走 globalData） */
+  onSegCross() {
+    app.globalData.pendingSegKw = this.data.kw;
+    wx.switchTab({ url: '/pages/segments/segments' });
   },
 
   /**

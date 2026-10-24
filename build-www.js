@@ -145,6 +145,14 @@ function buildSegPage() {
     <div class="card">
       <div class="card__t">切面学习</div>
       <div class="card__d">节段划分、切面速查、标准切面教学视频与 TEE 在线演示集中在本页签；点下方标签直达对应区块，切面与测量的判读正文仍在公式集。</div>
+      <!-- v1.6.5：本页签自带搜索（只筛速查 / 视频 / 演示），搜不到时给一条去公式集的入口 -->
+      <div class="fx-search fx-search--flat">
+        <input id="segSearch" class="fx-search__i" type="search" autocomplete="off"
+               placeholder="搜索切面速查 / 视频 / 演示，如 TEE、房间隔">
+        <button class="fx-search__x" id="segSearchClear" hidden>✕</button>
+      </div>
+      <div class="fx-empty" id="segEmpty" hidden></div>
+      <div class="fx-cross" id="segCross" hidden></div>
       <div class="fx-nav" id="segNav">
         <button class="fx-nav__c" data-segjump="segpart">节段划分</button>
         <button class="fx-nav__c" data-segjump="lookpart">切面速查</button>

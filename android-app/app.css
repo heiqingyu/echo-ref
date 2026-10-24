@@ -91,6 +91,8 @@ html, body {
   cursor: pointer;
 }
 .appbar__r:active { background: rgba(255,255,255,.3); }
+/* v1.6.5：切面学习页与纯判读详情页没有可重置的输入，隐藏按 UA 规则显式声明 */
+.appbar__r[hidden] { display: none; }
 
 /* ────────── 内容区 ────────── */
 .main {
@@ -819,6 +821,40 @@ html, body {
   font-size: 13px;
   color: var(--sub);
 }
+
+/* 页签内搜索框（切面学习）：不吸顶，跟卡片一起滚 */
+.fx-search--flat {
+  position: static;
+  margin: 12px 0 10px;
+  padding: 2px 10px;
+  background: var(--bg);
+  box-shadow: none;
+  border: 1px solid var(--line);
+}
+
+/* 跨页签搜索提示：本页没命中 / 另一页签还有命中时给一条直达入口 */
+.fx-cross {
+  margin: 2px 0 12px;
+}
+
+.fx-cross__b {
+  display: block;
+  width: 100%;
+  padding: 11px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border: 1px dashed rgba(37, 99, 235, 0.35);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.fx-cross__b:active { background: #e2ecff; }
+
+/* 「切面学习」搜索时藏起页内导航（它是 display:flex，光靠 hidden 属性不管用） */
+.fx-nav[hidden] { display: none; }
 
 .fx-group {
   margin: 18px 2px 8px;

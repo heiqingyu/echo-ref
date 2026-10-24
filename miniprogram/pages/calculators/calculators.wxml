@@ -20,6 +20,11 @@
     没有匹配「{{kw}}」的条目
   </view>
 
+  <!-- v1.6.5 跨页签：切面速查/视频/演示在「切面学习」页签，搜到了给一条过去的入口 -->
+  <view wx:if="{{searching && segCrossN > 0}}" class="fx-cross" bindtap="onSegCross">
+    「切面学习」里{{sections.length ? '还有 ' : '有 '}}{{segCrossN}} 条相关条目 →
+  </view>
+
   <!-- 组名快速跳转：平铺全部组名一眼看全（目录很长，点一下直接定位到该组） -->
   <view wx:if="{{navGroups.length}}" class="fx-nav">
     <view wx:for="{{navGroups}}" wx:key="id" wx:for-item="ng"
