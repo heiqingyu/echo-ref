@@ -1438,4 +1438,19 @@ Page({
 
     this.setData({ out: out, hasOut: !!out });
   },
+
+  /* ────────── 转发给朋友 / 收藏（v1.5.8）──────────
+     带上当前条目 id：同事点开卡片直接落在同一条目，不用再翻目录。 */
+  onShareAppMessage() {
+    return {
+      title: (this.data.title ? this.data.title + ' · ' : '') + '心脏超声参考',
+      path: '/pages/formula/formula?id=' + (this.data.gid || ''),
+    };
+  },
+  onAddToFavorites() {
+    return {
+      title: (this.data.title ? this.data.title + ' · ' : '') + '心脏超声参考',
+      query: 'id=' + (this.data.gid || ''),
+    };
+  },
 });
