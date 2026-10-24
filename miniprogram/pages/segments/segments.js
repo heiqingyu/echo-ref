@@ -33,22 +33,17 @@ Page({
     // ── ② 切面与室壁对应（示意图） ──
     wallViews: [],
     hiName: '',
-    // ── ③ 切面学习页签：视频 / TEE 演示 / 更多入口 ──
+    // ── ③ 切面学习页签：切面速查 / 教学视频 / TEE 演示 ──
     segNav: [
       { key: 'segpart', t: '节段划分' },
+      { key: 'lookpart', t: '切面速查' },
       { key: 'viewspart', t: '教学视频' },
       { key: 'simpart', t: 'TEE 演示' },
-      { key: 'anapart', t: '更多入口' },
     ],
     curSeg: 'segpart',
     viewsList: [], // views 外链（含专辑）
     simList: [],   // sim 外链
-    anaList: [     // 更多入口：公式集里的切面条目
-      { kind: 'brief', id: 'tte-measure', title: 'TTE 标准切面与测量项目',
-        sub: '13 个切面 × 观察结构 × 主要测量 · ASE 成人完整检查建议', url: '' },
-      { kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
-        sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1', url: '' },
-    ],
+    lookList: [],  // 切面速查与图谱：segOnly 的 brief 条目 + 瓣膜解剖
   },
 
   onLoad() {
@@ -85,14 +80,30 @@ Page({
     });
   },
 
-  /** 装配「教学视频 / TEE 演示」两个外链分组（来自 extra-data 的 LINK_SECTIONS） */
+  /** 装配三个列表：切面速查（segOnly 条目）/ 教学视频 / TEE 演示 */
   loadSegExtras() {
     const links = EX.LINK_SECTIONS || [];
     const views = (links.filter(function (s) { return s.id === 'views'; })[0] || {}).items || [];
     const sim = (links.filter(function (s) { return s.id === 'sim'; })[0] || {}).items || [];
+    // ★ 切面速查 / 标准切面：标题与说明只在 extra-data.js 维护一份，
+    //   这里按 segOnly 标记取（与网页 / APK 的 renderSegExtras 同源）
+    const look = [];
+    (EX.BRIEF_SECTIONS || []).forEach(function (s) {
+      (s.items || []).forEach(function (it) {
+        if (!it.segOnly) return;
+        look.push({
+          kind: 'brief', id: it.id, title: it.title, sub: it.sub || '', url: '',
+        });
+      });
+    });
+    look.push({
+      kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
+      sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1', url: '',
+    });
     this.setData({
       viewsList: views.map(function (it) { return toListItem(it, 'views'); }),
       simList: sim.map(function (it) { return toListItem(it, 'sim'); }),
+      lookList: look,
     });
   },
 
@@ -178,9 +189,9 @@ Page({
   /* ────────── 转发给朋友 / 收藏（v1.5.8）──────────
      ★ 微信规定：不定义 onShareAppMessage，右上角「转发给朋友」根本不显示。 */
   onShareAppMessage() {
-    return { title: '超声切面学习 · 17 节段划分、标准切面视频与 TEE 演示', path: '/pages/segments/segments' };
+    return { title: '超声切面学习 · 节段划分、切面速查、教学视频与 TEE 演示', path: '/pages/segments/segments' };
   },
   onAddToFavorites() {
-    return { title: '超声切面学习 · 17 节段划分、标准切面视频与 TEE 演示', query: '/pages/segments/segments' };
+    return { title: '超声切面学习 · 节段划分、切面速查、教学视频与 TEE 演示', query: '/pages/segments/segments' };
   },
 });

@@ -538,10 +538,17 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 130 条（原「切面学习 / TEE 演示」外链组已移出目录，改入「切面学习」页签）', nItems, 130, 0);
+  check('目录共 127 条（外链两整组 + 切面速查 3 条已移入「切面学习」页签）', nItems, 127, 0);
+  // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
+  const segOnlyInDir = dirs.reduce(function (n, d) {
+    return n + d.items.filter(function (i) {
+      return ['tee-20', 'tte-std', 'tte-measure'].indexOf(i.id) !== -1;
+    }).length;
+  }, 0);
+  check('目录不含 segOnly 条目（tee-20 / tte-std / tte-measure）', segOnlyInDir, 0, 0);
 
-  // —— 切面学习页签（v1.6.3：节段划分 + 教学视频 + TEE 演示 + 更多入口）——
-  // 视频 / 演示 / 更多入口不再出现在公式集目录，改由 segments 页渲染
+  // —— 切面学习页签（v1.6.4：节段划分 + 切面速查与图谱 + 教学视频 + TEE 演示）——
+  // 视频 / 演示 / 切面速查不再出现在公式集目录，改由 segments 页渲染
   let pgS = null;
   const _prevPage = global.Page;
   global.Page = function (c) { pgS = c; };
@@ -554,10 +561,17 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgS.onLoad();
   const segViews = pgS.data.viewsList;
   const segSim = pgS.data.simList;
-  const segAna = pgS.data.anaList;
+  const segLook = pgS.data.lookList;
   check('切面学习页签：教学视频列表 6 条', segViews.length, 6, 0);
   check('切面学习页签：TEE 演示列表 3 条', segSim.length, 3, 0);
-  check('切面学习页签：更多入口 2 条（TTE 标准切面 / 瓣膜解剖）', segAna.length, 2, 0);
+  check('切面学习页签：切面速查与图谱 4 条（TEE 20 切面 / TTE 规范切面 / TTE 标准切面测量 / 瓣膜解剖）',
+    segLook.length, 4, 0);
+  check('切面速查条目 id 与顺序',
+    segLook.map(function (i) { return i.id; }).join(',') ===
+      'tee-20,tte-std,tte-measure,valveana' ? 1 : 0, 1, 0);
+  check('页内导航 4 块且顺序为 节段/速查/视频/演示',
+    pgS.data.segNav.map(function (n) { return n.t; }).join('|') ===
+      '节段划分|切面速查|教学视频|TEE 演示' ? 1 : 0, 1, 0);
   // v1.5.8：微信规定「不定义 onShareAppMessage 则右上角转发按钮不显示」，
   // 5 个页面必须都有，否则别人拿不到卡片入口（只能搜名称）。
   const sharePages = ['index/index', 'pediatric/pediatric', 'segments/segments',
@@ -585,8 +599,11 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segViews[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
   check('外链条目为 link 类型（专辑除外）',
     segViews.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
-  check('更多入口含「TTE 标准切面与测量项目」brief 条目',
-    segAna.some(i => i.id === 'tte-measure' && i.kind === 'brief') ? 1 : 0, 1, 0);
+  check('切面速查含「TTE 标准切面与测量项目」brief 条目',
+    segLook.some(i => i.id === 'tte-measure' && i.kind === 'brief') ? 1 : 0, 1, 0);
+  check('切面速查末条为「瓣膜解剖」valveana 条目',
+    segLook[segLook.length - 1].id === 'valveana' &&
+      segLook[segLook.length - 1].kind === 'valveana' ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
     segViews[0] && segViews[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进页面数据（省 setData）',
@@ -718,7 +735,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirById('views-atlas').items.some(i => i.id === 'echo-interv') ? 1 : 0, 1, 0);
   check('造影、伪影与图像优化含 contrast-echo',
     dirById('views-atlas').items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
-  check('切面、图像与质控 12 条（3 切面 + TTE 标准切面与测量 + 造影 + 伪影 + 假病变 + 3D TEE + 多普勒 + 报告 + 危急值 + 有创操作）', dirById('views-atlas').items.length, 12, 0);
+  check('切面、图像与质控 9 条（3 切面速查已移入「切面学习」页签：造影 + 伪影 + 假病变 + 3D TEE + 多普勒 + 报告 + 危急值 + 有创操作 + TEE 安全）', dirById('views-atlas').items.length, 9, 0);
   check('造影、伪影与图像优化含 artifact-guide',
     dirById('views-atlas').items.some(i => i.id === 'artifact-guide' && i.kind === 'brief') ? 1 : 0, 1, 0);
   check('特殊场景已并入急症组（妊娠 2 条 / 脓毒症 / 术后 ICU 仍在）', dirById('vascular').items.filter(i => ['pregnancy-echo','ppcm','sepsis','postop-icu'].indexOf(i.id) !== -1).length, 4, 0);

@@ -70,7 +70,11 @@ function buildSections() {
     }).map(function (g) {
       return { kind: 'calc', id: g.id, title: g.title, sub: g.sub || '' };
     });
-    const items = calcs.concat(s.items.map(function (it) {
+    const items = calcs.concat(s.items.filter(function (it) {
+      // ★ v1.6.4：segOnly 条目（切面速查 / 标准切面）只在「切面学习」页签列出，
+      //   不进公式集目录；条目定义仍留在 BRIEF_SECTIONS 里，详情页照常可取。
+      return !it.segOnly;
+    }).map(function (it) {
       return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };
     }));
     // mergeInto：并入同名组（如「瓣膜评估」计算器组），不另起一个组
@@ -104,6 +108,7 @@ function buildSections() {
   EX.BRIEF_SECTIONS.forEach(function (s) {
     s.items.forEach(function (it) {
       if (!it.moveTo || it.moveTo === s.id) return;
+      if (it.segOnly) return;   // 已在「切面学习」页签，别再挪回目录
       const host = sections.filter(function (x) { return x.id === it.moveTo; })[0];
       if (!host) return;
       const from = sections.filter(function (x) { return x.id === s.id; })[0];

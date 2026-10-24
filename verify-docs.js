@@ -272,22 +272,53 @@ function check(name, ok, detail) {
   check('点节段 7 后选中信息行可见', sel.shown === true, selInfo);
   check('选中信息含节段名与供血冠脉', /段/.test(sel.txt) && /LAD|LCx|RCA/.test(sel.txt), sel.txt);
 
-  // v1.6.3：切面学习页签新增「教学视频 / TEE 演示 / 更多入口」三块，由 renderSegExtras 填充
+  // v1.6.4：切面学习页签 = 节段划分 + 切面速查与图谱 + 教学视频 + TEE 演示，后三块由 renderSegExtras 填充
   const segExtras = await c.evalJs(`(function(){
     return JSON.stringify({
       nav: document.querySelectorAll('#page-segments .fx-nav__c').length,
+      navTxt: [...document.querySelectorAll('#page-segments .fx-nav__c')].map(function(e){return e.textContent.trim();}).join('|'),
       views: document.querySelectorAll('#segViewsList .fx-item').length,
       sim: document.querySelectorAll('#segSimList .fx-item').length,
-      ana: document.querySelectorAll('#segAnaList .fx-item').length,
+      look: document.querySelectorAll('#segLookList .fx-item').length,
       albumInViews: document.querySelectorAll('#segViewsList .fx-item[data-kind="album"]').length
     });
   })()`);
   const se = JSON.parse(segExtras);
-  check('切面学习页内导航 4 个（节段/视频/TEE/更多）', se.nav === 4, se.nav);
+  check('切面学习页内导航 4 个（节段/速查/视频/演示）', se.nav === 4, se.nav);
+  check('页内导航文案与顺序 = 节段划分|切面速查|教学视频|TEE 演示',
+    se.navTxt === '节段划分|切面速查|教学视频|TEE 演示', se.navTxt);
   check('切面学习页教学视频列表 6 条', se.views === 6, segExtras);
   check('切面学习页 TEE 演示列表 3 条', se.sim === 3, segExtras);
-  check('切面学习页更多入口 2 条', se.ana === 2, segExtras);
+  check('切面学习页切面速查与图谱 4 条', se.look === 4, segExtras);
   check('教学视频含 1 个专辑入口', se.albumInViews === 1, se.albumInViews);
+
+  // v1.6.4 回归：从切面学习点条目 → 进公式集详情 → 返回，页签必须回到「切面学习」
+  // （用户 2026-10-24 反馈：「进去后点击哪个，返回页变成了公式集」）
+  await c.evalJs(`(function(){
+    var b=document.querySelector('#segLookList .fx-item');
+    if (b) b.click();
+  })()`);
+  await new Promise((r) => setTimeout(r, 500));
+  const jumpInfo = await c.evalJs(`(function(){
+    return JSON.stringify({
+      detail: !document.getElementById('calcDetail').hidden,
+      title: document.getElementById('appbarTitle').textContent
+    });
+  })()`);
+  const ji = JSON.parse(jumpInfo);
+  check('切面速查点条目后打开公式集详情', ji.detail === true, jumpInfo);
+  await c.evalJs('document.getElementById("calcBack").click()');
+  await new Promise((r) => setTimeout(r, 700));
+  const backInfo = await c.evalJs(`(function(){
+    return JSON.stringify({
+      segVisible: !document.getElementById('page-segments').hidden,
+      calcVisible: !document.getElementById('page-calc').hidden,
+      title: document.getElementById('appbarTitle').textContent
+    });
+  })()`);
+  const bi = JSON.parse(backInfo);
+  check('从切面速查进详情后返回，页签回到「切面学习」', bi.segVisible === true && bi.calcVisible === false, backInfo);
+  check('返回后顶栏标题为「切面学习」（不被公式集覆盖）', bi.title === '切面学习', bi.title);
 
   console.log('\n【三·五】公式集（发布版第四页）');
   await c.evalJs('document.querySelector(\'.tab[data-tab="index"]\').click()');
@@ -318,6 +349,9 @@ function check(name, ok, detail) {
       })(),
       album: idx.querySelectorAll('.fx-item[data-kind="album"]').length,
       albumTxt: (idx.querySelector('.fx-item[data-kind="album"]') || {}).textContent || '',
+      segOnlyLeak: ['tee-20','tte-std','tte-measure'].filter(function(id){
+        return !!idx.querySelector('.fx-item[data-id="'+id+'"]');
+      }).length,
       search: !!document.getElementById('fxSearch'),
       albumView: !!document.getElementById('calcAlbum'),
       refs: document.querySelectorAll('#calcRefList .ref-item').length,
@@ -337,7 +371,9 @@ function check(name, ok, detail) {
       d.groups.join('|') === '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景',
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
-    check('条目 130 条（计算 52 + 评估判读 78，含瓣膜解剖；外链组已移出）', d.items === 130, d.items);
+    // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
+    check('条目 127 条（计算 52 + 评估判读 75，含瓣膜解剖；切面速查与两外链组已移出）', d.items === 127, d.items);
+    check('目录不再含切面速查条目（tee-20 / tte-std / tte-measure）', d.segOnlyLeak === 0, d.segOnlyLeak);
     check('外链 <a> 条目 0 条（切面学习/TEE 演示已移出公式集目录）', d.links === 0, d.links);
     check('目录不再含操作规范专辑入口（已移入切面学习页签）', d.album === 0, d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);

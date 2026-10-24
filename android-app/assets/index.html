@@ -1623,7 +1623,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.6.3</div>
+    <div class="verline">心脏超声参考值 · v1.6.4</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1665,7 +1665,7 @@ button.fx-nav__c {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.6.3</div>
+      <div class="verline">心脏超声参考值 · v1.6.4</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -1675,7 +1675,7 @@ button.fx-nav__c {
     <b>关于本页</b><br>
     本页为个人整理的心脏超声（TTE）参考速查工具，四个页签：<b>EF·参考值</b>（M 型 / 二维 EF 计算、
     成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>切面学习</b>（ASE 17 节段模型与冠脉供血、
-    标准切面教学视频、TEE 在线演示与瓣膜 TEE 切面图谱入口）、
+    标准切面教学视频、TEE 在线演示，以及切面速查与瓣膜 TEE 切面图谱）、
     <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（多个计算器与评估清单，按主题分组，
     含二尖瓣狭窄 PMBV 适合度流程、人工瓣、超声造影、危急值清单与报告标准化）。
     公式集目录顶部有组名跳转条，点一下直接定位到对应分组；长条目详情页顶部另有小节导航。
@@ -1707,16 +1707,16 @@ button.fx-nav__c {
     </div>
   </section>
 
-  <!-- ───── Tab3 切面学习（v1.6.3：节段划分 + 教学视频 + TEE 演示 + 更多入口） ───── -->
+  <!-- ───── Tab3 切面学习（v1.6.4：节段划分 + 切面速查与图谱 + 教学视频 + TEE 演示） ───── -->
   <section class="page" id="page-segments" hidden>
     <div class="card">
       <div class="card__t">切面学习</div>
-      <div class="card__d">节段划分、标准切面教学视频与 TEE 在线演示集中在本页签；点下方标签直达对应区块，切面与测量的判读正文仍在公式集。</div>
+      <div class="card__d">节段划分、切面速查、标准切面教学视频与 TEE 在线演示集中在本页签；点下方标签直达对应区块，切面与测量的判读正文仍在公式集。</div>
       <div class="fx-nav" id="segNav">
         <button class="fx-nav__c" data-segjump="segpart">节段划分</button>
+        <button class="fx-nav__c" data-segjump="lookpart">切面速查</button>
         <button class="fx-nav__c" data-segjump="viewspart">教学视频</button>
         <button class="fx-nav__c" data-segjump="simpart">TEE 演示</button>
-        <button class="fx-nav__c" data-segjump="anapart">更多入口</button>
       </div>
     </div>
     <div id="segpart">
@@ -1750,6 +1750,11 @@ button.fx-nav__c {
       <div class="note">LV 左室 · RV 右室 · LA 左房 · RA 右房 · Ao 主动脉 · MV 二尖瓣 · TV 三尖瓣 · LAA 左心耳 · LVOT 左室流出道</div>
     </div>
     </div>
+    <div class="card" id="lookpart">
+      <div class="card__t">切面速查与图谱</div>
+      <div class="card__d">标准切面的角度、显示结构与必测项速查；瓣膜解剖为 TEE 交互图谱。点条目直接打开公式集里的判读详情，返回时回到本页。</div>
+      <div class="fx-list" id="segLookList"></div>
+    </div>
     <div class="card" id="viewspart">
       <div class="card__t">切面学习（视频）</div>
       <div class="card__d">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</div>
@@ -1760,11 +1765,6 @@ button.fx-nav__c {
       <div class="card__t">TEE 切面在线演示</div>
       <div class="card__d">交互式 TEE 切面演示站点（外链，新窗口打开，不嵌入本页）。</div>
       <div class="fx-list" id="segSimList"></div>
-    </div>
-    <div class="card" id="anapart">
-      <div class="card__t">更多切面入口</div>
-      <div class="card__d">切面与测量的详细判读正文在公式集，点下方条目直达详情。</div>
-      <div class="fx-list" id="segAnaList"></div>
     </div>
     <div class="note note--warn">本页为速查资料整理，内容依据 ASE 系列指南；具体应用请回看指南原文并结合临床判断。</div>
   </section>
@@ -7651,6 +7651,7 @@ const BRIEF_SECTIONS = [
     items: [
       {
         id: 'tee-20',
+        segOnly: true,   // ★ v1.6.4：只在「切面学习」页签列出，不进公式集目录
         title: 'TEE 20 个标准切面速查',
         sub: '角度 · 显示结构 · 必测项 · 三档探头位置',
         source: ['R64', 'R12', 'R47'],
@@ -7735,6 +7736,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'tte-std',
+        segOnly: true,   // ★ v1.6.4：只在「切面学习」页签列出，不进公式集目录
         title: 'TTE 规范切面与必测项',
         sub: '五个声窗 · 采集顺序 · 每个切面该测什么',
         source: ['R68', 'R11'],
@@ -8489,6 +8491,7 @@ const BRIEF_SECTIONS = [
         // ★ v1.6.3：目录「切面学习」组整体迁到「切面学习」页签，moveTo 取消，
         //   本条回到宿主组；「切面学习」页尾部有跳转入口直达本条详情。
         id: 'tte-measure',
+        segOnly: true,   // ★ v1.6.4：只在「切面学习」页签列出，不进公式集目录
         title: 'TTE 标准切面与测量项目',
         sub: '13 个切面 × 观察结构 × 主要测量 · ASE 成人完整检查建议',
         source: ['R11'],
@@ -14143,6 +14146,19 @@ const MATERIALS = [];
   let currentTab = 'index';
 
   /**
+   * 子视图来源页签（v1.6.4）
+   *
+   * 用户 2026-10-24 反馈：「切面学习，进去后点击哪个，返回页变成了公式集」。
+   * 根因：切面学习页点条目要 switchTab('calc') 才能显示公式集的详情视图，
+   * 而返回时只还原了「公式集目录」，页签仍停在公式集。
+   *
+   * 做法：进详情前把来源页签与滚动位置记下来，返回时先还原公式集目录状态，
+   * 再把页签切回来源页并滚回原位。用户手动点页签时清空，避免误跳。
+   */
+  let viewOriginTab = 'calc';
+  let viewOriginY = 0;
+
+  /**
    * ── 视图栈（history） ──
    *
    * 用户 2026-10-21 反馈：「在公式集里点击返回就直接退出页面 / APP，
@@ -14209,8 +14225,25 @@ const MATERIALS = [];
    * 随后到来的 popstate / hashchange 会再还原一次同样的界面（幂等，无副作用）
    */
   function popView() {
-    restoreCalcIndex();
+    leaveView();
     if (viewStack.length) history.back();
+  }
+
+  /**
+   * 退出子视图的统一出口（v1.6.4）
+   * 先把公式集还原成目录（子视图状态清干净），
+   * 若这次是从别的页签点条目进来的（切面学习），再把页签切回去并滚回原位置。
+   */
+  function leaveView() {
+    const from = viewOriginTab;
+    const y = viewOriginY;
+    viewOriginTab = 'calc';
+    viewOriginY = 0;
+    restoreCalcIndex();
+    if (from !== 'calc') {
+      switchTab(from);
+      if (y > 0) goToY(y);
+    }
   }
 
   /** 按视图状态还原界面 */
@@ -14223,7 +14256,7 @@ const MATERIALS = [];
       switchTab('calc');
       openAlbum(v.sec, v.id, true);
     } else {
-      restoreCalcIndex();
+      leaveView();
     }
   }
 
@@ -14268,11 +14301,19 @@ const MATERIALS = [];
   }
 
   document.querySelectorAll('.tab').forEach(function (el) {
-    el.addEventListener('click', function () { switchTab(el.dataset.tab); });
+    el.addEventListener('click', function () {
+      viewOriginTab = 'calc';   // 手动切页签：清掉「从切面学习进来的」记忆
+      viewOriginY = 0;
+      switchTab(el.dataset.tab);
+    });
   });
 
   document.querySelectorAll('[data-go]').forEach(function (el) {
-    el.addEventListener('click', function () { switchTab(el.dataset.go); });
+    el.addEventListener('click', function () {
+      viewOriginTab = 'calc';
+      viewOriginY = 0;
+      switchTab(el.dataset.go);
+    });
   });
 
   /* ══════════════════════════════════════════════════════════
@@ -15240,6 +15281,7 @@ const MATERIALS = [];
     });
     (MERGED.valve || []).forEach(function (sec) {
       sec.items.forEach(function (it) {
+        if (it.segOnly) return;   // ★ 只在「切面学习」页签列出
         valveItems.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
       });
     });
@@ -15263,7 +15305,11 @@ const MATERIALS = [];
       secs.push({
         id: sec.id,
         title: sec.title,
-        items: calcs.concat(sec.items.map(function (it) {
+        items: calcs.concat(sec.items.filter(function (it) {
+          // ★ v1.6.4：segOnly 条目（切面速查 / 标准切面）只在「切面学习」页签列出，
+          //   不进公式集目录；条目定义仍留在 BRIEF_SECTIONS 里，详情卡与 rel 照常可用。
+          return !it.segOnly;
+        }).map(function (it) {
           return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };
         })),
       });
@@ -15278,6 +15324,7 @@ const MATERIALS = [];
     BRIEF.forEach(function (sec) {
       sec.items.forEach(function (it) {
         if (!it.moveTo || it.moveTo === sec.id) return;
+        if (it.segOnly) return;   // 已在「切面学习」页签，别再挪回目录
         const host = secs.filter(function (x) { return x.id === it.moveTo; })[0];
         if (!host) return;
         const from = secs.filter(function (x) { return x.id === sec.id; })[0];
@@ -15305,7 +15352,12 @@ const MATERIALS = [];
   }
 
   /**
-   * 切面学习页（v1.6.3）：视频 / 演示外链列表 + 更多切面入口 + 页内导航
+   * 切面学习页（v1.6.4）：页内导航 + 四块内容
+   *
+   *  ① segpart   节段划分（构建时静态生成）
+   *  ② lookpart  切面速查与图谱：segOnly 的 brief 条目 + 瓣膜解剖 TEE 图谱
+   *  ③ viewspart 教学视频（LINK_SECTIONS.views）
+   *  ④ simpart   TEE 在线演示（LINK_SECTIONS.sim）
    *
    * 两组外链原在公式集目录（LINK_SECTIONS），现迁到本页签；专辑条目仍占 1 行，
    * 点击切到公式集的专辑视图（openAlbum 自带二级视图与返回栈）。
@@ -15315,7 +15367,7 @@ const MATERIALS = [];
   function renderSegExtras() {
     const viewsBox = $('segViewsList');
     const simBox = $('segSimList');
-    const anaBox = $('segAnaList');
+    const lookBox = $('segLookList');
     function listOf(secId) {
       const sec = LINKS.filter(function (s) { return s.id === secId; })[0];
       let h = '';
@@ -15327,12 +15379,19 @@ const MATERIALS = [];
     }
     if (viewsBox) viewsBox.innerHTML = listOf('views');
     if (simBox) simBox.innerHTML = listOf('sim');
-    if (anaBox) {
-      anaBox.innerHTML =
-        fxItemHtml('brief', 'tte-measure', 'TTE 标准切面与测量项目',
-          '13 个切面 × 观察结构 × 主要测量 · ASE 成人完整检查建议') +
-        fxItemHtml('valveana', 'valveana', '瓣膜解剖 · TEE 标准切面',
-          '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1');
+    if (lookBox) {
+      // 切面速查 / 标准切面：直接取 BRIEF_SECTIONS 里标了 segOnly 的条目，
+      // 标题与说明只有一份（extra-data.js），不在这里重复维护。
+      let h = '';
+      BRIEF.forEach(function (sec) {
+        sec.items.forEach(function (it) {
+          if (!it.segOnly) return;
+          h += fxItemHtml('brief', it.id, it.title, it.sub || '');
+        });
+      });
+      h += fxItemHtml('valveana', 'valveana', '瓣膜解剖 · TEE 标准切面',
+        '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1');
+      lookBox.innerHTML = h;
     }
     // 页内导航：点标签滚到对应区块（goToY 统一处理 APK WebView 兼容）
     document.querySelectorAll('#page-segments [data-segjump]').forEach(function (el) {
@@ -15342,6 +15401,7 @@ const MATERIALS = [];
       });
     });
     // 条目点击委托：album 切到公式集的专辑视图，其余（brief / valveana）进详情视图
+    // ★ 跳转前记下来源页签与滚动位置：返回时 leaveView() 会切回本页（v1.6.4）
     const segPage = $('page-segments');
     if (segPage) {
       segPage.addEventListener('click', function (ev) {
@@ -15349,13 +15409,11 @@ const MATERIALS = [];
         if (!el) return;
         const kind = el.dataset.kind;
         if (!kind) return;   // 纯外链 <a>：交给浏览器新窗口打开
-        if (kind === 'album') {
-          switchTab('calc');
-          openAlbum(el.dataset.sec, el.dataset.id);
-        } else {
-          switchTab('calc');
-          openCalcGroup(el.dataset.id);
-        }
+        viewOriginTab = currentTab;
+        viewOriginY = window.pageYOffset;
+        switchTab('calc');
+        if (kind === 'album') openAlbum(el.dataset.sec, el.dataset.id);
+        else openCalcGroup(el.dataset.id);
       });
     }
   }
@@ -15709,8 +15767,13 @@ const MATERIALS = [];
     if ($('calcIndex')) $('calcIndex').hidden = false;
     if ($('calcDetail')) $('calcDetail').hidden = true;
     if ($('calcAlbum')) $('calcAlbum').hidden = true;
-    $('appbarTitle').textContent = TAB_TITLE.calc;
-    window.scrollTo(0, 0);
+    // ★ v1.6.4：页签已经不在公式集时（从「切面学习」点条目进来、返回时又被
+    //   history.back 的导航事件补调一次），别抢标题、别把页面滚回顶部 ——
+    //   否则会出现「切面学习页可见、顶栏却写着公式集，并且滚动位置被清零」。
+    if (currentTab === 'calc') {
+      $('appbarTitle').textContent = TAB_TITLE.calc;
+      window.scrollTo(0, 0);
+    }
   }
 
   /** 回到公式集目录（用户点了「返回公式集」按钮） */
