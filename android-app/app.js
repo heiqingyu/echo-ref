@@ -3246,6 +3246,50 @@
     boot();
   }
 
+  /* ══════════ 版权防护（轻量）══════════
+     ★ 只做「提高搬运门槛」：一次性提示条 + 左下淡水印 + 禁止图片另存。
+       不做禁 F12、不禁选中复制 —— 后者会打死「点一下复制文献链接」，
+       而且前端无论怎么加密/反调试都能被绕过，只会反伤正常用户。 */
+  function initGuard() {
+    // ① 首次进入的版权提示（localStorage 记住，只出一次；关掉后不再打扰）
+    try {
+      if (!localStorage.getItem('echoref.guard')) {
+        const bar = document.createElement('div');
+        bar.className = 'guardbar';
+        bar.innerHTML =
+          '<span class="guardbar__t">内容原创整理，欢迎自用；请勿去除署名后转载。</span>' +
+          '<button class="guardbar__b" type="button">知道了</button>';
+        document.body.appendChild(bar);
+        bar.querySelector('.guardbar__b').addEventListener('click', function () {
+          if (bar.parentNode) bar.parentNode.removeChild(bar);
+          try { localStorage.setItem('echoref.guard', '1'); } catch (e) {}
+        });
+      }
+    } catch (e) { /* 隐私模式禁用 localStorage：不弹即可 */ }
+
+    // ② 左下淡水印：pointer-events:none，绝不挡点击，截图会带上
+    if (!document.querySelector('.wmark')) {
+      const mark = document.createElement('div');
+      mark.className = 'wmark';
+      mark.setAttribute('aria-hidden', 'true');
+      mark.textContent = 'EchoRef · 心脏超声参考';
+      document.body.appendChild(mark);
+    }
+
+    // ③ 图片禁止右键另存 / 长按保存（当前页面不嵌图，为后续加图兜底）
+    document.addEventListener('contextmenu', function (e) {
+      const t = e.target;
+      if (t && t.tagName === 'IMG') e.preventDefault();
+    }, false);
+  }
+
+  /* 独立于 boot 执行：DOM 就绪即挂载，不依赖任何页签渲染逻辑 */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGuard);
+  } else {
+    initGuard();
+  }
+
   // 暴露给自检脚本
   window.__app = { state: state, switchTab: switchTab, renderIndex: renderIndex };
 })();
