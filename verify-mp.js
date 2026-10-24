@@ -540,7 +540,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 139 条（50 计算 + 2 瓣膜 + 77 评估 + 1 解剖 + 7 切面学习 + 3 在线演示）', nItems, 139, 0);
+  check('目录共 140 条（52 计算 + 78 评估判读含瓣膜解剖 + 7 切面学习 + 3 在线演示）', nItems, 140, 0);
   check('切面学习 7 条（专辑入口 + 5 个外链 + 1 条标准切面速查表）', dirViews.items.length, 7, 0);
   check('TEE 切面在线演示 3 条', dirSim.items.length, 3, 0);
   // v1.5.8：微信规定「不定义 onShareAppMessage 则右上角转发按钮不显示」，
@@ -654,7 +654,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 9 条通用/专用计算 + 8 条判读 + 1 个解剖示意图（v1.4.4 起 AS/AR/MS/MR 并入两个评估页）
-  check('瓣膜评估组 16 条（4 计算 + 11 判读含器械介入 + 1 解剖示意图）', dirById('valve').items.length, 16, 0);
+  check('瓣膜评估组 17 条（4 计算 + 12 判读含器械介入 + 1 解剖示意图）', dirById('valve').items.length, 17, 0);
   // v1.4.9：VCW/RF/PR/AS 负荷/DVI/TAPSE-PASP/RAP 这些纯查表或已被评估页覆盖的也删了，只剩 2 条
   check('瓣膜评估组 4 条计算（tr / ppm / tavrsz / pvfu）',
     ['tr', 'ppm', 'tavrsz', 'pvfu']

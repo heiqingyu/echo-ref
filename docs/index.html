@@ -1616,7 +1616,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.5.9</div>
+    <div class="verline">心脏超声参考值 · v1.6.0</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1658,7 +1658,7 @@ html, body {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.5.9</div>
+      <div class="verline">心脏超声参考值 · v1.6.0</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -1855,9 +1855,7 @@ html, body {
 
 <footer class="copyfoot">
   <b>EchoRef · 心脏超声参考工具</b><br>
-  手机端小程序：<b>心超参数助手</b>（备案中，上线后开通）<br>
-  内容为原创整理与公开指南摘编，仅供专业医务人员学习参考，不作为诊断依据。<br>
-  禁止去除署名后转载、镜像或用于商业用途。© 2026 heiqingyu
+  欢迎自用与转发；禁止去除署名后转载。
 </footer>
 
 </main>
@@ -7057,7 +7055,9 @@ function utf8ToBase64(str) {
  * 分级阈值来源：
  *   AS：ASE/EACVI 2017 定量（Vmax / 平均压差 / AVA / AVAi / DVI）
  *   AR：ASE 2017 原生瓣膜反流定量（VC / PHT / RVol / RF / EROA）
- *   MS：ACC/AHA 2020 分期（MVA / 平均压差 / PASP）+ Hatle MVA = 220 / PHT
+ *   MS：默认 ESC/EACTS 2021 口径（MVA >1.5 轻、1.0–1.5 中、<1.0 重），
+ *       同时给出 ACC/AHA 2020 对照（MVA ≤1.5 即重度、≤1.0 为极重度）；
+ *       Hatle MVA = 220 / PHT
  *   MR：ASE 2017（VC / EROA / RVol / RF）+ dP/dt = 32000 / Δt
  *   TR：ASE 2017（VC / EROA / RVol，重度 RVol ≥45 mL）
  *   PASP = 4·TRV² + RAP；RAP 用 IVC 三分级（自主呼吸）
@@ -7183,6 +7183,16 @@ function gMsPasp(p) {
   if (p <= 50) return lv('moderate');
   return lv('severe');
 }
+/**
+ * MVA 的 ACC/AHA 2020 口径：≤1.5 cm² 直接算重度（≤1.0 为极重度）。
+ * ★ 与 gMsMva（ESC/EACTS 2021：1.0–1.5 中度）差一级，这是国内医院互相看不懂报告的常见原因。
+ * 返回 level 一律用 'severe'（不新增枚举，避免影响配色与汇总），靠 text 区分极重度。
+ */
+function gMsMvaAha(a) {
+  if (a > 1.5) return { level: 'none', text: '未达重度' };
+  if (a > 1.0) return { level: 'severe', text: '重度' };
+  return { level: 'severe', text: '极重度' };
+}
 
 /* MR */
 function gMrVc(c) {
@@ -7236,7 +7246,8 @@ function summarize(rows) {
   let nMod = 0;
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
-    if (!r.tag) continue;
+    // noSum：同一数值的另一套标准判读，只作对照，不参与「综合提示」的计数与定级
+    if (!r.tag || r.noSum) continue;
     if (LEVEL_RANK[r.level] > LEVEL_RANK[worst]) worst = r.level;
     if (r.level === 'severe') nSev++;
     if (r.level === 'moderate') nMod++;
@@ -7327,29 +7338,45 @@ function calcMs(v) {
   const rows = [];
   const notes = [];
   let mvaLevelRow = null;
+  let mvaVal = null;
 
   if (isNum(v.mvaPlani) && v.mvaPlani > 0) {
-    mvaLevelRow = row('MVA 直接描记（首选）', txt(v.mvaPlani, 2) + ' cm²', gMsMva(v.mvaPlani));
+    mvaVal = v.mvaPlani;
+    mvaLevelRow = row('MVA 直接描记（ESC/EACTS 2021）', txt(v.mvaPlani, 2) + ' cm²', gMsMva(v.mvaPlani));
     rows.push(mvaLevelRow);
   }
   if (isNum(v.pht) && v.pht > 0) {
     const mva = 220 / v.pht;
     const r = row('MVA · PHT 法（220÷PHT）', txt(mva, 2) + ' cm²', gMsMva(mva));
     rows.push(r);
-    if (!mvaLevelRow) mvaLevelRow = r;
+    if (!mvaLevelRow) { mvaLevelRow = r; mvaVal = mva; }
     notes.push('PHT 法在球囊扩张后、顺应性异常、明显 AR 或高流量状态下不可靠。');
   }
   if (isNum(v.lvotD) && isNum(v.lvotVti) && isNum(v.mvVti) && v.mvVti > 0) {
     const mva = svOf(v.lvotD, v.lvotVti) / v.mvVti;
     const r = row('MVA 连续方程', txt(mva, 2) + ' cm²', gMsMva(mva));
     rows.push(r);
-    if (!mvaLevelRow) mvaLevelRow = r;
+    if (!mvaLevelRow) { mvaLevelRow = r; mvaVal = mva; }
   }
   if (isNum(v.mg)) {
     rows.push(row('平均跨瓣压差', txt(v.mg, 1) + ' mmHg', gMsMg(v.mg)));
     notes.push('压差随心率与流量变化，报告需同时记录心率与心律。');
   }
   if (isNum(v.pasp)) rows.push(row('估测 PASP', txt(v.pasp, 1) + ' mmHg', gMsPasp(v.pasp)));
+  if (isNum(mvaVal)) {
+    const aha = gMsMvaAha(mvaVal);
+    rows.push({
+      k: '　↳ 同一 MVA · ACC/AHA 2020 判读',
+      v: txt(mvaVal, 2) + ' cm²',
+      tag: aha.text,
+      level: aha.level,
+      noSum: true,
+    });
+    notes.push('**两套标准差一级**：上表按 ESC/EACTS 2021 —— MVA 1.0–1.5 为中度、<1.0 为重度；'
+      + 'ACC/AHA 2020 则把 **MVA ≤1.5 直接判为重度**（≤1.0 为极重度）。'
+      + '国内医院两者都有人用，这就是「同一份报告，一家写中度、一家写重度」的来源。'
+      + '报告里最好注明采用的是哪一套。');
+  }
   if (!rows.length) notes.push('优先填 MVA 直接描记；无描记时可用 PHT（MVA = 220 ÷ PHT）或连续方程估算。');
   return { rows: rows, notes: notes };
 }
@@ -7481,6 +7508,7 @@ function valveCalc(id, v, bsa) {
     gMsMva: gMsMva,
     gMsMg: gMsMg,
     gMsPasp: gMsPasp,
+    gMsMvaAha: gMsMvaAha,
     gMrVc: gMrVc,
     gMrEroa: gMrEroa,
     gMrRvol: gMrRvol,
@@ -10222,6 +10250,7 @@ const BRIEF_SECTIONS = [
               ['肺动脉收缩压 PASP', '<30', '30–50', '>50 mmHg'],
             ],
           },
+          { kind: 'note', text: '**这张表按 ESC/EACTS 2021**。ACC/AHA 2020 把 **MVA ≤1.5 cm² 直接判为重度**（≤1.0 为极重度）——同一份 1.2 cm²，前者写中度、后者写重度。上面的计算器已同时给出两套判读，交接班与转诊时注明用了哪套。', warn: true },
           { kind: 'text', text: 'MVA 有三种测法：**直接描记**（PSAX 瓣尖最小开口，必要时 3D 辅助，最可靠）、**PHT 法**（220 ÷ PHT，最省事）、**连续性方程**（SV ÷ 二尖瓣 VTI，不受心率与反流影响）。PISA 法只用于反流定量，不用来测狭窄面积。' },
           { kind: 'note', text: '**两个面积不一致时不要取平均**：差 >0.3 cm² 说明其中一法的前提被破坏了（节律不齐、合并 AR、重度钙化、LVOT 测量不准），回到图像找原因；仍不能统一时用二维描记裁决。本页输入框可同时算三法，结果行会直接给出差值。', warn: true },
           { kind: 'h', text: '二、平均压差必须带上心率' },
@@ -10344,6 +10373,68 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '同一个患者常常「狭窄 + 反流」并存（风湿性 MS 伴 MR、退行性脱垂伴 MS）。判读顺序：**先定主病变**（哪一个造成症状与后果）、**再用主病变的阈值决策**、**最后把合并病变当作风险修正**。合并中度 MR 的 MS 患者做 PMBV 前必须单独评估反流会不会被放大。' },
         ],
         note: '本页把狭窄与反流放在同一屏：填 PHT 与 LVOT / 二尖瓣 VTI 出三种 MVA，填平均压差与 PASP 出「严重度 → 后果」两行，填 Wilkins 四项出形态分与 PMBV 适合度，填 PISA 四项出 EROA / RVol / 分级，填 VC 与 dP/dt 出缩流颈分级与收缩功能。只填关心的部分也可以，结果行会给已填部分的分段结论。',
+      },
+      {
+        id: 'grade-ver',
+        title: '分度标准的版本差异',
+        sub: '同一数值两家医院报告不同级 · ESC/EACTS · ASE · ACC-AHA 对照',
+        source: ['R47', 'R54', 'R25', 'R16', 'R23'],
+        rel: ['mitral', 'tr-interv', 'doppler-basics'],
+        fields: [],
+        blocks: [
+          { kind: 'text', text: '同一份超声，两家医院的分级对不上，多数不是谁算错，而是**采用的指南版本不同**。欧洲与国内多数中心沿用 ESC/EACTS，美国用 ACC/AHA 与 ASE；国内两套都在用，三甲之间、科室之间也不统一。报告里注明「按哪一套」，比争论谁对更有意义。' },
+          { kind: 'h', text: '一、二尖瓣狭窄 MVA —— 差得最多的一条' },
+          {
+            kind: 'table',
+            heads: ['MVA', 'ESC/EACTS 2021', 'ACC/AHA 2020'],
+            rows: [
+              ['>1.5 cm²', '未达中度', '未达重度'],
+              ['1.0–1.5 cm²', '**中度**', '**重度**'],
+              ['≤1.0 cm²', '**重度**', '重度 · ≤1.0 称极重度'],
+            ],
+          },
+          { kind: 'note', text: '最容易出事就在这里：**MVA 1.2 cm² 按欧标是中度，按美标已是重度**，够得上介入讨论。交接班、转诊、术前讨论务必写明标准，否则一句话就能让患者多做一次 TEE。', warn: true },
+          { kind: 'h', text: '二、二尖瓣反流 —— 四级与三级的区别' },
+          {
+            kind: 'table',
+            heads: ['ASE 2017 四级', 'EROA / RVol / RF', 'ESC/EACTS 三级'],
+            rows: [
+              ['轻度 I', '<0.20 cm² / <30 mL / <30%', '轻度'],
+              ['中度 II', '0.20–0.29 / 30–44 / 30–39%', '中度'],
+              ['中重度 III', '0.30–0.39 / 45–59 / 40–49%', '并入中度，报告常写「中度偏重」'],
+              ['重度 IV', '≥0.40 / ≥60 / ≥50%', '重度'],
+            ],
+          },
+          { kind: 'text', text: 'ASE 2017 把过去含糊的「中度偏重」单独立为 III 级，好处是这类患者的手术与介入讨论有据可依。**继发 MR 的门槛比原发低**：EROA ≥0.30 cm² 或 RVol ≥45 mL 已有预后意义，别用原发的 0.40 / 60 把这类患者排除在外。' },
+          { kind: 'h', text: '三、三尖瓣反流 —— 从三级到五级' },
+          {
+            kind: 'table',
+            heads: ['分级', 'VC', 'EROA（PISA）', 'RVol'],
+            rows: [
+              ['轻度', '<3 mm', '<20 mm²', '<30 mL'],
+              ['中度', '3–6.9 mm', '20–39 mm²', '30–44 mL'],
+              ['重度', '7–13.9 mm', '40–59 mm²', '45–59 mL'],
+              ['massive 4+', '14–20.9 mm', '60–79 mm²', '60–74 mL'],
+              ['torrential 5+', '≥21 mm', '≥80 mm²', '≥75 mL'],
+            ],
+          },
+          { kind: 'text', text: 'ASE 2017 只到「重度」；TVARC 2023 把重度再拆成重度 / massive / torrential 三档，专为经导管三尖瓣介入的入组与疗效终点设计。**日常报告写三级即可**，但术前讨论与器械评估要能对得上五级。' },
+          { kind: 'h', text: '四、左室射血分数 —— 正常下限变过' },
+          {
+            kind: 'table',
+            heads: ['标准', '男性', '女性'],
+            rows: [
+              ['ASE/EACVI 2015 定量指南（现行）', '52–72%', '54–74%'],
+              ['旧习惯 / 部分机器默认', '≥55%（不分性别）', '≥55%'],
+            ],
+          },
+          { kind: 'text', text: '按 2015 定量指南，**女性 EF 54% 已在正常下限**，用「≥55」会漏掉轻度收缩功能减低；反过来男性 53% 是正常的，套女性阈值会误报。报告引用正常范围时最好写成区间并注明性别。' },
+          { kind: 'h', text: '五、另外两处容易被忽略的差异' },
+          { kind: 'text', text: '**主动脉瓣狭窄的「极重度」**：Vmax ≥5.0 m/s 或平均压差 ≥60 mmHg 时部分中心称极重度（very severe），提示进展更快、手术窗口更短；ESC 与 ASE 的分级表本身只到重度，这一层级多用于外科与 TAVR 讨论。' },
+          { kind: 'text', text: '**左室舒张功能**：ASE/EACVI 2016 用 E/A、e′、E/e′、LAVI、TR 速度五项判 G1–G3；ASE 2025 更新调整了算法与推荐顺序，并纳入利钠肽。同一患者在不同版本下可能落在不同级，报告应注明依据版本。' },
+          { kind: 'note', text: '本工具默认采用**最常被引用的那一版**：瓣膜用 ASE 2017 / ESC-EACTS 2021，室壁与舒张用 ASE/EACVI 2015 与 2016。二尖瓣狭窄的计算器已同时给出 ESC 与 ACC/AHA 两套判读。遇到与本院报告对不上，**先看是不是标准版本不同，再怀疑测量**。', warn: true },
+        ],
+        note: '这一条只用来对账，不提供计算：**分级结论不一致时，先确认双方用的是同一套标准**。',
       },
       {
         id: 'aortic',
@@ -13406,6 +13497,7 @@ var CALC_HINTS = {
   prosthetic: '瓣膜评估 · 人工瓣 EOAi 与 PPM',
   /* 瓣膜评估 */
   mitral: '瓣膜评估 · 人工瓣 EOAi 与 PPM；TR 三尖瓣反流定量',
+  'grade-ver': '瓣膜评估 · 二尖瓣狭窄平面法（MVA 双标准）；TR 三尖瓣反流定量；舒张功能定量 · 舒张功能分级（四步法）',
   aortic: '瓣膜评估 · AS 负荷量化（ELI · Zva · SWL）；人工瓣 EOAi 与 PPM',
   asload: '瓣膜评估 · 主动脉瓣疾病评估；人工瓣 EOAi 与 PPM',
   'lf-lg': '重构与心肌功能 · 每搏功 SW / SWi；血流动力学与心功能 · 有效动脉弹性 Ea',
@@ -13491,6 +13583,7 @@ var CALC_LINKS = {
   prosthetic: ['ppm'],
   /* 瓣膜 */
   mitral: ['ppm', 'tr'],
+  'grade-ver': ['mitral', 'tr', 'dfun'],
   aortic: ['asload', 'ppm'],
   asload: ['aortic', 'ppm'],
   bav: ['aortic', 'aortaz', 'tavrsz'],
@@ -14919,8 +15012,10 @@ const MATERIALS = [];
           h += '<div class="chiprow">';
           b.links.forEach(function (id) {
             const g = calcGroupOf(id);
+            // 目标也可能是评估条目（mitral / aortic 等），别把英文 id 直接显示出来
+            const bf = g ? null : briefOf(id);
             h += '<button type="button" class="chip" data-jump="' + esc(id) + '">' +
-              esc(g ? g.title : id) + '</button>';
+              esc(g ? g.title : (bf && bf.title ? bf.title : id)) + '</button>';
           });
           h += '</div>';
         }

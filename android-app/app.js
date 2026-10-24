@@ -903,8 +903,10 @@
           h += '<div class="chiprow">';
           b.links.forEach(function (id) {
             const g = calcGroupOf(id);
+            // 目标也可能是评估条目（mitral / aortic 等），别把英文 id 直接显示出来
+            const bf = g ? null : briefOf(id);
             h += '<button type="button" class="chip" data-jump="' + esc(id) + '">' +
-              esc(g ? g.title : id) + '</button>';
+              esc(g ? g.title : (bf && bf.title ? bf.title : id)) + '</button>';
           });
           h += '</div>';
         }

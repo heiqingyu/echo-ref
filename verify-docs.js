@@ -321,7 +321,8 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.5.0：瓣膜解剖成了公式集里的一条，目录从 137 变 138
     // v1.5.2：新增「TTE 标准切面与测量项目」（切面学习组）→ 139
-    check('条目 139 条（52 计算 + 11 瓣膜判读 + 1 瓣膜解剖 + 67 评估 + 8 外链）', d.items === 139, d.items);
+    // v1.6.0：新增「分度标准的版本差异」（瓣膜组）→ 140
+    check('条目 140 条（52 计算 + 11 瓣膜判读 + 1 瓣膜解剖 + 68 评估 + 8 外链）', d.items === 140, d.items);
     check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
