@@ -436,6 +436,13 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     subDl.length >= 5 && subDl.length <= 12 &&
     subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)) ? 1 : 0, 1, 0);
   check('免费可获取链接 ≥ 70 条', allDl.filter(d => d.t !== '需订阅').length >= 70 ? 1 : 0, 1, 0);
+  // v1.6.6：R79 原挂中国循环杂志官网首页（站内搜不到这篇文章）→ 改挂公开 PDF 全文直链
+  const r79 = EXD.REFS.filter(r => r.id === 'R79')[0];
+  check('R79 挂公开 PDF 全文直链（不再挂官网首页）',
+    r79 && r79.dl && r79.dl.length === 1 && r79.dl[0].t === '中文 PDF' &&
+      /^https:\/\/.+\.pdf$/.test(r79.dl[0].u) ? 1 : 0, 1, 0);
+  check('已无指向期刊官网首页的无效直链',
+    allDl.some(d => /chinacirculation\.org/.test(d.u)) ? 0 : 1, 1, 0);
   check('「免费页面」类型已启用',
     allDl.filter(d => d.t === '免费页面').length >= 3 ? 1 : 0, 1, 0);
   check('带直链的文献 ≥ 35 条', EXD.REFS.filter(r => (r.dl || []).length).length >= 35 ? 1 : 0, 1, 0);

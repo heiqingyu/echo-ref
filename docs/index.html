@@ -1659,7 +1659,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.6.5</div>
+    <div class="verline">心脏超声参考值 · v1.6.6</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1695,13 +1695,13 @@ button.fx-nav__c {
           「官网」为 ASE 指南总目录或 PHN 数据库主页。</div>
         <div id="calcRefList" hidden></div>
         <div class="refs-copy">
-          带「中文 PDF」标记的条目为本站收录的公开指南 / 专家共识原文；「中文全文」为指向中华医学知识库
+          带「中文 PDF」标记的条目为公开指南 / 专家共识的 PDF 全文（本站收录，或由公开站点提供直链）；「中文全文」为指向中华医学知识库
           免费在线全文的链接（本站不存储）。著作权均归原作者与发布机构所有，
           仅供个人学习参考，不作商业用途；若权利人认为不宜转载，请联系删除。
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.6.5</div>
+      <div class="verline">心脏超声参考值 · v1.6.6</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -13493,7 +13493,7 @@ const REFS = [
     en: 'Expert consensus for standard assessment by echocardiography in Chinese adults with valvular heart disease',
     where: '中华医学会心血管病学分会心血管影像学组, 北京医学会心血管病学会影像学组. 中国成人心脏瓣膜病超声心动图规范化检查专家共识. 中国循环杂志, 2021, 36(2): 109–125. DOI: 10.3969/j.issn.1000-3614.2021.02.002',
     dl: [
-      { t: '官网', u: 'https://www.chinacirculation.org/' },
+      { t: '中文 PDF', u: 'https://www.ddzxhospital.com/library/up_f/file/20260526/202605261605484836.pdf' },
     ],
     use: '国内成人瓣膜病超声规范化检查与严重程度评估的权威共识；MS 按 MVA <1.0 cm² 为重度（与 ESC/EACTS 2021 一致），AS 按 AVA <1.0 cm² 或 Vmax ≥4.0 m/s 或平均压差 ≥40 mmHg 提示重度',
   },
@@ -15668,13 +15668,19 @@ const MATERIALS = [];
           ' 条相关条目 →</button></div>';
       }
     }
-    // 组名跳转条：目录很长，点一下锚到该组（横向可滑动）
+    // 组名跳转条：目录很长，点一下滚到该组（横向可滑动）
+    // ★ v1.6.6：改成 button + goToY —— 原来用 `<a href="#g-…">`，写 hash 会触发视图栈的
+    //   hashchange 处理（parseHash 把它当目录页），APK/Material 返回键与滚动都会被干扰。
+    //   末尾再挂一条「参考文献」，文献卡在页面最底部，比手动划到底快。
     let nav = '';
     secs.forEach(function (sec) {
       if (!sec.items.length) return;
-      nav += '<a class="fx-nav__c" href="#g-' + esc(sec.id) + '">' +
-        esc(sec.title.replace(/（.*?）/g, '')) + '</a>';
+      nav += '<button class="fx-nav__c" data-gjump="' + esc(sec.id) + '">' +
+        esc(sec.title.replace(/（.*?）/g, '')) + '</button>';
     });
+    if ($('calcRefs')) {
+      nav += '<button class="fx-nav__c" data-refjump="1">参考文献</button>';
+    }
     box.innerHTML = (nav ? '<div class="fx-nav">' + nav + '</div>' : '') + list;
   }
 
@@ -15696,6 +15702,20 @@ const MATERIALS = [];
           if ($('segSearchClear')) $('segSearchClear').hidden = !text;
         }
         renderSegLists(text);
+        return;
+      }
+      // 组名跳转 / 参考文献跳转（v1.6.6：button + goToY，不写 hash）
+      const gj = ev.target.closest ? ev.target.closest('[data-gjump]') : null;
+      if (gj) {
+        const t = document.getElementById('g-' + gj.dataset.gjump);
+        if (t) goToY(t.getBoundingClientRect().top + window.pageYOffset - 56);
+        return;
+      }
+      const rj = ev.target.closest ? ev.target.closest('[data-refjump]') : null;
+      if (rj) {
+        toggleRefs(true);   // 文献默认折叠，点标签直接展开
+        const t = $('calcRefs');
+        if (t) goToY(t.getBoundingClientRect().top + window.pageYOffset - 56);
         return;
       }
       const el = ev.target.closest ? ev.target.closest('.fx-item') : null;

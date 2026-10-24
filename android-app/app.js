@@ -1526,13 +1526,19 @@
           ' 条相关条目 →</button></div>';
       }
     }
-    // 组名跳转条：目录很长，点一下锚到该组（横向可滑动）
+    // 组名跳转条：目录很长，点一下滚到该组（横向可滑动）
+    // ★ v1.6.6：改成 button + goToY —— 原来用 `<a href="#g-…">`，写 hash 会触发视图栈的
+    //   hashchange 处理（parseHash 把它当目录页），APK/Material 返回键与滚动都会被干扰。
+    //   末尾再挂一条「参考文献」，文献卡在页面最底部，比手动划到底快。
     let nav = '';
     secs.forEach(function (sec) {
       if (!sec.items.length) return;
-      nav += '<a class="fx-nav__c" href="#g-' + esc(sec.id) + '">' +
-        esc(sec.title.replace(/（.*?）/g, '')) + '</a>';
+      nav += '<button class="fx-nav__c" data-gjump="' + esc(sec.id) + '">' +
+        esc(sec.title.replace(/（.*?）/g, '')) + '</button>';
     });
+    if ($('calcRefs')) {
+      nav += '<button class="fx-nav__c" data-refjump="1">参考文献</button>';
+    }
     box.innerHTML = (nav ? '<div class="fx-nav">' + nav + '</div>' : '') + list;
   }
 
@@ -1554,6 +1560,20 @@
           if ($('segSearchClear')) $('segSearchClear').hidden = !text;
         }
         renderSegLists(text);
+        return;
+      }
+      // 组名跳转 / 参考文献跳转（v1.6.6：button + goToY，不写 hash）
+      const gj = ev.target.closest ? ev.target.closest('[data-gjump]') : null;
+      if (gj) {
+        const t = document.getElementById('g-' + gj.dataset.gjump);
+        if (t) goToY(t.getBoundingClientRect().top + window.pageYOffset - 56);
+        return;
+      }
+      const rj = ev.target.closest ? ev.target.closest('[data-refjump]') : null;
+      if (rj) {
+        toggleRefs(true);   // 文献默认折叠，点标签直接展开
+        const t = $('calcRefs');
+        if (t) goToY(t.getBoundingClientRect().top + window.pageYOffset - 56);
         return;
       }
       const el = ev.target.closest ? ev.target.closest('.fx-item') : null;

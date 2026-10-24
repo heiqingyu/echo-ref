@@ -975,6 +975,7 @@ function check(name, ok, detail) {
     ri.aria === 'false' && ri.open === false, refsInit);
 
   await c.evalJs('(function(){document.getElementById("refsToggle").click();return 1;})()');
+  await new Promise((r) => setTimeout(r, 200));
   const refsOpen = await c.evalJs(`(function(){
     var l = document.getElementById('calcRefList');
     var hd = document.getElementById('refsToggle');
@@ -991,6 +992,51 @@ function check(name, ok, detail) {
   check('点击后展开全部 79 条', ro.hidden === false && ro.n === 79 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
+
+  // ── v1.6.6：目录顶部导航条末尾挂「参考文献」，点了直接展开并滚到文献卡 ──
+  await c.evalJs('(function(){document.getElementById("refsToggle").click();return 1;})()');  // 先收起
+  await new Promise((r) => setTimeout(r, 150));
+  const refNav = await c.evalJs(`(function(){
+    var nav = document.querySelector('#calcList .fx-nav');
+    var chips = nav ? [...nav.querySelectorAll('.fx-nav__c')] : [];
+    var b = document.querySelector('#calcList [data-refjump]');
+    return JSON.stringify({
+      has: !!b,
+      txt: b ? b.textContent.trim() : '',
+      last: chips.length ? chips[chips.length - 1].textContent.trim() : '',
+      groups: chips.length,
+      anchors: document.querySelectorAll('#calcList .fx-nav a[href^="#g-"]').length
+    });
+  })()`);
+  const rn = JSON.parse(refNav);
+  check('目录顶部导航条含「参考文献」标签', rn.has === true && rn.txt === '参考文献', refNav);
+  check('「参考文献」排在导航条末尾', rn.last === '参考文献', refNav);
+  check('导航条不再用 #g- 锚点（button + goToY，免得和视图栈 hash 打架）',
+    rn.anchors === 0, refNav);
+  await c.evalJs('(function(){document.querySelector("#calcList [data-refjump]").click();return 1;})()');
+  // 平滑滚动是按距离计时的（8000+ px 要一两秒），轮询到位置稳定再断言
+  let refJump = '';
+  let lastY = -1;
+  for (let i = 0; i < 25; i++) {
+    refJump = await c.evalJs(`(function(){
+      var l = document.getElementById('calcRefList');
+      return JSON.stringify({
+        open: l.hidden === false,
+        h: l.offsetHeight,
+        scrollY: Math.round(window.scrollY),
+        refsTop: Math.round(document.getElementById('calcRefs').getBoundingClientRect().top)
+      });
+    })()`);
+    const y = JSON.parse(refJump).scrollY;
+    if (y === lastY && y > 200) break;
+    lastY = y;
+    await new Promise((r) => setTimeout(r, 150));
+  }
+  const rjInfo = JSON.parse(refJump);
+  check('点「参考文献」标签自动展开文献列表', rjInfo.open === true && rjInfo.h > 0, refJump);
+  check('点「参考文献」标签滚到文献卡（卡片顶部落在视口内）',
+    Math.abs(rjInfo.refsTop) <= 120, refJump);
+  check('滚动位置确实发生变化（不是停在页顶）', rjInfo.scrollY > 200, refJump);
 
   // 「需订阅」地址：可见、样式与免费直链区分、且指向 doi.org / 中华医学期刊网
   const subDl = await c.evalJs(`(function(){
