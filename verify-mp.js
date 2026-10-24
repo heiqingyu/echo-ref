@@ -430,10 +430,14 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
   const allDl = EXD.REFS.reduce((a, r) => a.concat(r.dl || []), []);
   check('文献直链均为 https 地址', allDl.every(d => String(d.u).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('文献直链均标注类型（PDF / 中文 PDF / 免费全文 / PMC / 需订阅 / 官网）',
-    allDl.every(d => /PDF|全文|需订阅|官网/.test(d.t)) ? 1 : 0, 1, 0);
+    allDl.every(d => /PDF|全文|需订阅|官网|免费页面/.test(d.t)) ? 1 : 0, 1, 0);
   const subDl = allDl.filter(d => d.t === '需订阅');
   check('需订阅地址均为 DOI 解析页或中华医学期刊网页面',
-    subDl.length >= 15 && subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)) ? 1 : 0, 1, 0);
+    subDl.length >= 5 && subDl.length <= 12 &&
+    subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)) ? 1 : 0, 1, 0);
+  check('免费可获取链接 ≥ 70 条', allDl.filter(d => d.t !== '需订阅').length >= 70 ? 1 : 0, 1, 0);
+  check('「免费页面」类型已启用',
+    allDl.filter(d => d.t === '免费页面').length >= 3 ? 1 : 0, 1, 0);
   check('带直链的文献 ≥ 35 条', EXD.REFS.filter(r => (r.dl || []).length).length >= 35 ? 1 : 0, 1, 0);
   check('ASE 官方 PDF 直链 ≥ 20 条',
     allDl.filter(d => /asecho\.org\/wp-content\/uploads\/.+\.pdf$/.test(d.u)).length >= 20 ? 1 : 0, 1, 0);

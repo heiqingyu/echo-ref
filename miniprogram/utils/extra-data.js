@@ -5023,7 +5023,7 @@ const REFS = [
     en: 'Echocardiography Group, Chinese Society of Ultrasonography in Medicine. 中国成人超声心动图检查测量指南',
     where: '中华超声影像学杂志, 2016, 25(8): 645–666',
     dl: [
-      { t: '需订阅', u: 'https://rs.yiigle.com/cmaid/908663' },
+      { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/908663' },
     ],
 
     use: '成人径线 / 面积 / 容积参考范围、瓣膜环与大动脉内径；EMINCA 中国人群正常值来源',
@@ -5045,7 +5045,7 @@ const REFS = [
     en: 'Voigt JU, Pedrizzetti G, Lysyansky P, et al. Definitions for a Common Standard for 2D Speckle Tracking Echocardiography: Consensus Document of the EACVI/ASE/Industry Task Force to Standardize Deformation Imaging',
     where: 'Eur Heart J Cardiovasc Imaging, 2015, 16(1): 1–11',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1093/ehjci/jeu184' },
+      { t: '免费全文 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/16/1/1/7140604/jeu184.pdf' },
     ],
 
     use: '应变采集、追踪与报告规范',
@@ -5056,7 +5056,7 @@ const REFS = [
     en: 'Sugimoto T, Robinet S, Dulgheru R, et al. Echocardiographic reference ranges for normal left atrial function parameters: results from the EACVI NORRE study',
     where: 'Eur Heart J Cardiovasc Imaging, 2018, 19(6): 630–638',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1093/ehjci/jey018' },
+      { t: '免费全文 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/19/6/630/24834097/jey018.pdf' },
     ],
 
     use: 'LASr / LASa / LASc 的阈值与临床意义',
@@ -5077,7 +5077,7 @@ const REFS = [
     en: 'Chung MK, Patton KK, Lau CP, et al. 2023 HRS/APHRS/LAHRS guideline on cardiac physiologic pacing for the avoidance and mitigation of heart failure',
     where: 'Heart Rhythm, 2023, 20(9): e17–e91',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1016/j.hrthm.2023.03.1538' },
+      { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11062890/' },
     ],
 
     use: 'CRT 适应证分级（LVEF / QRS 宽度 / 形态）、超声不同步指标（SPWMD、纵向应变延迟）的现状与疗效随访',
@@ -5095,7 +5095,7 @@ const REFS = [
     en: 'Gardin JM, Adams DB, Douglas PS, et al. Recommendations for a standardized report for adult transthoracic echocardiography: a report from the American Society of Echocardiography\'s Nomenclature and Standards Committee and Task Force for a Standardized Echocardiography Report',
     where: 'J Am Soc Echocardiogr, 2002, 15(3): 275–290（报告规范现行版见 R44，TTE 操作见 R11）',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1067/mje.2002.121536' },
+      { t: '免费全文 PDF', u: 'https://www.onlinejase.com/article/S0894731702594712/pdf' },
     ],
 
     use: '报告结构与必填条目的历史依据、测量时相与切面命名的统一写法',
@@ -5267,7 +5267,7 @@ const REFS = [
     en: 'Hahn RT, Lawlor MK, Davidson CJ, et al. Tricuspid Valve Academic Research Consortium Definitions for Tricuspid Regurgitation and Study Design Principles',
     where: 'Eur Heart J, 2023, 44(43): 4508–4532',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1093/eurheartj/ehad653' },
+      { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10645050/' },
     ],
 
     use: 'TR 五级严重度、机制分型与经导管介入终点定义',
@@ -5575,7 +5575,7 @@ const REFS = [
     en: 'Hachicha Z, Dumesnil JG, Bogaty P, Pibarot P. Usefulness of the valvuloarterial impedance to predict adverse outcome in asymptomatic aortic stenosis',
     where: 'J Am Coll Cardiol, 2009, 54(11): 1003–1011',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1016/j.jacc.2009.04.079' },
+      { t: '免费全文 PDF', u: 'https://www.sciencedirect.com/science/article/pii/S0735109709020592/pdf' },
     ],
 
     use: 'asload 判读页：Zva =（收缩压 + 平均跨瓣压差）/ 每搏量指数；Zva > 3.5 提示总负荷（瓣膜 + 动脉）升高，> 4.5 组心血管死亡风险约为低 Zva 组的 3.7 倍',
@@ -5606,7 +5606,7 @@ const REFS = [
     en: 'Ghadri JR, Wittstein IS, Prasad A, et al. International Expert Consensus Document on Takotsubo Syndrome (Part I): Clinical Characteristics, Diagnostic Criteria, and Pathophysiology',
     where: 'Eur Heart J, 2018, 39(22): 2032–2046',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1093/eurheartj/ehy076' },
+      { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5991216/' },
     ],
 
     use: 'takotsubo 判读页：心尖球形形态、基底段应变保留与 RAS ≥2.0 的鉴别思路、左室流出道梗阻的识别与处理禁忌、随访时间表',
@@ -5722,7 +5722,7 @@ const REFS = [
     en: 'Pieroni M, Moon JC, Arbustini E, et al. Cardiac Involvement in Fabry Disease: JACC Review Topic of the Week',
     where: 'J Am Coll Cardiol, 2021, 77(7): 922–936',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1016/j.jacc.2020.12.024' },
+      { t: '免费页面', u: 'https://doi.org/10.1016/j.jacc.2020.12.024' },
     ],
 
     use: '法布雷病心肌病的超声与 CMR 表型、基底下侧壁应变减低、与 HCM / 淀粉样变的鉴别、酶替代与分子伴侣治疗的随访要点',
@@ -5733,7 +5733,7 @@ const REFS = [
     en: 'Corrado D, Perazzolo Marra M, Zorzi A, et al. Diagnosis of arrhythmogenic cardiomyopathy: The Padua criteria',
     where: 'Int J Cardiol, 2020, 319: 106–114',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1016/j.ijcard.2020.06.005' },
+      { t: '免费全文 PDF', u: 'https://www.internationaljournalofcardiology.com/article/S0167527320332939/pdf' },
     ],
 
     use: 'ACM 的右优势 / 双室 / 左优势三种表型、形态功能与结构异常的分层标准、超声局部运动异常的判读与随访',
@@ -5754,7 +5754,7 @@ const REFS = [
     en: 'Chinese guideline for the diagnosis and treatment of patients with acute ST-elevation myocardial infarction (2019)',
     where: '中华心血管病杂志, 2019, 47(10): 766–783',
     dl: [
-      { t: '需订阅', u: 'https://rs.yiigle.com/cmaid/1166130' },
+      { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/1166130' },
     ],
 
     use: '再灌注策略与机械并发症（乳头肌断裂 / 室间隔穿孔 / 游离壁破裂）的识别与外科时机',
@@ -5765,7 +5765,7 @@ const REFS = [
     en: 'Chinese expert consensus on the diagnosis and treatment of adult fulminant myocarditis',
     where: '中华心血管病杂志, 2017, 45(9): 742–752',
     dl: [
-      { t: '需订阅', u: 'https://rs.yiigle.com/cmaid/1006823' },
+      { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/1006823' },
     ],
 
     use: '暴发性心肌炎的早期识别、机械循环支持时机与超声随访节点',

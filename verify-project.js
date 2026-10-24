@@ -222,13 +222,22 @@ else bad('参考文献条数异常: ' + EX.REFS.length);
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
 if (dlAll.length >= 80) ok('文献直链 ' + dlAll.length + ' 条（官方 PDF / 免费全文 / 需订阅地址）');
 else bad('文献直链过少: ' + dlAll.length);
-if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文|需订阅|官网/.test(d.t)))
+if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文|需订阅|官网|免费页面/.test(d.t)))
   ok('每条直链含 https 地址与类型标注');
 else bad('存在不合规的文献直链');
 const subDl = dlAll.filter(d => d.t === '需订阅');
-if (subDl.length >= 15 && subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)))
+if (subDl.length >= 5 && subDl.length <= 12 &&
+    subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)))
   ok('需订阅地址 ' + subDl.length + ' 条均为 DOI 解析页或中华医学期刊网页面（无死链、无自造地址）');
 else bad('需订阅地址不合规: ' + subDl.map(d => d.u).join(' '));
+// 能免费拿到的必须标成免费：免费页面 / 免费全文 PDF / PMC 全文 三类合计应远多于需订阅
+const freeDl = dlAll.filter(d => d.t !== '需订阅');
+if (freeDl.length >= 70)
+  ok('免费可获取链接 ' + freeDl.length + ' 条（免费 PDF / PMC / 免费页面 / 中文全文）');
+else bad('免费链接过少: ' + freeDl.length);
+if (dlAll.filter(d => d.t === '免费页面').length >= 3)
+  ok('「免费页面」类型已启用 ' + dlAll.filter(d => d.t === '免费页面').length + ' 条（进页面点 PDF 即可下）');
+else bad('缺少「免费页面」类型');
 if (EX.REFS.filter(r => (r.dl || []).length).length >= 35)
   ok('带直链的文献 ' + EX.REFS.filter(r => (r.dl || []).length).length + ' 条（≥35）');
 else bad('带直链的文献过少');
