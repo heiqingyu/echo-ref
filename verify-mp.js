@@ -531,18 +531,33 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 10 个大组（3 计算 + 1 瓣膜 + 4 评估 + 2 外链；v1.5.3 拆散「介入尺寸」组）', dirs.length, 10, 0);
+  check('公式集分 8 个大组（3 计算 + 1 瓣膜 + 4 评估；v1.6.3 起「切面学习 / TEE 演示」移出目录）', dirs.length, 8, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 切面在线演示' ? 1 : 0, 1, 0);
+      '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
-  const dirViews = dirById('views');
-  const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 139 条（52 计算 + 77 评估判读含瓣膜解剖 + 7 切面学习 + 3 在线演示）', nItems, 139, 0);
-  check('切面学习 7 条（专辑入口 + 5 个外链 + 1 条标准切面速查表）', dirViews.items.length, 7, 0);
-  check('TEE 切面在线演示 3 条', dirSim.items.length, 3, 0);
+  check('目录共 130 条（原「切面学习 / TEE 演示」外链组已移出目录，改入「切面学习」页签）', nItems, 130, 0);
+
+  // —— 切面学习页签（v1.6.3：节段划分 + 教学视频 + TEE 演示 + 更多入口）——
+  // 视频 / 演示 / 更多入口不再出现在公式集目录，改由 segments 页渲染
+  let pgS = null;
+  const _prevPage = global.Page;
+  global.Page = function (c) { pgS = c; };
+  require(pathW.join(__dirname, 'miniprogram', 'pages', 'segments', 'segments.js'));
+  global.Page = _prevPage;
+  pgS.setData = function (patch) {
+    const self = this;
+    Object.keys(patch).forEach(function (k) { self.data[k] = patch[k]; });
+  };
+  pgS.onLoad();
+  const segViews = pgS.data.viewsList;
+  const segSim = pgS.data.simList;
+  const segAna = pgS.data.anaList;
+  check('切面学习页签：教学视频列表 6 条', segViews.length, 6, 0);
+  check('切面学习页签：TEE 演示列表 3 条', segSim.length, 3, 0);
+  check('切面学习页签：更多入口 2 条（TTE 标准切面 / 瓣膜解剖）', segAna.length, 2, 0);
   // v1.5.8：微信规定「不定义 onShareAppMessage 则右上角转发按钮不显示」，
   // 5 个页面必须都有，否则别人拿不到卡片入口（只能搜名称）。
   const sharePages = ['index/index', 'pediatric/pediatric', 'segments/segments',
@@ -564,21 +579,18 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('回到顶部后 showTop=false', pgA.data.showTop === false ? 1 : 0, 1, 0);
   check('没有本地资料时不出现「本地资料」分组',
     dirs.some(function (d) { return d.id === 'materials'; }) ? 0 : 1, 1, 0);
-  check('操作规范专辑排在切面学习第一条',
-    dirViews.items[0] && dirViews.items[0].kind === 'album' && dirViews.items[0].id === 'bookvid' ? 1 : 0, 1, 0);
+  check('操作规范专辑排在切面学习视频第一条',
+    segViews[0] && segViews[0].kind === 'album' && segViews[0].id === 'bookvid' ? 1 : 0, 1, 0);
   check('专辑标题为「实用超声规范化检查与操作（视频）」',
-    dirViews.items[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
-  // v1.5.1：组内混入 1 条 brief（TTE 标准切面与测量项目，由 moveTo 从评估组挪来），故先排除 brief
-  check('外链条目为 link 类型（专辑 / brief 除外）',
-    dirViews.items.slice(1).filter(i => i.kind !== 'brief')
-      .every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
-  check('切面学习组末尾是「TTE 标准切面与测量项目」brief 条目',
-    dirViews.items[dirViews.items.length - 1].id === 'tte-measure' &&
-      dirViews.items[dirViews.items.length - 1].kind === 'brief' ? 1 : 0, 1, 0);
+    segViews[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
+  check('外链条目为 link 类型（专辑除外）',
+    segViews.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+  check('更多入口含「TTE 标准切面与测量项目」brief 条目',
+    segAna.some(i => i.id === 'tte-measure' && i.kind === 'brief') ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
-    dirViews.items[0] && dirViews.items[0].count === 25 ? 1 : 0, 1, 0);
-  check('专辑条目不把 children 塞进目录数据（省 setData）',
-    dirViews.items[0] && dirViews.items[0].children === undefined ? 1 : 0, 1, 0);
+    segViews[0] && segViews[0].count === 25 ? 1 : 0, 1, 0);
+  check('专辑条目不把 children 塞进页面数据（省 setData）',
+    segViews[0] && segViews[0].children === undefined ? 1 : 0, 1, 0);
   check('专辑条目带书籍出处说明',
     (function () {
       const EXv = require('./miniprogram/utils/extra-data.js');
@@ -586,9 +598,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       return /王辉/.test(it.note || '') && /978-7-5189-8028-4/.test(it.note || '') ? 1 : 0;
     })(), 1, 0);
   check('TTE 经胸切面为直达交互链接',
-    dirViews.items.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
+    segViews.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含 TEE 速查表',
-    dirViews.items.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
+    segViews.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
   // 原「切面指南」4 条 ASE 官方 PDF 已并入参考文献（R11 中/英、R12、R41）
   check('切面指南已并入参考文献（不在目录里单列）',
     dirs.every(d => d.title !== '切面指南') ? 1 : 0, 1, 0);
@@ -605,8 +617,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('R41 含 TEE 介入筛查官方 PDF 直链',
     EXL.REFS.filter(x => x.id === 'R41')[0].dl.some(d => /PIIS0894731721005940\.pdf$/.test(d.u)) ? 1 : 0, 1, 0);
   check('在线演示含 CT2TEE / TEE 切面交互图谱',
-    dirSim.items.some(i => /ct2tee/.test(i.url)) &&
-    dirSim.items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
+    segSim.some(i => /ct2tee/.test(i.url)) &&
+    segSim.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
   check('血流动力学、舒张与心功能 16 条（M 型三合一 / 快速比值 / Ea / VTI 比 / dias / E-Vp / 四步法）', dirById('hemo').items.length, 16, 0);
   check('右心与肺循环 11 条（PASP / FAC / PVR / SVR + 第二批 6 条 + 肺高压可能性）',
@@ -706,7 +718,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirById('views-atlas').items.some(i => i.id === 'echo-interv') ? 1 : 0, 1, 0);
   check('造影、伪影与图像优化含 contrast-echo',
     dirById('views-atlas').items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
-  check('切面、图像与质控 11 条（3 切面 + 造影 + 伪影 + 假病变 + 3D TEE + 多普勒 + 报告 + 危急值 + 有创操作）', dirById('views-atlas').items.length, 11, 0);
+  check('切面、图像与质控 12 条（3 切面 + TTE 标准切面与测量 + 造影 + 伪影 + 假病变 + 3D TEE + 多普勒 + 报告 + 危急值 + 有创操作）', dirById('views-atlas').items.length, 12, 0);
   check('造影、伪影与图像优化含 artifact-guide',
     dirById('views-atlas').items.some(i => i.id === 'artifact-guide' && i.kind === 'brief') ? 1 : 0, 1, 0);
   check('特殊场景已并入急症组（妊娠 2 条 / 脓毒症 / 术后 ICU 仍在）', dirById('vascular').items.filter(i => ['pregnancy-echo','ppcm','sepsis','postop-icu'].indexOf(i.id) !== -1).length, 4, 0);

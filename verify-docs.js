@@ -272,6 +272,23 @@ function check(name, ok, detail) {
   check('点节段 7 后选中信息行可见', sel.shown === true, selInfo);
   check('选中信息含节段名与供血冠脉', /段/.test(sel.txt) && /LAD|LCx|RCA/.test(sel.txt), sel.txt);
 
+  // v1.6.3：切面学习页签新增「教学视频 / TEE 演示 / 更多入口」三块，由 renderSegExtras 填充
+  const segExtras = await c.evalJs(`(function(){
+    return JSON.stringify({
+      nav: document.querySelectorAll('#page-segments .fx-nav__c').length,
+      views: document.querySelectorAll('#segViewsList .fx-item').length,
+      sim: document.querySelectorAll('#segSimList .fx-item').length,
+      ana: document.querySelectorAll('#segAnaList .fx-item').length,
+      albumInViews: document.querySelectorAll('#segViewsList .fx-item[data-kind="album"]').length
+    });
+  })()`);
+  const se = JSON.parse(segExtras);
+  check('切面学习页内导航 4 个（节段/视频/TEE/更多）', se.nav === 4, se.nav);
+  check('切面学习页教学视频列表 6 条', se.views === 6, segExtras);
+  check('切面学习页 TEE 演示列表 3 条', se.sim === 3, segExtras);
+  check('切面学习页更多入口 2 条', se.ana === 2, segExtras);
+  check('教学视频含 1 个专辑入口', se.albumInViews === 1, se.albumInViews);
+
   console.log('\n【三·五】公式集（发布版第四页）');
   await c.evalJs('document.querySelector(\'.tab[data-tab="index"]\').click()');
   await new Promise((r) => setTimeout(r, 250));
@@ -316,18 +333,16 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 4 个计算组 + 瓣膜 + 5 组评估 + 2 组外链（v1.4.8 精简）',
-      d.groups.join('|') === '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 切面在线演示',
+    check('公式集分组 = 4 个计算组 + 瓣膜 + 4 组评估（v1.6.3 起外链组移出目录）',
+      d.groups.join('|') === '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景',
       d.groups.join('|'));
-    // v1.5.0：瓣膜解剖成了公式集里的一条，目录从 137 变 138
-    // v1.5.2：新增「TTE 标准切面与测量项目」（切面学习组）→ 139
-    // v1.6.0：新增「分度标准的版本差异」（瓣膜组）→ 140
-    check('条目 139 条（52 计算 + 11 瓣膜判读 + 1 瓣膜解剖 + 67 评估 + 8 外链）', d.items === 139, d.items);
-    check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
-    check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
+    // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
+    check('条目 130 条（计算 52 + 评估判读 78，含瓣膜解剖；外链组已移出）', d.items === 130, d.items);
+    check('外链 <a> 条目 0 条（切面学习/TEE 演示已移出公式集目录）', d.links === 0, d.links);
+    check('目录不再含操作规范专辑入口（已移入切面学习页签）', d.album === 0, d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
-    check('专辑二级视图容器存在', d.albumView, true);
-    check('外链为新窗口链接', (d.href || '').indexOf('https://') === 0, d.href);
+    check('专辑二级视图容器存在（切面学习页跳转依赖）', d.albumView, true);
+    check('无外链时 href 免检', d.links === 0 || (d.href || '').indexOf('https://') === 0, d.href);
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
