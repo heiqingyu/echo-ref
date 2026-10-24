@@ -619,7 +619,7 @@
       note: 'LVMI = Mass / 身高(m)^2.7，男 >50、女 >47 g/m^2.7 提示左室肥厚。肥胖患者按 BSA 指数化会低估肥厚程度，此时应改用身高^2.7' },
 
     /* ── v1.3.0 第四批：先心 / 心肌 / 耦联 ── */
-    { id: 'paidx', sec: 'ivs', title: 'McGoon 比值与 Nakata 指数',
+    { id: 'paidx', sec: 'chd', title: 'McGoon 比值与 Nakata 指数',
       fields: [['prpa', '右肺动脉 RPA', 'mm'], ['plpa', '左肺动脉 LPA', 'mm'],
         ['pdao', '膈肌水平降主动脉（可选）', 'mm']],
       note: 'McGoon = (RPA + LPA) ÷ 降主动脉，≥1.8 可考虑根治；Nakata = 左右肺动脉截面积之和 ÷ BSA（需身高体重），≥150 mm²/m² 可考虑根治。随访必须用同一口径' },
@@ -629,10 +629,10 @@
     { id: 'ea', sec: 'hemo', title: '有效动脉弹性 Ea / Ees-Ea 耦联',
       fields: [['eaesp', '收缩末压 ESP', 'mmHg'], ['easv', '每搏量 SV', 'mL'], ['eaesv', '收缩末容积 ESV', 'mL']],
       note: 'Ea = ESP / SV；单点 Ees ≈ ESP / ESV，故 Ees/Ea = SV / ESV。常见区间 0.8–1.5，心衰时降低。单点法仅作趋势参考' },
-    { id: 'coa', sec: 'ivs', title: '主动脉缩窄压差与拖尾',
+    { id: 'coa', sec: 'chd', title: '主动脉缩窄压差与拖尾',
       fields: [['coav', '缩窄处峰值流速', 'm/s'], ['coaved', '舒张末期流速（可选）', 'm/s']],
       note: '压差 = 4 × Vmax²。峰值压差 ≥20 mmHg 提示有血流动力学意义；舒张末期仍有 ≥5 mmHg 压差说明存在持续跨缩窄血流（拖尾征）。新生儿期压差可能不高' },
-    { id: 'aortaz', sec: 'ivs', title: '主动脉分节段 Z 值',
+    { id: 'aortaz', sec: 'chd', title: '主动脉分节段 Z 值',
       opts: [{ k: 'azsex', n: '性别', list: [['m', '男'], ['f', '女']] }],
       fields: [['azann', '主动脉瓣环', 'mm'], ['azsin', '窦部（Valsalva）', 'mm'],
         ['azstj', '窦管交界', 'mm'], ['azasc', '近段升主动脉', 'mm']],
@@ -703,21 +703,21 @@
         ['hel', '侧壁 e′', 'cm/s'], ['htrv', 'TR Vmax', 'm/s'], ['hgls', 'GLS（绝对值）', '%'],
         ['hbnp', 'NT-proBNP', 'pg/mL']],
       note: '三类各取最高分后相加（0–6）。形态学：LAVi ≥34 计 1、≥40 计 2；LVMI 男 >115/149、女 >95/122 计 1/2；RWT >0.42 计 1；PASP >35 计 1。功能学：E/e′ 9–14 计 1、≥15 计 2；e′ 减低计 1；TR Vmax >2.8 计 1；GLS <16% 计 1。标志物按窦律/房颤分档。≥5 分支持 HFpEF' },
-    { id: 'tavrsz', sec: 'ivs', title: 'TAVR 瓣环尺寸与 oversizing',
+    { id: 'tavrsz', sec: 'valve', title: 'TAVR 瓣环尺寸与 oversizing',
       fields: [['tcirc', '瓣环周长', 'mm'], ['tarea', '瓣环面积', 'mm²'], ['tnom', '拟用标称直径', 'mm']],
       note: '周长导出直径 = C/π；面积导出直径 = 2√(A/π)；面积 oversizing = (标称面积/实测面积 − 1)×100%。自膨胀瓣常见目标 10–20%，球囊扩张瓣 −10% ~ +5%。具体型号按厂商说明书与术者经验核定' },
-    { id: 'laasz', sec: 'ivs', title: '左心耳封堵尺寸推荐',
+    { id: 'laasz', sec: 'chamber', title: '左心耳封堵尺寸推荐',
       fields: [['lzmax', '着陆区最大径', 'mm'], ['lzmin', '着陆区最小径（可选）', 'mm'],
         ['lzdepth', '着陆区深度（可选）', 'mm']],
       note: '按着陆区最大径 × 1.08 上取整落到常规型号（17/20/24/27/31/35 mm）。长短径比 >1.3 提示椭圆度大；深度不足时考虑小一号。多用于 Watchman FLX 类器械，其他产品按各自说明书' },
-    { id: 'aortagrow', sec: 'ivs', title: '主动脉扩张增长率',
+    { id: 'aortagrow', sec: 'chd', title: '主动脉扩张增长率',
       fields: [['d1', '上次直径', 'cm'], ['d2', '本次直径', 'cm'], ['yrs', '间隔时间', '年']],
       note: '增长率 = (本次 − 上次) × 10 ÷ 间隔年数（mm/年）。<3 低危；3–5 缩短随访间隔；≥5 倾向尽快干预。必须同切面同方法测量' },
-    { id: 'pvfu', sec: 'ivs', title: '人工瓣术后跨瓣血流',
+    { id: 'pvfu', sec: 'valve', title: '人工瓣术后跨瓣血流',
       fields: [['lvotD', 'LVOT 直径', 'cm'], ['lvotVti', 'LVOT VTI', 'cm'],
         ['valveVti', '人工瓣 VTI', 'cm'], ['fupvmax', '跨瓣峰值流速', 'm/s'], ['fupmean', '跨瓣平均压差', 'mmHg']],
       note: 'EOA = (π×LVOT 直径²÷4 × LVOT VTI) ÷ 人工瓣 VTI。术后平均压差 <20 mmHg、EOA ≥1.2 cm²（EOAi ≥0.8）为佳。压差高不等于故障：先排 undersizing、瓣周漏、LVOT 梗阻、压降恢复与高流量' },
-    { id: 'cfr', sec: 'ivs', title: '冠脉血流储备 CFR',
+    { id: 'cfr', sec: 'chamber', title: '冠脉血流储备 CFR',
       fields: [['distal', '远端冠脉舒张期流速', 'cm/s'], ['proximal', '近端冠脉舒张期流速', 'cm/s']],
       note: 'CFR = 远端 ÷ 近端。>2.0 正常；1.6–2.0 可疑；<1.6 明显受限（缺血）。要求同一支冠脉、同一角度、同一心率与同一负荷状态下测量' },
   ];
@@ -727,7 +727,6 @@
     { id: 'hemo', title: '血流动力学、舒张与心功能' },
     { id: 'right', title: '右心与肺循环' },
     { id: 'recon', title: '重构、室壁运动与心肌功能' },
-    { id: 'ivs', title: '介入尺寸、先心与随访' },
   ];
 
   const CALC_COLLAPSE = [['', 'IVC 塌陷未知'], ['yes', '吸气塌陷 >50%'], ['no', '吸气塌陷 ≤50%']];
@@ -1150,12 +1149,19 @@
 
     BRIEF.forEach(function (sec) {
       if (sec.mergeInto) return;
+      // ★ v1.5.3：sec 指向本组的计算器直接并进来，排在判读条目之前
+      //   （原「介入尺寸、先心与随访」组已拆散，8 个计算器归到 valve / chd / chamber）
+      const calcs = CALC_GROUPS.filter(function (g) {
+        return g.sec === sec.id;
+      }).map(function (g) {
+        return { kind: 'calc', id: g.id, title: g.title, sub: CALC_SUB[g.id] || '' };
+      });
       secs.push({
         id: sec.id,
         title: sec.title,
-        items: sec.items.map(function (it) {
+        items: calcs.concat(sec.items.map(function (it) {
           return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };
-        }),
+        })),
       });
     });
 

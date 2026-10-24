@@ -130,20 +130,23 @@ if (CG.GROUPS.length === 52) ok('公式集定义 52 组（' + CG.GROUPS.map(g =>
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
-if (calcSecIds.join('/') === 'hemo/right/recon/ivs')
-  ok('计算组 4 个（血流动力学·舒张 / 右心肺循环 / 重构·室壁运动·心肌 / 介入尺寸·先心·随访）');
+if (calcSecIds.join('/') === 'hemo/right/recon')
+  ok('计算组 3 个（血流动力学·舒张 / 右心肺循环 / 重构·室壁运动·心肌）——「介入尺寸·先心·随访」组已拆散');
 else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
-const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1 && g.sec !== 'valve');
-if (!badSec.length) ok('52 条公式的 sec 归属均合法（含 valve 瓣膜评估组）');
+// v1.5.3：计算器可以直接挂在评估组上，与判读条目同组（不再单起「介入尺寸」组）
+const BRIEF_SEC_IDS = ['valve', 'chd', 'chamber'];
+const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1 && BRIEF_SEC_IDS.indexOf(g.sec) === -1);
+if (!badSec.length) ok('52 条公式的 sec 归属均合法（含并入评估组的 valve / chd / chamber）');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
 const nValveCalc = CG.GROUPS.filter(g => g.sec === 'valve').length;
 const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
-const nIvs = CG.GROUPS.filter(g => g.sec === 'ivs').length;
-if (nHemo === 16 && nRight === 11 && nRecon === 15 && nIvs === 8 && nValveCalc === 2)
-  ok('分组条目数 16 / 11 / 15 / 8 + 瓣膜评估 2');
-else bad('分组条目数异常: ' + [nHemo, nRight, nRecon, nIvs, nValveCalc].join('/'));
+const nChdCalc = CG.GROUPS.filter(g => g.sec === 'chd').length;
+const nChamCalc = CG.GROUPS.filter(g => g.sec === 'chamber').length;
+if (nHemo === 16 && nRight === 11 && nRecon === 15 && nValveCalc === 4 && nChdCalc === 4 && nChamCalc === 2)
+  ok('分组条目数 16 / 11 / 15 + 瓣膜 4 + 先心 4 + 心腔 2（合计 52）');
+else bad('分组条目数异常: ' + [nHemo, nRight, nRecon, nValveCalc, nChdCalc, nChamCalc].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
 const SHARED_KEYS = { ld: 1, lvti: 1 };
@@ -853,8 +856,8 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   });
   // 瓣膜组只剩 2 条：TR 定量 + 人工瓣 EOAi/PPM（v1.4.9 把纯查表与重复的删掉）
   const valveRest = CG160.GROUPS.filter(g => g.sec === 'valve').map(g => g.id).join(',');
-  (valveRest === 'tr,ppm')
-    ? ok('瓣膜组剩 2 条且与评估页无重复：' + valveRest)
+  (valveRest === 'tr,ppm,tavrsz,pvfu')
+    ? ok('瓣膜组 4 条计算器（TR / PPM / TAVR 瓣环与 oversizing / 人工瓣术后），与原评估页无重复：' + valveRest)
     : bad('瓣膜组条目异常：' + valveRest);
   // 并入评估页的输入键必须带前缀，否则网页端全局 calcVal 会串值
   [['mitral', ['mit_', 'mr_', 'wk']], ['aortic', ['as_', 'ar_']]].forEach(function (pair) {
