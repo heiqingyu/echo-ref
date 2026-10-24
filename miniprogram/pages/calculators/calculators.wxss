@@ -260,6 +260,13 @@
   background: #dbe6ff;
 }
 
+/* 「需订阅」不是免费直链：虚线灰边，与可下载的 PDF 明确区分 */
+.ref-dl__i--sub {
+  color: #6b7280;
+  background: transparent;
+  border: 1rpx dashed #cfd6df;
+}
+
 /* 回到顶部（目录很长，2026-10-21） */
 .totop {
   position: fixed;

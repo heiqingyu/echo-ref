@@ -1290,6 +1290,17 @@ html, body {
   background: #dbe6ff;
 }
 
+/* 「需订阅」不是免费直链：虚线灰边，与可下载的 PDF 明确区分 */
+.ref-dl__i--sub {
+  color: var(--sub);
+  background: transparent;
+  border: 1px dashed #cfd6df;
+}
+
+.ref-dl__i--sub:hover {
+  background: #f1f3f5;
+}
+
 /* 「相关计算」胶囊：点了直接进对应计算器 */
 .chiprow {
   display: flex;
