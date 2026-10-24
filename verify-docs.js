@@ -861,12 +861,12 @@ function check(name, ok, detail) {
     });
   })()`);
   const sd = JSON.parse(subDl);
-  check('「需订阅」胶囊渲染出 19 个', sd.n === 19, subDl);
+  check('「需订阅」胶囊渲染出 7 个（其余均可免费获取）', sd.n === 7, subDl);
   check('「需订阅」胶囊文案为「需订阅」', sd.txt === '需订阅', subDl);
   check('「需订阅」用虚线灰边与免费直链区分', sd.border === 'dashed', subDl);
   check('折叠头同时给出免费直链条数', /条附免费直链/.test(sd.cnt), subDl);
-  check('R1 首链为需订阅页且指向中华医学期刊网',
-    sd.r1txt === '需订阅' && /^https:\/\/rs\.yiigle\.com\/cmaid\//.test(sd.r1href), subDl);
+  check('R1 标为「免费页面」且指向中华医学期刊网（进页面点 PDF 可下）',
+    sd.r1txt === '免费页面' && /^https:\/\/rs\.yiigle\.com\/cmaid\//.test(sd.r1href), subDl);
 
   await c.evalJs('(function(){document.getElementById("refsToggle").click();return 1;})()');
   const refsAgain = await c.evalJs(
