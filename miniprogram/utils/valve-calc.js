@@ -7,7 +7,9 @@
  * 分级阈值来源：
  *   AS：ASE/EACVI 2017 定量（Vmax / 平均压差 / AVA / AVAi / DVI）
  *   AR：ASE 2017 原生瓣膜反流定量（VC / PHT / RVol / RF / EROA）
- *   MS：ACC/AHA 2020 分期（MVA / 平均压差 / PASP）+ Hatle MVA = 220 / PHT
+ *   MS：默认 ESC/EACTS 2021 口径（MVA >1.5 轻、1.0–1.5 中、<1.0 重），
+ *       同时给出 ACC/AHA 2020 对照（MVA ≤1.5 即重度、≤1.0 为极重度）；
+ *       Hatle MVA = 220 / PHT
  *   MR：ASE 2017（VC / EROA / RVol / RF）+ dP/dt = 32000 / Δt
  *   TR：ASE 2017（VC / EROA / RVol，重度 RVol ≥45 mL）
  *   PASP = 4·TRV² + RAP；RAP 用 IVC 三分级（自主呼吸）
@@ -133,6 +135,16 @@ function gMsPasp(p) {
   if (p <= 50) return lv('moderate');
   return lv('severe');
 }
+/**
+ * MVA 的 ACC/AHA 2020 口径：≤1.5 cm² 直接算重度（≤1.0 为极重度）。
+ * ★ 与 gMsMva（ESC/EACTS 2021：1.0–1.5 中度）差一级，这是国内医院互相看不懂报告的常见原因。
+ * 返回 level 一律用 'severe'（不新增枚举，避免影响配色与汇总），靠 text 区分极重度。
+ */
+function gMsMvaAha(a) {
+  if (a > 1.5) return { level: 'none', text: '未达重度' };
+  if (a > 1.0) return { level: 'severe', text: '重度' };
+  return { level: 'severe', text: '极重度' };
+}
 
 /* MR */
 function gMrVc(c) {
@@ -186,7 +198,8 @@ function summarize(rows) {
   let nMod = 0;
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
-    if (!r.tag) continue;
+    // noSum：同一数值的另一套标准判读，只作对照，不参与「综合提示」的计数与定级
+    if (!r.tag || r.noSum) continue;
     if (LEVEL_RANK[r.level] > LEVEL_RANK[worst]) worst = r.level;
     if (r.level === 'severe') nSev++;
     if (r.level === 'moderate') nMod++;
@@ -277,29 +290,45 @@ function calcMs(v) {
   const rows = [];
   const notes = [];
   let mvaLevelRow = null;
+  let mvaVal = null;
 
   if (isNum(v.mvaPlani) && v.mvaPlani > 0) {
-    mvaLevelRow = row('MVA 直接描记（首选）', txt(v.mvaPlani, 2) + ' cm²', gMsMva(v.mvaPlani));
+    mvaVal = v.mvaPlani;
+    mvaLevelRow = row('MVA 直接描记（ESC/EACTS 2021）', txt(v.mvaPlani, 2) + ' cm²', gMsMva(v.mvaPlani));
     rows.push(mvaLevelRow);
   }
   if (isNum(v.pht) && v.pht > 0) {
     const mva = 220 / v.pht;
     const r = row('MVA · PHT 法（220÷PHT）', txt(mva, 2) + ' cm²', gMsMva(mva));
     rows.push(r);
-    if (!mvaLevelRow) mvaLevelRow = r;
+    if (!mvaLevelRow) { mvaLevelRow = r; mvaVal = mva; }
     notes.push('PHT 法在球囊扩张后、顺应性异常、明显 AR 或高流量状态下不可靠。');
   }
   if (isNum(v.lvotD) && isNum(v.lvotVti) && isNum(v.mvVti) && v.mvVti > 0) {
     const mva = svOf(v.lvotD, v.lvotVti) / v.mvVti;
     const r = row('MVA 连续方程', txt(mva, 2) + ' cm²', gMsMva(mva));
     rows.push(r);
-    if (!mvaLevelRow) mvaLevelRow = r;
+    if (!mvaLevelRow) { mvaLevelRow = r; mvaVal = mva; }
   }
   if (isNum(v.mg)) {
     rows.push(row('平均跨瓣压差', txt(v.mg, 1) + ' mmHg', gMsMg(v.mg)));
     notes.push('压差随心率与流量变化，报告需同时记录心率与心律。');
   }
   if (isNum(v.pasp)) rows.push(row('估测 PASP', txt(v.pasp, 1) + ' mmHg', gMsPasp(v.pasp)));
+  if (isNum(mvaVal)) {
+    const aha = gMsMvaAha(mvaVal);
+    rows.push({
+      k: '　↳ 同一 MVA · ACC/AHA 2020 判读',
+      v: txt(mvaVal, 2) + ' cm²',
+      tag: aha.text,
+      level: aha.level,
+      noSum: true,
+    });
+    notes.push('**两套标准差一级**：上表按 ESC/EACTS 2021 —— MVA 1.0–1.5 为中度、<1.0 为重度；'
+      + 'ACC/AHA 2020 则把 **MVA ≤1.5 直接判为重度**（≤1.0 为极重度）。'
+      + '国内医院两者都有人用，这就是「同一份报告，一家写中度、一家写重度」的来源。'
+      + '报告里最好注明采用的是哪一套。');
+  }
   if (!rows.length) notes.push('优先填 MVA 直接描记；无描记时可用 PHT（MVA = 220 ÷ PHT）或连续方程估算。');
   return { rows: rows, notes: notes };
 }

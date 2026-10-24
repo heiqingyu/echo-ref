@@ -60,10 +60,14 @@ function toBlocks(blocks) {
       o.secIdx = secIdx;
     }
     // 桥接块带的计算器 id → 标题，渲染成可点胶囊
+    // 目标可能是计算器（GROUPS）也可能是评估条目（BRIEF_SECTIONS，如 mitral / aortic），
+    // 两边都查一遍，否则评估条目会直接把英文 id 显示给用户
     if (b.links && b.links.length) {
       o.links = b.links.map(function (id) {
         const g = CG.groupOf(id);
-        return { id: id, n: g ? g.title : id };
+        if (g) return { id: id, n: g.title };
+        const bf = findBrief(id);
+        return { id: id, n: (bf && bf.title) ? bf.title : id };
       });
     }
     return o;

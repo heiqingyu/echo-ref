@@ -579,8 +579,14 @@ check('水印落在底部 tabbar 之上的空白区',
   wmBlock.indexOf('var(--tabbar-h)') !== -1, true);
 check('水印不是竖排（避免压正文）',
   wmBlock.indexOf('writing-mode') === -1, true);
-check('含页脚版权行（禁止去除署名后转载）',
+// v1.6.0：页脚只留「品牌行 + 禁止去除署名后转载」，
+// 用户 2026-10-24 明确「不需要包含其他端的地址」（各端不用互相导流）
+check('含页脚品牌行（EchoRef · 心脏超声参考工具）',
+  html.indexOf('copyfoot') !== -1 && html.indexOf('EchoRef · 心脏超声参考工具') !== -1, true);
+check('含页脚版权声明（禁止去除署名后转载）',
   html.indexOf('禁止去除署名后转载') !== -1, true);
+check('页脚不出现其他端的引导地址',
+  html.indexOf('手机端小程序') === -1 && html.indexOf('安卓 APK') === -1, true);
 check('head 含 noai 抓取声明', html.indexOf('noai,noimageai') !== -1, true);
 check('含 TEE 速查表直达链接',
   html.indexOf('TEE-cheat-sheet/index.htm') !== -1, true);
