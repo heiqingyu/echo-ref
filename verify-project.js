@@ -184,7 +184,7 @@ const EX = require(exPath);
 if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（切面图像与质控 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,prosthetic,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,crt,la,mitral,grade-ver,aortic,asload,bav,lf-lg,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,aorta,pe,ph,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 78 条（5 个分组）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,diastolic,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,crt,la,mitral,grade-ver,aortic,asload,bav,lf-lg,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,aorta,pe,ph,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 78 条（5 个分组）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
