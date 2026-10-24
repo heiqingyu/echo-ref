@@ -292,6 +292,86 @@ function check(name, ok, detail) {
   check('切面学习页切面速查与图谱 4 条', se.look === 4, segExtras);
   check('教学视频含 1 个专辑入口', se.albumInViews === 1, se.albumInViews);
 
+  // ── v1.6.5：切面学习页自带搜索 + 与公式集互为补充的跨页签提示 ──
+  const segType = async function (v) {
+    await c.evalJs(`(function(){
+      var i=document.getElementById('segSearch');
+      i.value=${JSON.stringify(v)};
+      i.dispatchEvent(new Event('input',{bubbles:true}));
+    })()`);
+    await new Promise((r) => setTimeout(r, 150));
+  };
+  const segState = async function () {
+    const s = await c.evalJs(`(function(){
+      return JSON.stringify({
+        segpart: document.getElementById('segpart').hidden === true,
+        nav: document.getElementById('segNav').hidden === true,
+        look: document.querySelectorAll('#segLookList .fx-item').length,
+        views: document.querySelectorAll('#segViewsList .fx-item').length,
+        sim: document.querySelectorAll('#segSimList .fx-item').length,
+        empty: document.getElementById('segEmpty').hidden === false,
+        cross: document.getElementById('segCross').hidden === false,
+        crossTxt: document.getElementById('segCross').textContent
+      });
+    })()`);
+    return JSON.parse(s);
+  };
+
+  await segType('TEE');
+  const sw = await segState();
+  check('切面学习搜索「TEE」：速查只剩命中条目', sw.look > 0 && sw.look < 4, JSON.stringify(sw));
+  check('切面学习搜索时隐藏「节段划分」整块', sw.segpart === true, 'hidden=' + sw.segpart);
+  check('切面学习搜索时隐藏页内导航', sw.nav === true, 'hidden=' + sw.nav);
+
+  await segType('zzzz-not-exist');
+  const sn = await segState();
+  check('切面学习搜不到时给空态', sn.empty === true, JSON.stringify(sn));
+  check('两边都搜不到时不显示跨页签提示', sn.cross === false, sn.crossTxt);
+
+  // 只有公式集里才有的词 → 提示带关键词跳过去
+  await segType('TAPSE');
+  const sc = await segState();
+  check('切面学习搜「TAPSE」提示去公式集', sc.cross === true && /公式集/.test(sc.crossTxt), sc.crossTxt);
+  await c.evalJs('document.getElementById("segCrossBtn").click()');
+  await new Promise((r) => setTimeout(r, 300));
+  const crossTo = await c.evalJs(`(function(){
+    return JSON.stringify({
+      calc: !document.getElementById('page-calc').hidden,
+      kw: document.getElementById('fxSearch').value,
+      hits: document.querySelectorAll('#calcList .fx-item').length
+    });
+  })()`);
+  const ct = JSON.parse(crossTo);
+  check('点跨页签提示切到公式集', ct.calc === true, crossTo);
+  check('跨页签跳转把关键词带过去', ct.kw === 'TAPSE', ct.kw);
+  check('公式集按该关键词列出结果', ct.hits > 0, ct.hits);
+
+  // 反向：公式集搜「房间隔」，切面学习里也有命中 → 给回链
+  await c.evalJs(`(function(){
+    var i=document.getElementById('fxSearch');
+    i.value='房间隔'; i.dispatchEvent(new Event('input',{bubbles:true}));
+  })()`);
+  await new Promise((r) => setTimeout(r, 200));
+  const rev = await c.evalJs(`(function(){
+    var b=document.querySelector('#calcList [data-cross]');
+    return JSON.stringify({ has: !!b, txt: b ? b.textContent : '' });
+  })()`);
+  const rv = JSON.parse(rev);
+  check('公式集搜索页给出「切面学习」的跨页签入口', rv.has === true && /切面学习/.test(rv.txt), rev);
+
+  // 复位：清搜索、回切面学习页
+  await c.evalJs(`(function(){
+    var i=document.getElementById('fxSearch');
+    i.value=''; i.dispatchEvent(new Event('input',{bubbles:true}));
+    var s=document.getElementById('segSearch');
+    if (s) { s.value=''; s.dispatchEvent(new Event('input',{bubbles:true})); }
+    document.querySelector('.tab[data-tab="segments"]').click();
+  })()`);
+  await new Promise((r) => setTimeout(r, 300));
+  const srst = await segState();
+  check('清空搜索后切面学习恢复完整列表', srst.segpart === false && srst.look === 4 && srst.views === 6 && srst.sim === 3,
+    JSON.stringify(srst));
+
   // v1.6.4 回归：从切面学习点条目 → 进公式集详情 → 返回，页签必须回到「切面学习」
   // （用户 2026-10-24 反馈：「进去后点击哪个，返回页变成了公式集」）
   await c.evalJs(`(function(){
@@ -302,23 +382,34 @@ function check(name, ok, detail) {
   const jumpInfo = await c.evalJs(`(function(){
     return JSON.stringify({
       detail: !document.getElementById('calcDetail').hidden,
-      title: document.getElementById('appbarTitle').textContent
+      title: document.getElementById('appbarTitle').textContent,
+      backTxt: (document.getElementById('calcBack') || {}).textContent || '',
+      resetHidden: document.getElementById('resetBtn').hidden === true,
+      onTab: (document.querySelector('.tab.tab--on') || {}).dataset
+        ? document.querySelector('.tab.tab--on').dataset.tab : ''
     });
   })()`);
   const ji = JSON.parse(jumpInfo);
   check('切面速查点条目后打开公式集详情', ji.detail === true, jumpInfo);
+  // v1.6.5：从这个入口进来，返回按钮必须写「返回切面学习」，且「重置」不该出现
+  check('详情页返回按钮写「返回切面学习」（不是返回公式集）',
+    /返回切面学习/.test(ji.backTxt), ji.backTxt);
+  check('纯判读详情页隐藏「重置」按钮', ji.resetHidden === true, 'hidden=' + ji.resetHidden);
+  check('详情页底部页签仍高亮「切面学习」', ji.onTab === 'segments', ji.onTab);
   await c.evalJs('document.getElementById("calcBack").click()');
   await new Promise((r) => setTimeout(r, 700));
   const backInfo = await c.evalJs(`(function(){
     return JSON.stringify({
       segVisible: !document.getElementById('page-segments').hidden,
       calcVisible: !document.getElementById('page-calc').hidden,
-      title: document.getElementById('appbarTitle').textContent
+      title: document.getElementById('appbarTitle').textContent,
+      resetHidden: document.getElementById('resetBtn').hidden === true
     });
   })()`);
   const bi = JSON.parse(backInfo);
   check('从切面速查进详情后返回，页签回到「切面学习」', bi.segVisible === true && bi.calcVisible === false, backInfo);
   check('返回后顶栏标题为「切面学习」（不被公式集覆盖）', bi.title === '切面学习', bi.title);
+  check('切面学习页不显示「重置」按钮', bi.resetHidden === true, 'hidden=' + bi.resetHidden);
 
   console.log('\n【三·五】公式集（发布版第四页）');
   await c.evalJs('document.querySelector(\'.tab[data-tab="index"]\').click()');
@@ -331,6 +422,7 @@ function check(name, ok, detail) {
     if (!idx) return 'MISSING';
     return JSON.stringify({
       visible: !document.getElementById('page-calc').hidden,
+      resetShown: document.getElementById('resetBtn').hidden !== true,
       groups: [...idx.querySelectorAll('.fx-group')].map(function(e){return e.textContent;}),
       items: idx.querySelectorAll('.fx-item').length,
       links: idx.querySelectorAll('a.fx-item').length,
@@ -367,6 +459,8 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
+    // v1.6.5：回到公式集目录后「重置」重新出现（详情页与切面学习页会隐藏）
+    check('公式集目录恢复显示「重置」按钮', d.resetShown === true, 'shown=' + d.resetShown);
     check('公式集分组 = 4 个计算组 + 瓣膜 + 4 组评估（v1.6.3 起外链组移出目录）',
       d.groups.join('|') === '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景',
       d.groups.join('|'));

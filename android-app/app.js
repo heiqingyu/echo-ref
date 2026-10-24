@@ -176,6 +176,25 @@
   window.addEventListener('hashchange', onNavEvent);
   window.addEventListener('popstate', onNavEvent);
 
+  /**
+   * 顶栏文案与「重置」按钮的显隐（v1.6.5）
+   *
+   * ① 「‹ 返回公式集」是写死的文案 —— 从「切面学习」点条目进来时点它其实回到
+   *    切面学习，文案与去向不符，按 viewOriginTab 动态改词。
+   * ② 「重置」清的是 EF / 儿童 Z 值 / 公式集的全部输入，在切面学习页和纯判读
+   *    详情页里没有可重置的东西，挂着只会被误点。
+   */
+  function syncChrome() {
+    const back = '‹ 返回' + (viewOriginTab === 'segments' ? '切面学习' : '公式集');
+    if ($('calcBack')) $('calcBack').textContent = back;
+    if ($('albumBack')) $('albumBack').textContent = back;
+    if ($('resetBtn')) {
+      const inSub = ($('calcDetail') && !$('calcDetail').hidden) ||
+        ($('calcAlbum') && !$('calcAlbum').hidden);
+      $('resetBtn').hidden = currentTab === 'segments' || inSub;
+    }
+  }
+
   function switchTab(name) {
     if (!TAB_TITLE[name]) return;
     currentTab = name;
@@ -183,8 +202,11 @@
     document.querySelectorAll('.page').forEach(function (el) {
       el.hidden = el.id !== 'page-' + name;
     });
+    // ★ v1.6.5：详情视图属于公式集，但从「切面学习」进来的话底部页签仍高亮
+    //   来源页签 —— 否则用户看到的就是「点了一下，底下跳到公式集了」。
+    const hi = (name === 'calc' && viewOriginTab !== 'calc') ? viewOriginTab : name;
     document.querySelectorAll('.tab').forEach(function (el) {
-      el.classList.toggle('tab--on', el.dataset.tab === name);
+      el.classList.toggle('tab--on', el.dataset.tab === hi);
     });
     $('appbarTitle').textContent = TAB_TITLE[name];
 
@@ -199,6 +221,7 @@
     if (typeof syncToTop === 'function') {
       requestAnimationFrame(syncToTop);
     }
+    syncChrome();
   }
 
   document.querySelectorAll('.tab').forEach(function (el) {
@@ -1266,35 +1289,150 @@
    * 页内导航用 data-segjump + goToY（与全站滚动统一，不走 hash 锚点，
    * 避免和 #/calc/… 的视图栈 hash 打架）。
    */
-  function renderSegExtras() {
-    const viewsBox = $('segViewsList');
-    const simBox = $('segSimList');
-    const lookBox = $('segLookList');
-    function listOf(secId) {
-      const sec = LINKS.filter(function (s) { return s.id === secId; })[0];
-      let h = '';
-      ((sec && sec.items) || []).forEach(function (it) {
-        h += fxItemHtml(it.album ? 'album' : 'link', it.id, it.title, it.sub,
-          it.url, (it.children || []).length, secId);
+  /** 切面学习页三块列表的数据（单一来源：extra-data.js，不在这里重复维护标题） */
+  function segItems() {
+    const out = { look: [], views: [], sim: [] };
+    BRIEF.forEach(function (sec) {
+      sec.items.forEach(function (it) {
+        if (!it.segOnly) return;
+        out.look.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
       });
-      return h;
-    }
-    if (viewsBox) viewsBox.innerHTML = listOf('views');
-    if (simBox) simBox.innerHTML = listOf('sim');
-    if (lookBox) {
-      // 切面速查 / 标准切面：直接取 BRIEF_SECTIONS 里标了 segOnly 的条目，
-      // 标题与说明只有一份（extra-data.js），不在这里重复维护。
-      let h = '';
-      BRIEF.forEach(function (sec) {
-        sec.items.forEach(function (it) {
-          if (!it.segOnly) return;
-          h += fxItemHtml('brief', it.id, it.title, it.sub || '');
+    });
+    out.look.push({
+      kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
+      sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1',
+    });
+    ['views', 'sim'].forEach(function (secId) {
+      const sec = LINKS.filter(function (s) { return s.id === secId; })[0];
+      ((sec && sec.items) || []).forEach(function (it) {
+        out[secId].push({
+          kind: it.album ? 'album' : 'link', id: it.id, title: it.title, sub: it.sub || '',
+          url: it.url, count: (it.children || []).length, sec: secId,
         });
       });
-      h += fxItemHtml('valveana', 'valveana', '瓣膜解剖 · TEE 标准切面',
-        '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1');
-      lookBox.innerHTML = h;
+    });
+    return out;
+  }
+
+  /**
+   * 切面学习页按关键词过滤三块列表
+   *
+   * ★ 专辑（25 段操作规范视频）要往下搜子条目：整组搬过来之后只按专辑名匹配，
+   *   搜「房间隔」就什么都找不到了 —— 命中的子视频平铺成单条链出去。
+   */
+  function segFilter(q) {
+    const hit = function (it) { return hitKw(it, q); };
+    const all = segItems();
+    const views = [];
+    all.views.forEach(function (it) {
+      if (!q || hit(it)) { views.push(it); return; }
+      if (it.kind !== 'album') return;
+      const alb = albumOf(it.sec, it.id);
+      ((alb && alb.children) || []).forEach(function (c) {
+        if (hit(c)) views.push({ kind: 'link', id: c.id, title: c.title, sub: c.sub || '', url: c.url });
+      });
+    });
+    return {
+      look: q ? all.look.filter(hit) : all.look,
+      views: views,
+      sim: q ? all.sim.filter(hit) : all.sim,
+    };
+  }
+
+  /** 公式集里能命中关键词的条目数（用于跨页签提示） */
+  function calcMatchCount(q) {
+    let n = 0;
+    buildCalcSections().forEach(function (sec) {
+      sec.items.forEach(function (it) { if (hitKw(it, q)) n++; });
+    });
+    return n;
+  }
+
+  /** 切面学习里能命中关键词的条目数 */
+  function segMatchCount(q) {
+    const f = segFilter(q);
+    return f.look.length + f.views.length + f.sim.length;
+  }
+
+  /**
+   * 按关键词渲染切面学习页的三块列表（v1.6.5 起带搜索）
+   *
+   * 搜索时「节段划分」整块与页内导航先让位：它不是可搜索的条目，又占大半屏，
+   * 留在结果里只会让人以为没筛。
+   */
+  function renderSegLists(kw) {
+    const q = (kw || '').trim().toLowerCase();
+    const f = q ? segFilter(q) : segFilter('');
+    const look = f.look, views = f.views, sim = f.sim;
+
+    const paint = function (boxId, arr) {
+      const box = $(boxId);
+      if (!box) return;
+      box.innerHTML = arr.map(function (it) {
+        return fxItemHtml(it.kind, it.id, it.title, it.sub, it.url, it.count, it.sec);
+      }).join('');
+    };
+    paint('segLookList', look);
+    paint('segViewsList', views);
+    paint('segSimList', sim);
+
+    if ($('segpart')) $('segpart').hidden = !!q;
+    if ($('segNav')) $('segNav').hidden = !!q;
+    [['lookpart', look], ['viewspart', views], ['simpart', sim]].forEach(function (p) {
+      if ($(p[0])) $(p[0]).hidden = !!q && !p[1].length;
+    });
+
+    const total = look.length + views.length + sim.length;
+    const empty = $('segEmpty');
+    if (empty) {
+      empty.hidden = !q || total > 0;
+      empty.textContent = q && !total ? '切面学习里没有匹配「' + (kw || '').trim() + '」的条目' : '';
     }
+    const cross = $('segCross');
+    if (!cross) return;
+    const n = q ? calcMatchCount(q) : 0;
+    if (!q || !n) { cross.hidden = true; cross.innerHTML = ''; return; }
+    cross.hidden = false;
+    cross.innerHTML = '<button class="fx-cross__b" id="segCrossBtn">「公式集」里' +
+      (total ? '还有 ' : '有 ') + n + ' 条相关条目 →</button>';
+    const btn = $('segCrossBtn');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        const text = ($('segSearch') || {}).value || '';
+        switchTab('calc');
+        if ($('fxSearch')) {
+          $('fxSearch').value = text;
+          if ($('fxSearchClear')) $('fxSearchClear').hidden = !text;
+        }
+        renderCalcList(text);
+      });
+    }
+  }
+
+  /** 切面学习页的交互（搜索框 / 页内导航 / 条目跳转）——只绑一次，列表重绘不用重绑 */
+  let segBound = false;
+  function bindSegEvents() {
+    if (segBound) return;
+    segBound = true;
+
+    const sIn = $('segSearch');
+    const sClr = $('segSearchClear');
+    if (sIn) {
+      sIn.addEventListener('input', function () {
+        renderSegLists(sIn.value);
+        if (sClr) sClr.hidden = !sIn.value;
+      });
+      sIn.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') sIn.blur();   // 过滤是实时的，回车只收键盘
+      });
+    }
+    if (sClr) {
+      sClr.addEventListener('click', function () {
+        if (sIn) { sIn.value = ''; renderSegLists(''); sIn.focus(); }
+        sClr.hidden = true;
+      });
+    }
+
     // 页内导航：点标签滚到对应区块（goToY 统一处理 APK WebView 兼容）
     document.querySelectorAll('#page-segments [data-segjump]').forEach(function (el) {
       el.addEventListener('click', function () {
@@ -1302,6 +1440,7 @@
         if (t) goToY(t.getBoundingClientRect().top + window.pageYOffset - 56);
       });
     });
+
     // 条目点击委托：album 切到公式集的专辑视图，其余（brief / valveana）进详情视图
     // ★ 跳转前记下来源页签与滚动位置：返回时 leaveView() 会切回本页（v1.6.4）
     const segPage = $('page-segments');
@@ -1318,6 +1457,11 @@
         else openCalcGroup(el.dataset.id);
       });
     }
+  }
+
+  function renderSegExtras() {
+    bindSegEvents();
+    renderSegLists($('segSearch') ? $('segSearch').value : '');
   }
 
   /** 条目是否命中关键词（标题 + 说明，忽略大小写） */
@@ -1372,6 +1516,16 @@
     if (!list) {
       list = '<div class="fx-empty">没有匹配「' + esc((kw || '').trim()) + '」的条目</div>';
     }
+    // v1.6.5：跨页签提示 —— 「切面学习」页签的速查/视频/演示不在本目录里，
+    // 搜到的词若在那页有命中，给一条直接过去的入口（点回去会把关键词带过去）。
+    if (q) {
+      const segN = segMatchCount(q);
+      if (segN) {
+        list += '<div class="fx-cross"><button class="fx-cross__b" data-cross="segments">' +
+          '「切面学习」里' + (list.indexOf('fx-empty') !== -1 ? '有 ' : '还有 ') + segN +
+          ' 条相关条目 →</button></div>';
+      }
+    }
     // 组名跳转条：目录很长，点一下锚到该组（横向可滑动）
     let nav = '';
     secs.forEach(function (sec) {
@@ -1390,6 +1544,18 @@
 
     const box = $('calcList');
     box.addEventListener('click', function (ev) {
+      // 跨页签提示按钮：把关键词带到「切面学习」页签继续搜
+      const cr = ev.target.closest ? ev.target.closest('[data-cross]') : null;
+      if (cr) {
+        const text = $('fxSearch') ? $('fxSearch').value : '';
+        switchTab(cr.dataset.cross);
+        if ($('segSearch')) {
+          $('segSearch').value = text;
+          if ($('segSearchClear')) $('segSearchClear').hidden = !text;
+        }
+        renderSegLists(text);
+        return;
+      }
       const el = ev.target.closest ? ev.target.closest('.fx-item') : null;
       if (!el) return;
       const kind = el.dataset.kind;
@@ -1459,6 +1625,7 @@
     if ($('calcDetail')) $('calcDetail').hidden = true;
     if ($('calcAlbum')) $('calcAlbum').hidden = false;
     if ($('appbarTitle')) $('appbarTitle').textContent = alb.title;
+    syncChrome();
     window.scrollTo(0, 0);
     if (!fromHistory) pushView({ type: 'album', sec: secId, id: itemId });
   }
@@ -1660,6 +1827,7 @@
       : (b ? b.title : '瓣膜解剖 · TEE 标准切面');
     renderCalc();
     if (isAna) renderValveAna();
+    syncChrome();
     window.scrollTo(0, 0);
     if (!fromHistory) pushView({ type: 'calc', id: id });
   }
@@ -1676,6 +1844,7 @@
       $('appbarTitle').textContent = TAB_TITLE.calc;
       window.scrollTo(0, 0);
     }
+    syncChrome();
   }
 
   /** 回到公式集目录（用户点了「返回公式集」按钮） */

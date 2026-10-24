@@ -4,14 +4,26 @@
   <view class="card">
     <view class="card__title">切面学习</view>
     <view class="card__desc">节段划分、切面速查、标准切面教学视频与 TEE 在线演示集中在本页签；点下方标签直达对应区块，切面与测量的判读正文仍在公式集。</view>
-    <view class="fx-nav">
+    <!-- v1.6.5：本页签自带搜索（只筛速查 / 视频 / 演示），搜不到时给一条去公式集的入口 -->
+    <view class="fx-search">
+      <input class="fx-search__i" value="{{segKw}}" type="text"
+             placeholder="搜索切面速查 / 视频 / 演示，如 TEE、房间隔"
+             placeholder-class="fx-search__ph" confirm-type="search"
+             bindinput="onSegInput" />
+      <view wx:if="{{segKw}}" class="fx-search__x" bindtap="onSegClear">✕</view>
+    </view>
+    <view wx:if="{{segEmpty}}" class="fx-empty">{{segEmpty}}</view>
+    <view wx:if="{{segCrossN > 0}}" class="fx-cross" bindtap="onSegCross">
+      「公式集」里{{segSearching ? '还有 ' : '有 '}}{{segCrossN}} 条相关条目 →
+    </view>
+    <view wx:if="{{!segSearching}}" class="fx-nav">
       <view class="fx-nav__c {{curSeg === item.key ? 'fx-nav__c--on' : ''}}"
             wx:for="{{segNav}}" wx:key="key" data-seg="{{item.key}}" bindtap="onSegJump">{{item.t}}</view>
     </view>
   </view>
 
   <!-- ① 17 节段与冠脉供血 + 切面与室壁对应（保留原节段划分内容） -->
-  <view id="segpart">
+  <view id="segpart" wx:if="{{!segSearching}}">
     <view class="card">
       <view class="card__title">17 节段模型与冠脉供血</view>
       <view class="card__desc">ASE 17 节段模型 · 供血分区为典型分布，存在个体差异。点击下方分区可高亮对应节段；点击节段数字可在所有切面中同步定位。</view>
@@ -76,7 +88,7 @@
   </view>
 
   <!-- ② 切面速查与图谱（原「切面、图像与质控」组里的切面速查 / 标准切面条目 + 瓣膜解剖） -->
-  <view class="card" id="lookpart">
+  <view class="card" id="lookpart" wx:if="{{!segSearching || lookList.length}}">
     <view class="card__title">切面速查与图谱</view>
     <view class="card__desc">标准切面的角度、显示结构与必测项速查；瓣膜解剖为 TEE 交互图谱。点条目打开对应详情页，返回时回到本页。</view>
     <view class="fx-list">
@@ -85,7 +97,7 @@
   </view>
 
   <!-- ③ 教学视频 -->
-  <view class="card" id="viewspart">
+  <view class="card" id="viewspart" wx:if="{{!segSearching || viewsList.length}}">
     <view class="card__title">切面学习（视频）</view>
     <view class="card__desc">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</view>
     <view class="fx-list">
@@ -95,7 +107,7 @@
   </view>
 
   <!-- ④ TEE 演示 -->
-  <view class="card" id="simpart">
+  <view class="card" id="simpart" wx:if="{{!segSearching || simList.length}}">
     <view class="card__title">TEE 切面在线演示</view>
     <view class="card__desc">交互式 TEE 切面演示站点（外链，复制到浏览器打开，不嵌入本页）。</view>
     <view class="fx-list">

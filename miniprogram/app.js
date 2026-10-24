@@ -20,6 +20,13 @@ App({
       ivsd: 9,
       lvpwd: 9,
     },
+    /**
+     * 跨页签搜索的关键词中转（v1.6.5）
+     * wx.switchTab 不能带参数，所以「公式集 ↔ 切面学习」互跳时先把词放这里，
+     * 目标页 onShow 取走并清空（不清会让下次切页签又筛一遍）。
+     */
+    pendingCalcKw: '',
+    pendingSegKw: '',
   },
 
   onLaunch() {

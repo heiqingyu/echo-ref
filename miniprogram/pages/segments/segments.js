@@ -1,6 +1,8 @@
 const segSvg = require('../../utils/segment-svg.js');
 const DATA = require('../../utils/segment-data.js');
 const EX = require('../../utils/extra-data.js');
+const XS = require('../../utils/cross-search.js');
+const app = getApp();
 
 /** 条目是否为视频直链（站内播放页可播） */
 function isVideo(url) {
@@ -44,11 +46,25 @@ Page({
     viewsList: [], // views 外链（含专辑）
     simList: [],   // sim 外链
     lookList: [],  // 切面速查与图谱：segOnly 的 brief 条目 + 瓣膜解剖
+    // ── ④ 本页签搜索（v1.6.5）──
+    segKw: '',
+    segSearching: false, // 有搜索词：节段划分与页内导航让位
+    segEmpty: '',        // 搜不到时的空态文案
+    segCrossN: 0,        // 公式集里的命中数（>0 才显示跨页签入口）
   },
 
   onLoad() {
     this.rebuild();
     this.loadSegExtras();
+  },
+
+  /** 从公式集「跨页签搜索」跳过来时，接着刚才的关键词继续筛（switchTab 不能带参数） */
+  onShow() {
+    const pend = app.globalData && app.globalData.pendingSegKw;
+    if (pend) {
+      app.globalData.pendingSegKw = '';
+      this.applySegKw(pend);
+    }
   },
 
   /** 重新生成全部 SVG（牛眼图 + 7 张切面示意图） */
@@ -80,13 +96,13 @@ Page({
     });
   },
 
-  /** 装配三个列表：切面速查（segOnly 条目）/ 教学视频 / TEE 演示 */
+  /** 装配三个列表的原始数据（标题只在 extra-data.js 维护一份），随后按当前关键词渲染 */
   loadSegExtras() {
     const links = EX.LINK_SECTIONS || [];
     const views = (links.filter(function (s) { return s.id === 'views'; })[0] || {}).items || [];
     const sim = (links.filter(function (s) { return s.id === 'sim'; })[0] || {}).items || [];
     // ★ 切面速查 / 标准切面：标题与说明只在 extra-data.js 维护一份，
-    //   这里按 segOnly 标记取（与网页 / APK 的 renderSegExtras 同源）
+    //   这里按 segOnly 标记取（与网页 / APK 的 renderSegLists 同源）
     const look = [];
     (EX.BRIEF_SECTIONS || []).forEach(function (s) {
       (s.items || []).forEach(function (it) {
@@ -100,11 +116,61 @@ Page({
       kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
       sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1', url: '',
     });
-    this.setData({
-      viewsList: views.map(function (it) { return toListItem(it, 'views'); }),
-      simList: sim.map(function (it) { return toListItem(it, 'sim'); }),
-      lookList: look,
+    this._raw = { look: look, views: views, sim: sim };
+    this.applySegKw(this.data.segKw || '');
+  },
+
+  /**
+   * 本页签搜索（v1.6.5）：只筛三块列表
+   *
+   * 有搜索词时「节段划分」整块与页内导航让位 —— 它不是可搜索的条目，
+   * 又占大半屏，留着只会让人以为没筛。
+   * 专辑要往下搜子视频：整组搬过来后只按专辑名匹配的话，搜「房间隔」什么都找不到。
+   */
+  applySegKw(kw) {
+    const raw = this._raw || { look: [], views: [], sim: [] };
+    const q = (kw || '').trim().toLowerCase();
+    const hit = function (it) {
+      return ((it.title || '') + ' ' + (it.sub || '')).toLowerCase().indexOf(q) !== -1;
+    };
+    const look = q ? raw.look.filter(hit) : raw.look;
+    const simRaw = q ? raw.sim.filter(hit) : raw.sim;
+    const viewsRaw = [];
+    raw.views.forEach(function (it) {
+      if (!q || hit(it)) { viewsRaw.push(it); return; }
+      if (!it.album) return;
+      (it.children || []).forEach(function (c) {
+        if (hit(c)) viewsRaw.push(c);
+      });
     });
+
+    const viewsList = viewsRaw.map(function (it) { return toListItem(it, 'views'); });
+    const simList = simRaw.map(function (it) { return toListItem(it, 'sim'); });
+    const total = look.length + viewsList.length + simList.length;
+
+    this.setData({
+      segKw: kw || '',
+      segSearching: !!q,
+      segEmpty: q && !total ? '切面学习里没有匹配「' + (kw || '').trim() + '」的条目' : '',
+      segCrossN: q ? XS.calcCount(q) : 0,
+      lookList: look,
+      viewsList: viewsList,
+      simList: simList,
+    });
+  },
+
+  onSegInput(e) {
+    this.applySegKw((e.detail && e.detail.value) || '');
+  },
+
+  onSegClear() {
+    this.applySegKw('');
+  },
+
+  /** 切面学习搜不到时，带着关键词跳到公式集继续搜（switchTab 不能带参数，走 globalData） */
+  onSegCross() {
+    app.globalData.pendingCalcKw = this.data.segKw;
+    wx.switchTab({ url: '/pages/calculators/calculators' });
   },
 
   /** 页内导航：点标签滚到对应区块（用选择器算绝对位置，最稳） */

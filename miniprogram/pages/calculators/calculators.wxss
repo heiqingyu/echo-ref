@@ -46,6 +46,17 @@
   color: #8a9099;
 }
 
+/* 跨页签搜索提示（v1.6.5）：切面速查/视频/演示在「切面学习」页签，命中了给条入口 */
+.fx-cross {
+  margin: 0 0 16rpx;
+  padding: 22rpx 24rpx;
+  border: 1rpx dashed rgba(37, 99, 235, 0.35);
+  border-radius: 16rpx;
+  background: #eff4ff;
+  font-size: 26rpx;
+  color: #2563eb;
+}
+
 .fx-group {
   margin: 28rpx 4rpx 12rpx;
   font-size: 25rpx;

@@ -502,6 +502,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     setNavigationBarTitle(o) { navBarTitle = o.title; },
     setClipboardData(o) { clip = o.data; if (o.success) o.success(); },
     showToast() {},
+    switchTab(o) { global.__lastSwitchTab = o.url; },
   };
   const gData23 = {
     profile: { sex: 'male', height: 170, weight: 65, bsa: 1.75 },
@@ -547,6 +548,19 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   }, 0);
   check('目录不含 segOnly 条目（tee-20 / tte-std / tte-measure）', segOnlyInDir, 0, 0);
 
+  // ★ v1.6.5：公式集搜索给出「切面学习」的跨页签入口；从那边跳来时接手关键词
+  pgA.applySearch('房间隔');
+  check('公式集搜「房间隔」时提示切面学习里也有命中', pgA.data.segCrossN > 0 ? 1 : 0, 1, 0);
+  pgA.applySearch('TAPSE');
+  check('公式集搜「TAPSE」时切面学习无命中 → 不给提示', pgA.data.segCrossN, 0, 0);
+  pgA.applySearch('');
+  gData23.pendingCalcKw = 'TAPSE';
+  pgA.onShow();
+  check('从切面学习跨页签过来时公式集自动接着筛', pgA.data.kw === 'TAPSE' ? 1 : 0, 1, 0);
+  check('取走关键词后清空中转（免得下次切页签又筛一遍）',
+    gData23.pendingCalcKw === '' ? 1 : 0, 1, 0);
+  pgA.applySearch('');
+
   // —— 切面学习页签（v1.6.4：节段划分 + 切面速查与图谱 + 教学视频 + TEE 演示）——
   // 视频 / 演示 / 切面速查不再出现在公式集目录，改由 segments 页渲染
   let pgS = null;
@@ -572,6 +586,33 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('页内导航 4 块且顺序为 节段/速查/视频/演示',
     pgS.data.segNav.map(function (n) { return n.t; }).join('|') ===
       '节段划分|切面速查|教学视频|TEE 演示' ? 1 : 0, 1, 0);
+
+  // ★ v1.6.5：本页签自带搜索 + 与公式集互给的跨页签提示
+  pgS.applySegKw('TEE');
+  check('切面学习搜「TEE」后速查只剩命中条目',
+    pgS.data.lookList.length > 0 && pgS.data.lookList.length < 4 ? 1 : 0, 1, 0);
+  check('切面学习搜索时 segSearching 打开（节段划分与页内导航让位）',
+    pgS.data.segSearching === true ? 1 : 0, 1, 0);
+  check('切面学习搜「TEE」时提示公式集里也有命中', pgS.data.segCrossN > 0 ? 1 : 0, 1, 0);
+  pgS.applySegKw('房间隔');
+  check('专辑子视频参与切面学习搜索（搜「房间隔」平铺出 2 段视频）',
+    pgS.data.viewsList.length === 2 && pgS.data.viewsList.every(function (i) {
+      return i.kind === 'link';
+    }) ? 1 : 0, 1, 0);
+  pgS.applySegKw('zzzz-not-exist');
+  check('切面学习搜不到时给空态文案', /没有匹配/.test(pgS.data.segEmpty) ? 1 : 0, 1, 0);
+  check('两边都搜不到时不给跨页签提示', pgS.data.segCrossN, 0, 0);
+  pgS.applySegKw('');
+  check('清空搜索后切面学习恢复完整列表（4 / 6 / 3）',
+    pgS.data.lookList.length === 4 && pgS.data.viewsList.length === 6 &&
+      pgS.data.simList.length === 3 ? 1 : 0, 1, 0);
+  global.__lastSwitchTab = '';
+  pgS.applySegKw('TAPSE');
+  pgS.onSegCross();
+  check('切面学习跨页签跳转带上关键词并切到公式集',
+    gData23.pendingCalcKw === 'TAPSE' &&
+      global.__lastSwitchTab === '/pages/calculators/calculators' ? 1 : 0, 1, 0);
+  pgS.applySegKw('');
   // v1.5.8：微信规定「不定义 onShareAppMessage 则右上角转发按钮不显示」，
   // 5 个页面必须都有，否则别人拿不到卡片入口（只能搜名称）。
   const sharePages = ['index/index', 'pediatric/pediatric', 'segments/segments',

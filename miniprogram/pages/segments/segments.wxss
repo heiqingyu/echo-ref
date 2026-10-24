@@ -234,3 +234,57 @@
   color: #c4c9d1;
   line-height: 1;
 }
+
+/* ── 本页签搜索（v1.6.5）：不吸顶，跟卡片一起滚 ── */
+.fx-search {
+  display: flex;
+  align-items: center;
+  margin: 18rpx 0 8rpx;
+  padding: 4rpx 18rpx;
+  border: 1rpx solid #e3e6ea;
+  border-radius: 16rpx;
+  background: #f7f8fa;
+}
+
+.fx-search__i {
+  flex: 1;
+  height: 60rpx;
+  font-size: 27rpx;
+  color: #1f2937;
+}
+
+.fx-search__ph {
+  font-size: 26rpx;
+  color: #a3aab5;
+}
+
+.fx-search__x {
+  width: 48rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #9aa1ad;
+}
+
+.fx-empty {
+  margin: 10rpx 0 6rpx;
+  padding: 44rpx 20rpx;
+  border-radius: 16rpx;
+  background: #f7f8fa;
+  text-align: center;
+  font-size: 26rpx;
+  color: #8a9099;
+}
+
+/* 跨页签搜索提示：本页没命中时给一条去公式集的入口 */
+.fx-cross {
+  margin: 12rpx 0 6rpx;
+  padding: 22rpx 24rpx;
+  border: 1rpx dashed rgba(37, 99, 235, 0.35);
+  border-radius: 16rpx;
+  background: #eff4ff;
+  font-size: 26rpx;
+  color: #2563eb;
+}
+
