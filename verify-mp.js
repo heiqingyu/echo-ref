@@ -530,7 +530,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const dirViews = dirById('views');
   const dirSim = dirById('sim');
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 145 条（57 计算 + 8 瓣膜 + 76 评估 + 9 外链 - 5 合并进瓣膜组）', nItems, 145, 0);
+  check('目录共 138 条（50 计算 + 2 瓣膜 + 76 评估 + 1 解剖 + 6 切面学习 + 3 模拟器）', nItems, 138, 0);
   check('切面学习 6 条（专辑入口 + 5 个外链）', dirViews.items.length, 6, 0);
   check('TEE 模拟器 3 条', dirSim.items.length, 3, 0);
   // 回到顶部（2026-10-21）：目录很长，滚下去后出现回顶按钮
@@ -581,27 +581,27 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirSim.items.some(i => /ct2tee/.test(i.url)) &&
     dirSim.items.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
-  check('血流动力学、舒张与心功能 17 条（原 14 + 舒张 3；M 型三合一 / 快速比值 / Ea / VTI 比 / dias / E-Vp / 四步法）', dirById('hemo').items.length, 17, 0);
-  check('右心与肺循环 13 条（PASP / RAP / FAC / TAPSE-PASP / PVR / SVR + 第二批 6 条 + 肺高压可能性）',
-    dirById('right').items.length, 13, 0);
+  check('血流动力学、舒张与心功能 16 条（M 型三合一 / 快速比值 / Ea / VTI 比 / dias / E-Vp / 四步法）', dirById('hemo').items.length, 16, 0);
+  check('右心与肺循环 11 条（PASP / FAC / PVR / SVR + 第二批 6 条 + 肺高压可能性）',
+    dirById('right').items.length, 11, 0);
   check('右心第二批条目齐全（rvvol / rvfws / papi / pdap / residx / rvdvdt）',
     ['rvvol', 'rvfws', 'papi', 'pdap', 'residx', 'rvdvdt']
       .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('右心组条目齐全',
-    ['paspv', 'rapv', 'rvfacv', 'rcratiov', 'pvrv', 'svrv']
+    ['paspv', 'rvfacv', 'pvrv', 'svrv']
       .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('舒张功能 3 条已并入血流动力学组（dias / evp / dfun）',
     ['dias', 'evp', 'dfun']
       .every(id => dirById('hemo').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('血流动力学、舒张与心功能 17 条（原 hemo 14 + 舒张 3）',
-    dirById('hemo').items.length, 17, 0);
+  check('血流动力学、舒张与心功能 16 条（原 hemo 14 + 舒张 3 − DVI）',
+    dirById('hemo').items.length, 16, 0);
   check('重构、室壁运动与心肌功能 15 条（原 recon 12 + 评分 3）',
     dirById('recon').items.length, 15, 0);
   check('重构组条目齐全',
     ['volidx', 'rwsv', 'spher', 'lastrain', 'aortaidx', 'mdsv', 'swv']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('计算类条目合计 53 条（4 个计算组；另 6 条瓣膜通用计算在瓣膜评估组，合计 59）',
-    dirs.slice(0, 4).reduce((n, d) => n + d.items.length, 0), 53, 0);
+  check('计算类条目合计 50 条（4 个计算组；另 2 条在瓣膜评估组，合计 52）',
+    dirs.slice(0, 4).reduce((n, d) => n + d.items.length, 0), 50, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -610,7 +610,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     ['tavrsz', 'laasz', 'paidx', 'coa']
       .every(id => dirById('ivs').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('第三四批条目齐全',
-    ['vcw', 'rf', 'laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
+    ['laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
       .every(id => ['hemo', 'right', 'recon', 'ivs', 'valve'].some(g => dirById(g).items.some(i => i.id === id)))
       ? 1 : 0, 1, 0);
   check('器械与介入组已拆散：CRT / LAD 进心腔组、LVAD 进急症组',
@@ -622,10 +622,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 9 条通用/专用计算 + 8 条判读 + 1 个解剖示意图（v1.4.4 起 AS/AR/MS/MR 并入两个评估页）
-  check('瓣膜评估组合并为 18 条（6 计算 + 11 判读含器械介入 + 1 解剖示意图）', dirById('valve').items.length, 18, 0);
-  // v1.4.5：Wilkins / MVA / PISA / AVA 四台与两个评估页重复的通用计算器也已并入，组内只剩 5 条不重复的
-  check('瓣膜评估组含 5 条不重复的通用计算（vcw / rf / asload / pr / ppm）',
-    ['vcw', 'rf', 'asload', 'pr', 'ppm']
+  check('瓣膜评估组 14 条（2 计算 + 11 判读含器械介入 + 1 解剖示意图）', dirById('valve').items.length, 14, 0);
+  // v1.4.9：VCW/RF/PR/AS 负荷/DVI/TAPSE-PASP/RAP 这些纯查表或已被评估页覆盖的也删了，只剩 2 条
+  check('瓣膜评估组只剩 2 条计算（tr / ppm）',
+    ['tr', 'ppm']
       .every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('与评估页重复的通用计算已并入、不再单列（wilkins / mva / pisav / avav）',
     ['wilkins', 'mva', 'pisav', 'avav']
@@ -774,9 +774,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('小程序 ' + label, re.test(pgF.data.out) ? 1 : 0, 1, 0);
   };
   mpCalc('paspv', { ptrv: 3.0, prap: 8 }, /PASP ≈ 44.*轻度/, 'PASP 3.0+8 = 44 轻度');
-  mpCalc('rapv', { rivc: 18 }, /RAP ≈ 3/, 'RAP IVC 18 + 塌陷充分 = 3', 'yes');
   mpCalc('rvfacv', { feda: 20, fesa: 13 }, /FAC 35\.0%/, 'RV FAC 20/13 = 35%');
-  mpCalc('rcratiov', { ctapse: 17, cpasp: 60 }, /0\.28.*失耦联/, 'TAPSE/PASP 0.28 失耦联');
   mpCalc('pvrv', { hmmpap: 45, hmpawp: 12, hmco: 5 }, /6\.60 WU.*重度/, 'PVR 6.6 WU 重度');
   mpCalc('svrv', { smap: 65, srap: 5, sco: 5 }, /960.*正常/, 'SVR 960 正常');
   // v1.4.5：PISA / AVA / MVA 三台独立计算器并入两个评估页，这里改在评估页验证同一套算法
@@ -875,10 +873,6 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     /扣分最多的是「瓣叶活动度」（4 分：瓣叶无活动，全部僵硬）/,
     '二尖瓣页 Wilkins 指出扣分最重项及其形态描述');
 
-  mpCalc2('vcw', { vcwv: 7 }, /MR 重度（≥7 mm）/, 'VCW 7mm MR 重度');
-  mpCalc2('vcw', { vcwv: 6 }, /AR 重度（≥6 mm）/, 'VCW 6mm AR 重度', { vsite: 'ar' });
-  mpCalc2('vcw', { vcwv: 4 }, /MR 中度/, 'VCW 4mm MR 中度');
-  mpCalc2('rf', { rfvol: 60, rfsv: 86 }, /RF = 69\.8%.*重度/, 'RF 69.8% 重度');
   mpCalc2('mitral', { mit_lvotD: 2.0, mit_lvotVti: 20, mit_mvVti: 8 },
     /MVA 连续方程 7\.85 cm²（不显著）/, '二尖瓣页 MVA 连续性方程 7.85');
   mpCalc2('laef', { lavmax: 80, lavmin: 40 },
@@ -1229,9 +1223,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.onLoad({ id: 'mitral' });
   pgF.onShow();
   const lastBlk = pgF.data.blocks[pgF.data.blocks.length - 1];
-  check('二尖瓣页末块挂 3 个计算器胶囊（VCW / RF / 人工瓣）', (lastBlk.links || []).length, 3, 0);
+  check('二尖瓣页末块挂 2 个计算器胶囊（人工瓣 / TR 定量）', (lastBlk.links || []).length, 2, 0);
   check('胶囊名称取自 calc-groups 标题',
-    (lastBlk.links || []).some(function (l) { return l.n.indexOf('缩流颈宽度 VCW 分级') !== -1; }) ? 1 : 0, 1, 0);
+    (lastBlk.links || []).some(function (l) { return l.n.indexOf('人工瓣 EOAi 与 PPM') !== -1; }) ? 1 : 0, 1, 0);
   check('胶囊 id 与标题一一对应（无 fallback 原名）',
     (lastBlk.links || []).every(function (l) { return l.n !== l.id; }) ? 1 : 0, 1, 0);
   navTo = null;

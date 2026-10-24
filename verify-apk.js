@@ -516,17 +516,15 @@ check('右心引擎函数已内联（rvVolumeIndex / rvFreeWallStrain / pulmonar
    'function pulmonaryDiastolicPressure', 'function resistanceIndices', 'function rvDpDt']
     .every(function (k) { return html.indexOf(k) !== -1; }), true);
 /* v1.3.0 第三批：瓣膜与舒张细节 */
-check('含 5 个新计算器（vcw / rf / laef / quickratio / lvmih；wilkins 与 mva 已并入评估页）',
-  ['vcw', 'rf', 'laef', 'quickratio', 'lvmih'].every(function (id) {
+/* v1.4.9：vcw / rf 两个纯查表计算器已删，只剩 3 条 */
+check('含 3 个新计算器（laef / quickratio / lvmih；wilkins 与 mva 已并入评估页，vcw 与 rf 已删）',
+  ['laef', 'quickratio', 'lvmih'].every(function (id) {
     return html.indexOf("id: '" + id + "'") !== -1;
   }), true);
 check('第三批引擎函数已内联（wilkinsScore / vcwGrade / regurgFraction / laEmptying / quickRatios / lvmHeightIndex）',
   ['function wilkinsScore', 'function vcwGrade', 'function regurgFraction',
    'function laEmptying', 'function quickRatios', 'function lvmHeightIndex']
     .every(function (k) { return html.indexOf(k) !== -1; }), true);
-check('VCW 条目带瓣膜选项组（MR / AR / TR）',
-  html.indexOf("{ k: 'vsite', n: '瓣膜'") !== -1 &&
-  html.indexOf("['mr', 'MR 二尖瓣']") !== -1, true);
 /* v1.3.0 第四批：先心 / 心肌 / 耦联 */
 check('含 4 个新计算器（paidx / ras / ea / coa）',
   ['paidx', 'ras', 'ea', 'coa'].every(function (id) {

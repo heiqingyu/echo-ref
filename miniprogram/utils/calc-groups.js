@@ -76,16 +76,6 @@ const GROUPS = [
     note: 'MAPSE 正常 ≥10–12 mm；长轴功能常早于 EF 下降，EF 正常而 MAPSE 减低提示早期收缩功能障碍。',
   },
   {
-    id: 'dvi',
-    title: '无量纲指数 DVI',
-    sub: 'LVOT VTI ÷ 主动脉瓣 VTI',
-    fields: [
-      { k: 'dlvti', n: 'LVOT VTI', u: 'cm' },
-      { k: 'davti', n: '主动脉瓣 VTI', u: 'cm' },
-    ],
-    note: 'DVI ≤0.25 支持重度 AS；不受体表面积与流量影响，低流量状态下比 AVA 更稳。',
-  },
-  {
     id: 'tei',
     title: 'Tei 指数（MPI）',
     sub: '等容时间之和 ÷ 射血时间',
@@ -168,16 +158,6 @@ const GROUPS = [
     note: 'PASP = 4 × Vmax² + RAP；≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度。肺动脉瓣狭窄或 RVOT 梗阻时会高估',
   },
   {
-    id: 'rapv',
-    sec: 'right',
-    title: '右房压（IVC 法）',
-    sub: 'ASE 三分级 · 3 / 8 / 15 mmHg',
-    fields: [
-      { k: 'rivc', n: 'IVC 内径', u: 'mm' },
-    ],
-    note: 'IVC ≤21 mm 且塌陷 >50% → 3；>21 mm 且塌陷 ≤50% → 15；其余 → 8。仅限自主呼吸，机械通气时不可靠',
-  },
-  {
     id: 'rvfacv',
     sec: 'right',
     title: '右室面积变化分数 FAC',
@@ -187,17 +167,6 @@ const GROUPS = [
       { k: 'fesa', n: '收缩末面积 RVESA', u: 'cm²' },
     ],
     note: 'FAC <35% 提示右室收缩功能减低；<25% 为明显减低。与 TAPSE、S′、RVFWS 合看更可靠',
-  },
-  {
-    id: 'rcratiov',
-    sec: 'right',
-    title: 'TAPSE/PASP 耦联比',
-    sub: '右室收缩 ÷ 肺动脉负荷',
-    fields: [
-      { k: 'ctapse', n: 'TAPSE', u: 'mm' },
-      { k: 'cpasp', n: 'PASP', u: 'mmHg' },
-    ],
-    note: '≥0.55 耦联保留；0.36–0.55 临界；<0.36 显著失耦联（预后差）。负荷升高而收缩未代偿时比值先下降',
   },
   {
     id: 'pvrv',
@@ -317,30 +286,6 @@ const GROUPS = [
   },
 
   /* ══ v1.3.0 第三批：瓣膜与舒张细节 ══ */
-  {
-    id: 'vcw',
-    sec: 'valve',
-    title: '缩流颈宽度 VCW 分级',
-    sub: 'MR / TR：<3 轻 · 3–6.9 中 · ≥7 重',
-    opts: [
-      { k: 'vsite', n: '瓣膜', list: [['mr', 'MR 二尖瓣'], ['ar', 'AR 主动脉瓣'], ['tr', 'TR 三尖瓣']] },
-    ],
-    fields: [
-      { k: 'vcwv', n: '缩流颈宽度', u: 'mm' },
-    ],
-    note: 'MR / TR 阈值：<3 轻度、3–6.9 中度、≥7 重度；AR 阈值更低：<3 轻度、3–5.9 中度、≥6 重度。VCW 是一线半定量指标，受仪器设置与血流动力学影响，重度判读应与 PISA、反流分数互相印证',
-  },
-  {
-    id: 'rf',
-    sec: 'valve',
-    title: '反流分数 RF',
-    sub: 'RVol ÷ SV · 轻 <30 中 30–49 重 ≥50',
-    fields: [
-      { k: 'rfvol', n: '反流量 RVol', u: 'mL' },
-      { k: 'rfsv', n: '每搏量 SV', u: 'mL' },
-    ],
-    note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷',
-  },
   {
     id: 'laef',
     sec: 'recon',
@@ -506,33 +451,6 @@ const GROUPS = [
   /* ══════════════════════════════════════════════════════════
      瓣膜与舒张定量（sec: 'vq'）
      ══════════════════════════════════════════════════════════ */
-  {
-    id: 'asload',
-    sec: 'valve',
-    title: 'AS 负荷量化（ELI · Zva · SWL）',
-    sub: '压力恢复 · 瓣-动脉阻抗 · 每搏做功损失',
-    fields: [
-      { k: 'alvmax', n: '主动脉瓣峰值流速 Vmax', u: 'm/s' },
-      { k: 'almean', n: '平均跨瓣压差', u: 'mmHg' },
-      { k: 'alava', n: '有效瓣口面积 EOA（连续性方程）', u: 'cm²' },
-      { k: 'alao', n: '升主动脉直径', u: 'cm' },
-      { k: 'alsbp', n: '收缩压', u: 'mmHg' },
-      { k: 'alsv', n: '每搏量 SV', u: 'mL' },
-    ],
-    note: 'ELI = (EOA×AAo)/(AAo−EOA)/BSA（≤0.6 重度）；Zva = (SBP+ΔPmean)/SVi（>4.5 高负荷）；SWL = 100×ΔPmean/(SBP+ΔPmean)（>25% 有意义）。体表面积取「EF·参考值」页身高体重',
-  },
-  {
-    id: 'pr',
-    sec: 'valve',
-    title: '压力恢复（PR）校正',
-    sub: '多普勒压差 vs 真实狭窄',
-    fields: [
-      { k: 'prvmax', n: '狭窄口峰值流速 Vmax', u: 'm/s' },
-      { k: 'preoa', n: '有效瓣口面积 EOA', u: 'cm²' },
-      { k: 'prao', n: '升主动脉直径', u: 'cm' },
-    ],
-    note: 'PR = 4v² × 2 × (EOA/AAo) × (1−EOA/AAo)。升主动脉 ≥30 mm 时可忽略；PR 大说明多普勒压差虚高',
-  },
   {
     id: 'ppm',
     sec: 'valve',

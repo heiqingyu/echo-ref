@@ -1528,7 +1528,7 @@ html, body {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.4.8</div>
+    <div class="verline">心脏超声参考值 · v1.4.9</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1567,7 +1567,7 @@ html, body {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.4.8</div>
+      <div class="verline">心脏超声参考值 · v1.4.9</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -12723,7 +12723,7 @@ var CALC_HINTS = {
   /* 心肌病变 */
   diastolic: '舒张功能定量 · 舒张功能分级（四步法）；E/Vp 左房压估测；重构与心肌功能 · 左房僵硬度',
   ph: '右心与肺循环 · 超声肺高压可能性；肺动脉收缩压 PASP；阻力指数 PVRI / SVRI',
-  bav: '瓣膜评估 · 主动脉瓣疾病评估；血流动力学与心功能 · 无量纲指数 DVI；介入尺寸与先心 · 主动脉分节段 Z 值；TAVR 瓣环尺寸与 oversizing',
+  bav: '瓣膜评估 · 主动脉瓣疾病评估；介入尺寸与先心 · 主动脉分节段 Z 值；TAVR 瓣环尺寸与 oversizing',
   dcm: '血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · 致密化不全 NC/C 比；容积指数与重构分级',
   athlete: '血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · LVMI 身高^2.7；左室质量与几何构型',
   amyloid: '重构与心肌功能 · 心尖保留比值 RAS；LVMI 身高^2.7；应变离散度 MDS',
@@ -12732,16 +12732,16 @@ var CALC_HINTS = {
   /* 心腔与应变 */
   lv: '血流动力学与心功能 · 左室容积与射血分数；LVOT 每搏量与心排量；M 型三合一',
   rv: '右心与肺循环 · 右室容积指数 RVEDVi/RVESVi；快速比值 RV/LV',
-  rcoupling: '右心与肺循环 · TAPSE/PASP 耦联比；PAPi 肺动脉搏动指数',
+  rcoupling: '右心与肺循环 · PAPi 肺动脉搏动指数；肺动脉收缩压 PASP',
   rvfail: '右心与肺循环 · 右室面积变化分数 FAC；右室游离壁应变 RVFWS',
   'rv-strain': '右心与肺循环 · 右室游离壁应变 RVFWS',
   strain: '重构与心肌功能 · 应变离散度 MDS；左室球形指数',
   'la-strain': '重构与心肌功能 · 左房应变三值；左房排空分数 LAEF',
-  prosthetic: '瓣膜评估 · 人工瓣 EOAi 与 PPM；缩流颈宽度 VCW 分级',
+  prosthetic: '瓣膜评估 · 人工瓣 EOAi 与 PPM',
   /* 瓣膜评估 */
-  mitral: '瓣膜评估 · 缩流颈宽度 VCW 分级；反流分数 RF；人工瓣 EOAi 与 PPM',
-  aortic: '瓣膜评估 · AS 负荷量化（ELI · Zva · SWL）；压力恢复（PR）校正；缩流颈宽度 VCW 分级',
-  asload: '瓣膜评估 · 压力恢复（PR）校正；主动脉瓣疾病评估；人工瓣 EOAi 与 PPM',
+  mitral: '瓣膜评估 · 人工瓣 EOAi 与 PPM；TR 三尖瓣反流定量',
+  aortic: '瓣膜评估 · AS 负荷量化（ELI · Zva · SWL）；人工瓣 EOAi 与 PPM',
+  asload: '瓣膜评估 · 主动脉瓣疾病评估；人工瓣 EOAi 与 PPM',
   'lf-lg': '重构与心肌功能 · 每搏功 SW / SWi；血流动力学与心功能 · 有效动脉弹性 Ea',
   /* 先天性心脏病 */
   shd: '介入尺寸与先心 · McGoon 比值与 Nakata 指数；血流动力学与心功能 · Qp/Qs',
@@ -12750,8 +12750,8 @@ var CALC_HINTS = {
   /* 负荷与介入 */
   'stress-echo': '血流动力学与心功能 · 肺动脉收缩压 PASP；右心与肺循环 · PAPi',
   tavr: '介入尺寸与先心 · TAVR 瓣环尺寸与 oversizing；主动脉分节段 Z 值',
-  'mv-interv': '瓣膜评估 · 二尖瓣疾病评估；缩流颈宽度 VCW 分级；人工瓣 EOAi 与 PPM',
-  'tr-interv': '瓣膜评估 · TR 三尖瓣反流定量；缩流颈宽度 VCW 分级',
+  'mv-interv': '瓣膜评估 · 二尖瓣疾病评估；人工瓣 EOAi 与 PPM',
+  'tr-interv': '瓣膜评估 · TR 三尖瓣反流定量',
   /* 特殊临床场景 */
   takotsubo: '重构与心肌功能 · 心尖相对基底段应变保留比 RAS；左室球形度指数',
   osa: '右心与肺循环 · 肺动脉收缩压 PASP；右室容积指数；血流动力学与心功能 · IVC 估右房压',
@@ -12815,18 +12815,18 @@ var CALC_LINKS = {
   /* 心腔与应变 */
   lv: ['ef', 'flow', 'mtype'],
   rv: ['rvvol', 'quickratio'],
-  rcoupling: ['rcratiov', 'papi'],
+  rcoupling: ['papi', 'paspv'],
   rvfail: ['rvfacv', 'rvfws'],
   'rv-strain': ['rvfws'],
   strain: ['mdsv', 'spher'],
   'la-strain': ['lastrain', 'laef'],
   diastolic: ['dfun', 'evp', 'lastiff'],
-  prosthetic: ['ppm', 'vcw'],
+  prosthetic: ['ppm'],
   /* 瓣膜 */
-  mitral: ['vcw', 'rf', 'ppm'],
-  aortic: ['asload', 'pr', 'vcw'],
-  asload: ['pr', 'aortic', 'vcw'],
-  bav: ['aortic', 'dvi', 'aortaz', 'tavrsz'],
+  mitral: ['ppm', 'tr'],
+  aortic: ['asload', 'ppm'],
+  asload: ['aortic', 'ppm'],
+  bav: ['aortic', 'aortaz', 'tavrsz'],
   'lf-lg': ['swv', 'ea'],
   /* 心肌病变 */
   hcm: ['lvmih', 'lvmass', 'spher'],
@@ -12845,56 +12845,56 @@ var CALC_LINKS = {
   /* 负荷与介入 */
   'stress-echo': ['paspv', 'papi'],
   tavr: ['tavrsz', 'aortaz'],
-  'mv-interv': ['mitral', 'vcw'],
-  'tr-interv': ['tr', 'vcw'],
+  'mv-interv': ['mitral'],
+  'tr-interv': ['tr'],
   /* 特殊临床场景 */
   takotsubo: ['ras', 'spher'],
-  osa: ['paspv', 'rvvol', 'rapv'],
+  osa: ['paspv', 'rvvol'],
   myowork: ['swv', 'rwsv'],
-  ecmo: ['rvfws', 'rcratiov'],
+  ecmo: ['rvfws', 'rcoupling'],
   'tee-20': ['mitral', 'aortic', 'tavrsz'],
   'tte-std': ['ef', 'lvmass', 'mapse'],
   'tee-safety': ['ef', 'paspv'],
-  'artifact-guide': ['bernoulli', 'dvi', 'vcw'],
-  mimic: ['bernoulli', 'mitral', 'vcw'],
+  'artifact-guide': ['bernoulli', 'aortic'],
+  mimic: ['bernoulli', 'mitral'],
   'contrast-echo': ['ef', 'shunt'],
   '3d-tee': ['mitral', 'tavrsz'],
   'report-std': ['wmsi', 'ef'],
   critical: ['paspv', 'ef'],
-  'doppler-basics': ['bernoulli', 'dvi', 'vcw'],
-  peri: ['rapv', 'rcratiov'],
+  'doppler-basics': ['bernoulli', 'aortic'],
+  peri: ['paspv', 'rcoupling'],
   'cp-rm': ['dfun', 'evp', 'lastiff'],
   ctrcd: ['ef', 'mdsv', 'lastrain'],
   'zh-normal': ['atrial', 'lvmih'],
-  mass: ['ef', 'rapv'],
+  mass: ['ef', 'paspv'],
   'hcm-stress': ['lvmih', 'ras', 'swv'],
-  dse: ['aortic', 'dvi', 'ef'],
-  ie: ['aortic', 'vcw', 'ef'],
+  dse: ['aortic', 'ef'],
+  ie: ['aortic', 'ef'],
   'aortic-root': ['aortaz', 'aortaidx', 'tavrsz'],
-  rheumatic: ['mitral', 'paspv', 'vcw'],
+  rheumatic: ['mitral', 'paspv'],
   fabry: ['lvmih', 'ras', 'mdsv'],
   arvc: ['rvvol', 'rvfws', 'rvfacv'],
   myocarditis: ['rvfws', 'ef', 'mdsv'],
   sarcoid: ['ef', 'mdsv', 'ras'],
-  ebstein: ['tr', 'rapv', 'rvfacv'],
+  ebstein: ['tr', 'paspv', 'rvfacv'],
   dorv: ['shunt', 'paidx', 'tr'],
   'asd-close': ['shunt', 'paidx', 'pvrv'],
   'coa-echo': ['coa', 'paidx', 'aortaz'],
   mustard: ['rvvol', 'rvfws', 'paspv'],
   fontan: ['papi', 'pvrv', 'residx'],
   'as-switch': ['aortic', 'tr', 'ef'],
-  'echo-interv': ['paspv', 'rapv', 'ef'],
+  'echo-interv': ['paspv', 'ef'],
   crt: ['ef', 'rvfws'],
   la: ['atrial', 'lastrain', 'laef'],
   lvad: ['ef', 'papi', 'rvfws'],
   thrombus: ['ef', 'spher', 'wmsi'],
   'zh-ph': ['paspv', 'pvrv', 'residx'],
   'ami-comp': ['wmsi', 'ef', 'mitral'],
-  'pregnancy-echo': ['paspv', 'rapv', 'ef'],
-  ppcm: ['ef', 'rcratiov', 'paspv'],
+  'pregnancy-echo': ['paspv', 'ef'],
+  ppcm: ['ef', 'rcoupling', 'paspv'],
   sepsis: ['flow', 'ef', 'papi'],
   'postop-icu': ['flow', 'ef', 'papi'],
-  'lung-us': ['evp', 'rapv'],
+  'lung-us': ['evp', 'paspv'],
 
 };
 
@@ -13880,9 +13880,6 @@ const MATERIALS = [];
     { id: 'mapse', title: 'MAPSE 长轴收缩',
       fields: [['mapse', 'MAPSE', 'mm']],
       note: 'MAPSE 正常 ≥10–12 mm；长轴功能常早于 EF 下降，EF 正常而 MAPSE 减低提示早期收缩功能障碍' },
-    { id: 'dvi', title: '无量纲指数 DVI',
-      fields: [['dlvti', 'LVOT VTI', 'cm'], ['davti', '主动脉瓣 VTI', 'cm']],
-      note: 'DVI ≤0.25 支持重度 AS；不受体表面积与流量影响，低流量状态下比 AVA 更稳' },
     { id: 'tei', title: 'Tei 指数（MPI）',
       fields: [['ivct', '等容收缩时间 IVCT', 'ms'], ['ivrt', '等容舒张时间 IVRT', 'ms'], ['et', '射血时间 ET', 'ms'], ['tside', '侧别（右室填 2，留空按左室）', '']],
       note: 'MPI = (IVCT + IVRT) / ET；左室 >0.40、右室 >0.55 为异常。心率与负荷会影响测值' },
@@ -13911,15 +13908,9 @@ const MATERIALS = [];
     { id: 'paspv', sec: 'right', title: '肺动脉收缩压 PASP',
       fields: [['ptrv', 'TR 峰速 Vmax', 'm/s'], ['prap', '右房压 RAP', 'mmHg']],
       note: 'PASP = 4 × Vmax² + RAP；≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度。肺动脉瓣狭窄或 RVOT 梗阻时会高估' },
-    { id: 'rapv', sec: 'right', title: '右房压（IVC 法）',
-      fields: [['rivc', 'IVC 内径', 'mm']],
-      note: 'IVC ≤21 mm 且塌陷 >50% → 3；>21 mm 且塌陷 ≤50% → 15；其余 → 8。仅限自主呼吸，机械通气时不可靠' },
     { id: 'rvfacv', sec: 'right', title: '右室面积变化分数 FAC',
       fields: [['feda', '舒张末面积 RVEDA', 'cm²'], ['fesa', '收缩末面积 RVESA', 'cm²']],
       note: 'FAC <35% 提示右室收缩功能减低；<25% 为明显减低。与 TAPSE、S′、RVFWS 合看更可靠' },
-    { id: 'rcratiov', sec: 'right', title: 'TAPSE/PASP 耦联比',
-      fields: [['ctapse', 'TAPSE', 'mm'], ['cpasp', 'PASP', 'mmHg']],
-      note: '≥0.55 耦联保留；0.36–0.55 临界；<0.36 显著失耦联（预后差）' },
     { id: 'pvrv', sec: 'right', title: '肺血管阻力 PVR',
       fields: [['hmmpap', '平均肺动脉压 mPAP', 'mmHg'], ['hmpawp', '肺动脉楔压 PAWP', 'mmHg'], ['hmco', '心输出量 CO', 'L/min']],
       note: 'PVR(WU) = (mPAP − PAWP) / CO；≤2 正常、2–3 轻、3–5 中、>5 重度。先心病可手术性常以 <3 WU 为界' },
@@ -13963,13 +13954,6 @@ const MATERIALS = [];
       note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_TR；TR 峰速按 4V² 得压差，配合 IVC 内径估右房压算出 PASP。填了 VC 会给缩流颈分级' },
 
     /* ── v1.3.0 第三批：瓣膜与舒张细节 ── */
-    { id: 'vcw', sec: 'valve', title: '缩流颈宽度 VCW 分级',
-      opts: [{ k: 'vsite', n: '瓣膜', list: [['mr', 'MR 二尖瓣'], ['ar', 'AR 主动脉瓣'], ['tr', 'TR 三尖瓣']] }],
-      fields: [['vcwv', '缩流颈宽度', 'mm']],
-      note: 'MR / TR：<3 轻度、3–6.9 中度、≥7 重度；AR：<3 轻度、3–5.9 中度、≥6 重度。VCW 受仪器设置与血流动力学影响，重度判读应与 PISA、反流分数互相印证' },
-    { id: 'rf', sec: 'valve', title: '反流分数 RF',
-      fields: [['rfvol', '反流量 RVol', 'mL'], ['rfsv', '每搏量 SV', 'mL']],
-      note: 'RF = RVol / SV × 100%。轻度 <30%、中度 30–49%、重度 ≥50%。PISA 已算出 RVol 时可直接引用，比单看 EROA 更能反映实际负荷' },
     { id: 'evp', sec: 'hemo', title: 'E/Vp 左房压估测',
       fields: [['evpe', 'E 峰速度', 'cm/s'], ['evpvp', 'Vp 血流传播速度', 'cm/s']],
       note: 'E/Vp ≤1.5 正常；>1.5 提示 PCWP >15 mmHg，>2.5 提示 >18 mmHg。Vp 用彩色 M 型在四腔切面测（正常 ≥45 cm/s）。Vp 正常而 E/Vp 升高时，E 峰多被容量负荷或 MR 抬高，不等于松弛受损' },
@@ -14005,15 +13989,6 @@ const MATERIALS = [];
       note: '四个位点可只填测到的。Z 值由站内成人参考区间反推（均值 = 区间中点，SD = 半径 ÷ 1.96），口径与「Z > 2 视为扩张」一致，但不是人群实测 SD，不能与儿童 Z 值或 CT 的 Z 值互换。近段升主动脉另按 BSA 指数化：男 ≥2.1、女 ≥2.0 cm/m² 提示扩张' },
 
     /* ── 舒张功能定量（sec: vq） ── */
-    { id: 'asload', sec: 'valve', title: 'AS 负荷量化（ELI · Zva · SWL）',
-      fields: [['alvmax', '主动脉瓣峰值流速 Vmax', 'm/s'], ['almean', '平均跨瓣压差', 'mmHg'],
-        ['alava', '有效瓣口面积 EOA', 'cm²'], ['alao', '升主动脉直径', 'cm'],
-        ['alsbp', '收缩压', 'mmHg'], ['alsv', '每搏量 SV', 'mL']],
-      note: 'ELI = (EOA×AAo)/(AAo−EOA)/BSA（≤0.6 重度）；Zva = (SBP+ΔPmean)/SVi（>4.5 高负荷）；SWL = 100×ΔPmean/(SBP+ΔPmean)（>25% 有意义）' },
-    { id: 'pr', sec: 'valve', title: '压力恢复（PR）校正',
-      fields: [['prvmax', '狭窄口峰值流速 Vmax', 'm/s'], ['preoa', '有效瓣口面积 EOA', 'cm²'],
-        ['prao', '升主动脉直径', 'cm']],
-      note: 'PR = 4v² × 2 × (EOA/AAo) × (1−EOA/AAo)。升主动脉 ≥30 mm 时可忽略；PR 大说明多普勒压差虚高' },
     { id: 'ppm', sec: 'valve', title: '人工瓣 EOAi 与 PPM',
       fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', ''],
         ['pbmi', 'BMI（可选；≥30 用肥胖切点）', 'kg/m²']],
