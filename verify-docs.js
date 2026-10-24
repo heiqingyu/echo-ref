@@ -313,8 +313,8 @@ function check(name, ok, detail) {
   } else {
     const d = JSON.parse(info);
     check('发布版含公式集页且默认可见', d.visible, true);
-    check('公式集分组 = 7 个计算组 + 瓣膜 + 6 组评估 + 2 组外链（评估组已合并到 6 组）',
-      d.groups.join('|') === '血流动力学与心功能|右心与肺循环|舒张功能定量|重构与心肌功能|评分与室壁运动|介入尺寸与先心|随访与术中评估|瓣膜评估|切面、图像与质控|心腔、应变与负荷|心肌病变|先天性心脏病（含术后）|器械与介入操作|急症与特殊场景|切面学习（视频）|TEE 模拟器',
+    check('公式集分组 = 4 个计算组 + 瓣膜 + 5 组评估 + 2 组外链（v1.4.8 精简）',
+      d.groups.join('|') === '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|介入尺寸、先心与随访|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
     check('条目 144 条（59 计算 + 10 瓣膜判读与解剖 + 67 评估 + 8 外链）', d.items === 144, d.items);
     check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
@@ -486,8 +486,8 @@ function check(name, ok, detail) {
   // 目录里能看到 4 个新计算组
   const newGroupTitles = await c.evalJs(
     `[].slice.call(document.querySelectorAll('#calcList .fx-group')).map(function(e){return e.textContent;}).join('|')`);
-  check('目录出现 4 个计算组',
-    ['右心与肺循环', '舒张功能定量', '重构与心肌功能'].every((t) => newGroupTitles.indexOf(t) !== -1),
+  check('目录出现合并后的计算组',
+    ['血流动力学、舒张与心功能', '右心与肺循环', '重构、室壁运动与心肌功能'].every((t) => newGroupTitles.indexOf(t) !== -1),
     newGroupTitles);
 
   await openCalc('paspv');
@@ -579,9 +579,11 @@ function check(name, ok, detail) {
   check('左房应变三值自洽', /LASr/.test(o) && /自洽/.test(o), o);
 
   // ── v1.2.8 新增两组：评分与室壁运动 / 介入尺寸与先心 ──
-  check('目录出现「评分与室壁运动」「介入尺寸与先心」两组',
-    newGroupTitles.indexOf('评分与室壁运动') !== -1 &&
-    newGroupTitles.indexOf('介入尺寸与先心') !== -1, newGroupTitles);
+  check('评分与随访已并入 recon / ivs，旧组名不再出现',
+    newGroupTitles.indexOf('评分与室壁运动') === -1 &&
+    newGroupTitles.indexOf('随访与术中评估') === -1 &&
+    newGroupTitles.indexOf('重构、室壁运动与心肌功能') !== -1 &&
+    newGroupTitles.indexOf('介入尺寸、先心与随访') !== -1, newGroupTitles);
 
   // 选项组点击（性别 / 心律 / 节段总数 …）
   const pickOpt = async (gid, key, val) => {

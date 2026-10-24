@@ -143,7 +143,7 @@ const GROUPS = [
     id: 'dias',
     title: '舒张功能基础比值',
     sub: 'E/A · 平均 E/e′',
-    sec: 'vq',
+    sec: 'hemo',
     fields: [
       { k: 'e', n: 'E 峰', u: 'cm/s' },
       { k: 'a', n: 'A 峰', u: 'cm/s' },
@@ -446,7 +446,7 @@ const GROUPS = [
      ══════════════════════════════════════════════════════════ */
   {
     id: 'evp',
-    sec: 'vq',
+    sec: 'hemo',
     title: 'E/Vp 左房压估测',
     sub: 'E 峰 ÷ 血流传播速度',
     fields: [
@@ -547,7 +547,7 @@ const GROUPS = [
   },
   {
     id: 'dfun',
-    sec: 'vq',
+    sec: 'hemo',
     title: '舒张功能分级（四步法）',
     sub: 'E/A · E/e′ · LAVi · TR Vmax',
     fields: [
@@ -662,7 +662,7 @@ const GROUPS = [
   },
   {
     id: 'wmsi',
-    sec: 'score',
+    sec: 'recon',
     title: 'WMSI 室壁运动积分',
     sub: '按分值节段个数录入 · 1.0 正常 · ≥1.7 提示大面积缺血',
     opts: [
@@ -679,7 +679,7 @@ const GROUPS = [
   },
   {
     id: 'h2fpef',
-    sec: 'score',
+    sec: 'recon',
     title: 'H2FPEF 评分',
     sub: 'BMI · 房颤 · 年龄 · 降压药 · E/e′ · PASP → 0–9 分',
     opts: [
@@ -696,7 +696,7 @@ const GROUPS = [
   },
   {
     id: 'hfapeff',
-    sec: 'score',
+    sec: 'recon',
     title: 'HFA-PEFF 评分',
     sub: '形态学 / 功能学 / 生物标志物 三类取最高后相加',
     opts: [
@@ -743,7 +743,7 @@ const GROUPS = [
   },
   {
     id: 'aortagrow',
-    sec: 'fu',
+    sec: 'ivs',
     title: '主动脉扩张增长率',
     sub: '两次测量之差 ÷ 间隔年数',
     fields: [
@@ -755,7 +755,7 @@ const GROUPS = [
   },
   {
     id: 'pvfu',
-    sec: 'fu',
+    sec: 'ivs',
     title: '人工瓣术后跨瓣血流',
     sub: 'TAVR / 换瓣后 EOA 与压差',
     fields: [
@@ -769,7 +769,7 @@ const GROUPS = [
   },
   {
     id: 'cfr',
-    sec: 'fu',
+    sec: 'ivs',
     title: '冠脉血流储备 CFR',
     sub: '远端 ÷ 近端冠脉舒张期流速',
     fields: [
@@ -784,16 +784,13 @@ const GROUPS = [
  * 计算类条目的目录分组（按顺序渲染）
  *
  * GROUPS 里每条用 sec 指定归属，缺省 'hemo'。
- * 拆成 4 组是为了别把 29 个公式堆在一个组里（目录太长）。
+ * v1.4.8 起压到 4 组：舒张并入 hemo、评分并入 recon、随访并入 ivs。
  */
 const CALC_SECTIONS = [
-  { id: 'hemo', title: '血流动力学与心功能' },
+  { id: 'hemo', title: '血流动力学、舒张与心功能' },
   { id: 'right', title: '右心与肺循环' },
-  { id: 'vq', title: '舒张功能定量' },
-  { id: 'recon', title: '重构与心肌功能' },
-  { id: 'score', title: '评分与室壁运动' },
-  { id: 'ivs', title: '介入尺寸与先心' },
-  { id: 'fu', title: '随访与术中评估' },
+  { id: 'recon', title: '重构、室壁运动与心肌功能' },
+  { id: 'ivs', title: '介入尺寸、先心与随访' },
 ];
 
 /** IVC 塌陷选项 */
