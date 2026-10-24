@@ -21,7 +21,8 @@ const EXTRA = [
     id: 'valve',
     title: '瓣膜评估',
     items: [
-      { kind: 'valveana', id: 'valveana', title: '瓣膜解剖示意图', sub: '分区 · 分叶 · 分段 · TTE/TEE 标准切面' },
+      { kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
+        sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1' },
     ],
   },
 ];
@@ -316,9 +317,7 @@ Page({
       this.copyLink(d.url);
       return;
     }
-    if (d.kind === 'valve') {
-      wx.navigateTo({ url: '/pages/valves/valves?tab=' + d.id });
-    } else if (d.kind === 'valveana') {
+    if (d.kind === 'valveana') {
       wx.navigateTo({ url: '/pages/valveana/valveana' });
     } else {
       wx.navigateTo({ url: '/pages/formula/formula?id=' + d.id });

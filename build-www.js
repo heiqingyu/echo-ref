@@ -7,9 +7,8 @@
  *     这样小程序与 APK 永远共用同一份算法，从根上杜绝漂移。
  *
  * 两个产出：
- *   ① www/index.html            完整版（6 页签），供 APK 内嵌与本地预览
- *   ② docs/index.html           发布版（4 页签：EF·参考值 / 节段划分 / 儿童 Z 值 / 公式集），
- *                              可直接作为 GitHub Pages 的发布源，不含转载的瓣膜评估内容
+ *   ① www/index.html            完整版（4 页签），供 APK 内嵌与本地预览
+ *   ② docs/index.html           发布版（同样 4 页签），可作为 GitHub Pages 的发布源
  *
  * 用法：node build-www.js  [--full]
  *   --full   只生成完整版（跳过 docs 发布版）
@@ -22,12 +21,12 @@ const MP = path.join(ROOT, 'miniprogram');
 const OUT = path.join(ROOT, 'www', 'index.html');
 
 /**
- * 发布版（GitHub Pages）保留的页签：只留自有内容，转载内容不上线。
- * ★ 2026-10-20：节段划分（室壁划分）回归发布版 —— APK 打的就是本发布版，
- *   上一轮裁剪把节段页一起删了，用户新装后找不到「室壁划分」。
- *   现仅裁掉「瓣膜评估」一页（转自教材的内容）。
+ * 页签：v1.5.0 起完整版与发布版统一为 4 个（EF·参考值 / 儿童 Z 值 / 节段划分 / 公式集）。
+ * ★ 用户 2026-10-24：「网页下面标签页怎么变成了 6 组，瓣膜评估、瓣膜解剖放入公式集里，
+ *   变四组和小程序统一」。瓣膜评估与瓣膜解剖已作为公式集里的条目存在，
+ *   底部不再单列页签，也不再分完整版 / 发布版两套页签。
  */
-const PUBLIC_TABS = ['index', 'peds', 'segments', 'valveana', 'calc'];
+const PUBLIC_TABS = ['index', 'peds', 'segments', 'calc'];
 
 /**
  * 版本号单一来源：android-app/VERSION 第一行
@@ -106,7 +105,6 @@ const materialsSrc = wrapEngine(path.join(MP, 'utils', 'materials.js'), 'Materia
 
 const SEG_DATA = require(path.join(MP, 'utils', 'segment-data.js'));
 const SEG_SVG = require(path.join(MP, 'utils', 'segment-svg.js'));
-const VALVE_DATA = require(path.join(MP, 'utils', 'valve-data.js'));
 
 function escHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -191,140 +189,7 @@ function buildSegPage() {
 
 const SEG_HTML = buildSegPage();
 
-/* ---------- 1b-2. 瓣膜解剖页（分区 / 分叶 / 分段示意图） ---------- */
 
-/**
- * 瓣膜解剖页：与节段划分页同一套范式
- *   - 示意图由 ValveSvg 运行时渲染进 va-* 容器
- *   - 下方色块按钮选择解剖分区 → 全部视图同步高亮
- *   - 瓣膜组：主动脉瓣 / 二尖瓣 / 三尖瓣
- */
-const VALVE_SVG = require(path.join(MP, 'utils', 'valve-svg.js'));
-const EXTRA_DATA = require(path.join(MP, 'utils', 'extra-data.js'));
-
-function buildValveAnaPage() {
-  const order = ['主动脉瓣', '二尖瓣', '三尖瓣'];
-  const byGroup = {};
-  VALVE_SVG.VALVE_VIEWS.forEach((v) => {
-    if (!byGroup[v.group]) byGroup[v.group] = [];
-    byGroup[v.group].push(v);
-  });
-
-  const groups = order.map((g) => {
-    const views = byGroup[g] || [];
-    if (!views.length) return '';
-    const cards = views.map((v) => {
-      const chips = v.parts.map((id) => {
-        const p = VALVE_SVG.PART_INDEX[id];
-        return '<button class="segchip" data-vap="' + id + '" style="--c:' + (p ? p.color : '#64748b') +
-          '" aria-label="' + escHtml(p ? p.name : id) + '">' + escHtml(p ? p.abbr : id) + '</button>';
-      }).join('');
-      return '<div class="wall-card"><div class="wall-card__t">' + escHtml(v.title) +
-        '</div><div class="wall-card__s">' + escHtml(v.sub) +
-        '</div><div class="wallsvg-box" id="va-' + v.id + '"></div>' +
-        '<div class="wall-group"><span class="wall-group__l">解剖分区</span>' +
-        '<span class="wall-chips">' + chips + '</span></div></div>';
-    }).join('\n      ');
-
-    return '<div class="card"><div class="card__t">' + escHtml(g) + '</div>' +
-      '<div class="card__d">' + views.length + ' 个标准切面示意</div>\n      ' + cards + '</div>';
-  }).join('\n    ');
-
-  // ★ 用户 2026-10-21：教学视频与交互教学站与「切面学习 / TEE 模拟器」两组重复，
-  //   整组移除；书里的瓣膜动图仍在整本书专辑里，教学站仍在下面两组里。
-  return `  <!-- ───── Tab 瓣膜解剖 ───── -->
-  <section class="page" id="page-valveana" hidden>
-    <div class="card">
-      <div class="card__t">瓣膜分区 · 分叶 · 分段</div>
-      <div class="card__d">按标准屏幕方位示意，实际以解剖标志核实。点击下方色块按钮，它会在所有示意图中同步高亮同一解剖结构；再次点击取消。</div>
-      <div class="hi-line hi-line--sel" id="vaSelInfo" hidden></div>
-    </div>
-    ${groups}
-    <div class="note">主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC，三叶闭合时铺满整个瓣口。TTE 短轴按钟面位判读（前壁在 12 点）；TEE 短轴 30–60° 与 TTE <b>上下颠倒</b>（探头在左房后方），LCC 在右上、NCC 在左上并紧邻房间隔、RCC 在下方靠近 RVOT，冠脉开口约在 2 点（左冠）与 6 点（右冠）。</div>
-    <div class="note">二尖瓣分叶（Carpentier–ASE/SCA 命名）：<b>前叶 A1–A3</b>（贴主动脉瓣侧）、<b>后叶 P1–P3</b>（贴左室后壁侧）。P1 邻前外侧交界、P3 邻后内侧交界；A1 与 P1、A3 与 P3 分别在两侧相邻。后叶附着约 2/3 瓣环、前叶约 1/3，但前叶更长，两叶面积大致相当。四腔心只显示 A2 与 P2，精确分叶需 TEE 45–60° 交界切面（左 P3 · 中 A2 · 右 P1）。</div>
-    <div class="note">三尖瓣三个瓣叶：前叶、隔叶、后叶。ME 四腔心看隔叶＋前叶（隔叶附着点比二尖瓣前叶更靠近心尖，Ebstein 畸形时显著下移）；TEE 60–75° 右室流入-流出道看后叶（屏幕左、贴 RV 游离壁）＋前叶（屏幕右、贴主动脉瓣）；TEE 经胃底短轴（约 30°）是唯一能同屏看全三叶的 2D 切面——隔叶在屏幕右侧靠左室、后叶近场、前叶远场。</div>
-    <div class="note note--warn">本页为教学示意图，不替代真实超声图像；示意图仅标注解剖分区与切面关系，测量与判读请回看「公式集 → 瓣膜评估」条目的定量标准。</div>
-  </section>`;
-}
-
-const VALVEANA_HTML = buildValveAnaPage();
-
-/* ---------- 1c. 瓣膜页（AS / AR / MS / MR / TR，内容来自 valve-data.js） ---------- */
-
-/** 内容块：表格 / 小标题 / 公式 / 备注 / 正文 */
-function valveBlocksHtml(sec) {
-  return sec.blocks.map(function (b) {
-    if (b.type === 'table') {
-      const cols = b.heads.length;
-      const head = '<div class="vtbl__r vtbl__r--h vtbl--' + cols + '">' +
-        b.heads.map((c) => '<span class="vtbl__c">' + escHtml(c) + '</span>').join('') + '</div>';
-      const body = b.rows.map((r) => '<div class="vtbl__r vtbl--' + cols + '">' +
-        r.map((c) => '<span class="vtbl__c">' + escHtml(c) + '</span>').join('') + '</div>').join('');
-      return '<div class="vtbl">' + head + body + '</div>';
-    }
-    if (b.type === 'h') return '<div class="vblock__h">' + escHtml(b.text) + '</div>';
-    if (b.type === 'formula') return '<div class="vblock__f">' + escHtml(b.text) + '</div>';
-    if (b.type === 'note') return '<div class="note">' + escHtml(b.text) + '</div>';
-    return '<div class="vblock__t">' + escHtml(b.text) + '</div>';
-  }).join('\n        ');
-}
-
-/** 计算器输入（两列一行，含可选的 IVC 选择器） */
-function valveFieldsHtml(sec) {
-  let html = '';
-  for (let i = 0; i < sec.fields.length; i += 2) {
-    html += '<div class="row">';
-    for (let j = i; j < i + 2 && j < sec.fields.length; j++) {
-      const f = sec.fields[j];
-      html += '<div class="field"><label class="field__l">' + escHtml(f.n) + ' / ' + escHtml(f.u) + '</label>' +
-        '<input class="field__i" type="number" inputmode="decimal" step="any" ' +
-        'data-vk="' + sec.id + ':' + f.k + '" placeholder="未填写"></div>';
-    }
-    html += '</div>';
-  }
-  if (sec.collapse) {
-    html += '<div class="field"><label class="field__l">IVC 吸气塌陷</label><div class="seg" data-seg="valveivc">' +
-      VALVE_DATA.IVC_COLLAPSE.map((o) =>
-        '<div class="seg__i' + (o.v === '' ? ' seg__i--on' : '') + '" data-v="' + o.v + '">' + escHtml(o.n) + '</div>').join('') +
-      '</div></div>';
-  }
-  return html;
-}
-
-function buildValvePage() {
-  const chips = VALVE_DATA.VALVE_SECTIONS.map((s, i) =>
-    '<div class="vchip' + (i === 0 ? ' vchip--on' : '') + '" data-valve="' + s.id + '">' +
-    '<b class="vchip__s">' + escHtml(s.tab) + '</b><span class="vchip__n">' + escHtml(s.short) + '</span></div>').join('');
-
-  const secs = VALVE_DATA.VALVE_SECTIONS.map((s, i) => {
-    return '<div class="valve-sec" data-sec="' + s.id + '"' + (i === 0 ? '' : ' hidden') + '>' +
-      '<div class="card"><div class="card__t">' + escHtml(s.name) + '</div>' +
-      '<div class="card__d">' + escHtml(s.sub) + '　·　' + escHtml(s.source) + '</div>' +
-      valveBlocksHtml(s) + '</div>' +
-      '<div class="card"><div class="card__t">' + escHtml(s.calcTitle) + '</div>' +
-      '<div class="card__d">BSA 用于面积指数（来自「EF·参考值」页上方）· 留空跳过；只填一项也会给出该参数的分级</div>' +
-      valveFieldsHtml(s) +
-      '<div class="vsum" id="vsum-' + s.id + '">结果 · 等待输入</div>' +
-      '<div class="vres" id="vres-' + s.id + '"></div>' +
-      '<div class="vnotes" id="vnotes-' + s.id + '"></div>' +
-      '</div></div>';
-  }).join('\n    ');
-
-  return `  <!-- ───── Tab 瓣膜评估 ───── -->
-  <section class="page" id="page-valves" hidden>
-    <div class="vswitch" id="valveSwitch">${chips}</div>
-    <div id="valveSecs">
-    ${secs}
-    </div>
-    <button class="btn btn--ghost" id="valveClear">清空全部瓣膜输入</button>
-    <div class="note note--warn">
-      阈值来源：ASE 2017 原生瓣膜反流定量、ASE/EACVI 2017 主动脉瓣狭窄定量、ACC/AHA 2020 瓣膜病分期、
-      ESC/EACTS 2025 瓣膜病管理。分级需多参数一致并注明心率与测量方法；本页仅供速查与学习，不构成诊断依据。
-    </div>
-  </section>`;
-}
-
-const VALVE_HTML = buildValvePage();
 
 /* ---------- 2. 组装页面 ---------- */
 
@@ -601,11 +466,7 @@ const html = `<!DOCTYPE html>
     </div>
   </section>
 
-${VALVE_HTML}
-
 ${SEG_HTML}
-
-${VALVEANA_HTML}
 
   <!-- ───── Tab5 儿童 Z 值 ───── -->
   <section class="page" id="page-peds" hidden>
@@ -734,19 +595,12 @@ ${VALVEANA_HTML}
   <div class="tab tab--on" data-tab="index">
     <span class="tab__i">◧</span><span class="tab__t">EF·参考值</span>
   </div>
-  <div class="tab" data-tab="valves">
-    <span class="tab__i">◇</span><span class="tab__t">瓣膜评估</span>
-  </div>
   <div class="tab" data-tab="peds">
     <span class="tab__i">◎</span><span class="tab__t">儿童 Z 值</span>
   </div>
   <div class="tab" data-tab="segments">
     <span class="tab__i">◭</span><span class="tab__t">节段划分</span>
   </div>
-  <div class="tab" data-tab="valveana">
-    <span class="tab__i">❖</span><span class="tab__t">瓣膜解剖</span>
-  </div>
-
   <div class="tab" data-tab="calc">
     <span class="tab__i">∑</span><span class="tab__t">公式集</span>
   </div>
@@ -871,27 +725,16 @@ function buildPublicHtml() {
   // 导致 trim 之外的精确比较全部失配。先归一成 LF 再做切块清理。
   let out = html.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-  // 1) 只删瓣膜页（节段划分页已回归发布版：APK 打的也是 docs，用户反馈缺了室壁划分）
-  ['page-valves'].forEach((id) => {
-    out = removeSectionById(out, id);
-  });
-  // 2) 只删瓣膜页签
-  ['valves'].forEach((t) => {
-    const re = new RegExp('^[ \\t]*<div class="tab" data-tab="' + t + '"[\\s\\S]*?\\n[ \\t]*</div>\\n?', 'm');
-    if (!re.test(out)) throw new Error('发布版：未找到页签 ' + t);
-    out = out.replace(re, '');
-  });
+  // 1) v1.5.0：瓣膜评估 / 瓣膜解剖两页已从 HTML 模板里彻底移除（不再是页签），
+  //    发布版与完整版页签一致，这里不再需要按页签裁剪。
+  //    （保留本函数其余「依赖自检」步骤，防止后续改坏）
 
   // 3) ValveCalc 引擎保留：v1.4.1 起 AS/AR/MS/MR/TR 是公式集里的普通计算条目，
   //    渲染时直接调 valveCalc()，不能像以前那样整块删掉。
   //    SegSvg 供节段页使用，Calc 供其它公式条目使用。
 
-  // 3b) 删掉 app.js 里被标记为 PUBLIC-CUT 的整块逻辑（目前只有瓣膜）
-  ['valve'].forEach((tag) => {
-    const re = new RegExp('/\\*<<<PUBLIC-CUT:' + tag + '>>>\\*/[\\s\\S]*?/\\*<<<END-CUT:' + tag + '>>>\\*/\\n?');
-    if (!re.test(out)) throw new Error('发布版：未找到切块标记 ' + tag);
-    out = out.replace(re, '');
-  });
+  // 3b) 删掉 app.js 里被标记为 PUBLIC-CUT 的整块逻辑（v1.5.0 起已无 valve 块，
+  //     calc / seg 块里的标记直接由 3c 清掉、内容保留）
 
   // 3c) 公式集页已发布，calc 段内容保留；清掉残留的切块标记行（只删标记，不删内容）
   out = out.replace(/^[ \t]*\/\*<<<PUBLIC-CUT:[^>]*>>>\*\/[ \t]*\n/gm, '');
@@ -988,17 +831,21 @@ function buildPublicHtml() {
       if (out.indexOf(s) === -1) throw new Error('发布版：节段划分页依赖缺失 ' + s);
     });
 
-  // 5b2c) 瓣膜解剖页必须存在（分区 / 分叶 / 分段示意图）
-  ['id="page-valveana"', 'data-tab="valveana"',
-   'window.ValveSvg', 'renderValveAna', 'ValveSvg.VALVE_VIEWS', 'data-vap', 'data-part',
-   '瓣膜分区 · 分叶 · 分段']
+  // 5b2c) 瓣膜解剖已并入公式集：引擎、渲染函数、分区按钮必须齐全，
+  //       但不能再有独立的 page-valveana 页面与页签
+  ['window.ValveSvg', 'renderValveAna', 'ValveSvg.VALVE_VIEWS', 'data-vap', 'data-part',
+   '瓣膜解剖 · TEE 标准切面', 'va-probe']
     .forEach((s) => {
-      if (out.indexOf(s) === -1) throw new Error('发布版：瓣膜解剖页依赖缺失 ' + s);
+      if (out.indexOf(s) === -1) throw new Error('发布版：公式集内瓣膜解剖依赖缺失 ' + s);
+    });
+  ['id="page-valveana"', 'data-tab="valveana"', 'id="page-valves"', 'data-tab="valves"']
+    .forEach((s) => {
+      if (out.indexOf(s) !== -1) throw new Error('发布版：仍残留独立瓣膜页 ' + s);
     });
 
   // 5b) 结构完整性自检：切块/删行容易把 HTML 骨架带掉，必须逐项确认
   ['</style>', '</head>', '<body', '</body>', '</html>', '<nav class="tabbar" id="tabbar"',
-   'id="page-index"', 'id="page-segments"', 'id="page-peds"', 'id="page-valveana"', 'id="page-calc"']
+   'id="page-index"', 'id="page-segments"', 'id="page-peds"', 'id="page-calc"']
     .forEach((s) => {
       if (out.indexOf(s) === -1) throw new Error('发布版：结构缺失 ' + s);
     });

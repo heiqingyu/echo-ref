@@ -76,9 +76,13 @@ else bad('reference 页仍独立存在，未合并');
 if (fs.existsSync(path.join(MP, 'utils', 'echo-calc.js'))) ok('echo-calc.js 引擎存在');
 else bad('echo-calc.js 引擎缺失');
 
-console.log('\n=== 4c. 瓣膜评估页 ===');
-if (appJson.pages.includes('pages/valves/valves')) ok('valves 页已注册');
-else bad('valves 页未注册');
+console.log('\n=== 4c. 瓣膜页（v1.5.0 起并入公式集） ===');
+// ★ 用户 2026-10-24：瓣膜评估页整页删除，内容并入 aortic / mitral / tr-interv 三个判读条目；
+//   瓣膜解剖改为公式集里的一个条目（pages/valveana 仍在，但只放 TEE 切面）。
+if (appJson.pages.includes('pages/valves/valves')) bad('valves 页应已删除，仍注册在 app.json');
+else ok('valves 独立页已删除（并入公式集）');
+if (appJson.pages.includes('pages/valveana/valveana')) ok('valveana 页已注册（公式集内条目）');
+else bad('valveana 页缺失');
 ['valve-data.js', 'valve-calc.js'].forEach(f => {
   if (fs.existsSync(path.join(MP, 'utils', f))) ok(f + ' 存在');
   else bad(f + ' 缺失');
@@ -166,8 +170,8 @@ else bad('目录条目未绑定 onOpen');
   else if (fs.readFileSync(cgPath, 'utf8').indexOf(t) !== -1) ok('瓣膜条目在 calc-groups 中：「' + t + '」');
   else bad('目录缺少瓣膜条目：' + t);
 });
-const valvesJs2 = fs.readFileSync(path.join(MP, 'pages/valves/valves.js'), 'utf8');
-if (/query && query\.tab/.test(valvesJs2)) ok('瓣膜页支持 ?tab= 预选参数');
+const anaJs = fs.readFileSync(path.join(MP, 'pages/valveana/valveana.js'), 'utf8');
+if (/VS\.probeOf/.test(anaJs)) ok('瓣膜解剖页渲染探头位置小图');
 else bad('瓣膜页未支持 ?tab= 预选参数');
 console.log('\n=== 4e. 公式集扩展：评估类内容 / 参考文献 / 版本号 ===');
 const exPath = path.join(MP, 'utils', 'extra-data.js');

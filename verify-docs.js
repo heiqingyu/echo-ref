@@ -103,15 +103,18 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 1500)); // 等 boot
 
   console.log('\n【一】结构');
-  check('页签数 = 5',
-    (await c.evalJs('document.querySelectorAll(".tab").length')) === 5);
+  // ★ 用户 2026-10-24：底部页签精简为 4 个，与小程序统一；
+  //   瓣膜评估与瓣膜解剖都进了公式集，不再是页签
+  check('页签数 = 4',
+    (await c.evalJs('document.querySelectorAll(".tab").length')) === 4);
   const tabNames = await c.evalJs(
     '[...document.querySelectorAll(".tab")].map(e=>e.dataset.tab).join(",")');
-  // 用户 2026-10-21 要求：儿童 Z 值调到「节段划分」之前；瓣膜解剖为新增页
-  check('页签顺序 index,peds,segments,valveana,calc',
-    tabNames === 'index,peds,segments,valveana,calc', tabNames);
-  check('页面容器 5 个（无 ef/valves）',
-    (await c.evalJs('document.querySelectorAll(".page").length')) === 5);
+  check('页签顺序 index,peds,segments,calc',
+    tabNames === 'index,peds,segments,calc', tabNames);
+  check('页面容器 4 个（无 valves / valveana）',
+    (await c.evalJs('document.querySelectorAll(".page").length')) === 4);
+  check('不再有独立瓣膜评估页 / 瓣膜解剖页',
+    (await c.evalJs('!document.getElementById("page-valves") && !document.getElementById("page-valveana")')) === true);
   check('Core 引擎已挂载', (await c.evalJs('typeof window.Core === "object"')) === true);
   check('Peds 引擎已挂载', (await c.evalJs('typeof window.Peds === "object"')) === true);
   check('Calc 引擎已挂载（公式集需要）', (await c.evalJs('typeof window.Calc')) === 'object');
@@ -120,7 +123,7 @@ function check(name, ok, detail) {
   check('ValveCalc 引擎已挂载（瓣膜计算条目需要）', (await c.evalJs('typeof window.ValveCalc')) === 'object');
   check('SegSvg 引擎已挂载（节段划分页需要）',
     (await c.evalJs('typeof window.SegSvg')) === 'object');
-  check('ValveSvg 引擎已挂载（瓣膜解剖页需要）',
+  check('ValveSvg 引擎已挂载（公式集瓣膜解剖条目需要）',
     (await c.evalJs('typeof window.ValveSvg')) === 'object');
 
   console.log('\n【二】Tab1 EF·参考值（EF 计算 + 参数参考值已合并）');
@@ -316,7 +319,8 @@ function check(name, ok, detail) {
     check('公式集分组 = 4 个计算组 + 瓣膜 + 5 组评估 + 2 组外链（v1.4.8 精简）',
       d.groups.join('|') === '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|介入尺寸、先心与随访|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景|切面学习（视频）|TEE 模拟器',
       d.groups.join('|'));
-    check('条目 137 条（52 计算 + 10 瓣膜判读与解剖 + 67 评估 + 8 外链）', d.items === 137, d.items);
+    // v1.5.0：瓣膜解剖成了公式集里的一条，目录从 137 变 138
+    check('条目 138 条（52 计算 + 11 瓣膜判读 + 1 瓣膜解剖 + 66 评估 + 8 外链）', d.items === 138, d.items);
     check('外链 <a> 条目 8 条（切面指南已并入参考文献）', d.links === 8, d.links);
     check('操作规范专辑入口 1 条且显示 25 段', d.album === 1 && /25/.test(d.albumTxt), d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -866,21 +870,46 @@ function check(name, ok, detail) {
   const verText = await c.evalJs('(document.querySelector("#page-index .verline") || {}).textContent || ""');
   check('版本号已递增（非 1.0.0）', /v\d+\.\d+\.\d+/.test(verText) && !/v1\.0\.0/.test(verText), verText);
 
-  console.log('\n【三b】Tab 瓣膜解剖（分区/分叶/分段示意图）');
-  await c.evalJs('document.querySelector(\'[data-tab="valveana"]\').click()');
-  await new Promise((r) => setTimeout(r, 400));
-  check('page-valveana 可见',
-    (await c.evalJs('!document.getElementById("page-valveana").hidden')) === true);
-  check('ValveSvg 视图数 = 8',
-    (await c.evalJs('window.ValveSvg.VALVE_VIEWS.length')) === 8);
+  console.log('\n【三b】公式集内的瓣膜解剖条目（只留 TEE 切面）');
+  // v1.5.0：不再是页签，改成从公式集目录点进去
+  await c.evalJs('document.querySelector(\'.tab[data-tab="calc"]\').click()');
+  await new Promise((r) => setTimeout(r, 300));
+  check('公式集目录里有「瓣膜解剖 · TEE 标准切面」条目',
+    (await c.evalJs('!!document.querySelector(\'#calcList .fx-item[data-kind="valveana"]\')')) === true);
+  await c.evalJs('document.querySelector(\'#calcList .fx-item[data-kind="valveana"]\').click()');
+  await new Promise((r) => setTimeout(r, 700));
+  check('点条目后进入详情并显示解剖卡',
+    (await c.evalJs('!document.querySelector(\'#calcGroups .card[data-g="valveana"]\').hidden')) === true);
+  check('顶栏标题切到瓣膜解剖',
+    (await c.evalJs('document.getElementById("appbarTitle").textContent')).indexOf('瓣膜解剖') !== -1);
+  check('ValveSvg 视图数 = 13（只留 TEE）',
+    (await c.evalJs('window.ValveSvg.VALVE_VIEWS.length')) === 13);
+  check('全部是 TEE 切面（无 TTE 短轴 / 四腔心视图）',
+    (await c.evalJs('window.ValveSvg.VALVE_VIEWS.every(function(v){return /TEE|经胃底|3D/.test(v.title);})')) === true);
   const vaFilled = await c.evalJs(
     '[...document.querySelectorAll(".wallsvg-box[id^=va-]")]' +
     '.filter(function(e){return e.querySelector("svg");}).length');
-  check('8 张示意图全部已渲染 SVG', vaFilled === 8, vaFilled);
+  check('13 张示意图全部已渲染 SVG', vaFilled === 13, vaFilled);
+  const probeFilled = await c.evalJs(
+    '[...document.querySelectorAll(".va-probe")]' +
+    '.filter(function(e){return e.querySelector("svg");}).length');
+  check('13 张探头位置小图全部已渲染', probeFilled === 13, probeFilled);
   check('示意图含可点击分区标记',
-    (await c.evalJs('document.querySelectorAll("#page-valveana g[data-part]").length')) > 0);
+    (await c.evalJs('document.querySelectorAll(\'#calcGroups .card[data-g="valveana"] g[data-part]\').length')) > 0);
   check('色块按钮存在',
-    (await c.evalJs('document.querySelectorAll("#page-valveana [data-vap]").length')) > 0);
+    (await c.evalJs('document.querySelectorAll(\'#calcGroups .card[data-g="valveana"] [data-vap]\').length')) > 0);
+  // 点色块 → 跨视图同步高亮
+  await c.evalJs('document.querySelector(\'#calcGroups .card[data-g="valveana"] [data-vap="rcc"]\').click()');
+  await new Promise((r) => setTimeout(r, 400));
+  check('点「RCC」后三张主动脉瓣图同步高亮',
+    (await c.evalJs('document.querySelectorAll(\'#calcGroups .card[data-g="valveana"] .segchip--on\').length')) >= 1);
+  check('高亮说明列出该分区出现的所有视图',
+    (await c.evalJs('(document.getElementById("vaSelInfo")||{textContent:""}).textContent')).indexOf('见于') !== -1);
+  // 返回公式集
+  await c.evalJs('document.getElementById("calcBack").click()');
+  await new Promise((r) => setTimeout(r, 400));
+  check('返回公式集后目录重新可见',
+    (await c.evalJs('!document.getElementById("calcIndex").hidden')) === true);
   const refCopy = await c.evalJs(`(function(){
     const el = document.querySelector('#calcRefs .refs-copy');
     return el ? el.textContent.replace(/\\s+/g, '') : '';
@@ -904,8 +933,8 @@ function check(name, ok, detail) {
   })()`);
   check('CSS 注释未被泄漏成页面可见文字', leak === '', leak === '' ? '干净' : leak);
 
-  check('瓣膜解剖页不再单列教学资源（与切面学习/模拟器重复）',
-    (await c.evalJs('document.querySelectorAll("#page-valveana .va-lesson").length')) === 0);
+  check('瓣膜解剖不再单列教学资源（与切面学习/模拟器重复）',
+    (await c.evalJs('document.querySelectorAll("#calcGroups .va-lesson").length')) === 0);
 
   /* ────────────────────────────────────────────────────────────
      【三c】条目内小节导航真的能滚

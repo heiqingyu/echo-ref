@@ -61,7 +61,9 @@ if (fs.existsSync(DOCS)) {
   check('docs 发布版体积 < 1000 KB（6 组 76 条评估 + 78 条文献）', Buffer.byteLength(dh, 'utf8') < 1000 * 1024, true);
   check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
-  check('docs 发布版含瓣膜解剖页', dh.indexOf('id="page-valveana"') !== -1, true);
+  // v1.5.0：瓣膜解剖不再是页签，改成公式集里的一条
+  check('docs 发布版不含独立瓣膜解剖页', dh.indexOf('id="page-valveana"') === -1, true);
+  check('docs 发布版公式集里有瓣膜解剖条目', dh.indexOf('瓣膜解剖 · TEE 标准切面') !== -1, true);
   check('docs 发布版内联 ValveSvg 引擎', dh.indexOf('window.ValveSvg = {') !== -1, true);
   // 页尾「继续看其他页面」已于 2026-10-22 移除（底部页签已经够用）
   check('docs 发布版不再有页尾「继续看其他页面」', dh.indexOf('pagefoot') === -1, true);
@@ -80,8 +82,9 @@ if (fs.existsSync(ASSET) && fs.existsSync(DOCS)) {
     true);
   check('APK 内不含瓣膜单独页（用户要求）', ah.indexOf('id="page-valves"') === -1, true);
   check('APK 内含节段划分页（室壁划分）', ah.indexOf('id="page-segments"') !== -1, true);
-  check('APK 内含瓣膜解剖页', ah.indexOf('id="page-valveana"') !== -1, true);
-  check('APK 内 5 个页签', (ah.match(/class="tab[ "][^>]*data-tab="/g) || []).length, 5);
+  check('APK 内不含独立瓣膜解剖页', ah.indexOf('id="page-valveana"') === -1, true);
+  check('APK 公式集含瓣膜解剖条目', ah.indexOf('瓣膜解剖 · TEE 标准切面') !== -1, true);
+  check('APK 内 4 个页签（与小程序一致）', (ah.match(/class="tab[ "][^>]*data-tab="/g) || []).length, 4);
   // 公式集里必须仍能查到瓣膜评估这一组（否则「公式集里有就行」就不成立）
   check('APK 公式集仍含「瓣膜评估」组', ah.indexOf("title: '瓣膜评估'") !== -1 ||
     ah.indexOf('瓣膜评估') !== -1, true);
@@ -122,9 +125,9 @@ check('APK Calc 已挂载', !!ApkCalc, true);
 check('APK ValveCalc 已挂载', !!ApkValve, true);
 
 // 页面结构自检
-check('包含 6 个页面容器（完整版含瓣膜评估单页）', (html.match(/class="page"/g) || []).length, 6);
+check('包含 4 个页面容器（EF / 节段 / 儿童 / 公式集）', (html.match(/class="page"/g) || []).length, 4);
 // 注意：第一个页签的 class 是 "tab tab--on"，所以要用 \btab\b 而非 class="tab"
-check('包含 6 个底部页签', (html.match(/class="tab(?:\s|")/g) || []).length, 6);
+check('包含 4 个底部页签', (html.match(/class="tab(?:\s|")/g) || []).length, 4);
 check('含 viewport meta（移动端适配）', /name="viewport"/.test(html), true);
 check('含 safe-area 适配', /safe-area-inset/.test(html), true);
 
@@ -345,12 +348,11 @@ section('4. 页面元素完整性');
 
 const REQUIRED_IDS = [
   'appbarTitle', 'resetBtn', 'main', 'tabbar',
-  'page-index', 'page-calc', 'page-valves', 'page-segments', 'page-peds',
+  'page-index', 'page-calc', 'page-segments', 'page-peds',
   'inHeight', 'inWeight', 'outBsa', 'bsaHint', 'stdNote',
   'jumpRef', 'refBlock', 'refList', 'refDesc', 'refSource', 'aseUnitNote',
   'calcGroups', 'calcClear', 'calcBsaNote', 'calcIndex', 'calcList', 'calcDetail', 'calcBack',
   'calcRefs', 'calcRefList',
-  'valveSwitch', 'valveClear', 'valveSecs',
   'efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd', 'efResult', 'efKv', 'efMark', 'efGrade',
   'pdHeight', 'pdWeight', 'pdAge', 'pdBsa', 'pdWarn', 'pdInputs', 'pdMore',
   'pdClear', 'pdSumCard', 'pdSumV', 'pdList', 'pdRanges',
@@ -359,24 +361,23 @@ REQUIRED_IDS.forEach(function (id) {
   check('元素 #' + id + ' 存在', new RegExp('id="' + id + '"').test(html), true);
 });
 
-// ── 瓣膜评估页 ──
-['as', 'ar', 'ms', 'mr', 'tr'].forEach(function (v) {
-  check('瓣膜分区 data-sec="' + v + '"', new RegExp('data-sec="' + v + '"').test(html), true);
-  check('瓣膜切换按钮 data-valve="' + v + '"', new RegExp('data-valve="' + v + '"').test(html), true);
-  check('瓣膜结果容器 #vsum-' + v, new RegExp('id="vsum-' + v + '"').test(html), true);
-  check('瓣膜结果行容器 #vres-' + v, new RegExp('id="vres-' + v + '"').test(html), true);
+// ── 瓣膜评估：v1.5.0 起并入 aortic / mitral / tr-interv 三个判读条目，不再有独立页 ──
+check('不再有瓣膜切换按钮 .vchip', html.indexOf('class="vchip') === -1, true);
+check('不再有瓣膜页输入字段 data-vk', (html.match(/data-vk="/g) || []).length, 0);
+check('不再有瓣膜页 IVC 选择器', /data-seg="valveivc"/.test(html), false);
+['主动脉瓣疾病评估', '二尖瓣疾病评估', '三尖瓣介入（TTVI）'].forEach(function (t) {
+  check('判读条目「' + t + '」在包内', html.includes(t), true);
 });
-check('瓣膜页签 data-tab="valves" 存在', /data-tab="valves"/.test(html), true);
-check('瓣膜输入字段 data-vk 共 36 个', (html.match(/data-vk="/g) || []).length, 36);
-check('IVC 选择器 data-seg="valveivc"', /data-seg="valveivc"/.test(html), true);
-check('瓣膜页仅一个 IVC 选择器', (html.match(/data-seg="valveivc"/g) || []).length, 1);
-['主动脉瓣狭窄 AS', '主动脉瓣反流 AR', '二尖瓣狭窄 MS', '二尖瓣反流 MR', '三尖瓣 TR / TS'].forEach(function (t) {
-  check('瓣膜页内容「' + t + '」', html.includes(t), true);
+// 五个瓣膜的定量分级表与关键指标必须仍在（原瓣膜页的核心内容）
+['AVAi', 'DVI', '缩流颈', 'EROA', 'RVol', 'Wilkins', 'massive', 'PASP'].forEach(function (t) {
+  check('瓣膜定量要点「' + t + '」仍保留', html.includes(t), true);
 });
-['AVAi', 'DVI', '缩流颈 VC', 'EROA', 'RVol', '反流分数 RF', 'Wilkins 评分', 'massive', 'PASP ≈ 4V² + RAP'].forEach(function (t) {
-  check('瓣膜页要点「' + t + '」', html.includes(t), true);
-});
-check('瓣膜页提示为速查资料', /不构成诊断依据/.test(html), true);
+check('瓣膜判读页带「不作为诊断依据」类提示', /不构成诊断依据|不替代/.test(html), true);
+// 瓣膜解剖：13 个 TEE 切面 + 探头小图
+check('瓣膜解剖 13 个 TEE 切面全部内联',
+  (html.match(/id: '(avTeeSax|avTeeLax|avTgDeepLax|mvTee4c|mvTee2c|mvTeeLax|mvTeeCommissural|mvTee3d|mvTgSax|tvTee4c|tvTeeRvin|tvTeeTgsax|pvTeeSax)'/g) || []).length, 13);
+check('探头位置小图渲染函数已内联', html.indexOf('function probeSvg') !== -1, true);
+check('探头小图容器样式 .va-probe 已内联', html.indexOf('.va-probe') !== -1, true);
 
 // ── 节段划分页 ──
 check('SegSvg 引擎已内联', /wallDiagramSvg/.test(html), true);
@@ -454,10 +455,10 @@ check('清空按钮改为「清空本组输入」', html.indexOf('清空本组�
 
 /* 公式集扩展：评估类内容 / 参考文献 / 版本号 / 页签顺序 */
 // 用户 2026-10-21：儿童 Z 值调到节段划分之前；新增瓣膜解剖页
-check('页签顺序 = EF·参考值|瓣膜评估|儿童 Z 值|节段划分|瓣膜解剖|公式集',
+check('页签顺序 = EF·参考值|儿童 Z 值|节段划分|公式集（v1.5.0 起与小程序一致）',
   (html.match(/class="tab__t">([^<]+)</g) || []).map(function (x) {
     return x.replace(/^class="tab__t">/, '').replace(/<$/, '');
-  }).join('|') === 'EF·参考值|瓣膜评估|儿童 Z 值|节段划分|瓣膜解剖|公式集', true);
+  }).join('|') === 'EF·参考值|儿童 Z 值|节段划分|公式集', true);
 check('含评估内容数据 ExtraData', html.indexOf('window.ExtraData') !== -1, true);
 check('完整版也移除了页尾「继续看其他页面」', html.indexOf('pagefoot') === -1, true);
 check('含评估分组（切面、图像与质控 / 心腔、心肌与应变 / 先心含术后 / 急症与特殊场景）',

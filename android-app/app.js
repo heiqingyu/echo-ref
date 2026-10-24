@@ -40,10 +40,8 @@
   const TAB_TITLE = {
     index: 'EF·参考值',
     calc: '公式集',
-    valves: '瓣膜评估',
     peds: '儿童 Z 值',
     segments: '节段划分',
-    valveana: '瓣膜解剖',
   };
 
   let currentTab = 'index';
@@ -165,8 +163,6 @@
     // 切到公式集页时重置为目录视图（直接还原界面，不动 history：
     // 切页签不是「往上一层」，不该触发返回）
     if (name === 'calc') { restoreCalcIndex(); renderCalc(); }
-    if (name === 'valves') renderValves();
-    if (name === 'valveana') renderValveAna();
     if (name === 'index') renderIndex();
 
     window.scrollTo(0, 0);
@@ -237,7 +233,6 @@
     pdsex: function () { /* 儿童 Z 值不区分性别，仅作记录 */ },
     calccollapse: function (v) { calcCollapse = v; renderCalc(); },
     calcsigns: function (v) { calcSigns = v; renderCalc(); },
-    valveivc: function (v) { valveIvc = v; renderValves(); },
   };
 
   document.querySelectorAll('.seg').forEach(function (seg) {
@@ -302,7 +297,6 @@
       setText('calcBsaNote', '按主题分组，点击条目进入公式 · BSA —（请先在上方填写有效身高体重）');
       // renderEF 内部会刷新参考值列表；EF 结果的 LVM/BSA 也随 BSA 变化
       renderEF();
-      renderValves();
       return;
     }
 
@@ -327,7 +321,6 @@
 
     // 参考值列表、EF 结果（LVM/BSA）与计算页都依赖 BSA，一并刷新
     renderEF();
-    renderValves();
   }
 
   ['inHeight', 'inWeight'].forEach(function (id) {
@@ -1147,6 +1140,12 @@
         valveItems.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
       });
     });
+    // v1.5.0：瓣膜解剖也收进公式集，放在瓣膜组末尾（与小程序目录顺序一致）
+    valveItems.push({
+      kind: 'valveana', id: 'valveana',
+      title: '瓣膜解剖 · TEE 标准切面',
+      sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1',
+    });
     secs.push({ id: 'valve', title: '瓣膜评估', items: valveItems });
 
     BRIEF.forEach(function (sec) {
@@ -1270,12 +1269,10 @@
       const kind = el.dataset.kind;
       // 外链条目渲染为 <a>，没有 data-kind：交给浏览器默认跳转（新窗口播放 / 打开原站）
       if (!kind) return;
-      if (kind === 'valve') {
-        switchTab('valves');
-        switchValve(el.dataset.id);
-      } else if (kind === 'album') {
+      if (kind === 'album') {
         openAlbum(el.dataset.sec, el.dataset.id);
       } else {
+        // calc / brief / valveana 都进详情视图（v1.5.0 起瓣膜解剖也是其中一员）
         openCalcGroup(el.dataset.id);
       }
     });
@@ -1345,6 +1342,62 @@
     popView();
   }
 
+  /**
+   * 瓣膜解剖卡（公式集内的一页，v1.5.0）
+   *
+   * 只保留 TEE 切面：TTE 短轴 / 四腔心已在「切面学习」的视频里，重复。
+   * 每张图配一张「探头在哪、平面怎么切」的小图（ValveSvg.probeOf）。
+   * 点任意色块或分区按钮 → 所有图同步高亮同一解剖结构。
+   */
+  function valveAnaCardHtml() {
+    const VS = window.ValveSvg;
+    const ORDER = ['主动脉瓣', '二尖瓣', '三尖瓣', '肺动脉瓣'];
+    const by = {};
+    VS.VALVE_VIEWS.forEach(function (v) {
+      if (!by[v.group]) by[v.group] = [];
+      by[v.group].push(v);
+    });
+
+    let h = '<div class="card" data-g="valveana" hidden>' +
+      '<div class="card__t">瓣膜解剖 · TEE 标准切面</div>' +
+      '<div class="card__d">只放 TEE 切面（TTE 短轴与四腔心见「切面学习」）。' +
+      '每张图下方是<b>探头位置 + 扫描平面</b>示意：右侧竖条是食管，三角是探头晶片面，' +
+      '蓝虚线是当前切面方向。点任意色块，所有图同步高亮同一结构，再点取消。</div>' +
+      '<div class="hi-line hi-line--sel" id="vaSelInfo" hidden></div>';
+
+    ORDER.forEach(function (g) {
+      const vs = by[g] || [];
+      if (!vs.length) return;
+      h += '<div class="fx-fgrp">' + esc(g) + ' · ' + vs.length + ' 个切面</div>';
+      vs.forEach(function (v) {
+        const chips = v.parts.map(function (id) {
+          const p = VS.PART_INDEX[id];
+          return '<button class="segchip" data-vap="' + id + '" style="--c:' +
+            (p ? p.color : '#64748b') + '" aria-label="' + esc(p ? p.name : id) + '">' +
+            esc(p ? p.abbr : id) + '</button>';
+        }).join('');
+        h += '<div class="wall-card"><div class="wall-card__t">' + esc(v.title) + '</div>' +
+          '<div class="wall-card__s">' + esc(v.sub) + '</div>' +
+          '<div class="wallsvg-box" id="va-' + v.id + '"></div>' +
+          '<div class="va-probe" id="va-' + v.id + '-probe"></div>' +
+          '<div class="wall-group"><span class="wall-group__l">解剖分区</span>' +
+          '<span class="wall-chips">' + chips + '</span></div></div>';
+      });
+    });
+
+    h += '<div class="note">主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC，三叶闭合时铺满整个瓣口。' +
+      'TEE 短轴 30–60° 与 TTE 短轴<b>上下颠倒</b>（探头在左房后方），LCC 在右上、NCC 在左上并紧邻房间隔、' +
+      'RCC 在下方靠近 RVOT，冠脉开口约在 2 点（左冠）与 6 点（右冠）。</div>' +
+      '<div class="note">二尖瓣分叶（Carpentier–ASE/SCA 命名）：<b>前叶 A1–A3</b>（贴主动脉瓣侧）、' +
+      '<b>后叶 P1–P3</b>（贴左室后壁侧）。四腔心只显示 A2 与 P2；两腔心（90°）看 A2 与 P3；' +
+      '精确分叶靠 45–60° 交界切面（左 P3 · 中 A2 · 右 P1）或 3D 全容积。</div>' +
+      '<div class="note">三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心看隔叶 + 前叶（隔叶附着点比二尖瓣前叶更靠心尖，' +
+      'Ebstein 时显著下移）；60–90° 右室流入-流出道看后叶 + 前叶；经胃底短轴（约 30°）是唯一能同屏看全三叶的 2D 切面。</div>' +
+      '<div class="note note--warn">本页为教学示意图，不替代真实超声图像；测量与判读请回看「瓣膜评估」里的 AS / AR / MS / MR / TR 条目，' +
+      '或「切面学习」里的真实切面视频。</div></div>';
+    return h;
+  }
+
   function buildCalcInputs() {
     if (!$('calcList')) return;
 
@@ -1395,6 +1448,11 @@
         html += briefRelHtml(it.rel) + briefRefsHtml(it.source) + '</div>';
       });
     });
+    // ── 瓣膜解剖（TEE 标准切面）：v1.5.0 从独立页签搬进公式集 ──
+    if (window.ValveSvg && window.ValveSvg.VALVE_VIEWS) {
+      html += valveAnaCardHtml();
+    }
+
     $('calcGroups').innerHTML = html;
 
     // 绑定输入（同 key 的多个输入框互相同步）
@@ -1460,15 +1518,18 @@
   function openCalcGroup(id, fromHistory) {
     const g = calcGroupOf(id);
     const b = briefOf(id);
-    if (!g && !b) return;
+    const isAna = id === 'valveana';
+    if (!g && !b && !isAna) return;
     curCalcGroup = id;
     if ($('calcIndex')) $('calcIndex').hidden = true;
     if ($('calcDetail')) $('calcDetail').hidden = false;
     document.querySelectorAll('#calcGroups > .card').forEach(function (c) {
       c.hidden = c.dataset.g !== id;
     });
-    $('appbarTitle').textContent = g ? g.title : b.title;
+    $('appbarTitle').textContent = g ? g.title
+      : (b ? b.title : '瓣膜解剖 · TEE 标准切面');
     renderCalc();
+    if (isAna) renderValveAna();
     window.scrollTo(0, 0);
     if (!fromHistory) pushView({ type: 'calc', id: id });
   }
@@ -2724,91 +2785,7 @@
   });
 
 /*<<<END-CUT:calc>>>*/
-/*<<<PUBLIC-CUT:valve>>>*/
-  /* ══════════════════════════════════════════════════════════
-     五C、瓣膜评估（AS / AR / MS / MR / TR）
-     ══════════════════════════════════════════════════════════ */
 
-  const VALVE_IDS = ['as', 'ar', 'ms', 'mr', 'tr'];
-  const valveVal = {};   // 'as:lvotD' → 输入字符串
-  let curValve = 'as';
-  let valveIvc = '';
-
-  function switchValve(id) {
-    if (VALVE_IDS.indexOf(id) === -1) return;
-    curValve = id;
-    document.querySelectorAll('.vchip').forEach(function (c) {
-      c.classList.toggle('vchip--on', c.dataset.valve === id);
-    });
-    document.querySelectorAll('.valve-sec').forEach(function (s) {
-      s.hidden = s.dataset.sec !== id;
-    });
-    renderValves();
-    window.scrollTo(0, 0);
-  }
-
-  /** 当前瓣膜：算结果 + 逐项分级 + 备注 */
-  function renderValves() {
-    if (!ValveCalc || !$('page-valves')) return;
-    const v = {};
-    Object.keys(valveVal).forEach(function (k) {
-      const i = k.indexOf(':');
-      if (k.slice(0, i) !== curValve) return;
-      const n = parseFloat(valveVal[k]);
-      if (valveVal[k] !== '' && !isNaN(n)) v[k.slice(i + 1)] = n;
-    });
-    if (curValve === 'tr') v.ivcCollapse = valveIvc;
-
-    const r = ValveCalc.valveCalc(curValve, v, state.bsa);
-
-    const sum = $('vsum-' + curValve);
-    if (sum) {
-      sum.textContent = '结果 · ' + r.summary;
-      sum.className = 'vsum' + (r.level && r.level !== 'none' ? ' vsum--' + r.level : '');
-    }
-
-    let html = '';
-    r.rows.forEach(function (row) {
-      html += '<div class="vres__r"><span class="vres__k">' + esc(row.k) + '</span>' +
-        '<span class="vres__v">' + esc(row.v) +
-        (row.tag ? '<span class="lvl lvl--' + row.level + '">' + esc(row.tag) + '</span>' : '') +
-        '</span></div>';
-    });
-    if (!r.rows.length) html = '<div class="vres__idle">填入任一指标即可看到结果与分级</div>';
-    const box = $('vres-' + curValve);
-    if (box) box.innerHTML = html;
-
-    const nb = $('vnotes-' + curValve);
-    if (nb) {
-      nb.innerHTML = r.notes.map(function (t) { return '<div class="note">· ' + esc(t) + '</div>'; }).join('');
-    }
-  }
-
-  /** 清空瓣膜页全部输入 */
-  function clearValves() {
-    Object.keys(valveVal).forEach(function (k) { delete valveVal[k]; });
-    valveIvc = '';
-    setSeg('valveivc', '');
-    document.querySelectorAll('#page-valves input[data-vk]').forEach(function (i) { i.value = ''; });
-    renderValves();
-  }
-
-  if ($('page-valves')) {
-    $('page-valves').addEventListener('input', function (e) {
-      const inp = e.target.closest('input[data-vk]');
-      if (!inp) return;
-      if (inp.value === '') delete valveVal[inp.dataset.vk];
-      else valveVal[inp.dataset.vk] = inp.value;
-      renderValves();
-    });
-    $('valveSwitch').addEventListener('click', function (e) {
-      const chip = e.target.closest('.vchip');
-      if (chip) switchValve(chip.dataset.valve);
-    });
-    $('valveClear').addEventListener('click', clearValves);
-  }
-
-/*<<<END-CUT:valve>>>*/
   /* ══════════════════════════════════════════════════════════
      六、Tab4 儿童 Z 值
      ══════════════════════════════════════════════════════════ */
@@ -3050,7 +3027,6 @@
     renderEF();
     renderPeds();
     renderCalc();
-    renderValves();
     if (currentTab !== 'index') switchTab(currentTab);
   });
 
@@ -3124,7 +3100,7 @@
 /*<<<END-CUT:seg>>>*/
 
   /* ══════════════════════════════════════════════════════════
-     瓣膜解剖页：解剖分区选中 ↔ 所有示意图同步高亮
+     瓣膜解剖（公式集内）：解剖分区选中 ↔ 所有示意图同步高亮
      ══════════════════════════════════════════════════════════ */
 
   let selValvePart = null;   // 选中的解剖分区（如 lcc / a2 / sep）
@@ -3134,9 +3110,12 @@
     window.ValveSvg.VALVE_VIEWS.forEach(function (v) {
       const el = $('va-' + v.id);
       if (el) el.innerHTML = v.fn({ sel: selValvePart });
+      // 探头位置 + 扫描平面小图（静态，不随选中重绘）
+      const pe = $('va-' + v.id + '-probe');
+      if (pe && !pe.innerHTML) pe.innerHTML = window.ValveSvg.probeOf(v.id);
     });
 
-    document.querySelectorAll('#page-valveana [data-vap]').forEach(function (c) {
+    document.querySelectorAll('#calcGroups [data-vap]').forEach(function (c) {
       c.classList.toggle('segchip--on', c.dataset.vap === selValvePart);
     });
 
@@ -3163,7 +3142,6 @@
     buildPedsInputs();
     renderPeds();
     renderCalc();
-    renderValves();
 
     // 带 hash 打开（如刷新页面 / 从分享链接进来）→ 恢复到对应视图
     const v0 = parseHash();
@@ -3201,16 +3179,16 @@
       }
     });
 
-    // 瓣膜解剖页：点击分区色块 / 按钮 → 所有示意图同步高亮
+    // 瓣膜解剖（公式集内）：点击分区色块 / 按钮 → 所有示意图同步高亮
     document.addEventListener('click', function (e) {
-      const partEl = e.target.closest('#page-valveana g[data-part]');
+      const partEl = e.target.closest('#calcGroups g[data-part]');
       if (partEl) {
         const id = partEl.dataset.part;
         selValvePart = selValvePart === id ? null : id;
         renderValveAna();
         return;
       }
-      const chip = e.target.closest('#page-valveana [data-vap]');
+      const chip = e.target.closest('#calcGroups [data-vap]');
       if (chip) {
         const id = chip.dataset.vap;
         selValvePart = selValvePart === id ? null : id;
