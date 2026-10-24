@@ -245,9 +245,9 @@ if (dlAll.filter(d => /asecho\.org\/wp-content\/uploads\/.+\.pdf$/.test(d.u)).le
   ok('ASE 官方 PDF 直链 ≥ 20 条');
 else bad('ASE 官方 PDF 直链不足');
 
-console.log('\n=== 4f. 切面学习（含操作规范专辑）/ TEE 模拟器（纯外链） ===');
+console.log('\n=== 4f. 切面学习（含操作规范专辑）/ TEE 切面在线演示（纯外链） ===');
 console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 R11 / R12 / R41）');
-if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 模拟器）');
+if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 切面在线演示）');
 else bad('外链分组数异常: ' + (EX.LINK_SECTIONS || []).length);
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
 if (linkIds.length === 9) ok('外链条目 9 条（8 条单条外链 + 操作规范专辑 1 条）');
@@ -275,8 +275,8 @@ else bad('切面指南仍留在外链分组里');
 const tteItem = EX.LINK_SECTIONS[0].items.filter(function (i) { return i.id === 'tte-sv'; })[0];
 if (tteItem && /TTE-HTML5-SV\/index\.html$/.test(tteItem.url)) ok('TTE 经胸切面为直达交互应用链接');
 else bad('TTE 经胸切面链接未直达交互应用');
-if (EX.LINK_SECTIONS[1].items.length === 3) ok('TEE 模拟器仅 3 条');
-else bad('TEE 模拟器条目数异常: ' + (EX.LINK_SECTIONS[1] ? EX.LINK_SECTIONS[1].items.length : 'missing'));
+if (EX.LINK_SECTIONS[1].items.length === 3) ok('TEE 切面在线演示仅 3 条');
+else bad('TEE 切面在线演示条目数异常: ' + (EX.LINK_SECTIONS[1] ? EX.LINK_SECTIONS[1].items.length : 'missing'));
 // 操作规范：整本书收成 1 个专辑，且排在「切面学习（视频）」第一条
 const views = EX.LINK_SECTIONS.filter(function (s3) { return s3.id === 'views'; })[0];
 const bvAlb = views ? views.items.filter(function (it) { return it.album; })[0] : null;

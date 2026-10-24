@@ -4892,11 +4892,11 @@ const BRIEF_SECTIONS = [
 ];
 
 /**
- * 切面学习与模拟器：**纯链接条目**（kind: 'link'）
+ * 切面学习与在线演示：**纯链接条目**（kind: 'link'）
  *
  * 不嵌图片、不嵌 iframe，点击由系统浏览器打开原站（省内存、零流量开销）。
  * 主要来源：多伦多大学 PIE（Perioperative Interactive Education）TEE/TTE 教学站，
- * 其余为公开的在线 TEE 模拟器。
+ * 其余为公开的 TEE 切面在线演示站点（外链，不嵌入本站页面）。
  *
  * ★ 2025-10 调整：原「切面指南」分组（4 份 ASE 官方 PDF）已并入「参考文献」
  *   —— R11（TTE 中/英文）、R12（TEE 2013）、R41（TEE 介入筛查）。
@@ -4990,23 +4990,23 @@ const LINK_SECTIONS = [
 
   {
     id: 'sim',
-    title: 'TEE 模拟器',
+    title: 'TEE 切面在线演示',
     items: [
       {
         id: 'sim-toronto',
-        title: '多伦多 TEE 交互模拟器',
+        title: '多伦多 TEE 交互演示',
         sub: '标准切面全流程交互演示 · 360 极速浏览器兼容模式打开',
         url: 'https://pie.med.utoronto.ca/tee/TEE_content/assets/applications/teeSimulation/index.html',
       },
       {
         id: 'sim-ct2tee',
-        title: 'CT2TEE 在线模拟器',
+        title: 'CT2TEE 在线演示',
         sub: 'CT 重建驱动 · 旋转 / 俯仰 / 成角操控',
         url: 'https://www.ct2tee.agh.edu.pl/',
       },
       {
         id: 'sim-atlas',
-        title: 'TEE Simulator 图谱',
+        title: 'TEE 切面交互图谱',
         sub: '交互式切面图谱（英文）· 需科学上网',
         url: 'https://tee-simulator.anesthbeta.com/atlas?lang=en',
       },
