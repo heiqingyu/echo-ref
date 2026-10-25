@@ -225,7 +225,63 @@ function check(name, ok, detail) {
   const zAbbr = await c.evalJs(
     '[...document.querySelectorAll("#pdList .zrow__n")].filter(function(e){' +
     'return /\uff08[A-Za-z]/.test(e.textContent);}).length');
-  check('Z 值行均带英文缩写', zAbbr === 33, zAbbr + ' / 33 行');
+  check('Z 值行均带英文缩写', zAbbr === 36, zAbbr + ' / 36 行');
+
+  // ★ 儿童页必须列出左房与右室（用户反馈：原来只有左室大小，其他房室没有）
+  const pedsKamp = await c.evalJs(`(function(){
+    var ns = [...document.querySelectorAll('#pdList .zrow__n')];
+    var keys = ['LAAP', 'RVDD', 'RVAWd'];
+    var hit = 0;
+    ns.forEach(function (e) {
+      keys.forEach(function (k) {
+        if (e.textContent.indexOf('（' + k + '）') >= 0) hit++;
+      });
+    });
+    return JSON.stringify({
+      hit: hit,
+      note: document.querySelectorAll('#pdList .pnote').length
+    });
+  })()`);
+  const pk = JSON.parse(pedsKamp);
+  check('儿童页列出左房与右室 3 项', pk.hit === 3, pedsKamp);
+  check('左房与右心组带来源说明', pk.note === 1, pedsKamp);
+
+  // ★ 回归：内径的「均值」必须与「±2SD 范围」同量级
+  //   v1.6.8 之前均值漏了 cm→mm 的 ×10，同一行出现「均值 2.0 mm」与「16.4–23.1 mm」
+  const midMismatch = await c.evalJs(`(function(){
+    var bad = [];
+    [...document.querySelectorAll('#pdList .zrow')].forEach(function (r) {
+      var sub = r.querySelector('.zrow__sub');
+      var rg = r.querySelector('.zrow__r');
+      if (!sub || !rg) return;
+      var t = sub.textContent;
+      var i = t.indexOf('均值');
+      if (i < 0) return;
+      var mid = parseFloat(t.slice(i + 2).trim().split(' ')[0]);
+      var b = rg.textContent.split('–');
+      if (b.length < 2) return;
+      var lo = parseFloat(b[0]);
+      var hi = parseFloat(b[1]);
+      if (!isFinite(mid) || !isFinite(lo) || !isFinite(hi)) return;
+      if (Math.abs((lo + hi) / 2 - mid) > 0.08) bad.push(mid + '|' + lo + '-' + hi);
+    });
+    return bad.join(';');
+  })()`);
+  check('每行均值与 ±2SD 区间同单位', midMismatch === '', midMismatch || '(全部一致)');
+
+  // ±3SD 表默认折叠、只列 ±3SD（不再与主表重复 ±2SD）
+  const rngInit = await c.evalJs('document.getElementById("pdRanges").hidden');
+  check('±3SD 阈值表默认折叠', rngInit === true, String(rngInit));
+  await c.evalJs('document.getElementById("pdRangesBtn").click()');
+  await new Promise((r) => setTimeout(r, 200));
+  const rngOpen = await c.evalJs(
+    'JSON.stringify({h:document.getElementById("pdRanges").hidden,' +
+    'n:document.querySelectorAll("#pdRanges .zrow").length,' +
+    'has2:document.getElementById("pdRanges").textContent.indexOf("±2SD")>=0})');
+  const ro3 = JSON.parse(rngOpen);
+  check('点开后展开 ±3SD 表', ro3.h === false && ro3.n === 36, rngOpen);
+  check('±3SD 表不再重复 ±2SD', ro3.has2 === false, rngOpen);
+  await c.evalJs('document.getElementById("pdRangesBtn").click()');
   const pdBsa = await c.evalJs('document.getElementById("pdBsa").textContent');
   check('儿童 BSA 已算出', pdBsa && /\d\.\d+/.test(pdBsa), pdBsa);
 
@@ -476,7 +532,7 @@ function check(name, ok, detail) {
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
-    check('参考文献 75 条', d.refs === 75, d.refs);
+    check('参考文献 76 条', d.refs === 76, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
 
@@ -970,7 +1026,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 75 条', /75/.test(ri.cnt), refsInit);
+  check('折叠头显示 76 条', /76/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -989,7 +1045,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 75 条', ro.hidden === false && ro.n === 75 && ro.h > 0, refsOpen);
+  check('点击后展开全部 76 条', ro.hidden === false && ro.n === 76 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 

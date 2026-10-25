@@ -131,6 +131,72 @@ const PEDS_Z = {
   LVMTV:  { a: 0,    mean: 0.88,  sd: 0.16,  unit: '',    name: '左室质量/容积比' },
   LVTTD:  { a: 0,    mean: 0.15,  sd: 0.03,  unit: '',    name: '左室壁厚/内径比' },
   LVSI:   { a: 0,    mean: 1.63,  sd: 0.17,  unit: '',    name: '左室球形指数' },
+
+  // ── 左房 / 右心（PHN 未收录，改用 Kampmann 2000 M 型分组表）──
+  // ★ 键名不用 LAD：LAD 已被「左前降支近段」占用（PHN 冠脉组），
+  //   儿科文献里 LAD 既可指左房也可指前降支，键名必须区分开。
+  LAAP:   { model: 'kamp', unit: 'mm', dec: 1, name: '左房前后径' },
+  RVDD:   { model: 'kamp', unit: 'mm', dec: 1, name: '右室舒张末内径' },
+  RVAWd:  { model: 'kamp', unit: 'mm', dec: 2, name: '右室前壁厚度' },
+};
+
+/* ------------------------------------------------------------------ *
+ * 3b. Kampmann 2000 M 型分组参考表（补 PHN 没有的房 / 右心腔径）
+ *
+ * ── 为什么必须另起一套？ ────────────────────────────────────────────
+ *  PHN 数据集（n=3566）测的是左室、主动脉、肺动脉、冠脉与房室瓣环，
+ *  **没有左房、右房、右室的内径**。儿童左房/右室大小没有 PHN 级别的共识方程，
+ *  国际文献里最常被引用的 M 型分组值来自：
+ *
+ *    Kampmann C, Wiethoff CM, Wenzel A, et al. Normal values of M mode
+ *    echocardiographic measurements of more than 2000 healthy infants and
+ *    children in central Europe. Heart. 2000;83(6):667-672.
+ *    n = 2036，中欧白人儿童，1 天–18 岁，DuBois BSA，六名儿科心脏科医师测。
+ *
+ *  ★ 原文给的是「按 BSA 分组的 均值 ± 2SD」表格（Table 2），不是指数方程，
+ *    所以这里直接存表格并做**线性插值**，不做二次拟合 —— 忠实原文，且
+ *    SD 在不同 BSA 段的比例并不恒定，用指数模型套会失真。
+ *
+ *  下表每项为 [−2SD, 均值, +2SD]（单位 mm），与原文 Table 2 逐格对应。
+ *  原文分组：BSA 0.25–0.70 每 0.05 一档、0.70–1.50 每 0.10、1.75 / 2.00。
+ *  BSA < 0.25 m²（早产/低出生体重儿）按 0.25 档取值；> 2.0 按 2.0 档。
+ *
+ *  ⚠️ 与 PHN 区**不可混用**：两套的参照人群、测量方法（M 型 vs 2D/短轴）、
+ *     BSA 公式（DuBois vs Haycock）都不同，同一患儿只用一套判读。
+ * ------------------------------------------------------------------ */
+
+const KAMP_TABLE = {
+  bsa: [0.25, 0.275, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70,
+        0.80, 0.90, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.75, 2.00],
+  cols: {
+    // 右室前壁厚度
+    RVAWd: [
+      [1.4, 2.6, 3.8], [1.4, 2.6, 3.8], [1.6, 2.7, 3.8], [1.6, 2.7, 3.8],
+      [1.6, 2.7, 3.8], [1.65, 2.75, 3.85], [1.65, 2.75, 3.85], [1.65, 2.75, 3.85],
+      [1.7, 2.8, 3.9], [1.7, 2.8, 3.9], [1.7, 2.8, 3.9], [1.7, 2.8, 3.9],
+      [1.7, 2.8, 3.9], [1.7, 2.8, 3.9], [1.8, 2.9, 4.0], [1.8, 2.9, 4.0],
+      [1.9, 3.0, 4.1], [1.9, 3.0, 4.1], [1.9, 3.1, 4.3], [1.9, 3.1, 4.3],
+      [1.9, 3.1, 4.3],
+    ],
+    // 右室舒张末期内径
+    RVDD: [
+      [4.2, 8.7, 13.2], [4.2, 8.7, 13.2], [4.2, 8.7, 13.2], [4.3, 8.8, 13.3],
+      [4.4, 8.9, 13.4], [4.5, 9.0, 13.5], [4.8, 9.3, 13.8], [5.0, 9.5, 14.0],
+      [5.2, 9.6, 14.0], [5.5, 9.9, 14.3], [5.7, 10.1, 14.5], [5.8, 10.5, 15.2],
+      [6.4, 11.0, 15.6], [6.4, 11.2, 16.0], [7.4, 11.8, 16.2], [7.6, 12.4, 17.2],
+      [8.5, 13.5, 18.5], [9.0, 14.0, 19.0], [10.0, 15.6, 21.2], [10.3, 16.5, 22.7],
+      [11.5, 17.5, 23.5],
+    ],
+    // 左房前后径
+    LAAP: [
+      [10.5, 14.0, 17.5], [11.5, 15.1, 18.7], [11.5, 15.3, 19.1], [12.0, 16.3, 20.6],
+      [13.0, 16.8, 20.6], [13.8, 17.8, 21.8], [14.5, 18.7, 22.9], [15.3, 19.7, 24.1],
+      [16.1, 20.1, 24.1], [16.1, 20.8, 25.5], [16.2, 21.2, 26.2], [16.5, 22.5, 28.5],
+      [17.0, 23.2, 29.4], [19.2, 25.0, 30.8], [19.5, 25.2, 30.9], [20.9, 26.0, 31.1],
+      [21.7, 27.3, 32.9], [22.8, 28.2, 33.6], [23.7, 29.9, 36.1], [23.8, 30.4, 37.0],
+      [23.7, 32.5, 41.3],
+    ],
+  },
 };
 
 /** 展示分组（保持临床阅读顺序） */
@@ -143,6 +209,12 @@ const PEDS_GROUPS = [
   { title: '肺动脉', keys: ['PVSAX', 'PVLAX', 'MPA', 'RPA', 'LPA'] },
   { title: '二尖瓣', keys: ['MVAP', 'MVLAT', 'MVA'] },
   { title: '三尖瓣', keys: ['TVAP', 'TVLAT', 'TVA'] },
+  {
+    title: '左房与右心（M 型 · Kampmann）',
+    keys: ['LAAP', 'RVDD', 'RVAWd'],
+    note: '本组来自另一套参照（Kampmann 2000，中欧白人儿童 n=2036，M 型），' +
+      '与上方 PHN 参数不可混用比较。右房内径两套数据源均未收录，本条不自造。',
+  },
   { title: '形态比例', keys: ['LVMTV', 'LVTTD', 'LVSI'] },
 ];
 
@@ -243,6 +315,100 @@ function rangeFromZ(key, bsa, zLevel) {
 }
 
 /* ------------------------------------------------------------------ *
+ * 3c. Kampmann 分组表查表（线性插值）
+ * ------------------------------------------------------------------ */
+
+/**
+ * 按 BSA 在 Kampmann Table 2 上取该参数的 均值 / SD / ±2SD 区间
+ *
+ * 原文不是方程而是「按 BSA 分组的 均值 ± 2SD」，组内 SD 与 BSA 不呈幂函数关系，
+ * 因此这里直接**线性插值**分组值，不做二次拟合。
+ *
+ * @param {string} key  LAAP / RVDD / RVAWd
+ * @param {number} bsa  体表面积 m²
+ * @returns {{mean:number, sd:number, lo2:number, hi2:number}|null}
+ */
+function kampAt(key, bsa) {
+  const xs = KAMP_TABLE.bsa;
+  const col = KAMP_TABLE.cols[key];
+  if (!col || !bsa || bsa <= 0) return null;
+
+  const n = xs.length;
+  // 超出表的覆盖范围：贴边取值（原文只到 0.25–2.0 m²）
+  if (bsa <= xs[0]) return kampRow(col[0]);
+  if (bsa >= xs[n - 1]) return kampRow(col[n - 1]);
+
+  let i = 0;
+  while (i < n - 2 && bsa > xs[i + 1]) i++;
+
+  const x0 = xs[i];
+  const x1 = xs[i + 1];
+  const w = (bsa - x0) / (x1 - x0);
+  const a = col[i];
+  const b = col[i + 1];
+  const lerp = function (p, q) { return p + (q - p) * w; };
+
+  const mean = lerp(a[1], b[1]);
+  // 每格 hi − lo = 4 SD
+  const sd = lerp((a[2] - a[0]) / 4, (b[2] - b[0]) / 4);
+
+  return {
+    mean: mean,
+    sd: sd,
+    lo2: lerp(a[0], b[0]),
+    hi2: lerp(a[2], b[2]),
+  };
+}
+
+/** 单格 [−2SD, 均值, +2SD] → 统一结构 */
+function kampRow(cell) {
+  return {
+    mean: cell[1],
+    sd: (cell[2] - cell[0]) / 4,
+    lo2: cell[0],
+    hi2: cell[2],
+  };
+}
+
+/**
+ * 构建一条 Kampmann 参照行（输出结构与 PHN 行一致，界面无需分支）
+ * 单位直接是 mm（原文即以 mm 给出），不做换算。
+ */
+function buildKampRow(key, def, bsa, measured, hasBsa) {
+  const decOut = def.dec === undefined ? 1 : def.dec;
+  const raw = measured ? measured[key] : undefined;
+  const hasValue = raw !== undefined && raw !== null && raw !== '' && !isNaN(raw);
+  const t = hasBsa ? kampAt(key, bsa) : null;
+
+  let z = null;
+  if (t && hasValue) z = (raw - t.mean) / t.sd;
+  const g = gradeZ(z);
+
+  return {
+    key: key,
+    name: def.name,
+    unit: def.unit,
+    src: 'kamp',
+    srcText: 'Kampmann',
+    alphaText: 'M 型分组表',
+    meanText: t ? fmt(t.mean, decOut) + ' ' + def.unit : '—',
+    sdText: t ? 'SD ' + fmt(t.sd, decOut) + ' ' + def.unit : '—',
+    subText: t ? fmt(t.mean, decOut) + ' ± ' + fmt(t.sd, decOut) + ' ' + def.unit : '—',
+    rangeText: t ? fmt(t.lo2, decOut) + ' – ' + fmt(t.hi2, decOut) : '—',
+    range3Text: t
+      ? fmt(t.mean - 3 * t.sd, decOut) + ' – ' + fmt(t.mean + 3 * t.sd, decOut)
+      : '—',
+    value: hasValue ? fmt(raw, decOut) : '—',
+    z: z === null ? null : round(z, 2),
+    zText: z === null ? '—' : (z > 0 ? '+' : '') + fmt(z, 2),
+    status: g.level,
+    statusText: g.text,
+    statusCls: g.cls,
+    hasValue: hasValue,
+  };
+}
+
+/* ------------------------------------------------------------------ *
  * 4. 对外主接口
  * ------------------------------------------------------------------ */
 
@@ -263,6 +429,12 @@ function buildPedsList(bsa, measured) {
     const key = PEDS_FIELDS[i];
     const def = PEDS_Z[key];
     if (!def) continue;
+
+    // Kampmann 分组表参数（左房 / 右心）走另一条路径
+    if (def.model === 'kamp') {
+      rows.push(buildKampRow(key, def, bsa, measured, hasBsa));
+      continue;
+    }
 
     // 界面单位 → PHN 原生单位
     // 内径：界面 mm，PHN cm → ÷10
@@ -295,15 +467,26 @@ function buildPedsList(bsa, measured) {
 
     const dec = isLength ? 1 : (def.unit === 'g' || def.unit === 'mL' ? 1 : 2);
     const decOut = def.unit === '' ? 2 : dec;
+    // ★ 界面单位换算必须同步到「均值」：内径原生单位是 cm，界面是 mm。
+    //   v1.6.8 之前这里漏了 ×10，导致同一行里「均值 2.0 mm」与
+    //   「±2SD 16.4–23.1 mm」相差 10 倍 —— 用户看到的「不同地方不一样」即此。
+    const uiScale = isLength ? 10 : 1;
+    const meanUi = hasBsa ? def.mean * Math.pow(bsa, def.a) * uiScale : null;
+    const sdUi = hasBsa ? def.sd * Math.pow(bsa, def.a) * uiScale : null;
 
     rows.push({
       key: key,
       name: def.name,
       unit: uiUnit,
-      // 指数化后的均值（原生单位），用于解释
+      src: 'phn',
+      srcText: 'PHN',
+      // 指数化后的均值（界面单位），用于解释
       alphaText: 'α=' + def.a.toFixed(2),
-      meanText: hasBsa
-        ? fmt(def.mean * Math.pow(bsa, def.a), decOut) + ' ' + uiUnit
+      meanText: hasBsa ? fmt(meanUi, decOut) + ' ' + uiUnit : '—',
+      sdText: hasBsa ? 'SD ' + fmt(sdUi, decOut) + ' ' + uiUnit : '—',
+      // 紧凑显示「均值 ± SD」：窄屏一行放得下，不必换行
+      subText: hasBsa
+        ? fmt(meanUi, decOut) + ' ± ' + fmt(sdUi, decOut) + ' ' + uiUnit
         : '—',
       // ±2 区间 —— 临床主要判读依据
       rangeText: (hasBsa && r2)
@@ -337,6 +520,7 @@ function buildPedsGrouped(bsa, measured) {
   return PEDS_GROUPS.map(function (g) {
     return {
       title: g.title,
+      note: g.note || '',
       rows: g.keys.map(function (k) { return map[k]; }).filter(Boolean),
     };
   });
@@ -378,12 +562,14 @@ module.exports = {
   PEDS_Z,
   PEDS_GROUPS,
   PEDS_FIELDS,
+  KAMP_TABLE,
   // 计算
   indexedMean,
   indexedSD,
   zScore,
   gradeZ,
   rangeFromZ,
+  kampAt,
   describeZ,
   // 主接口
   buildPedsList,

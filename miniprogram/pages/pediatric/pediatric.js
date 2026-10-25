@@ -2,8 +2,11 @@ const peds = require('../../utils/peds-zscore.js');
 const core = require('../../utils/echo-core.js');
 const app = getApp();
 
-/** 常用参数（快捷输入区） */
-const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT', 'LVEDV', 'LVESV', 'LVM', 'ROOT'];
+/** 常用参数（快捷输入区）
+ *  ★ 左房（LAAP）与右室内径（RVDD）必须在快速区：儿童超声里房室大小比壁厚更常被问，
+ *    放到「展开其他参数」里等于藏起来了。*/
+const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT', 'LAAP', 'RVDD',
+  'LVEDV', 'LVESV', 'LVM', 'ROOT'];
 
 Page({
   data: {
@@ -28,6 +31,7 @@ Page({
     inputs: [],
     moreInputs: [],
     moreOpen: false,
+    totalCount: 0,
 
     // 结果
     grouped: [],
@@ -35,6 +39,7 @@ Page({
     hasAnyValue: false,
     summary: null,
     warnings: [],
+    rangesOpen: false,
 
     showFormula: false,
   },
@@ -67,6 +72,7 @@ Page({
   /** 依据系数表构建输入行 */
   initInputs() {
     this.setData({
+      totalCount: peds.PEDS_FIELDS.length,
       inputs: this.mkRows(QUICK_KEYS),
       moreInputs: this.mkRows(peds.PEDS_FIELDS.filter(function (k) {
         return QUICK_KEYS.indexOf(k) === -1;
@@ -99,6 +105,7 @@ Page({
 
   onToggleMore()    { this.setData({ moreOpen: !this.data.moreOpen }); },
   onToggleFormula() { this.setData({ showFormula: !this.data.showFormula }); },
+  onToggleRanges()  { this.setData({ rangesOpen: !this.data.rangesOpen }); },
 
   onInput(e) {
     const key = e.currentTarget.dataset.k;

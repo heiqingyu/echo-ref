@@ -86,7 +86,7 @@
     </view>
 
     <view class="btn btn--ghost" bindtap="onToggleMore" style="margin-top:22rpx">
-      {{moreOpen ? '收起其他参数' : '展开其他参数（共 33 项）'}}
+      {{moreOpen ? '收起其他参数' : '展开其他参数（共 ' + totalCount + ' 项）'}}
     </view>
 
     <block wx:if="{{moreOpen}}">
@@ -110,6 +110,26 @@
 
   <!-- ③ 结果 -->
   <block wx:if="{{hasBsa}}">
+
+    <!-- 覆盖范围（先说清哪些有、哪些没有） -->
+    <view class="card">
+      <view class="card__title">本页覆盖哪些结构</view>
+      <view class="card__desc">
+        左心室（内径 / 壁厚 / 容积 / 质量 / 长径 / 面积）· 左房前后径 · 右室内径与右室前壁 ·
+        主动脉（瓣环 → 峡部）· 肺动脉 · 冠状动脉 · 二尖瓣环与三尖瓣环
+      </view>
+      <view class="note">
+        <text style="font-weight:600">两套参照，不要混用</text>{{'\n'}}
+        左室、大血管、瓣环、冠脉来自 PHN 数据集（Lopez 2017，n=3566，多种族）；
+        左房前后径、右室舒张末内径、右室前壁厚度来自 Kampmann 2000（中欧白人儿童 n=2036，M 型）。
+        两组人群、测量方法与 BSA 公式都不同，同一患儿只取其中一套判读。
+      </view>
+      <view class="note">
+        <text style="font-weight:600">本页没有的参数</text>{{'\n'}}
+        右房内径、腔静脉、右室面积 / 容积、左房容积 —— PHN 与 Kampmann 两套数据都没有，
+        儿童也暂无公认方程。本页不采用未经原文核对的系数来凑数，右心大小可先看三尖瓣环（TVAP / TVLAT / TVA）。
+      </view>
+    </view>
 
     <!-- ★ 收缩功能推算（位于 Z 值对照上方） -->
     <view class="card" wx:if="{{func}}">
@@ -173,21 +193,23 @@
         Z 值为「该测值偏离同龄体型正常人群均值的标准差倍数」，|Z| ≤ 2 视为正常。
       </view>
 
+      <!-- 表头只一次：以前每组重复一遍，10 组就是 10 行「参数/实测/范围/Z 值」 -->
+      <view class="z-row" style="border-bottom:1rpx solid #e3e6ea;padding-bottom:14rpx">
+        <text class="z-row__name" style="font-weight:600">参数</text>
+        <text class="z-row__val" style="font-weight:600">实测</text>
+        <text class="z-row__range" style="font-weight:600">±2SD 正常范围</text>
+        <text class="z-row__tag" style="font-weight:600;color:#6b7280">Z 值</text>
+      </view>
+
       <block wx:for="{{grouped}}" wx:key="title">
         <view class="peds-group">{{item.title}}</view>
-
-        <view class="z-row" style="border-bottom:1rpx solid #e3e6ea;padding-bottom:14rpx">
-          <text class="z-row__name" style="font-weight:600">参数</text>
-          <text class="z-row__val" style="font-weight:600">实测</text>
-          <text class="z-row__range" style="font-weight:600">±2SD 范围</text>
-          <text class="z-row__tag" style="font-weight:600;color:#6b7280">Z 值</text>
-        </view>
+        <view wx:if="{{item.note}}" class="peds-note">{{item.note}}</view>
 
         <view wx:for="{{item.rows}}" wx:for-item="row" wx:key="key"
               class="z-row {{row.hasValue ? '' : 'z-row--none'}}">
           <view class="z-row__name">
             {{row.name}}（{{row.key}}）
-            <text class="z-row__name-sub">均值 {{row.meanText}}</text>
+            <text class="z-row__name-sub">均值 {{row.subText}}</text>
           </view>
           <text class="z-row__val">{{row.value}}{{row.hasValue ? row.unit : ''}}</text>
           <text class="z-row__range">{{row.rangeText}}</text>
@@ -201,22 +223,29 @@
       </block>
     </view>
 
-    <!-- 全部区间表（含 ±3SD） -->
+    <!-- ±3SD 阈值（默认折叠；不重复 ±2SD 与均值） -->
     <view class="card">
-      <view class="card__title">完整数值区间（±2SD / ±3SD）</view>
-      <view class="card__desc">±2SD 为异常判定线，±3SD 为显著异常判定线。</view>
-      <block wx:for="{{grouped}}" wx:key="title">
-        <view class="peds-group">{{item.title}}</view>
-        <view wx:for="{{item.rows}}" wx:for-item="row" wx:key="key" class="z-row">
-          <view class="z-row__name">
-            {{row.name}}（{{row.key}}）
-            <text class="z-row__name-sub">{{row.alphaText}} · 均值 {{row.meanText}}</text>
+      <view class="card__title">±3SD 显著异常阈值</view>
+      <view class="card__desc">
+        ±2SD 已在上一张表「正常范围」列给出，这里只列 ±3SD（显著异常线），避免同一区间在两处重复出现。
+      </view>
+      <view class="btn btn--ghost" bindtap="onToggleRanges">
+        {{rangesOpen ? '收起 ±3SD 阈值' : '展开 ±3SD 阈值'}}
+      </view>
+
+      <block wx:if="{{rangesOpen}}">
+        <block wx:for="{{grouped}}" wx:key="title">
+          <view class="peds-group">{{item.title}}</view>
+          <view wx:for="{{item.rows}}" wx:for-item="row" wx:key="key" class="z-row">
+            <view class="z-row__name">
+              {{row.name}}（{{row.key}}）
+              <text class="z-row__name-sub">{{row.alphaText}}</text>
+            </view>
+            <view style="flex:2;text-align:right">
+              <text class="z-row__range" style="display:block">±3SD　{{row.range3Text}} {{row.unit}}</text>
+            </view>
           </view>
-          <view style="flex:2;text-align:right">
-            <text class="z-row__range" style="display:block">±2SD　{{row.rangeText}}</text>
-            <text class="z-row__range" style="display:block">±3SD　{{row.range3Text}}</text>
-          </view>
-        </view>
+        </block>
       </block>
     </view>
 
@@ -256,6 +285,14 @@
         0–18 岁健康非肥胖儿童，19 个中心。{{'\n'}}
         Lopez L, Colan S, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979.（参考文献 R8）{{'\n'}}
         该研究表明 Z 值不受年龄、性别、种族临床显著影响，故本页不分性别。
+      </view>
+      <view class="note note--strong">
+        <text style="font-weight:600">左房与右心的另一套参照</text>{{'\n'}}
+        PHN 数据集没有左房、右房、右室内径，因此「左房与右心」组改用：{{'\n'}}
+        Kampmann C, Wiethoff CM, Wenzel A, et al. Normal values of M mode echocardiographic measurements of
+        more than 2000 healthy infants and children in central Europe. Heart. 2000;83(6):667-672.（n = 2036，参考文献 R76）{{'\n'}}
+        该文给的是「按 BSA 分组的 均值 ± 2SD」表而非方程，本页直接对分组值做线性插值（BSA 0.25–2.0 m²）。
+        原文用 DuBois BSA，本页统一用 Haycock 计算 BSA；新生儿段两者可差 5–8%，判读临界值时请留意。
       </view>
     </block>
   </view>

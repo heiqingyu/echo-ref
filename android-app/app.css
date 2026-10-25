@@ -433,6 +433,18 @@ html, body {
 }
 .pgroup:first-child { margin-top: 0; }
 
+/* 分组说明（如「左房与右心」组来自另一套参照，不能与 PHN 混用） */
+.pnote {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--sub);
+  background: #f7f8fa;
+  border-left: 3px solid #d8dde3;
+  border-radius: 0 6px 6px 0;
+  padding: 8px 10px;
+  margin: 0 0 4px;
+}
+
 .zrow {
   display: flex;
   align-items: center;

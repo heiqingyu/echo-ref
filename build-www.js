@@ -549,7 +549,7 @@ ${SEG_HTML}
       <div class="card__t">测量值输入</div>
       <div class="card__d">内径 mm · 容积 mL · 质量 g · 面积 cm² · 留空跳过</div>
       <div id="pdInputs"></div>
-      <button class="btn btn--ghost" id="pdMore">展开其他参数（共 33 项）</button>
+      <button class="btn btn--ghost" id="pdMore">展开其他参数（共 36 项）</button>
       <button class="btn" id="pdClear">清空全部测量值</button>
     </div>
 
@@ -582,15 +582,33 @@ ${SEG_HTML}
     </div>
 
     <div class="card">
+      <div class="card__t">本页覆盖哪些结构</div>
+      <div class="card__d">
+        左心室（内径 / 壁厚 / 容积 / 质量 / 长径 / 面积）· 左房前后径 · 右室内径与右室前壁 ·
+        主动脉（瓣环 → 峡部）· 肺动脉 · 冠状动脉 · 二尖瓣环与三尖瓣环
+      </div>
+      <div class="note">
+        <b>两套参照，不要混用</b>：左室、大血管、瓣环、冠脉来自 PHN 数据集（Lopez 2017，n=3566，多种族，2D/M 型）；
+        左房前后径、右室舒张末内径、右室前壁厚度来自 Kampmann 2000（中欧白人儿童 n=2036，M 型）。
+        两组人群、测量方法与 BSA 公式都不同，同一患儿只取其中一套判读，不要拿一套的 Z 值去套另一套。
+      </div>
+      <div class="note">
+        <b>本页没有的参数</b>：右房内径、腔静脉、右室面积 / 容积、左房容积 —— PHN 与 Kampmann 两套数据都没有，
+        儿童也暂无公认方程。本页不采用未经原文核对的系数来凑数，右心大小可先看已列出的三尖瓣环（TVAP / TVLAT / TVA）。
+      </div>
+    </div>
+
+    <div class="card">
       <div class="card__t">Z 值对照</div>
       <div class="card__d" id="pdDesc"></div>
       <div id="pdList"></div>
     </div>
 
     <div class="card">
-      <div class="card__t">完整数值区间（±2SD / ±3SD）</div>
-      <div class="card__d">±2SD 为异常判定线，±3SD 为显著异常判定线</div>
-      <div id="pdRanges"></div>
+      <div class="card__t">±3SD 显著异常阈值</div>
+      <div class="card__d">±2SD 已在上一张表「正常范围」列给出，这里只列 ±3SD（显著异常线），避免同一区间在两处重复出现。</div>
+      <button class="btn btn--ghost" id="pdRangesBtn">展开 ±3SD 阈值</button>
+      <div id="pdRanges" hidden></div>
     </div>
 
     <div class="card">
@@ -602,7 +620,7 @@ ${SEG_HTML}
       <div class="note">
         <b>② Z 值</b><br>
         Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
-        α / Mean / SD 为每项参数各自的回归系数
+        α / Mean / SD 为每项参数各自的回归系数（「左房与右心」组不是方程，见下条）
       </div>
       <div class="note">
         <b>③ 为什么儿童不看固定区间</b><br>
@@ -610,10 +628,19 @@ ${SEG_HTML}
         Z = 0 即人群均值，|Z| ≤ 2 覆盖约 95% 健康儿童。
       </div>
       <div class="note note--warn">
-        <b>数据来源</b>　Pediatric Heart Network Normal Echocardiogram Database，
+        <b>数据来源（第一套 · PHN）</b>　Pediatric Heart Network Normal Echocardiogram Database，
         n = 3566，0–18 岁健康非肥胖儿童，19 个中心。<br>
         Lopez L, Colan S, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.（参考文献 R8）<br>
         LVESD / LVESV 系数来自 PHN 后续补充发表（PMC7870534）。
+      </div>
+      <div class="note note--warn">
+        <b>数据来源（第二套 · 左房与右心）</b>　PHN 数据集没有左房、右房、右室内径，
+        这一组改用 M 型分组参考值：<br>
+        Kampmann C, Wiethoff CM, Wenzel A, et al. Normal values of M mode echocardiographic
+        measurements of more than 2000 healthy infants and children in central Europe.
+        <i>Heart.</i> 2000;83(6):667-672.（n = 2036，参考文献 R76）<br>
+        该文给的是「按 BSA 分组的 均值 ± 2SD」表而非方程，本页直接对分组值做线性插值（BSA 0.25–2.0 m²）。
+        原文用 DuBois BSA，本页统一用 Haycock；新生儿段两者可差 5–8%，判读临界值时请留意。
       </div>
     </div>
   </section>

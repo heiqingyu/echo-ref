@@ -169,8 +169,15 @@ check('rangeFromZ 未知参数 → null', peds.rangeFromZ('XX', 0.45, 2), null);
  * ================================================================== */
 section('6. 系数表完整性');
 
-check('PEDS_Z 参数数 == 33', Object.keys(peds.PEDS_Z).length, 33);
-check('PEDS_FIELDS 数 == 33', peds.PEDS_FIELDS.length, 33);
+check('PEDS_Z 参数数 == 36', Object.keys(peds.PEDS_Z).length, 36);
+check('PEDS_FIELDS 数 == 36', peds.PEDS_FIELDS.length, 36);
+// 33 项来自 PHN 指数方程 + 3 项来自 Kampmann M 型分组表
+check('PHN 参数数 == 33', peds.PEDS_FIELDS.filter(function (k) {
+  return peds.PEDS_Z[k].model !== 'kamp';
+}).length, 33);
+check('Kampmann 参数数 == 3', peds.PEDS_FIELDS.filter(function (k) {
+  return peds.PEDS_Z[k].model === 'kamp';
+}).length, 3);
 check('分组全部有参数', peds.PEDS_GROUPS.every(function (g) { return g.keys.length > 0; }), true);
 
 // 分组打平 == PEDS_FIELDS，且无重复
@@ -179,17 +186,30 @@ peds.PEDS_GROUPS.forEach(function (g) { flat.push.apply(flat, g.keys); });
 check('分组打平 == PEDS_FIELDS', flat.join(',') === peds.PEDS_FIELDS.join(','), true);
 check('无重复参数键', new Set(flat).size, flat.length);
 
-// 每个键都有完整的 a/mean/sd/unit/name
+// 每个键都有完整定义：PHN 项查 a/mean/sd，Kampmann 项查分组表列
 let allComplete = true;
 Object.keys(peds.PEDS_Z).forEach(function (k) {
   const d = peds.PEDS_Z[k];
+  if (!d.name || !d.unit === undefined) allComplete = false;
+  if (d.model === 'kamp') {
+    const col = peds.KAMP_TABLE.cols[k];
+    if (!col || col.length !== peds.KAMP_TABLE.bsa.length) allComplete = false;
+    // 每格必须是 [−2SD, 均值, +2SD] 且严格递增
+    (col || []).forEach(function (cell) {
+      if (cell.length !== 3) allComplete = false;
+      if (!(cell[0] < cell[1] && cell[1] < cell[2])) allComplete = false;
+      // 上下对称：hi − mean == mean − lo
+      if (Math.abs((cell[2] - cell[1]) - (cell[1] - cell[0])) > 0.051) allComplete = false;
+    });
+    return;
+  }
   if (typeof d.a !== 'number' || typeof d.mean !== 'number' ||
-      typeof d.sd !== 'number' || !d.unit === undefined || !d.name) {
+      typeof d.sd !== 'number' || !d.name) {
     allComplete = false;
   }
   if (!(d.sd > 0)) allComplete = false;
 });
-check('所有系数 a/mean/sd/name 完整且 sd>0', allComplete, true);
+check('所有系数完整（PHN a/mean/sd，Kampmann 分组表）', allComplete, true);
 
 // ★ 关键回归：LVESD / LVESV 必须来自 Cantinotti/PHN 补充表（曾误填 2.36/25.07）
 check('LVESD mean == 2.675', peds.PEDS_Z.LVESD.mean, 2.675);
@@ -213,7 +233,7 @@ section('7. buildPedsList 主接口');
 //   LVEDD 界面 mm 38 → 原生 cm 3.8
 //   BSA^0.45=0.698564 ; 3.8/0.698564=5.439 ; Z=(5.439−3.89)/0.33=4.694
 const rows = peds.buildPedsList(0.4506, { LVEDD: 38, LVESD: 25, LVM: 20 });
-check('buildPedsList 行数', rows.length, 33);
+check('buildPedsList 行数', rows.length, 36);
 
 const lvedd = rows.find(function (r) { return r.key === 'LVEDD'; });
 check('LVEDD 显示单位 mm', lvedd.unit, 'mm');
@@ -235,7 +255,7 @@ check('未测参数状态 none', mpa.status, 'none');
 
 // measured 缺失整体（只查参考区间）
 const noMeas = peds.buildPedsList(0.4506, null);
-check('无实测值仍出 33 行', noMeas.length, 33);
+check('无实测值仍出 36 行', noMeas.length, 36);
 check('无实测值时区间仍算出',
   noMeas.find(function (r) { return r.key === 'LVEDD'; }).rangeText !== '—', true);
 
@@ -263,9 +283,9 @@ check('LVSI Z 不随 BSA 变', s1.z, s2.z);
 section('8. buildPedsGrouped 分组');
 
 const grouped = peds.buildPedsGrouped(0.4506, { LVEDD: 38, LVM: 20 });
-check('分组数 == 9', grouped.length, 9);
+check('分组数 == 10', grouped.length, 10);
 const totalRows = grouped.reduce(function (n, g) { return n + g.rows.length; }, 0);
-check('分组行数合计 == 33', totalRows, 33);
+check('分组行数合计 == 36', totalRows, 36);
 check('第一组标题', grouped[0].title, '左心室结构');
 check('第一组行数 == 4', grouped[0].rows.length, 4);
 check('分组内无 undefined', grouped.every(function (g) {
@@ -298,6 +318,98 @@ check('成人 Haycock BSA', adultBsa, 1.846776, 1e-5);
 const adultR2 = peds.rangeFromZ('LVEDD', adultBsa, 2);
 check('成人 LVEDD ±2 下界 ≈ ASE 4.2', adultR2.lower, 4.2569, 0.005);
 check('成人 LVEDD ±2 上界 ≈ ASE 5.9', adultR2.upper, 5.9965, 0.005);
+
+/* ================================================================== *
+ * 11. Kampmann 2000 M 型分组表（左房 / 右心）
+ *
+ *  原文 Heart 2000;83(6):667-672 Table 2 抽查（mm）：
+ *    BSA 0.25 → LAD 10.5 / 14.0 / 17.5，RVDD 4.2 / 8.7 / 13.2
+ *    BSA 1.00 → LAD 19.2 / 25.0 / 30.8，RVDD 6.4 / 11.2 / 16.0
+ *    BSA 2.00 → LAD 23.7 / 32.5 / 41.3，RVDD 11.5 / 17.5 / 23.5
+ * ================================================================== */
+section('11. Kampmann M 型分组表');
+
+check('分组表 BSA 档位数', peds.KAMP_TABLE.bsa.length, 21);
+check('三列齐全', Object.keys(peds.KAMP_TABLE.cols).join(','), 'RVAWd,RVDD,LAAP');
+
+const k25 = peds.kampAt('LAAP', 0.25);
+check('LAAP 0.25 均值 == 14.0', k25.mean, 14.0);
+check('LAAP 0.25 −2SD == 10.5', k25.lo2, 10.5);
+check('LAAP 0.25 +2SD == 17.5', k25.hi2, 17.5);
+check('LAAP 0.25 SD == 1.75', k25.sd, 1.75, 1e-9);
+
+const k100 = peds.kampAt('LAAP', 1.0);
+check('LAAP 1.0 均值 == 25.0', k100.mean, 25.0);
+check('LAAP 1.0 +2SD == 30.8', k100.hi2, 30.8);
+
+const kv20 = peds.kampAt('RVDD', 2.0);
+check('RVDD 2.0 均值 == 17.5', kv20.mean, 17.5);
+check('RVDD 2.0 −2SD == 11.5', kv20.lo2, 11.5);
+
+// 插值抽查：0.762 落在 0.70–0.80 之间
+//   w = (0.762 − 0.70) / 0.10 = 0.62
+//   mean = 21.2 + (22.5 − 21.2) × 0.62 = 22.006
+check('LAAP 0.762 线性插值', peds.kampAt('LAAP', 0.762).mean, 22.006, 1e-3);
+
+// 越界贴边（原文只覆盖 0.25–2.0 m²）
+check('LAAP BSA 0.1 贴 0.25 档', peds.kampAt('LAAP', 0.1).mean, 14.0);
+check('LAAP BSA 3.0 贴 2.0 档', peds.kampAt('LAAP', 3.0).mean, 32.5);
+check('BSA 非法 → null', peds.kampAt('LAAP', 0), null);
+check('未知键 → null', peds.kampAt('XX', 1.0), null);
+
+// 端到端：BSA 1.0 时 LAAP 25 mm 正好是均值
+const klRow = peds.buildPedsList(1.0, { LAAP: 25 })
+  .filter(function (r) { return r.key === 'LAAP'; })[0];
+check('LAAP 25mm @BSA1.0 → Z 0', klRow.z, 0);
+check('LAAP 行标了来源', klRow.src, 'kamp');
+check('LAAP 单位 mm', klRow.unit, 'mm');
+// 30.8 mm 恰为 +2SD → 仍在正常界内；(30.8−25)/2.9 = 2.0
+check('LAAP +2SD 边界 == normal',
+  peds.buildPedsList(1.0, { LAAP: 30.8 })
+    .filter(function (r) { return r.key === 'LAAP'; })[0].status, 'normal');
+check('LAAP 超 +2SD 判轻度',
+  peds.buildPedsList(1.0, { LAAP: 31.2 })
+    .filter(function (r) { return r.key === 'LAAP'; })[0].status, 'mild');
+
+/* ================================================================== *
+ * 12. 回归：内径「均值」与「±2SD 区间」必须同单位
+ *
+ *  v1.6.8 之前 meanText 漏了 cm→mm 的 ×10，同一行显示
+ *  「均值 2.0 mm」与「±2SD 16.4 – 23.1 mm」，看起来像两套正常值 ——
+ *  这是用户「正常值的范围不同地方不一样」的直接原因。
+ * ================================================================== */
+section('12. 均值与区间同单位（回归）');
+
+const pvRows = peds.buildPedsList(peds.bsaHaycock(50, 3.4), {});
+const lveddRow = pvRows.filter(function (r) { return r.key === 'LVEDD'; })[0];
+const lveddMean = parseFloat(lveddRow.meanText);
+const lveddBounds = lveddRow.rangeText.split('–');
+check('LVEDD 均值 > 10（已换算成 mm）', lveddMean > 10, true);
+check('LVEDD 均值落在 ±2SD 区间内',
+  lveddMean > parseFloat(lveddBounds[0]) && lveddMean < parseFloat(lveddBounds[1]), true);
+
+const rootRow = pvRows.filter(function (r) { return r.key === 'ROOT'; })[0];
+const rootMean = parseFloat(rootRow.meanText);
+const rootBounds = rootRow.rangeText.split('–');
+check('ROOT 均值落在 ±2SD 区间内',
+  rootMean > parseFloat(rootBounds[0]) && rootMean < parseFloat(rootBounds[1]), true);
+
+// 每一行都该满足：均值 = (下界 + 上界) / 2（±2SD 对称）
+// 容差 0.06：显示时最多四舍五入到 0.01，两端各留 0.005 的双倍余量
+let allMid = true;
+const midOffenders = [];
+pvRows.forEach(function (r) {
+  if (r.rangeText === '—' || !r.meanText || r.meanText === '—') return;
+  const b = r.rangeText.split('–');
+  const lo = parseFloat(b[0]);
+  const hi = parseFloat(b[1]);
+  const mid = parseFloat(r.meanText);
+  if (Math.abs((lo + hi) / 2 - mid) > 0.06) {
+    allMid = false;
+    midOffenders.push(r.key);
+  }
+});
+check('全部参数：均值 == ±2SD 中点', allMid ? true : midOffenders.join(','), true);
 
 /* ================================================================== */
 

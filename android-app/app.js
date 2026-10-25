@@ -3114,7 +3114,10 @@
      六、Tab4 儿童 Z 值
      ══════════════════════════════════════════════════════════ */
 
-  const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT', 'LVEDV', 'LVESV', 'LVM', 'ROOT'];
+  // ★ 左房（LAAP）与右室内径（RVDD）放进快速区：儿童超声里房室大小比壁厚更常被问，
+  //   之前快速区只有左室 + 主动脉根部，用户要「其他房室大小」得先展开 36 项才找得到。
+  const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT', 'LAAP', 'RVDD',
+    'LVEDV', 'LVESV', 'LVM', 'ROOT'];
   const MORE_KEYS = Peds.PEDS_FIELDS.filter(function (k) {
     return QUICK_KEYS.indexOf(k) === -1;
   });
@@ -3155,7 +3158,9 @@
       });
     });
 
-    $('pdMore').textContent = pdMoreOpen ? '收起其他参数' : '展开其他参数（共 33 项）';
+    $('pdMore').textContent = pdMoreOpen
+      ? '收起其他参数'
+      : '展开其他参数（共 ' + Peds.PEDS_FIELDS.length + ' 项）';
   }
 
   function renderPeds() {
@@ -3267,10 +3272,11 @@
     let html = '';
     grouped.forEach(function (g) {
       html += '<div class="pgroup">' + esc(g.title) + '</div>';
+      if (g.note) html += '<div class="pnote">' + esc(g.note) + '</div>';
       g.rows.forEach(function (r) {
         html += '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '">' +
           '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
-            '<span class="zrow__sub">均值 ' + esc(r.meanText) + '</span></div>' +
+            '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span></div>' +
           '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
           '<div class="zrow__r">' + esc(r.rangeText) + '</div>' +
           '<div class="zrow__g">' + (r.hasValue
@@ -3281,17 +3287,16 @@
     });
     $('pdList').innerHTML = html;
 
-    // ── 区间表 ──
+    // ── ±3SD 阈值表（默认折叠；只列 ±3SD，不重复 ±2SD 与均值）──
     let rhtml = '';
     grouped.forEach(function (g) {
       rhtml += '<div class="pgroup">' + esc(g.title) + '</div>';
       g.rows.forEach(function (r) {
         rhtml += '<div class="zrow">' +
           '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
-            '<span class="zrow__sub">' + esc(r.alphaText) + ' · 均值 ' + esc(r.meanText) + '</span></div>' +
+            '<span class="zrow__sub">' + esc(r.alphaText) + '</span></div>' +
           '<div style="flex:2;text-align:right;font-size:12px;color:var(--sub);line-height:1.6">' +
-            '±2SD　' + esc(r.rangeText) + '<br>' +
-            '±3SD　' + esc(r.range3Text) +
+            '±3SD　' + esc(r.range3Text) + ' ' + esc(r.unit) +
           '</div></div>';
       });
     });
@@ -3307,6 +3312,14 @@
   $('pdMore').addEventListener('click', function () {
     pdMoreOpen = !pdMoreOpen;
     buildPedsInputs();
+  });
+
+  // ±3SD 阈值表默认折叠：±2SD 已在主表「正常范围」列，两处都摊开容易看成两套数
+  $('pdRangesBtn').addEventListener('click', function () {
+    const box = $('pdRanges');
+    const willOpen = box.hidden;
+    box.hidden = !willOpen;
+    this.textContent = willOpen ? '收起 ±3SD 阈值' : '展开 ±3SD 阈值';
   });
 
   $('pdClear').addEventListener('click', function () {

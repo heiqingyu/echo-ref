@@ -5800,6 +5800,16 @@ const REFS = [
     ],
     use: '国内成人瓣膜病超声规范化检查与严重程度评估的权威共识；MS 按 MVA <1.0 cm² 为重度（与 ESC/EACTS 2021 一致），AS 按 AVA <1.0 cm² 或 Vmax ≥4.0 m/s 或平均压差 ≥40 mmHg 提示重度',
   },
+  {
+    id: 'R76',
+    zh: '儿童 M 型超声心动图正常值（2036 例，1 天–18 岁）',
+    en: 'Normal values of M mode echocardiographic measurements of more than 2000 healthy infants and children in central Europe',
+    where: 'Kampmann C, Wiethoff CM, Wenzel A, et al. Heart, 2000, 83(6): 667–672. DOI: 10.1136/heart.83.6.667',
+    dl: [
+      { t: 'PMC 全文', u: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1760862/' },
+    ],
+    use: '儿童左房前后径、右室舒张末内径、右室前壁厚度按 BSA 分组的正常值（均值 ± 2SD），用于「儿童 Z 值」页「左房与右心」组',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════

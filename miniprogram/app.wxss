@@ -374,6 +374,18 @@ page {
   margin-top: 0;
 }
 
+/* 分组说明（「左房与右心」组来自另一套参照，不能与 PHN 混用） */
+.peds-note {
+  font-size: 23rpx;
+  line-height: 1.65;
+  color: #6b7280;
+  background: #f7f8fa;
+  border-left: 5rpx solid #d8dde3;
+  border-radius: 0 10rpx 10rpx 0;
+  padding: 14rpx 18rpx;
+  margin-bottom: 6rpx;
+}
+
 /* Z 值列表：等比列宽 */
 .z-row {
   display: flex;
