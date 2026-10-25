@@ -182,8 +182,8 @@ console.log('  CN 联动参数: ' + (cnIdx.map(r => r.key).join(', ') || '(无)'
 const cnLvm = cnIdx.find(r => r.key === 'LVM/BSA');
 if (cnLvm) {
   console.log(`  LVM/BSA 指数 ${cnLvm.range} ${cnLvm.unit} → 折算 ${cnLvm.derivedText} ${cnLvm.derivedUnit}`);
-  // CN 男性 LVM/BSA 正常 44.3–108.5 g/m²，BSA=1.75 → 77.5–189.9 g
-  check('CN LVM/BSA 折算正确', cnLvm.derivedText === '77.5–189.9' ? 1 : 0, 1, 0);
+  // CN 男性 LVM/BSA 正常 44.0–109.0 g/m²，BSA=1.75 → 77.0–190.8 g
+  check('CN LVM/BSA 折算正确', cnLvm.derivedText === '77.0–190.8' ? 1 : 0, 1, 0);
   check('CN LVM/BSA 折算单位 g', cnLvm.derivedUnit === 'g' ? 1 : 0, 1, 0);
 } else {
   check('CN 标准的 LVM/BSA 未联动', 0, 1, 0);

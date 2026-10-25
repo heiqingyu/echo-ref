@@ -401,12 +401,12 @@
      ══════════════════════════════════════════════════════════ */
 
   const STD_NOTE = {
-    CN: '《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围',
+    CN: '《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围（多年龄段合并）',
     ASE: 'ASE/EACVI 2015 Reference limits for cardiac chamber quantification in adults',
   };
 
   const STD_SOURCE = {
-    CN: '中华医学会超声医学分会《中国成年人超声心动图检查测量指南》（2016，95% 参考范围，37 项）',
+    CN: '中华医学会超声医学分会《中国成年人超声心动图检查测量指南》（2016，男 678 / 女 716，37 项 95% 参考范围）',
     ASE: 'ASE/EACVI 2015《Recommendations for Cardiac Chamber Quantification in Adults》',
   };
 
