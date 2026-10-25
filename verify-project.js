@@ -216,7 +216,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 76) ok('参考文献 76 条（7 条本站托管指南 PDF + 4 条中文指南免费全文 + 中国指南与综述 7 条 + 儿童 M 型正常值 1 条；已合并 4 条重复/占位条目）');
+if (EX.REFS.length === 78) ok('参考文献 78 条（7 条本站托管指南 PDF + 4 条中文指南免费全文 + 中国指南与综述 7 条 + 儿童正常值 3 条；已合并 4 条重复/占位条目）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -553,16 +553,16 @@ const pNormRow = pNorm.find(r => r.key === 'LVEDD');
 (pNormRow.status === 'normal') ? ok('LVEDD 均值处 → 正常 (Z=' + pNormRow.zText + ')')
   : bad('均值处判定异常: ' + pNormRow.statusText + ' Z=' + pNormRow.zText);
 
-// 9.6 分组完整性：33 项 PHN + 3 项 Kampmann = 36 项、10 组
+// 9.6 分组完整性：33 项 PHN + 4 项中国汉族儿童 + 3 项 Kampmann = 40 项、10 组
 const pGrouped = peds.buildPedsGrouped(pBsa, { LVEDD: 38 });
 (pGrouped.length === 10) ? ok('分组数 10') : bad('分组数异常 ' + pGrouped.length);
 const pTotal = pGrouped.reduce((n, g) => n + g.rows.length, 0);
 (pTotal === peds.PEDS_FIELDS.length) ? ok('分组打平 = ' + pTotal + ' 项') : bad('分组打平异常 ' + pTotal);
 
 // 9.6b 「左房与右心」组必须存在（用户反馈：儿童页只有左室、没有房室大小）
-const pKampGroup = pGrouped.find(g => /Kampmann/.test(g.title));
-(pKampGroup && pKampGroup.rows.map(r => r.key).join(',') === 'LAAP,RVDD,RVAWd')
-  ? ok('左房与右心组含 LAAP/RVDD/RVAWd')
+const pKampGroup = pGrouped.find(g => /左房与右心/.test(g.title));
+(pKampGroup && pKampGroup.rows.map(r => r.key).join(',') === 'LA4C,RA4C,RVIDd,RVIDs,LAAP,RVDD,RVAWd')
+  ? ok('左房与右心组：4 项中国汉族儿童 + 3 项 M 型')
   : bad('左房与右心组异常');
 (pKampGroup && !!pKampGroup.note) ? ok('该组带来源说明（不可与 PHN 混用）') : bad('该组缺来源说明');
 

@@ -115,19 +115,26 @@
     <view class="card">
       <view class="card__title">本页覆盖哪些结构</view>
       <view class="card__desc">
-        左心室（内径 / 壁厚 / 容积 / 质量 / 长径 / 面积）· 左房前后径 · 右室内径与右室前壁 ·
+        左心室（内径 / 壁厚 / 容积 / 质量 / 长径 / 面积）· 左房 · 右房 · 右室内径 · 右室前壁 ·
         主动脉（瓣环 → 峡部）· 肺动脉 · 冠状动脉 · 二尖瓣环与三尖瓣环
       </view>
       <view class="note">
-        <text style="font-weight:600">两套参照，不要混用</text>{{'\n'}}
-        左室、大血管、瓣环、冠脉来自 PHN 数据集（Lopez 2017，n=3566，多种族）；
-        左房前后径、右室舒张末内径、右室前壁厚度来自 Kampmann 2000（中欧白人儿童 n=2036，M 型）。
-        两组人群、测量方法与 BSA 公式都不同，同一患儿只取其中一套判读。
+        <text style="font-weight:600">三套参照，各管一段，不要混用</text>{{'\n'}}
+        ① 左室、大血管、瓣环、冠脉：PHN 数据集（Lopez 2017，n=3566，多种族）{{'\n'}}
+        ② 左房左右径、右房左右径、右室流入道内径：中国汉族儿童（上海儿童医学中心多中心，n=545 / 515，2D·心尖四腔）{{'\n'}}
+        ③ 左房前后径、右室前后径、右室前壁厚度：Kampmann 2000（中欧白人 n=2036，M 型）{{'\n'}}
+        三套的人群、测量方法与 BSA 公式都不同，同一患儿只取实际测量所用切面对应的一套判读。
       </view>
       <view class="note">
-        <text style="font-weight:600">本页没有的参数</text>{{'\n'}}
-        右房内径、腔静脉、右室面积 / 容积、左房容积 —— PHN 与 Kampmann 两套数据都没有，
-        儿童也暂无公认方程。本页不采用未经原文核对的系数来凑数，右心大小可先看三尖瓣环（TVAP / TVLAT / TVA）。
+        <text style="font-weight:600">同一房室出现两行，是测法不同</text>{{'\n'}}
+        左房左右径（心尖四腔）与左房前后径（M 型）数值接近；右室流入道内径（心尖四腔，约 23 mm）
+        比 M 型右室前后径（胸骨旁，约 11 mm）大一倍左右 —— 这是切面与径线不同造成的，
+        两行不可互比，按报告实际测量的切面选行。
+      </view>
+      <view class="note">
+        <text style="font-weight:600">本页仍没有的参数</text>{{'\n'}}
+        腔静脉、右室面积 / 容积、左房容积 —— 现有三套数据源都没有，儿童也暂无公认方程。
+        本页不采用未经原文核对的系数来凑数。
       </view>
     </view>
 
@@ -287,10 +294,20 @@
         该研究表明 Z 值不受年龄、性别、种族临床显著影响，故本页不分性别。
       </view>
       <view class="note note--strong">
-        <text style="font-weight:600">左房与右心的另一套参照</text>{{'\n'}}
-        PHN 数据集没有左房、右房、右室内径，因此「左房与右心」组改用：{{'\n'}}
-        Kampmann C, Wiethoff CM, Wenzel A, et al. Normal values of M mode echocardiographic measurements of
-        more than 2000 healthy infants and children in central Europe. Heart. 2000;83(6):667-672.（n = 2036，参考文献 R76）{{'\n'}}
+        <text style="font-weight:600">左房与右心的另两套参照</text>{{'\n'}}
+        PHN 数据集没有左房、右房、右室内径，因此「左房与右心」组改用中国多中心方程：{{'\n'}}
+        Wang SS, Hong WJ, Zhang YQ, et al. Regression equations for calculation of z scores for echocardiographic
+        measurements of left heart structures in healthy Han Chinese children.
+        J Clin Ultrasound. 2018;46(5):328-333.（左心 n = 545，参考文献 R77）{{'\n'}}
+        Wang SS, Zhang YQ, Chen SB, et al. Regression equations for calculation of z scores for echocardiographic
+        measurements of right heart structures in healthy Han Chinese children.
+        J Clin Ultrasound. 2017;45(5):293-303.（右心 n = 515，参考文献 R78）{{'\n'}}
+        上海儿童医学中心牵头，复旦儿科 / 上海儿童医院 / 天津儿童医院参与，Haycock BSA，1 天–18 岁。
+        方程为三次多项式 M = β0 + β1·BSA + β2·BSA² + β3·BSA³，SD 取固定常数（不随 BSA 变化）。
+        ★ 左心篇用边际 SD、右心篇用残差 SD，跨篇比较 Z 值时刻度略有差异。{{'\n'}}
+        [M 型补充] Kampmann C, Wiethoff CM, Wenzel A, et al. Normal values of M mode echocardiographic
+        measurements of more than 2000 healthy infants and children in central Europe.
+        Heart. 2000;83(6):667-672.（n = 2036，参考文献 R76）{{'\n'}}
         该文给的是「按 BSA 分组的 均值 ± 2SD」表而非方程，本页直接对分组值做线性插值（BSA 0.25–2.0 m²）。
         原文用 DuBois BSA，本页统一用 Haycock 计算 BSA；新生儿段两者可差 5–8%，判读临界值时请留意。
       </view>

@@ -3116,8 +3116,8 @@
 
   // ★ 左房（LAAP）与右室内径（RVDD）放进快速区：儿童超声里房室大小比壁厚更常被问，
   //   之前快速区只有左室 + 主动脉根部，用户要「其他房室大小」得先展开 36 项才找得到。
-  const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT', 'LAAP', 'RVDD',
-    'LVEDV', 'LVESV', 'LVM', 'ROOT'];
+  const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT',
+    'LA4C', 'RA4C', 'RVIDd', 'LVEDV', 'LVESV', 'LVM', 'ROOT'];
   const MORE_KEYS = Peds.PEDS_FIELDS.filter(function (k) {
     return QUICK_KEYS.indexOf(k) === -1;
   });

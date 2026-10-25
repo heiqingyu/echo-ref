@@ -5810,6 +5810,26 @@ const REFS = [
     ],
     use: '儿童左房前后径、右室舒张末内径、右室前壁厚度按 BSA 分组的正常值（均值 ± 2SD），用于「儿童 Z 值」页「左房与右心」组',
   },
+  {
+    id: 'R77',
+    zh: '中国汉族健康儿童左心结构超声心动图 Z 值回归方程',
+    en: 'Regression equations for calculation of z scores for echocardiographic measurements of left heart structures in healthy Han Chinese children',
+    where: 'Wang SS, Hong WJ, Zhang YQ, et al. J Clin Ultrasound, 2018, 46(5): 328-333. DOI: 10.1002/jcu.22579',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1002/jcu.22579' },
+    ],
+    use: '儿童左房左右径（心尖四腔）按 BSA 的三次多项式 Z 值方程（n=545，上海儿童医学中心多中心），用于「儿童 Z 值」页「左房与右心」组',
+  },
+  {
+    id: 'R78',
+    zh: '中国汉族健康儿童右心结构超声心动图 Z 值回归方程',
+    en: 'Regression equations for calculation of z scores for echocardiographic measurements of right heart structures in healthy Han Chinese children',
+    where: 'Wang SS, Zhang YQ, Chen SB, et al. J Clin Ultrasound, 2017, 45(5): 293-303. DOI: 10.1002/jcu.22436',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.1002/jcu.22436' },
+    ],
+    use: '儿童右房左右径、右室流入道内径按 BSA 的三次多项式 Z 值方程（n=515，与 R77 同一多中心队列），用于「儿童 Z 值」页「左房与右心」组',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════

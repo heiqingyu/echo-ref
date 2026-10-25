@@ -169,15 +169,18 @@ check('rangeFromZ 未知参数 → null', peds.rangeFromZ('XX', 0.45, 2), null);
  * ================================================================== */
 section('6. 系数表完整性');
 
-check('PEDS_Z 参数数 == 36', Object.keys(peds.PEDS_Z).length, 36);
-check('PEDS_FIELDS 数 == 36', peds.PEDS_FIELDS.length, 36);
+check('PEDS_Z 参数数 == 40', Object.keys(peds.PEDS_Z).length, 40);
+check('PEDS_FIELDS 数 == 40', peds.PEDS_FIELDS.length, 40);
 // 33 项来自 PHN 指数方程 + 3 项来自 Kampmann M 型分组表
 check('PHN 参数数 == 33', peds.PEDS_FIELDS.filter(function (k) {
-  return peds.PEDS_Z[k].model !== 'kamp';
+  return !peds.PEDS_Z[k].model;
 }).length, 33);
 check('Kampmann 参数数 == 3', peds.PEDS_FIELDS.filter(function (k) {
   return peds.PEDS_Z[k].model === 'kamp';
 }).length, 3);
+check('CSMC 参数数 == 4', peds.PEDS_FIELDS.filter(function (k) {
+  return peds.PEDS_Z[k].model === 'csmc';
+}).length, 4);
 check('分组全部有参数', peds.PEDS_GROUPS.every(function (g) { return g.keys.length > 0; }), true);
 
 // 分组打平 == PEDS_FIELDS，且无重复
@@ -203,13 +206,23 @@ Object.keys(peds.PEDS_Z).forEach(function (k) {
     });
     return;
   }
+  // CSMC 项查三次多项式系数表
+  if (d.model === 'csmc') {
+    const z = peds.CSMC_Z[k];
+    if (!z) { allComplete = false; return; }
+    if (!Array.isArray(z.b) || z.b.length !== 4) allComplete = false;
+    if (!(z.sd > 0)) allComplete = false;
+    if (!(z.r2 > 0 && z.r2 <= 1)) allComplete = false;
+    if (z.paper !== 'L' && z.paper !== 'R') allComplete = false;
+    return;
+  }
   if (typeof d.a !== 'number' || typeof d.mean !== 'number' ||
       typeof d.sd !== 'number' || !d.name) {
     allComplete = false;
   }
   if (!(d.sd > 0)) allComplete = false;
 });
-check('所有系数完整（PHN a/mean/sd，Kampmann 分组表）', allComplete, true);
+check('所有系数完整（PHN a/mean/sd，Kampmann 分组表，CSMC 三项式）', allComplete, true);
 
 // ★ 关键回归：LVESD / LVESV 必须来自 Cantinotti/PHN 补充表（曾误填 2.36/25.07）
 check('LVESD mean == 2.675', peds.PEDS_Z.LVESD.mean, 2.675);
@@ -233,7 +246,7 @@ section('7. buildPedsList 主接口');
 //   LVEDD 界面 mm 38 → 原生 cm 3.8
 //   BSA^0.45=0.698564 ; 3.8/0.698564=5.439 ; Z=(5.439−3.89)/0.33=4.694
 const rows = peds.buildPedsList(0.4506, { LVEDD: 38, LVESD: 25, LVM: 20 });
-check('buildPedsList 行数', rows.length, 36);
+check('buildPedsList 行数', rows.length, 40);
 
 const lvedd = rows.find(function (r) { return r.key === 'LVEDD'; });
 check('LVEDD 显示单位 mm', lvedd.unit, 'mm');
@@ -255,7 +268,7 @@ check('未测参数状态 none', mpa.status, 'none');
 
 // measured 缺失整体（只查参考区间）
 const noMeas = peds.buildPedsList(0.4506, null);
-check('无实测值仍出 36 行', noMeas.length, 36);
+check('无实测值仍出 40 行', noMeas.length, 40);
 check('无实测值时区间仍算出',
   noMeas.find(function (r) { return r.key === 'LVEDD'; }).rangeText !== '—', true);
 
@@ -285,7 +298,7 @@ section('8. buildPedsGrouped 分组');
 const grouped = peds.buildPedsGrouped(0.4506, { LVEDD: 38, LVM: 20 });
 check('分组数 == 10', grouped.length, 10);
 const totalRows = grouped.reduce(function (n, g) { return n + g.rows.length; }, 0);
-check('分组行数合计 == 36', totalRows, 36);
+check('分组行数合计 == 40', totalRows, 40);
 check('第一组标题', grouped[0].title, '左心室结构');
 check('第一组行数 == 4', grouped[0].rows.length, 4);
 check('分组内无 undefined', grouped.every(function (g) {
@@ -410,6 +423,64 @@ pvRows.forEach(function (r) {
   }
 });
 check('全部参数：均值 == ±2SD 中点', allMid ? true : midOffenders.join(','), true);
+
+/* ================================================================== *
+ * 13. CSMC 中国汉族儿童三次多项式（左房 / 右房 / 右室）
+ *
+ *  ★ 系数抄录最容易错的是 β2 / β3 的负号 —— PDF 文本里「-0.79」常被
+ *    提取成「20.79」。这里用两篇原文自带的算例反推验证：
+ *      · 左心篇 4.3 节：AVA 1.60 cm、BSA 1.0 → Z = +0.38
+ *      · 右心篇 4.3 节：TVA 1.70 cm、BSA 1.0 → Z = −2.33
+ * ================================================================== */
+section('13. CSMC 中国汉族儿童方程');
+
+// 原文算例复算（就地用 Table 2 的系数，验证方程实现与负号处理）
+function csmcZ(b, sd, mv, bsa) {
+  const p = b[0] + b[1] * bsa + b[2] * bsa * bsa + b[3] * bsa * bsa * bsa;
+  return (mv - p) / sd;
+}
+// 左心篇 AVA：β0 0.37 / β1 1.82 / β2 −0.79 / β3 0.15，SD 0.13
+check('左心篇算例 AVA 1.60 / BSA 1.0 → Z +0.38',
+  csmcZ([0.37, 1.82, -0.79, 0.15], 0.13, 1.60, 1.0), 0.38, 0.01);
+// 右心篇 TVA：β0 0.45 / β1 3.22 / β2 −2.15 / β3 0.53，SD 0.15
+check('右心篇算例 TVA 1.70 / BSA 1.0 → Z −2.33',
+  csmcZ([0.45, 3.22, -2.15, 0.53], 0.15, 1.70, 1.0), -2.33, 0.01);
+
+// 两端外推合理性（新生儿 / 接近成人）
+check('LA4C BSA 0.20 → 约 11.6 mm', peds.csmcAt('LA4C', 0.20).mean * 10, 11.6, 0.5);
+check('LA4C BSA 1.90 → 约 26.2 mm', peds.csmcAt('LA4C', 1.90).mean * 10, 26.2, 0.8);
+
+// 四项均须随 BSA 单调递增（三次项在儿科区间不应出现回落）
+let mono = true;
+['LA4C', 'RA4C', 'RVIDd', 'RVIDs'].forEach(function (k) {
+  let last = -1;
+  for (let b = 0.20; b <= 1.9001; b += 0.05) {
+    const t = peds.csmcAt(k, b);
+    if (t.mean <= last) mono = false;
+    last = t.mean;
+  }
+});
+check('4 项均随 BSA 单调递增', mono, true);
+
+// 与 Kampmann 同类测量交叉验证：左房两种测法（2D 横径 / M 型前后径）应接近
+const laCsmc = peds.csmcAt('LA4C', 0.85).mean * 10;
+const laKamp = peds.kampAt('LAAP', 0.85).mean;
+check('左房 2D 与 M 型在 BSA 0.85 相差 < 15%',
+  Math.abs(laCsmc - laKamp) / laKamp < 0.15, true);
+
+// 分组顺序：4 项中国数据在前、3 项 M 型在后
+const csmcGroup = peds.PEDS_GROUPS.filter(function (g) {
+  return g.title === '左房与右心';
+})[0];
+check('「左房与右心」组共 7 项', csmcGroup.keys.length, 7);
+check('组内前 4 项为中国数据',
+  csmcGroup.keys.slice(0, 4).join(','), 'LA4C,RA4C,RVIDd,RVIDs');
+
+// 右心篇 SD 是残差 SD、左心篇是边际 SD —— 代码里两篇各自独立取值，不可互相顶替
+check('CSMC 左心篇 SD（LA4C）', peds.CSMC_Z.LA4C.sd, 0.18);
+check('CSMC 右心篇 SD（RA4C）', peds.CSMC_Z.RA4C.sd, 0.19);
+check('CSMC 来源标记（LA4C=L / RA4C=R）',
+  peds.CSMC_Z.LA4C.paper + peds.CSMC_Z.RA4C.paper, 'LR');
 
 /* ================================================================== */
 

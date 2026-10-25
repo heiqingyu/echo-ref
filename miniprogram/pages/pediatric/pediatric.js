@@ -5,8 +5,8 @@ const app = getApp();
 /** 常用参数（快捷输入区）
  *  ★ 左房（LAAP）与右室内径（RVDD）必须在快速区：儿童超声里房室大小比壁厚更常被问，
  *    放到「展开其他参数」里等于藏起来了。*/
-const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT', 'LAAP', 'RVDD',
-  'LVEDV', 'LVESV', 'LVM', 'ROOT'];
+const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT',
+  'LA4C', 'RA4C', 'RVIDd', 'LVEDV', 'LVESV', 'LVM', 'ROOT'];
 
 Page({
   data: {

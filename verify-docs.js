@@ -225,12 +225,12 @@ function check(name, ok, detail) {
   const zAbbr = await c.evalJs(
     '[...document.querySelectorAll("#pdList .zrow__n")].filter(function(e){' +
     'return /\uff08[A-Za-z]/.test(e.textContent);}).length');
-  check('Z 值行均带英文缩写', zAbbr === 36, zAbbr + ' / 36 行');
+  check('Z 值行均带英文缩写', zAbbr === 40, zAbbr + ' / 40 行');
 
   // ★ 儿童页必须列出左房与右室（用户反馈：原来只有左室大小，其他房室没有）
   const pedsKamp = await c.evalJs(`(function(){
     var ns = [...document.querySelectorAll('#pdList .zrow__n')];
-    var keys = ['LAAP', 'RVDD', 'RVAWd'];
+    var keys = ['LA4C', 'RA4C', 'RVIDd', 'RVIDs', 'LAAP', 'RVDD', 'RVAWd'];
     var hit = 0;
     ns.forEach(function (e) {
       keys.forEach(function (k) {
@@ -243,7 +243,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const pk = JSON.parse(pedsKamp);
-  check('儿童页列出左房与右室 3 项', pk.hit === 3, pedsKamp);
+  check('儿童页列出左房与右室 7 项', pk.hit === 7, pedsKamp);
   check('左房与右心组带来源说明', pk.note === 1, pedsKamp);
 
   // ★ 回归：内径的「均值」必须与「±2SD 范围」同量级
@@ -279,7 +279,7 @@ function check(name, ok, detail) {
     'n:document.querySelectorAll("#pdRanges .zrow").length,' +
     'has2:document.getElementById("pdRanges").textContent.indexOf("±2SD")>=0})');
   const ro3 = JSON.parse(rngOpen);
-  check('点开后展开 ±3SD 表', ro3.h === false && ro3.n === 36, rngOpen);
+  check('点开后展开 ±3SD 表', ro3.h === false && ro3.n === 40, rngOpen);
   check('±3SD 表不再重复 ±2SD', ro3.has2 === false, rngOpen);
   await c.evalJs('document.getElementById("pdRangesBtn").click()');
   const pdBsa = await c.evalJs('document.getElementById("pdBsa").textContent');
@@ -532,7 +532,7 @@ function check(name, ok, detail) {
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
-    check('参考文献 76 条', d.refs === 76, d.refs);
+    check('参考文献 78 条', d.refs === 78, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
 
@@ -1026,7 +1026,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 76 条', /76/.test(ri.cnt), refsInit);
+  check('折叠头显示 78 条', /78/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -1045,7 +1045,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 76 条', ro.hidden === false && ro.n === 76 && ro.h > 0, refsOpen);
+  check('点击后展开全部 78 条', ro.hidden === false && ro.n === 78 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 
@@ -1109,7 +1109,11 @@ function check(name, ok, detail) {
     });
   })()`);
   const sd = JSON.parse(subDl);
-  check('「需订阅」胶囊渲染出 7 个（其余均可免费获取）', sd.n === 7, subDl);
+  // ★ 数量从数据源算，避免每加一条需订阅文献就要改断言
+  const onlySubN = require('./miniprogram/utils/extra-data.js').REFS.filter(function (r) {
+    return (r.dl || []).length && r.dl.every(function (x) { return x.t === '需订阅'; });
+  }).length;
+  check('「需订阅」胶囊渲染出 ' + onlySubN + ' 个（其余均可免费获取）', sd.n === onlySubN, subDl);
   check('「需订阅」胶囊文案为「需订阅」', sd.txt === '需订阅', subDl);
   check('「需订阅」用虚线灰边与免费直链区分', sd.border === 'dashed', subDl);
   check('折叠头同时给出免费直链条数', /条附免费直链/.test(sd.cnt), subDl);

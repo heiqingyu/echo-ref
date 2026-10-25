@@ -132,11 +132,17 @@ const PEDS_Z = {
   LVTTD:  { a: 0,    mean: 0.15,  sd: 0.03,  unit: '',    name: '左室壁厚/内径比' },
   LVSI:   { a: 0,    mean: 1.63,  sd: 0.17,  unit: '',    name: '左室球形指数' },
 
-  // ── 左房 / 右心（PHN 未收录，改用 Kampmann 2000 M 型分组表）──
+  // ── 左房 / 右房 / 右室腔径（中国汉族儿童，2D，CSMC 三次多项式）──
   // ★ 键名不用 LAD：LAD 已被「左前降支近段」占用（PHN 冠脉组），
   //   儿科文献里 LAD 既可指左房也可指前降支，键名必须区分开。
-  LAAP:   { model: 'kamp', unit: 'mm', dec: 1, name: '左房前后径' },
-  RVDD:   { model: 'kamp', unit: 'mm', dec: 1, name: '右室舒张末内径' },
+  LA4C:   { model: 'csmc', unit: 'mm', dec: 1, name: '左房左右径（心尖四腔）' },
+  RA4C:   { model: 'csmc', unit: 'mm', dec: 1, name: '右房左右径（心尖四腔）' },
+  RVIDd:  { model: 'csmc', unit: 'mm', dec: 1, name: '右室流入道内径（舒张末）' },
+  RVIDs:  { model: 'csmc', unit: 'mm', dec: 1, name: '右室流入道内径（收缩末）' },
+
+  // ── 左房前后径 / 右室前后径 / 右室前壁（M 型，Kampmann 分组表）──
+  LAAP:   { model: 'kamp', unit: 'mm', dec: 1, name: '左房前后径（M 型）' },
+  RVDD:   { model: 'kamp', unit: 'mm', dec: 1, name: '右室前后径（M 型）' },
   RVAWd:  { model: 'kamp', unit: 'mm', dec: 2, name: '右室前壁厚度' },
 };
 
@@ -199,6 +205,35 @@ const KAMP_TABLE = {
   },
 };
 
+/* ------------------------------------------------------------------ *
+ * 3b-2. 中国汉族儿童三次多项式方程（CSMC · 上海儿童医学中心多中心）
+ *
+ *  PHN 无左房 / 右房 / 右室腔径，Kampmann 是中欧白人 M 型且无右房，
+ *  故按「中国儿童 + 2D」判读房室大小用这两篇（同一多中心队列，Haycock BSA）：
+ *    左心 Wang SS, et al. J Clin Ultrasound. 2018;46(5):328-333.  n=545  DOI 10.1002/jcu.22579
+ *    右心 Wang SS, et al. J Clin Ultrasound. 2017;45(5):293-303.  n=515  DOI 10.1002/jcu.22436
+ *
+ *      M = β0 + β1·BSA + β2·BSA² + β3·BSA³      （cm）
+ *      Z = ( 实测值 − M ) / SD                  SD 为固定常数，不随 BSA 变
+ *
+ *  ⚠️ 两篇 SD 定义不同，Z 刻度略有差异、跨篇不可比大小：
+ *     左心用边际 SD（marginal），右心用残差 SD（residual，天然更小）。
+ *
+ *  ★ 抄录雷区：PDF 文本会把负号提取成数字 2（-0.79 → "20.79"）。
+ *     已用两篇自带算例反推验证（见 verify-peds.js 第 13 节）：
+ *       左心 AVA 1.60 / BSA 1.0 → Z +0.38；右心 TVA 1.70 / BSA 1.0 → Z −2.33
+ * ------------------------------------------------------------------ */
+
+const CSMC_Z = {
+  // ── 左心篇（2018，SD = 边际 SD）──
+  LA4C:  { b: [0.49, 3.83, -2.49,  0.56], sd: 0.18, r2: 0.78, paper: 'L' },
+
+  // ── 右心篇（2017，SD = 残差 SD）──
+  RA4C:  { b: [0.67, 3.49, -2.01,  0.41], sd: 0.19, r2: 0.79, paper: 'R' },
+  RVIDd: { b: [0.59, 3.43, -2.02,  0.45], sd: 0.27, r2: 0.66, paper: 'R' },
+  RVIDs: { b: [0.72, 2.00, -0.79,  0.13], sd: 0.26, r2: 0.63, paper: 'R' },
+};
+
 /** 展示分组（保持临床阅读顺序） */
 const PEDS_GROUPS = [
   { title: '左心室结构', keys: ['LVEDD', 'LVESD', 'LVST', 'LVPWT'] },
@@ -210,10 +245,11 @@ const PEDS_GROUPS = [
   { title: '二尖瓣', keys: ['MVAP', 'MVLAT', 'MVA'] },
   { title: '三尖瓣', keys: ['TVAP', 'TVLAT', 'TVA'] },
   {
-    title: '左房与右心（M 型 · Kampmann）',
-    keys: ['LAAP', 'RVDD', 'RVAWd'],
-    note: '本组来自另一套参照（Kampmann 2000，中欧白人儿童 n=2036，M 型），' +
-      '与上方 PHN 参数不可混用比较。右房内径两套数据源均未收录，本条不自造。',
+    title: '左房与右心',
+    keys: ['LA4C', 'RA4C', 'RVIDd', 'RVIDs', 'LAAP', 'RVDD', 'RVAWd'],
+    note: '前 4 项＝中国汉族儿童（上海儿童医学中心多中心，2D，n=545 / 515）；' +
+      '后 3 项＝中欧白人（Kampmann 2000，M 型，无右房）。同一房室有两种测法，' +
+      '按报告实际切面选行：M 型右室前后径（胸骨旁）比四腔心右室流入道内径天然小一半，不可互比。',
   },
   { title: '形态比例', keys: ['LVMTV', 'LVTTD', 'LVSI'] },
 ];
@@ -370,42 +406,80 @@ function kampRow(cell) {
   };
 }
 
-/**
- * 构建一条 Kampmann 参照行（输出结构与 PHN 行一致，界面无需分支）
- * 单位直接是 mm（原文即以 mm 给出），不做换算。
- */
-function buildKampRow(key, def, bsa, measured, hasBsa) {
-  const decOut = def.dec === undefined ? 1 : def.dec;
+/** 取实测值并判断是否可用（界面单位） */
+function pickValue(measured, key) {
   const raw = measured ? measured[key] : undefined;
-  const hasValue = raw !== undefined && raw !== null && raw !== '' && !isNaN(raw);
-  const t = hasBsa ? kampAt(key, bsa) : null;
+  const ok = raw !== undefined && raw !== null && raw !== '' && !isNaN(raw);
+  return { raw: raw, hasValue: ok };
+}
 
+/**
+ * 组装一条参照行（Kampmann / CSMC 共用），输出结构与 PHN 行一致，界面无需分支。
+ * mean / sd 必须已是界面单位（mm），传 null 表示 BSA 不可用。
+ */
+function buildRefRow(key, def, src, srcText, alphaText, mean, sd, raw, hasValue, decOut) {
   let z = null;
-  if (t && hasValue) z = (raw - t.mean) / t.sd;
+  if (mean !== null && hasValue) z = (raw - mean) / sd;
   const g = gradeZ(z);
-
+  const has = mean !== null;
+  const u = ' ' + def.unit;
+  const rng = function (k) {
+    return has ? fmt(mean - k * sd, decOut) + ' – ' + fmt(mean + k * sd, decOut) : '—';
+  };
   return {
-    key: key,
-    name: def.name,
-    unit: def.unit,
-    src: 'kamp',
-    srcText: 'Kampmann',
-    alphaText: 'M 型分组表',
-    meanText: t ? fmt(t.mean, decOut) + ' ' + def.unit : '—',
-    sdText: t ? 'SD ' + fmt(t.sd, decOut) + ' ' + def.unit : '—',
-    subText: t ? fmt(t.mean, decOut) + ' ± ' + fmt(t.sd, decOut) + ' ' + def.unit : '—',
-    rangeText: t ? fmt(t.lo2, decOut) + ' – ' + fmt(t.hi2, decOut) : '—',
-    range3Text: t
-      ? fmt(t.mean - 3 * t.sd, decOut) + ' – ' + fmt(t.mean + 3 * t.sd, decOut)
-      : '—',
+    key: key, name: def.name, unit: def.unit,
+    src: src, srcText: srcText, alphaText: alphaText,
+    meanText: has ? fmt(mean, decOut) + u : '—',
+    sdText: has ? 'SD ' + fmt(sd, decOut) + u : '—',
+    subText: has ? fmt(mean, decOut) + ' ± ' + fmt(sd, decOut) + u : '—',
+    rangeText: rng(2),
+    range3Text: rng(3),
     value: hasValue ? fmt(raw, decOut) : '—',
     z: z === null ? null : round(z, 2),
     zText: z === null ? '—' : (z > 0 ? '+' : '') + fmt(z, 2),
-    status: g.level,
-    statusText: g.text,
-    statusCls: g.cls,
-    hasValue: hasValue,
+    status: g.level, statusText: g.text, statusCls: g.cls, hasValue: hasValue,
   };
+}
+
+/** Kampmann 分组表行（原表即以 mm 给出，不换算） */
+function buildKampRow(key, def, bsa, measured, hasBsa) {
+  const v = pickValue(measured, key);
+  const t = hasBsa ? kampAt(key, bsa) : null;
+  return buildRefRow(key, def, 'kamp', 'Kampmann', 'M 型分组表',
+    t ? t.mean : null, t ? t.sd : null, v.raw, v.hasValue,
+    def.dec === undefined ? 1 : def.dec);
+}
+
+/* ------------------------------------------------------------------ *
+ * 3d. CSMC 三次多项式求值（中国汉族儿童）
+ * ------------------------------------------------------------------ */
+
+/**
+ * 在给定 BSA 上算 CSMC 方程的预测值
+ * @param {string} key
+ * @param {number} bsa 体表面积 m²
+ * @returns {{mean:number, sd:number}|null}  单位 cm
+ */
+function csmcAt(key, bsa) {
+  const def = CSMC_Z[key];
+  if (!def || !bsa || bsa <= 0) return null;
+  const b = def.b;
+  return {
+    mean: b[0] + b[1] * bsa + b[2] * bsa * bsa + b[3] * bsa * bsa * bsa,
+    sd: def.sd,
+  };
+}
+
+/** CSMC 行：方程单位为 cm，界面用 mm → 预测值与 SD 一律 ×10 */
+function buildCsmcRow(key, def, bsa, measured, hasBsa) {
+  const v = pickValue(measured, key);
+  const t = hasBsa ? csmcAt(key, bsa) : null;
+  const meta = CSMC_Z[key];
+  return buildRefRow(key, def, 'csmc',
+    meta.paper === 'L' ? 'CSMC·左心' : 'CSMC·右心',
+    '三次多项式 · R² ' + meta.r2.toFixed(2),
+    t ? t.mean * 10 : null, t ? t.sd * 10 : null, v.raw, v.hasValue,
+    def.dec === undefined ? 1 : def.dec);
 }
 
 /* ------------------------------------------------------------------ *
@@ -430,9 +504,15 @@ function buildPedsList(bsa, measured) {
     const def = PEDS_Z[key];
     if (!def) continue;
 
-    // Kampmann 分组表参数（左房 / 右心）走另一条路径
+    // Kampmann 分组表参数（M 型房 / 右室前后径）走另一条路径
     if (def.model === 'kamp') {
       rows.push(buildKampRow(key, def, bsa, measured, hasBsa));
+      continue;
+    }
+
+    // CSMC 三次多项式参数（中国汉族儿童 2D 房室腔径）
+    if (def.model === 'csmc') {
+      rows.push(buildCsmcRow(key, def, bsa, measured, hasBsa));
       continue;
     }
 
@@ -563,6 +643,7 @@ module.exports = {
   PEDS_GROUPS,
   PEDS_FIELDS,
   KAMP_TABLE,
+  CSMC_Z,
   // 计算
   indexedMean,
   indexedSD,
@@ -570,6 +651,7 @@ module.exports = {
   gradeZ,
   rangeFromZ,
   kampAt,
+  csmcAt,
   describeZ,
   // 主接口
   buildPedsList,

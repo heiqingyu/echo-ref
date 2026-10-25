@@ -549,7 +549,7 @@ ${SEG_HTML}
       <div class="card__t">测量值输入</div>
       <div class="card__d">内径 mm · 容积 mL · 质量 g · 面积 cm² · 留空跳过</div>
       <div id="pdInputs"></div>
-      <button class="btn btn--ghost" id="pdMore">展开其他参数（共 36 项）</button>
+      <button class="btn btn--ghost" id="pdMore">展开其他参数（共 40 项）</button>
       <button class="btn" id="pdClear">清空全部测量值</button>
     </div>
 
@@ -584,17 +584,16 @@ ${SEG_HTML}
     <div class="card">
       <div class="card__t">本页覆盖哪些结构</div>
       <div class="card__d">
-        左心室（内径 / 壁厚 / 容积 / 质量 / 长径 / 面积）· 左房前后径 · 右室内径与右室前壁 ·
-        主动脉（瓣环 → 峡部）· 肺动脉 · 冠状动脉 · 二尖瓣环与三尖瓣环
+        ① 左室（内径/壁厚/容积/质量/长径/面积）、主动脉、肺动脉、冠脉、二尖瓣环、三尖瓣环 → PHN（n=3566）<br>
+        ② 左房左右径、右房左右径、右室流入道内径 → 中国汉族儿童（n=545/515，2D 四腔）<br>
+        ③ 左房前后径、右室前后径、右室前壁 → Kampmann（中欧 n=2036，M 型）
       </div>
       <div class="note">
-        <b>两套参照，不要混用</b>：左室、大血管、瓣环、冠脉来自 PHN 数据集（Lopez 2017，n=3566，多种族，2D/M 型）；
-        左房前后径、右室舒张末内径、右室前壁厚度来自 Kampmann 2000（中欧白人儿童 n=2036，M 型）。
-        两组人群、测量方法与 BSA 公式都不同，同一患儿只取其中一套判读，不要拿一套的 Z 值去套另一套。
+        三套人群与测法不同，同一患儿只取实际所用切面对应的一套。
       </div>
       <div class="note">
-        <b>本页没有的参数</b>：右房内径、腔静脉、右室面积 / 容积、左房容积 —— PHN 与 Kampmann 两套数据都没有，
-        儿童也暂无公认方程。本页不采用未经原文核对的系数来凑数，右心大小可先看已列出的三尖瓣环（TVAP / TVLAT / TVA）。
+        <b>同一房室两行≠数据打架</b>：右室流入道内径（四腔，约 23 mm）比 M 型右室前后径
+        （胸骨旁，约 11 mm）大一倍 —— 切面与径线不同所致，不可互比。
       </div>
     </div>
 
@@ -619,13 +618,9 @@ ${SEG_HTML}
       </div>
       <div class="note">
         <b>② Z 值</b><br>
-        Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
-        α / Mean / SD 为每项参数各自的回归系数（「左房与右心」组不是方程，见下条）
-      </div>
-      <div class="note">
-        <b>③ 为什么儿童不看固定区间</b><br>
-        新生儿 LVEDD 2 cm 属正常，成人 2 cm 属严重缩小。Z 值把测值按体型标准化，
-        Z = 0 即人群均值，|Z| ≤ 2 覆盖约 95% 健康儿童。
+        PHN 项：Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
+        中国方程项：Z = ( 实测值 − M ) ÷ SD，M = β0 + β1·BSA + β2·BSA² + β3·BSA³<br>
+        系数逐项不同；Kampmann 项无方程，为分组表插值。|Z| ≤ 2 覆盖约 95% 健康儿童。
       </div>
       <div class="note note--warn">
         <b>数据来源（第一套 · PHN）</b>　Pediatric Heart Network Normal Echocardiogram Database，
@@ -634,13 +629,17 @@ ${SEG_HTML}
         LVESD / LVESV 系数来自 PHN 后续补充发表（PMC7870534）。
       </div>
       <div class="note note--warn">
-        <b>数据来源（第二套 · 左房与右心）</b>　PHN 数据集没有左房、右房、右室内径，
-        这一组改用 M 型分组参考值：<br>
-        Kampmann C, Wiethoff CM, Wenzel A, et al. Normal values of M mode echocardiographic
-        measurements of more than 2000 healthy infants and children in central Europe.
-        <i>Heart.</i> 2000;83(6):667-672.（n = 2036，参考文献 R76）<br>
-        该文给的是「按 BSA 分组的 均值 ± 2SD」表而非方程，本页直接对分组值做线性插值（BSA 0.25–2.0 m²）。
-        原文用 DuBois BSA，本页统一用 Haycock；新生儿段两者可差 5–8%，判读临界值时请留意。
+        <b>数据来源（第二套 · 中国汉族儿童房室腔径）</b>　PHN 没有左房 / 右房 / 右室腔径，改用中国多中心方程：<br>
+        Wang SS, et al. <i>J Clin Ultrasound.</i> 2018;46(5):328-333.（左心 n = 545，见 R77）<br>
+        Wang SS, et al. <i>J Clin Ultrasound.</i> 2017;45(5):293-303.（右心 n = 515，见 R78）<br>
+        上海儿童医学中心牵头，Haycock BSA，1 天–18 岁，SD 为固定常数。
+        ★ 左心用边际 SD、右心用残差 SD，跨篇比 Z 时刻度略有差异。
+      </div>
+      <div class="note note--warn">
+        <b>数据来源（第三套 · M 型补充）</b>　左房前后径 / 右室前后径 / 右室前壁取中欧 M 型数据：<br>
+        Kampmann C, et al. <i>Heart.</i> 2000;83(6):667-672.（n = 2036，见 R76）<br>
+        原文给的是「按 BSA 分组的 均值 ± 2SD」表而非方程，本页对分组值做线性插值（BSA 0.25–2.0 m²）。
+        原文用 DuBois BSA，本页用 Haycock，新生儿段可差 5–8%。
       </div>
     </div>
   </section>
