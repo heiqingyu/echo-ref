@@ -17,7 +17,8 @@ if not exist "%GIT%" (
 
 set "HOME=C:\Users\wlb33"
 set "USERPROFILE=C:\Users\wlb33"
-set "GIT_SSH_COMMAND=ssh -i ""C:/Users/wlb33/.ssh/id_ed25519_mcloud"" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ServerAliveInterval=15"
+set "TMPDIR=C:/Users/wlb33/AppData/Local/Temp"
+set "GIT_SSH_COMMAND=ssh -i ""C:/Users/wlb33/.ssh/id_ed25519_mcloud"" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o ServerAliveInterval=15 -o UserKnownHostsFile=C:/Users/wlb33/.ssh/known_hosts -o GlobalKnownHostsFile=NUL"
 
 cd /d "%~dp0"
 
