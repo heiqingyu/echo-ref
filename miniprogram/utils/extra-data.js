@@ -5028,7 +5028,7 @@ const REFS = [
   {
     id: 'R1',
     zh: '中国成年人超声心动图检查测量指南',
-    en: 'Echocardiography Group, Chinese Society of Ultrasonography in Medicine. 中国成人超声心动图检查测量指南',
+    en: '中华医学会超声医学分会超声心动图学组. 中国成年人超声心动图检查测量指南.',
     where: '中华超声影像学杂志, 2016, 25(8): 645–666',
     dl: [
       { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/908663' },
@@ -5039,7 +5039,7 @@ const REFS = [
   {
     id: 'R2',
     zh: '成人心腔超声心动图定量指南（2015）',
-    en: 'Lang RM, Bierig SM, Devereux RB, et al. Recommendations for Cardiac Chamber Quantification by Echocardiography',
+    en: 'Lang RM, Bierig SM, Devereux RB, et al. Recommendations for Cardiac Chamber Quantification by Echocardiography in Adults: An Update from the American Society of Echocardiography and the European Association of Cardiovascular Imaging.',
     where: 'J Am Soc Echocardiogr, 2015, 28(1): 1–39.e14',
     use: 'EF、LVEDVi、LVMI、LAVi 的测量规范与分级',
     dl: [
@@ -5050,7 +5050,7 @@ const REFS = [
   {
     id: 'R3',
     zh: '超声二维斑点追踪应变成像标准化共识（EACVI/ASE/Industry 2015）',
-    en: 'Voigt JU, Pedrizzetti G, Lysyansky P, et al. Definitions for a Common Standard for 2D Speckle Tracking Echocardiography: Consensus Document of the EACVI/ASE/Industry Task Force to Standardize Deformation Imaging',
+    en: 'Voigt JU, Pedrizzetti G, Lysyansky P, et al. Definitions for a Common Standard for 2D Speckle Tracking Echocardiography: Consensus Document of the EACVI/ASE/Industry Task Force to Standardize Deformation Imaging.',
     where: 'Eur Heart J Cardiovasc Imaging, 2015, 16(1): 1–11',
     dl: [
       { t: '免费全文 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/16/1/1/7140604/jeu184.pdf' },
@@ -5061,7 +5061,7 @@ const REFS = [
   {
     id: 'R4',
     zh: '左心房应变正常参考值（EACVI NORRE 研究，2018）',
-    en: 'Sugimoto T, Robinet S, Dulgheru R, et al. Echocardiographic reference ranges for normal left atrial function parameters: results from the EACVI NORRE study',
+    en: 'Sugimoto T, Robinet S, Dulgheru R, et al. Echocardiographic Reference Ranges for Normal Left Atrial Function Parameters: Results from the EACVI NORRE Study.',
     where: 'Eur Heart J Cardiovasc Imaging, 2018, 19(6): 630–638',
     dl: [
       { t: '免费全文 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/19/6/630/24834097/jey018.pdf' },
@@ -5072,8 +5072,8 @@ const REFS = [
   {
     id: 'R5',
     zh: '成人右心超声心动图评估指南（ASE 2025）',
-    en: 'Mukherjee M, Rudski LG, Addetia K, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults and Special Considerations in Pulmonary Hypertension',
-    where: 'J Am Soc Echocardiogr, 2025, 38(2): 141–186',
+    en: 'Mukherjee M, Rudski LG, Addetia K, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults and Special Considerations for Special Populations.',
+    where: 'J Am Soc Echocardiogr, 2025, 38(3): 141–186',
     use: 'TAPSE、FAC、RV S′、右房面积等右心定量',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2026/08/ASE-Right-Heart-Guidelines-May-2025.pdf' },
@@ -5082,7 +5082,7 @@ const REFS = [
   {
     id: 'R6',
     zh: '心脏生理性起搏与 CRT 指南（HRS/APHRS/LAHRS 2023）',
-    en: 'Chung MK, Patton KK, Lau CP, et al. 2023 HRS/APHRS/LAHRS guideline on cardiac physiologic pacing for the avoidance and mitigation of heart failure',
+    en: 'Chung MK, Patton KK, Lau CP, et al. 2023 HRS/APHRS/LAHRS Guideline on Cardiac Physiologic Pacing for the Avoidance and Mitigation of Heart Failure.',
     where: 'Heart Rhythm, 2023, 20(9): e17–e91',
     dl: [
       { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11062890/' },
@@ -5093,8 +5093,8 @@ const REFS = [
   {
     id: 'R7',
     zh: '成人经胸超声心动图标准化报告建议（ASE 2002）',
-    en: 'Gardin JM, Adams DB, Douglas PS, et al. Recommendations for a standardized report for adult transthoracic echocardiography: a report from the American Society of Echocardiography\'s Nomenclature and Standards Committee and Task Force for a Standardized Echocardiography Report',
-    where: 'J Am Soc Echocardiogr, 2002, 15(3): 275–290（报告规范现行版见 R41，TTE 操作见 R9）',
+    en: 'Gardin JM, Adams DB, Douglas PS, et al. Recommendations for a Standardized Report for Adult Transthoracic Echocardiography: A Report from the American Society of Echocardiography.',
+    where: 'J Am Soc Echocardiogr, 2002, 15(3): 275–290（现行报告规范见 R41，TTE 操作见 R9）',
     dl: [
       { t: '免费全文 PDF', u: 'https://www.onlinejase.com/article/S0894731702594712/pdf' },
     ],
@@ -5104,8 +5104,8 @@ const REFS = [
   {
     id: 'R8',
     zh: '儿童心脏 Z 值（PHN 正常值数据库）',
-    en: 'Reference values for echocardiographic Z scores in children (Pediatric Heart Network)',
-    where: 'Lopez L, Colan S, Stylianou M, et al. Relationship of echocardiographic Z scores adjusted for body surface area to age, sex, race, and ethnicity. Circ Cardiovasc Imaging, 2017, 10(11): e006979. DOI: 10.1161/CIRCIMAGING.117.006979',
+    en: 'Lopez L, Colan S, Stylianou M, et al. Relationship of Echocardiographic Z Scores Adjusted for Body Surface Area to Age, Sex, Race, and Ethnicity: The Pediatric Heart Network Normal Echocardiogram Database.',
+    where: 'Circ Cardiovasc Imaging, 2017, 10(11): e006979',
     dl: [
       { t: '免费页面', u: 'https://www.pediatricheartnetwork.org/echo-z-scores/' },
       { t: 'PMC 全文', u: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5812349/' },
@@ -5115,7 +5115,7 @@ const REFS = [
   {
     id: 'R9',
     zh: '成人完整经胸超声心动图操作指南（ASE 2019）',
-    en: 'Mitchell C, Rahko PS, Blauwet LAB, et al. Guidelines for Performing a Comprehensive Transthoracic Echocardiographic Examination in Adults',
+    en: 'Mitchell C, Rahko PS, Blauwet LAB, et al. Guidelines for Performing a Comprehensive Transthoracic Echocardiographic Examination in Adults: Recommendations from the American Society of Echocardiography.',
     where: 'J Am Soc Echocardiogr, 2019, 32(1): 1–64（ASE 官网提供官方中文翻译版）',
     use: '经胸标准切面命名、采集顺序与测量规范（本条附官方中英文 PDF 直链，原「切面指南」入口已并入此）',
     dl: [
@@ -5126,8 +5126,8 @@ const REFS = [
   {
     id: 'R10',
     zh: '成人经食管超声心动图完整检查指南（ASE/SCA）',
-    en: 'Hahn RT, Abraham T, Adams MS, et al. Guidelines for Performing a Comprehensive Transesophageal Echocardiographic Examination',
-    where: 'J Am Soc Echocardiogr, 2013, 26(9): 921–964（28 个标准切面）',
+    en: 'Hahn RT, Abraham T, Adams MS, et al. Guidelines for Performing a Comprehensive Transesophageal Echocardiographic Examination: Recommendations from the American Society of Echocardiography and the Society of Cardiovascular Anesthesiologists.',
+    where: 'J Am Soc Echocardiogr, 2013, 26(9): 921–964（含 28 个标准切面）',
     use: 'TEE 28 标准切面命名与采集规范（本条附官方 PDF 直链，原「切面指南」入口已并入此）',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2014/05/2013_Performing-Comprehensive-TEE.pdf' },
@@ -5136,7 +5136,7 @@ const REFS = [
   {
     id: 'R11',
     zh: '肺动脉高压诊断与治疗指南（ESC/ERS 2022）',
-    en: 'Humbert M, et al. 2022 ESC/ERS Guidelines for the diagnosis and treatment of pulmonary hypertension',
+    en: 'Humbert M, Kovacs G, Hoeper MM, et al. 2022 ESC/ERS Guidelines for the Diagnosis and Treatment of Pulmonary Hypertension.',
     where: 'Eur Respir J, 2022, 60(1): 2200879',
     use: 'PH 血流动力学分型、超声概率与右心导管定义',
     dl: [
@@ -5146,7 +5146,7 @@ const REFS = [
   {
     id: 'R12',
     zh: '成人右心超声评估指南（ASE 2010）',
-    en: 'Rudski LG, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults',
+    en: 'Rudski LG, Lai WW, Afilalo J, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults: A Report from the American Society of Echocardiography.',
     where: 'J Am Soc Echocardiogr, 2010, 23(7): 685–713',
     use: '右室功能、右房压与 PH 超声评估的金标准参考',
     dl: [
@@ -5157,8 +5157,8 @@ const REFS = [
   {
     id: 'R13',
     zh: '心包疾病超声心动图评估指南（2013）',
-    en: 'Klein AL, et al. ASE/EACVI Guidelines for Echocardiographic Evaluation of Pericardial Disease',
-    where: 'J Am Soc Echocardiogr, 2013, 26(9): 965–1012',
+    en: 'Klein AL, Abbara S, Agler DA, et al. American Society of Echocardiography Clinical Recommendations for Multimodality Cardiovascular Imaging of Patients with Pericardial Disease.',
+    where: 'J Am Soc Echocardiogr, 2013, 26(9): 965–1012.e15',
     use: '心包积液半定量、心脏压塞与缩窄性心包炎征象',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2013_Multimodality-CV-Imaging-for-Pericardial-Disease.pdf' },
@@ -5168,7 +5168,7 @@ const REFS = [
   {
     id: 'R14',
     zh: '左心室舒张功能评估指南（2016）',
-    en: 'Nagueh SF, et al. Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography (2016 ASE/EACVI)',
+    en: 'Nagueh SF, Smiseth OA, Appleton CP, et al. Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography: An Update from the American Society of Echocardiography and the European Association of Cardiovascular Imaging.',
     where: 'J Am Soc Echocardiogr, 2016, 29(4): 277–314',
     use: '舒张功能分级四步法与灰区处理（ASE 2025 已发布更新，见 R39）',
     dl: [
@@ -5178,7 +5178,7 @@ const REFS = [
   {
     id: 'R15',
     zh: '人工心脏瓣膜功能评估指南（2024 版）',
-    en: 'Zoghbi WA, Jone PN, Chamsi-Pasha MA, et al. Guidelines for the Evaluation of Prosthetic Valve Function With Cardiovascular Imaging',
+    en: 'Zoghbi WA, Jone PN, Chamsi-Pasha MA, et al. Guidelines for the Evaluation of Prosthetic Valves by Echocardiography.',
     where: 'J Am Soc Echocardiogr, 2024, 37(1): 2–63（替代 2017 版）',
     use: '人工瓣膜正常压差、PPM 与瓣周漏判读',
     dl: [
@@ -5188,7 +5188,7 @@ const REFS = [
   {
     id: 'R16',
     zh: 'TAPSE/PASP 比值：右室-肺动脉耦联指标',
-    en: 'Guazzi M, et al. Tricuspid annular plane systolic excursion and pulmonary arterial systolic pressure relationship in heart failure: an index of right ventricular contractile function and prognosis',
+    en: 'Guazzi M, Bandera F, Pelissero G, et al. Tricuspid Annular Plane Systolic Excursion and Pulmonary Arterial Systolic Pressure Relationship in Heart Failure: An Index of Right Ventricular Contractile Function and Prognosis.',
     where: 'Am J Physiol Heart Circ Physiol, 2013, 305(9): H1373–H1381',
     dl: [
       { t: '需订阅', u: 'https://doi.org/10.1152/ajpheart.00157.2013' },
@@ -5199,7 +5199,7 @@ const REFS = [
   {
     id: 'R17',
     zh: '感染性心内膜炎管理指南（2023 ESC）',
-    en: 'Delgado V, et al. 2023 ESC Guidelines for the management of endocarditis',
+    en: 'Delgado V, Ajmone Marsan N, de Waha S, et al. 2023 ESC Guidelines for the Management of Endocarditis.',
     where: 'Eur Heart J, 2023, 44(39): 3948–4042',
     use: '赘生物大小与栓塞风险、TEE 指征、重复超声时机',
     dl: [
@@ -5209,7 +5209,7 @@ const REFS = [
   {
     id: 'R18',
     zh: '肥厚型心肌病诊断与治疗指南（2020 AHA/ACC）',
-    en: 'Ommen SR, et al. 2020 AHA/ACC Guideline for the Diagnosis and Treatment of Patients With Hypertrophic Cardiomyopathy',
+    en: 'Ommen SR, Mital S, Burke MA, et al. 2020 AHA/ACC Guideline for the Diagnosis and Treatment of Patients with Hypertrophic Cardiomyopathy.',
     where: 'Circulation, 2020, 142(25): e558–e631',
     use: '最大壁厚诊断阈值、LVOT 梗阻分级与猝死风险因素',
     dl: [
@@ -5219,7 +5219,7 @@ const REFS = [
   {
     id: 'R19',
     zh: '心脏淀粉样变诊断与治疗立场声明（2021 ESC）',
-    en: 'Garcia-Pavia P, et al. Diagnosis and Treatment of Cardiac Amyloidosis: A Position Statement of the ESC Working Group on Myocardial and Pericardial Diseases',
+    en: 'Garcia-Pavia P, Rapezzi C, Adler Y, et al. Diagnosis and Treatment of Cardiac Amyloidosis: A Position Statement of the ESC Working Group on Myocardial and Pericardial Diseases.',
     where: 'Eur Heart J, 2021, 42(16): 1554–1568',
     use: '心肌「苹果核」应变、心尖保留比值与确诊路径',
     dl: [
@@ -5229,8 +5229,8 @@ const REFS = [
   {
     id: 'R20',
     zh: '瓣膜性心脏病管理指南（2020 ACC/AHA）',
-    en: 'Otto CM, et al. 2020 ACC/AHA Guideline for the Management of Patients With Valvular Heart Disease',
-    where: 'Circulation, 2021, 143(4): e72–e227',
+    en: 'Otto CM, Nishimura RA, Bonow RO, et al. 2020 ACC/AHA Guideline for the Management of Patients with Valvular Heart Disease.',
+    where: 'Circulation, 2021, 143(5): e72–e227',
     use: '低流量低压差 AS 的负荷试验、钙化评分与手术时机',
     dl: [
       { t: '免费全文 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000923' },
@@ -5239,7 +5239,7 @@ const REFS = [
   {
     id: 'R21',
     zh: '心包疾病诊断与管理指南（2015 ESC）',
-    en: 'Adler Y, et al. 2015 ESC Guidelines for the Diagnosis and Management of Pericardial Diseases',
+    en: 'Adler Y, Charron P, Imazio M, et al. 2015 ESC Guidelines for the Diagnosis and Management of Pericardial Diseases.',
     where: 'Eur Heart J, 2015, 36(42): 2921–2964',
     use: '缩窄性心包炎的呼吸变异、瓣环反转与鉴别路径',
     dl: [
@@ -5249,7 +5249,7 @@ const REFS = [
   {
     id: 'R22',
     zh: '三尖瓣反流学术研究联盟（TVARC）定义与分级',
-    en: 'Hahn RT, Lawlor MK, Davidson CJ, et al. Tricuspid Valve Academic Research Consortium Definitions for Tricuspid Regurgitation and Study Design Principles',
+    en: 'Hahn RT, Lawlor MK, Davidson CJ, et al. Tricuspid Valve Academic Research Consortium Definitions for Tricuspid Regurgitation and Trial Endpoints.',
     where: 'Eur Heart J, 2023, 44(43): 4508–4532',
     dl: [
       { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10645050/' },
@@ -5260,7 +5260,7 @@ const REFS = [
   {
     id: 'R23',
     zh: '瓣膜性心脏病管理指南（2021 ESC/EACTS）',
-    en: 'Vahanian A, et al. 2021 ESC/EACTS Guidelines for the management of valvular heart disease',
+    en: 'Vahanian A, Beyersdorf F, Praz F, et al. 2021 ESC/EACTS Guidelines for the Management of Valvular Heart Disease.',
     where: 'Eur Heart J, 2022, 43(7): 561–632',
     use: '二尖瓣 TEER 适应证、解剖适配与介入时机',
     dl: [
@@ -5270,7 +5270,7 @@ const REFS = [
   {
     id: 'R24',
     zh: '左房与右心应变成像标准化（2018 ASE/EACVI）',
-    en: 'Badano LP, et al. Standardization of left atrial, right ventricular, and right atrial deformation imaging using two-dimensional speckle tracking echocardiography',
+    en: 'Badano LP, Kolias TJ, Muraru D, et al. Standardization of Left Atrial, Right Ventricular, and Right Atrial Deformation Imaging Using Two-Dimensional Speckle Tracking Echocardiography: A Consensus Document of the EACVI/ASE/Industry Task Force.',
     where: 'Eur Heart J Cardiovasc Imaging, 2018, 19(6): 591–600',
     use: '左房应变三时相（LASr / LAScd / LASct）的正常值与测量规范',
     dl: [
@@ -5280,7 +5280,7 @@ const REFS = [
   {
     id: 'R25',
     zh: 'HFpEF 诊断算法 HFA-PEFF（2019 ESC HFA）',
-    en: 'Pieske B, et al. How to diagnose heart failure with preserved ejection fraction: the HFA-PEFF diagnostic algorithm',
+    en: 'Pieske B, Tschöpe C, de Boer RA, et al. How to Diagnose Heart Failure with Preserved Ejection Fraction: The HFA-PEFF Diagnostic Algorithm: A Consensus Recommendation from the Heart Failure Association of the ESC.',
     where: 'Eur Heart J, 2019, 40(40): 3297–3317',
     use: '形态学 + 功能两大类计分、总分判读与负荷试验指征',
     dl: [
@@ -5290,8 +5290,8 @@ const REFS = [
   {
     id: 'R26',
     zh: '负荷超声心动图应用指南（2020 ASE）',
-    en: 'Pellikka PA, et al. Guidelines for Performance, Interpretation, and Application of Stress Echocardiography in Ischemic Heart Disease',
-    where: 'J Am Soc Echocardiogr, 2020, 33(1): 1–41',
+    en: 'Pellikka PA, Arruda-Olson A, Chaudhry FA, et al. Guidelines for Performance, Interpretation, and Application of Stress Echocardiography in Ischemic Heart Disease.',
+    where: 'J Am Soc Echocardiogr, 2020, 33(1): 1–41.e8',
     use: '室壁运动评分、阳性标准、WMSI 与负荷方式选择',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/Stress-Echo-2020.pdf' },
@@ -5301,6 +5301,7 @@ const REFS = [
   {
     id: 'R27',
     zh: '胸主动脉疾病多模态影像评估指南（2015 ASE）',
+    en: 'Goldstein SA, Evangelista A, Abbara S, et al. Multimodality Imaging of Diseases of the Thoracic Aorta in Adults: From the American Society of Echocardiography and the European Association of Cardiovascular Imaging.',
     where: 'J Am Soc Echocardiogr, 2015, 28(2): 119–182',
     use: '主动脉根部测量位点、扩张分级、二叶式瓣与夹层征象',
     dl: [
@@ -5311,6 +5312,7 @@ const REFS = [
   {
     id: 'R28',
     zh: '急性肺栓塞诊断与管理指南（2019 ESC）',
+    en: 'Konstantinides SV, Meyer G, Becattini C, et al. 2019 ESC Guidelines for the Diagnosis and Management of Acute Pulmonary Embolism Developed in Collaboration with the European Respiratory Society (ERS).',
     where: 'Eur Heart J, 2020, 41(4): 543–603',
     use: '右心功能不全的危险分层地位、McConnell 征与随访',
     dl: [
@@ -5320,6 +5322,7 @@ const REFS = [
   {
     id: 'R29',
     zh: '肿瘤心脏病学指南（2022 ESC）',
+    en: 'Lyon AR, López-Fernández T, Couch LS, et al. 2022 ESC Guidelines on Cardio-Oncology Developed in Collaboration with the EACVI, EHA, ESTRO and ESC Council of Cardio-Oncology.',
     where: 'Eur Heart J, 2022, 43(41): 4229–4361',
     use: 'CTRCD 三级分档、GLS 相对下降 15% 阈值与监测节点',
     dl: [
@@ -5329,6 +5332,7 @@ const REFS = [
   {
     id: 'R30',
     zh: '经导管瓣膜介入术后瓣膜反流评估指南（2019 ASE）',
+    en: 'Zoghbi WA, Asch FM, Bruce C, et al. Guidelines for the Evaluation of Valvular Regurgitation after Percutaneous Valve Repair or Replacement.',
     where: 'J Am Soc Echocardiogr, 2019, 32(4): 431–475',
     use: 'TAVR 术后跨瓣压差、瓣周漏半定量与随访基线',
     dl: [
@@ -5338,7 +5342,7 @@ const REFS = [
   {
     id: 'R31',
     zh: '心尖保留比值诊断心脏淀粉样变（Phelan 等）',
-    en: 'Phelan D, Collier P, Thavendiranathan P, et al. Relative apical sparing of longitudinal strain using two-dimensional speckle-tracking echocardiography is both sensitive and specific for the diagnosis of cardiac amyloidosis',
+    en: 'Phelan D, Collier P, Thavendiranathan P, et al. Relative Apical Sparing of Longitudinal Strain Using Two-Dimensional Speckle-Tracking Echocardiography Is Both Sensitive and Specific for the Diagnosis of Cardiac Amyloidosis.',
     where: 'Heart, 2012, 98(19): 1442–1448',
     dl: [
       { t: '需订阅', u: 'https://doi.org/10.1136/heartjnl-2012-302353' },
@@ -5349,7 +5353,7 @@ const REFS = [
   {
     id: 'R32',
     zh: '成人先天性心脏病管理指南（2018 AHA/ACC）',
-    en: 'Stout KK, Daniels CJ, Aboulhosn JA, et al. 2018 AHA/ACC Guideline for the Management of Adults With Congenital Heart Disease',
+    en: 'Stout KK, Daniels CJ, Aboulhosn JA, et al. 2018 AHA/ACC Guideline for the Management of Adults with Congenital Heart Disease.',
     where: 'Circulation, 2019, 139(14): e698–e800',
     use: 'ASD / VSD / PDA 的分型、干预指征与随访节点',
     dl: [
@@ -5359,7 +5363,7 @@ const REFS = [
   {
     id: 'R33',
     zh: '成人先天性心脏病管理指南（2020 ESC）',
-    en: 'Baumgartner H, De Backer J, Babu-Narayan SV, et al. 2020 ESC Guidelines for the management of adult congenital heart disease',
+    en: 'Baumgartner H, De Backer J, Babu-Narayan SV, et al. 2020 ESC Guidelines for the Management of Adult Congenital Heart Disease.',
     where: 'Eur Heart J, 2021, 42(6): 563–645',
     use: '分流性肺高压的可手术性评估、艾森曼格综合征管理',
     dl: [
@@ -5369,7 +5373,7 @@ const REFS = [
   {
     id: 'R34',
     zh: '左心室辅助装置患者的超声心动图管理建议（2015 ASE）',
-    en: 'Stainback RF, Estep JD, Agler DA, et al. Echocardiography in the Management of Patients with Left Ventricular Assist Devices: Recommendations from the American Society of Echocardiography',
+    en: 'Stainback RF, Estep JD, Agler DA, et al. Echocardiography in the Management of Patients with Left Ventricular Assist Devices: Recommendations from the American Society of Echocardiography.',
     where: 'J Am Soc Echocardiogr, 2015, 28(8): 853–909',
     use: '入血道 / 出血道评估、泵速优化与抽吸事件的超声识别',
     dl: [
@@ -5380,8 +5384,8 @@ const REFS = [
   {
     id: 'R35',
     zh: '法洛四联症根治术后的 CMR 评估与肺动脉瓣置换决策',
-    en: 'Geva T. Repaired tetralogy of Fallot: the roles of cardiovascular magnetic resonance in evaluating pathophysiology and for pulmonary valve replacement decision support',
-    where: 'J Cardiovasc Magn Reson, 2011, 13: 9',
+    en: 'Geva T. Repaired Tetralogy of Fallot: The Roles of Cardiovascular Magnetic Resonance in Evaluating Pathophysiology and for Pulmonary Valve Replacement Decision Support.',
+    where: 'J Cardiovasc Magn Reson, 2011, 13(1): 9',
     use: 'RVEDVi >160 / RVESVi >80 mL/m² 等 PVR 容量阈值的来源',
     dl: [
       { t: '免费全文 PDF', u: 'https://jcmr-online.biomedcentral.com/articles/10.1186/1532-429X-13-9' },
@@ -5390,7 +5394,7 @@ const REFS = [
   {
     id: 'R36',
     zh: '多巴酚丁胺负荷评估肺动脉高压患者的右室收缩储备',
-    en: 'Sharma T, Lau EMT, Choudhary P, et al. Dobutamine stress for evaluation of right ventricular reserve in pulmonary arterial hypertension',
+    en: 'Sharma T, Lau EM, Choudhary P, et al. Dobutamine Stress for Evaluation of Right Ventricular Reserve in Pulmonary Arterial Hypertension.',
     where: 'Eur Respir J, 2015, 45(3): 700–708',
     use: '低剂量多巴酚丁胺下 RVFWS 变化与右室收缩储备的判读标准',
     dl: [
@@ -5400,14 +5404,14 @@ const REFS = [
   {
     id: 'R37',
     zh: '实用超声规范化检查与操作',
-    en: '王辉, 王小丛 主编. 实用超声规范化检查与操作',
-    where: '科学技术文献出版社, 2021 年 9 月, 北京. ISBN 978-7-5189-8028-4',
+    en: '王辉, 王小丛 主编. 实用超声规范化检查与操作.',
+    where: '北京: 科学技术文献出版社, 2021. ISBN 978-7-5189-8028-4',
     use: '第三章心血管系统配套动图（切面扫查 / 瓣口血流 / 典型病例）',
   },
   {
     id: 'R38',
     zh: '经食道超声结构性心脏病介入筛查标准（ASE 2021）',
-    en: 'Hahn RT, Saric M, Faletra FF, et al. Recommended Standards for the Performance of Transesophageal Echocardiographic Screening for Structural Heart Intervention',
+    en: 'Hahn RT, Saric M, Faletra FF, et al. Recommended Standards for the Performance of Transesophageal Echocardiographic Screening for Structural Heart Intervention.',
     where: 'J Am Soc Echocardiogr, 2022, 35(1): 1–76',
     use: 'TEE 介入筛查的切面清单与评估要点（原「切面指南」入口已并入此）',
     dl: [
@@ -5417,8 +5421,8 @@ const REFS = [
   {
     id: 'R39',
     zh: '左室舒张功能与 HFpEF 诊断更新（ASE 2025）',
-    en: 'Nagueh SF, Sanborn DY, Oh JK, et al. Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography and for Heart Failure With Preserved Ejection Fraction Diagnosis: An Update From the ASE',
-    where: 'J Am Soc Echocardiogr, 2025, 38(4): 537–569',
+    en: 'Nagueh SF, Sanborn DY, Oh JK, et al. Recommendations for the Evaluation of Left Ventricular Diastolic Function by Echocardiography and Assessment of Left Ventricular Filling Pressures: 2025 Update from the American Society of Echocardiography.',
+    where: 'J Am Soc Echocardiogr, 2025, 38(7): 537–569',
     use: '舒张功能与左房压评估的最新口径（本工具四步法仍按 2016 版组织，见 R14）',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/07/Left-Ventricular-Diastolic-Function.pdf' },
@@ -5427,8 +5431,8 @@ const REFS = [
   {
     id: 'R40',
     zh: '应变成像临床应用指南（ASE/EACVI 2025）',
-    en: 'ASE/EACVI Clinical Applications of Strain Echocardiography（ASE 官网现行版）',
-    where: 'ASE 官网 PDF, 2025',
+    en: 'Thomas JD, Edvardsen T, Abraham T, et al. Clinical Applications of Strain Echocardiography: A Clinical Consensus Statement from the American Society of Echocardiography Developed in Collaboration with the European Association of Cardiovascular Imaging.',
+    where: 'J Am Soc Echocardiogr, 2025, 38(11): 985–1020',
     use: 'GLS / RV 应变 / 左房应变的采集与报告规范（官网现行版）',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/11/Strain-2025-Guideline-2.pdf' },
@@ -5437,8 +5441,8 @@ const REFS = [
   {
     id: 'R41',
     zh: '成人超声心动图报告标准化建议（ASE 2025）',
-    en: 'Taub CC, Stainback RF, Abraham T, et al. Guidelines for the Standardization of Adult Echocardiography Reporting',
-    where: 'J Am Soc Echocardiogr, 2025, 38(6): 735–774',
+    en: 'Taub CC, Stainback RF, Abraham T, et al. Guidelines for the Standardization of Adult Echocardiography Reporting: Recommendations from the American Society of Echocardiography.',
+    where: 'J Am Soc Echocardiogr, 2025, 38(9): 735–774',
     use: '报告结构与必填项（写报告时的条目清单）',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/09/PIIS0894731725002925.pdf' },
@@ -5447,7 +5451,7 @@ const REFS = [
   {
     id: 'R42',
     zh: '风湿性心脏病超声评估建议（ASE 2022）',
-    en: 'Pandian NG, Kim JK, Arias-Godinez JA, et al. Recommendations for the Use of Echocardiography in the Evaluation of Rheumatic Heart Disease',
+    en: 'Pandian NG, Kim JK, Arias-Godinez JA, et al. Recommendations for the Use of Echocardiography in the Evaluation of Rheumatic Heart Disease.',
     where: 'J Am Soc Echocardiogr, 2023, 36(1): 3–28',
     use: '风湿性二尖瓣形态与狭窄分级（Wilkins 评分的风湿病因背景）',
     dl: [
@@ -5457,7 +5461,7 @@ const REFS = [
   {
     id: 'R43',
     zh: '主动脉瓣狭窄超声评估更新（ASE/EACVI 2017）',
-    en: 'Baumgartner H, Hung J, Bermejo J, et al. Recommendations on the Echocardiographic Assessment of Aortic Valve Stenosis: A Focused Update',
+    en: 'Baumgartner H, Hung J, Bermejo J, et al. Recommendations on the Echocardiographic Assessment of Aortic Valve Stenosis: A Focused Update from the European Association of Cardiovascular Imaging and the American Society of Echocardiography.',
     where: 'J Am Soc Echocardiogr, 2017, 30(4): 372–392',
     use: 'AS 压差 / AVA / DVI 的测法与低流量低压差状态识别',
     dl: [
@@ -5468,7 +5472,7 @@ const REFS = [
   {
     id: 'R44',
     zh: '自体瓣膜反流无创评估建议（ASE 2017）',
-    en: 'Zoghbi WA, Adams D, Bonow RO, et al. Recommendations for Noninvasive Evaluation of Native Valvular Regurgitation',
+    en: 'Zoghbi WA, Adams D, Bonow RO, et al. Recommendations for Noninvasive Evaluation of Native Valvular Regurgitation: A Report from the American Society of Echocardiography.',
     where: 'J Am Soc Echocardiogr, 2017, 30(4): 303–371',
     use: 'AR / MR / TR 的多参数分级与 PISA / VCW 口径',
     dl: [
@@ -5478,8 +5482,8 @@ const REFS = [
   {
     id: 'R45',
     zh: 'LVAD 与临时机械支持多模态影像建议（ASE 2024）',
-    en: 'Estep JD, Nicoara A, Cavalcante J, et al. Recommendations for Multimodality Imaging of Patients With Left Ventricular Assist Devices and Temporary Mechanical Support',
-    where: 'J Am Soc Echocardiogr, 2024, 37(8): 820–871',
+    en: 'Estep JD, Nicoara A, Cavalcante J, et al. Recommendations for Multimodality Imaging of Patients with Left Ventricular Assist Devices and Temporary Mechanical Support: An Update from the American Society of Echocardiography.',
+    where: 'J Am Soc Echocardiogr, 2024, 37(9): 820–871',
     use: '入 / 出血道、泵速优化与抽吸事件识别（替代 2015 版，见 R34）',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/PIIS0894731724003183_2024-LVAD.pdf' },
@@ -5488,8 +5492,8 @@ const REFS = [
   {
     id: 'R46',
     zh: '感染性心内膜炎 Duke-ISCVID 诊断标准（2023 更新）',
-    en: 'Fowler VG, Durack DT, Selton-Suty C, et al. The 2023 Duke-International Society for Cardiovascular Infectious Diseases Criteria for Infective Endocarditis: Updating the Modified Duke Criteria',
-    where: 'Clin Infect Dis, 2023, 77(8): 1097–1106（PMID 37138445）',
+    en: 'Fowler VG, Durack DT, Selton-Suty C, et al. The 2023 Duke-International Society for Cardiovascular Infectious Diseases Criteria for Infective Endocarditis: Updating the Modified Duke Criteria.',
+    where: 'Clin Infect Dis, 2023, 77(8): 1097–1106',
     use: 'ie 判读页的诊断标准表：超声 / 心脏 CT / PET/CT / 术中直视各自算哪一级',
     dl: [
       { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10681650/pdf/ciad271.pdf' },
@@ -5498,8 +5502,8 @@ const REFS = [
   {
     id: 'R47',
     zh: '超声造影剂临床应用 ASE 共识声明',
-    en: 'Mulvagh SL, Otto CM, Bierman SM, et al. ASE Consensus Statement on Clinical Application of Ultrasonic Contrast Agents in Echocardiography',
-    where: 'J Am Soc Echocardiogr, 2008, 20(11): 1321–1334',
+    en: 'Mulvagh SL, Rakowski H, Vannan MA, et al. American Society of Echocardiography Consensus Statement on the Clinical Applications of Ultrasonic Contrast Agents in Echocardiography.',
+    where: 'J Am Soc Echocardiogr, 2008, 21(11): 1179–1201',
     use: 'contrast-echo 判读页：制剂与适应证（LVO / EBD）、禁忌证、30 分钟监护与安全性数据',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/ASE-Consensus-Statement-on-Clinical-App-of-Ultrasonic-Contrast-Agents-in-Echo.pdf' },
@@ -5508,8 +5512,8 @@ const REFS = [
   {
     id: 'R48',
     zh: '心脏超声技师造影检查操作指南（2014 聚焦更新）',
-    en: 'Porter TR, Abdelmalek SA, Michell JR, et al. Guidelines for the Cardiac Sonographer in the Performance of Contrast Echocardiography: A Focused Update from the American Society of Echocardiography',
-    where: 'J Am Soc Echocardiogr, 2014, 27(7): 797–810',
+    en: 'Porter TR, Abdelmoneim S, Belcik JT, et al. Guidelines for the Cardiac Sonographer in the Performance of Contrast Echocardiography: A Focused Update from the American Society of Echocardiography.',
+    where: 'J Am Soc Echocardiogr, 2014, 27(8): 797–810',
     use: 'contrast-echo 判读页：MI 分级与机器设置、团注剂量、EBD 增敏三招、TEE 采集 10 个心动周期、图像欠佳的判定标准',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2014_Contrast-Sonography.pdf' },
@@ -5519,8 +5523,8 @@ const REFS = [
   {
     id: 'R49',
     zh: '超声引导下有创操作指南（TTE / TEE / ICE）',
-    en: 'Silvestry FE, Sawicki SX, Ball CA, et al. Echocardiography-Guided Interventions: Recommendations for the Use of Echocardiography in Guidance of Percutaneous and Surgical Invasive Procedures',
-    where: 'J Am Soc Echocardiogr, 2009, 22(3): 207–236',
+    en: 'Silvestry FE, Kerber RE, Brook MM, et al. Echocardiography-Guided Interventions.',
+    where: 'J Am Soc Echocardiogr, 2009, 22(3): 213–231',
     use: 'echo-interv 判读页：12 类操作 × TTE/TEE/ICE 对照表、心包穿刺成功��与并发症率、心肌活检取材部位、房间隔封堵与 ICE 风险清单',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2009_Echo-Guided-Interventions.pdf' },
@@ -5530,7 +5534,7 @@ const REFS = [
   {
     id: 'R50',
     zh: '心脏超声伪影的识别与规避指南（2026）',
-    en: 'Saric M, Sadeghpour A, Alizade L, et al. Recommendations for the Identification and Mitigation of Cardiac Ultrasound Artifacts: A Guideline from the American Society of Echocardiography',
+    en: 'Saric M, Sadeghpour A, Alizade L, et al. Recommendations for the Identification and Mitigation of Cardiac Ultrasound Artifacts.',
     where: 'J Am Soc Echocardiogr, 2026, 39(5): 435–475',
     use: 'artifact-guide 判读页：伪影分类框架（按被打破的机器假设）、混响与升主动脉 44–55% 发生率、镜像与侧瓣的误判陷阱、声影掩盖赘生物、多普勒增益与壁滤波、3D 与造影伪影',
     dl: [
@@ -5540,7 +5544,7 @@ const REFS = [
   {
     id: 'R51',
     zh: '瓣膜狭窄超声评估建议（EAE/ASE 2009 联合文件）',
-    en: 'Baumgartner H, Hung J, Bermejo J, et al. Echocardiographic Assessment of Valve Stenosis: EAE/ASE Recommendations for Clinical Practice',
+    en: 'Baumgartner H, Hung J, Bermejo J, et al. Echocardiographic Assessment of Valve Stenosis: EAE/ASE Recommendations for Clinical Practice.',
     where: 'J Am Soc Echocardiogr, 2009, 22(1): 1–23',
     use: 'asload 判读页：能量损失指数 ELI = (EOA×AAo)/(AAo−EOA)/BSA 的原始出处与 ≤0.6 cm²/m² 切点、每搏做功损失 SWL 与瓣-动脉阻抗 Zva 的定义',
     dl: [
@@ -5550,7 +5554,7 @@ const REFS = [
   {
     id: 'R52',
     zh: '瓣-动脉阻抗（Zva）预测无症状主动脉瓣狭窄的不良结局',
-    en: 'Hachicha Z, Dumesnil JG, Bogaty P, Pibarot P. Usefulness of the valvuloarterial impedance to predict adverse outcome in asymptomatic aortic stenosis',
+    en: 'Hachicha Z, Dumesnil JG, Bogaty P, Pibarot P. Usefulness of the Valvuloarterial Impedance to Predict Adverse Outcome in Asymptomatic Aortic Stenosis.',
     where: 'J Am Coll Cardiol, 2009, 54(11): 1003–1011',
     dl: [
       { t: '免费全文 PDF', u: 'https://www.sciencedirect.com/science/article/pii/S0735109709020592/pdf' },
@@ -5561,7 +5565,7 @@ const REFS = [
   {
     id: 'R53',
     zh: '妊娠期心脏超声评估立场声明（BSE / UK Maternal Cardiology Society）',
-    en: 'Curtis SL, Belham M, Bennett S, et al. Transthoracic Echocardiographic Assessment of the Heart in Pregnancy—a position statement on behalf of the British Society of Echocardiography and the United Kingdom Maternal Cardiology Society',
+    en: 'Curtis SL, Belham M, Bennett S, et al. Transthoracic Echocardiographic Assessment of the Heart in Pregnancy: A Position Statement on Behalf of the British Society of Echocardiography and the UK Maternal-Cardiac Working Group.',
     where: 'Echo Res Pract, 2023, 10(1): 7',
     use: 'pregnancy-echo 判读页：妊娠期生理性血流动力学改变（血容量 +40%、心排量 +30–50%、体循环阻力 −20–50%）、各类瓣膜病在孕期的超声重点、二尖瓣狭窄球囊成形可行性评估、机械瓣靠 DVI 序列对比',
     dl: [
@@ -5571,7 +5575,7 @@ const REFS = [
   {
     id: 'R54',
     zh: '心血管疾病与妊娠管理指南（2025 ESC）',
-    en: 'De Backer J, Haugaa KH, Hasselberg NE, et al. 2025 ESC Guidelines for the management of cardiovascular disease and pregnancy',
+    en: 'De Backer J, Haugaa KH, Hasselberg NE, et al. 2025 ESC Guidelines for the Management of Cardiovascular Disease and Pregnancy.',
     where: 'Eur Heart J, 2025, 46(43): 4462–4568',
     use: 'pregnancy-echo 判读页：mWHO 2.0 风险分级与随访强度（I 级 1–2 次 / II–III 级每季度 / IV 级劝阻妊娠）、妊娠 Heart Team 职责、围产期心肌病章节、主动脉病与妊娠',
     dl: [
@@ -5581,7 +5585,7 @@ const REFS = [
   {
     id: 'R55',
     zh: '应激性心肌病（Takotsubo）国际专家共识 Part I（ESC 2018）',
-    en: 'Ghadri JR, Wittstein IS, Prasad A, et al. International Expert Consensus Document on Takotsubo Syndrome (Part I): Clinical Characteristics, Diagnostic Criteria, and Pathophysiology',
+    en: 'Ghadri JR, Wittstein IS, Prasad A, et al. International Expert Consensus Document on Takotsubo Syndrome (Part I): Clinical Characteristics, Diagnostic Criteria, and Pathophysiology.',
     where: 'Eur Heart J, 2018, 39(22): 2032–2046',
     dl: [
       { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5991216/' },
@@ -5592,7 +5596,7 @@ const REFS = [
   {
     id: 'R56',
     zh: '睡眠呼吸暂停与心血管疾病（AHA/ACC 科学声明）',
-    en: 'Somers VK, White DP, Amin R, et al. Sleep Apnea and Cardiovascular Disease: An American Heart Association/American College of Cardiology Foundation Scientific Statement',
+    en: 'Somers VK, White DP, Amin R, et al. Sleep Apnea and Cardiovascular Disease: An American Heart Association/American College of Cardiology Foundation Scientific Statement.',
     where: 'Circulation, 2008, 118(10): 1080–1111',
     dl: [
       { t: '需订阅', u: 'https://doi.org/10.1161/circulationaha.107.189420' },
@@ -5603,7 +5607,7 @@ const REFS = [
   {
     id: 'R57',
     zh: '左室心肌做功的压力–应变环测量方法（EACVI 方法学文件 2021）',
-    en: 'Smiseth OA, Donal E, Penicka M, Sletten OJ. How to measure left ventricular myocardial work by pressure–strain loops',
+    en: 'Smiseth OA, Donal E, Penicka M, Sletten OJ. How to Measure Left Ventricular Myocardial Work by Pressure-Strain Loops.',
     where: 'Eur Heart J Cardiovasc Imaging, 2021, 22(3): 259–261',
     dl: [
       { t: '需订阅', u: 'https://doi.org/10.1093/ehjci/jeaa301' },
@@ -5614,7 +5618,7 @@ const REFS = [
   {
     id: 'R58',
     zh: '成人体外膜肺氧合（ECMO）期间的超声评估',
-    en: 'Platts DG, Sedgwick JF, Burstow DJ, Mullany DV, Fraser JF. The role of echocardiography in the management of patients supported by extracorporeal membrane oxygenation',
+    en: 'Platts DG, Sedgwick JF, Burstow DJ, et al. The Role of Echocardiography in the Management of Patients Supported by Extracorporeal Membrane Oxygenation.',
     where: 'J Am Soc Echocardiogr, 2012, 25(2): 131–141',
     dl: [
       { t: '需订阅', u: 'https://doi.org/10.1016/j.echo.2011.11.009' },
@@ -5627,8 +5631,8 @@ const REFS = [
   {
     id: 'R59',
     zh: '经导管三尖瓣环成形术中国专家共识（试行版）',
-    en: 'Chinese expert consensus on transcatheter tricuspid annuloplasty (draft)',
-    where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
+    en: '中国医师协会心血管内科医师分会结构性心脏病学组, 国家放射与治疗临床医学研究中心, 苏州工业园区东方华夏心血管健康研究院. 经导管三尖瓣环成形术中国专家共识（试行版）.',
+    where: '中国介入心脏病学杂志, 2025, 33(12): 675–686',
     use: '三尖瓣反流分级、TEE 经胃底短轴三叶定位、环成形 / 夹合术前超声评估要点',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/2512%2B%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%89%E5%B0%96%E7%93%A3%E7%8E%AF%E6%88%90%E5%BD%A2%E6%9C%AF%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86%EF%BC%88%E8%AF%95%E8%A1%8C%E7%89%88%EF%BC%89.pdf' },
@@ -5637,8 +5641,8 @@ const REFS = [
   {
     id: 'R60',
     zh: '浙江省经食管超声心动图实践应用专家共识（一）',
-    en: 'Zhejiang expert consensus on the clinical practice of transoesophageal echocardiography (part 1)',
-    where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
+    en: '浙江省超声医学工程学会心脏超声专业委员会. 浙江省经食管超声心动图实践应用专家共识（一）.',
+    where: '心电与循环, 2024, 43(1): 1–8',
     use: 'TEE 适应证、禁忌与 20 个标准切面的操作规范',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E6%B5%99%E6%B1%9F%E7%9C%81%E7%BB%8F%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%AE%9E%E8%B7%B5%E5%BA%94%E7%94%A8%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86(%E4%B8%80).pdf' },
@@ -5647,8 +5651,8 @@ const REFS = [
   {
     id: 'R61',
     zh: '浙江省经食管超声心动图实践应用专家共识（二）',
-    en: 'Zhejiang expert consensus on the clinical practice of transoesophageal echocardiography (part 2)',
-    where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
+    en: '浙江省超声医学工程学会心脏超声专业委员会. 浙江省经食管超声心动图实践应用专家共识（二）.',
+    where: '心电与循环, 2024, 43(2): 101–109',
     use: 'TEE 术中监测、并发症识别与围术期评估',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E6%B5%99%E6%B1%9F%E7%9C%81%E7%BB%8F%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%AE%9E%E8%B7%B5%E5%BA%94%E7%94%A8%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86(%E4%BA%8C).pdf' },
@@ -5657,8 +5661,8 @@ const REFS = [
   {
     id: 'R62',
     zh: '经导管主动脉瓣置换术临床路径（2024 全文版）',
-    en: 'Clinical pathway for transcatheter aortic valve replacement (2024, full text)',
-    where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
+    en: '中国医师协会心血管内科医师分会结构性心脏病学组, 亚太结构性心脏病俱乐部. 经导管主动脉瓣置换术临床路径（2024 全文版）.',
+    where: '中华心血管病杂志（网络版）, 2025, 8: e1000191',
     use: 'TAVR 术前超声 / CT 评估、瓣环与冠脉高度测量、术后随访节点',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E7%BD%AE%E6%8D%A2%E6%9C%AF%E4%B8%B4%E5%BA%8A%E8%B7%AF%E5%BE%84%EF%BC%882024%E5%85%A8%E6%96%87%E7%89%88%EF%BC%89.pdf' },
@@ -5667,8 +5671,8 @@ const REFS = [
   {
     id: 'R63',
     zh: '经导管二尖瓣介入修复技术临床实践指南',
-    en: 'Clinical practice guideline for transcatheter mitral valve repair',
-    where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
+    en: '国家结构性心脏病质量管理与控制中心专业委员会, 国家心血管病专家委员会结构性心脏病专业委员会. 经导管二尖瓣介入修复技术临床实践指南.',
+    where: '中国循环杂志, 2025, 40(12): 1148–1163',
     use: 'TEER 适应证与禁忌、TEE 引导流程、术后反流与压差评估',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%BA%8C%E5%B0%96%E7%93%A3%E4%BB%8B%E5%85%A5%E4%BF%AE%E5%A4%8D%E6%8A%80%E6%9C%AF%E4%B8%B4%E5%BA%8A%E5%AE%9E%E8%B7%B5%E6%8C%87%E5%8D%97.pdf' },
@@ -5677,8 +5681,8 @@ const REFS = [
   {
     id: 'R64',
     zh: '经胸超声心动图检查规范化应用中国专家共识',
-    en: 'Chinese expert consensus on standardized transthoracic echocardiography',
-    where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
+    en: '中华医学会超声医学分会超声心动图学组, 国家超声诊断专业医疗质量控制中心专家委员会. 经胸超声心动图检查规范化应用中国专家共识（2024 版）.',
+    where: '中华超声影像学杂志, 2024, 33(1): 1–13',
     use: 'TTE 测量切面、规范化操作与报告要素',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E8%83%B8%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%A3%80%E6%9F%A5%E8%A7%84%E8%8C%83%E5%8C%96%E5%BA%94%E7%94%A8%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6.pdf' },
@@ -5687,8 +5691,8 @@ const REFS = [
   {
     id: 'R65',
     zh: '肥厚型心肌病激发负荷超声心动图临床应用指南（2024 版）',
-    en: 'Clinical application of stress echocardiography in hypertrophic cardiomyopathy (2024)',
-    where: '中文指南原文 · 本站托管 PDF（点击下方直链下载）',
+    en: '中国超声心动图学会, 中华医学会超声医学分会, 国家超声诊断专业质控中心, 等. 肥厚型心肌病激发/负荷超声心动图临床应用指南（2024 版）.',
+    where: '中华超声影像学杂志, 2024, 33(8): 645–658',
     use: 'HCM 激发试验适应证、SAM 与隐匿性流出道梗阻的判读',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E8%82%A5%E5%8E%9A%E5%9E%8B%E5%BF%83%E8%82%8C%E7%97%85%E6%BF%80%E5%8F%91%E8%B4%9F%E8%8D%B7%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8%E6%8C%87%E5%8D%97(2024%E7%89%88).pdf' },
@@ -5697,7 +5701,7 @@ const REFS = [
   {
     id: 'R66',
     zh: '法布雷病心脏受累（JACC 综述）',
-    en: 'Pieroni M, Moon JC, Arbustini E, et al. Cardiac Involvement in Fabry Disease: JACC Review Topic of the Week',
+    en: 'Pieroni M, Moon JC, Arbustini E, et al. Cardiac Involvement in Fabry Disease: JACC Review Topic of the Week.',
     where: 'J Am Coll Cardiol, 2021, 77(7): 922–936',
     dl: [
       { t: '免费页面', u: 'https://doi.org/10.1016/j.jacc.2020.12.024' },
@@ -5708,7 +5712,7 @@ const REFS = [
   {
     id: 'R67',
     zh: '致心律失常性心肌病诊断标准（Padua 标准 2020）',
-    en: 'Corrado D, Perazzolo Marra M, Zorzi A, et al. Diagnosis of arrhythmogenic cardiomyopathy: The Padua criteria',
+    en: 'Corrado D, Perazzolo Marra M, Zorzi A, et al. Diagnosis of Arrhythmogenic Cardiomyopathy: The Padua Criteria.',
     where: 'Int J Cardiol, 2020, 319: 106–114',
     dl: [
       { t: '免费全文 PDF', u: 'https://www.internationaljournalofcardiology.com/article/S0167527320332939/pdf' },
@@ -5719,8 +5723,8 @@ const REFS = [
   {
     id: 'R68',
     zh: '中国肺动脉高压诊断与治疗指南（2021 版）',
-    en: 'Chinese guidelines for the diagnosis and treatment of pulmonary hypertension (2021)',
-    where: '中华医学杂志, 2021 · 中华医学知识库免费全文（点下方直链在线看）',
+    en: '中华医学会呼吸病学分会肺栓塞与肺血管病学组, 中国医师协会呼吸医师分会肺栓塞与肺血管病工作委员会, 全国肺栓塞与肺血管病防治协作组, 等. 中国肺动脉高压诊断与治疗指南（2021 版）.',
+    where: '中华医学杂志, 2021, 101(1): 11–51',
     use: 'PH 的超声可能性三档分层（TRV + 支持指标）、右心功能与预后、病因分类的超声线索',
     dl: [
       { t: '中文全文', u: 'https://video.yiigle.com/uploads/guide_html/%E4%B8%AD%E5%9B%BD%E8%82%BA%E5%8A%A8%E8%84%89%E9%AB%98%E5%8E%8B%E8%AF%8A%E6%96%AD%E4%B8%8E%E6%B2%BB%E7%96%97%E6%8C%87%E5%8D%97%EF%BC%882021%E7%89%88%EF%BC%89.html' },
@@ -5729,7 +5733,7 @@ const REFS = [
   {
     id: 'R69',
     zh: '急性 ST 段抬高型心肌梗死诊断和治疗指南（2019）',
-    en: 'Chinese guideline for the diagnosis and treatment of patients with acute ST-elevation myocardial infarction (2019)',
+    en: '中华医学会心血管病学分会, 中华心血管病杂志编辑委员会. 急性 ST 段抬高型心肌梗死诊断和治疗指南（2019）.',
     where: '中华心血管病杂志, 2019, 47(10): 766–783',
     dl: [
       { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/1166130' },
@@ -5740,7 +5744,7 @@ const REFS = [
   {
     id: 'R70',
     zh: '成人暴发性心肌炎诊断与治疗中国专家共识',
-    en: 'Chinese expert consensus on the diagnosis and treatment of adult fulminant myocarditis',
+    en: '中华医学会心血管病学分会精准医学学组, 中华心血管病杂志编辑委员会, 成人暴发性心肌炎工作组. 成人暴发性心肌炎诊断与治疗中国专家共识.',
     where: '中华心血管病杂志, 2017, 45(9): 742–752',
     dl: [
       { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/1006823' },
@@ -5751,8 +5755,8 @@ const REFS = [
   {
     id: 'R71',
     zh: '心力衰竭早期筛查与一级预防中国专家共识（2024 年）',
-    en: 'Chinese expert consensus on early screening and primary prevention of heart failure (2024)',
-    where: '中华医学知识库免费全文（点下方直链在线看）',
+    en: '中国老年医学学会心电与心功能分会, 中国心衰中心联盟专家委员会, 中华医学会《中华全科医师杂志》编辑委员会. 心力衰竭早期筛查与一级预防中国专家共识（2024 年）.',
+    where: '中华全科医师杂志, 2024, 23(1): 7–18',
     use: '心衰 A / B 阶段的超声筛查指标、瓣膜病与心肌病家系的随访要点',
     dl: [
       { t: '中文全文', u: 'https://gpedu.yiigle.com/uploads/guide_html/6020.html' },
@@ -5761,8 +5765,8 @@ const REFS = [
   {
     id: 'R72',
     zh: '终末期左心疾病相关肺高血压中国专家共识',
-    en: 'Chinese expert consensus on pulmonary hypertension associated with end-stage left heart disease',
-    where: '中华医学知识库免费全文（点下方直链在线看）',
+    en: '中国医师协会心血管外科分会重症专业委员会. 终末期左心疾病相关肺高血压中国专家共识.',
+    where: '中华胸心血管外科杂志, 2019, 35(12): 705–716',
     use: 'PH-LHD 的超声一线评估（ⅠC）、容量负荷与右心充盈压判断、移植 / LVAD 前评估',
     dl: [
       { t: '中文全文', u: 'https://medphy.yiigle.com/uploads/guide_html/%E7%BB%88%E6%9C%AB%E6%9C%9F%E5%B7%A6%E5%BF%83%E7%96%BE%E7%97%85%E7%9B%B8%E5%85%B3%E8%82%BA%E9%AB%98%E8%A1%80%E5%8E%8B%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86.html' },
@@ -5771,8 +5775,8 @@ const REFS = [
   {
     id: 'R73',
     zh: '脓毒症与脓毒性休克管理国际指南（2021 SSC）',
-    en: 'Evans L, Rhodes A, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021',
-    where: 'Crit Care Med, 2021, 49(11): e1063–e1143 / Intensive Care Med, 2021, 47(11): 1181–1247',
+    en: 'Evans L, Rhodes A, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021.',
+    where: 'Crit Care Med, 2021, 49(11): e1063–e1143',
     dl: [
       { t: '需订阅', u: 'https://doi.org/10.1097/CCM.0000000000005337' },
     ],
@@ -5782,7 +5786,7 @@ const REFS = [
   {
     id: 'R74',
     zh: '心脏结节病诊断与管理专家共识（HRS 2014）',
-    en: 'Birnie DH, Sauer WH, Bogun F, et al. HRS expert consensus statement on the diagnosis and management of arrhythmias associated with cardiac sarcoidosis',
+    en: 'Birnie DH, Sauer WH, Bogun F, et al. HRS Expert Consensus Statement on the Diagnosis and Management of Arrhythmias Associated with Cardiac Sarcoidosis.',
     where: 'Heart Rhythm, 2014, 11(7): 1304–1323',
     dl: [
       { t: '需订阅', u: 'https://doi.org/10.1016/j.hrthm.2014.03.043' },
@@ -5793,8 +5797,8 @@ const REFS = [
   {
     id: 'R75',
     zh: '中国成人心脏瓣膜病超声心动图规范化检查专家共识',
-    en: 'Expert consensus for standard assessment by echocardiography in Chinese adults with valvular heart disease',
-    where: '中华医学会心血管病学分会心血管影像学组, 北京医学会心血管病学会影像学组. 中国成人心脏瓣膜病超声心动图规范化检查专家共识. 中国循环杂志, 2021, 36(2): 109–125. DOI: 10.3969/j.issn.1000-3614.2021.02.002',
+    en: '中华医学会心血管病学分会心血管影像学组, 北京医学会心血管病学会影像学组. 中国成人心脏瓣膜病超声心动图规范化检查专家共识.',
+    where: '中国循环杂志, 2021, 36(2): 109–125',
     dl: [
       { t: '中文 PDF', u: 'https://www.ddzxhospital.com/library/up_f/file/20260526/202605261605484836.pdf' },
     ],
@@ -5803,8 +5807,8 @@ const REFS = [
   {
     id: 'R76',
     zh: '儿童 M 型超声心动图正常值（2036 例，1 天–18 岁）',
-    en: 'Normal values of M mode echocardiographic measurements of more than 2000 healthy infants and children in central Europe',
-    where: 'Kampmann C, Wiethoff CM, Wenzel A, et al. Heart, 2000, 83(6): 667–672. DOI: 10.1136/heart.83.6.667',
+    en: 'Kampmann C, Wiethoff CM, Wenzel A, et al. Normal Values of M Mode Echocardiographic Measurements of More Than 2000 Healthy Infants and Children in Central Europe.',
+    where: 'Heart, 2000, 83(6): 667–672',
     dl: [
       { t: 'PMC 全文', u: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1760862/' },
     ],
@@ -5813,8 +5817,8 @@ const REFS = [
   {
     id: 'R77',
     zh: '中国汉族健康儿童左心结构超声心动图 Z 值回归方程',
-    en: 'Regression equations for calculation of z scores for echocardiographic measurements of left heart structures in healthy Han Chinese children',
-    where: 'Wang SS, Hong WJ, Zhang YQ, et al. J Clin Ultrasound, 2018, 46(5): 328-333. DOI: 10.1002/jcu.22579',
+    en: 'Wang SS, Hong WJ, Zhang YQ, et al. Regression Equations for Calculation of z Scores for Echocardiographic Measurements of Left Heart Structures in Healthy Han Chinese Children.',
+    where: 'J Clin Ultrasound, 2018, 46(5): 328–333',
     dl: [
       { t: '需订阅', u: 'https://doi.org/10.1002/jcu.22579' },
     ],
@@ -5823,8 +5827,8 @@ const REFS = [
   {
     id: 'R78',
     zh: '中国汉族健康儿童右心结构超声心动图 Z 值回归方程',
-    en: 'Regression equations for calculation of z scores for echocardiographic measurements of right heart structures in healthy Han Chinese children',
-    where: 'Wang SS, Zhang YQ, Chen SB, et al. J Clin Ultrasound, 2017, 45(5): 293-303. DOI: 10.1002/jcu.22436',
+    en: 'Wang SS, Zhang YQ, Chen SB, et al. Regression Equations for Calculation of z Scores for Echocardiographic Measurements of Right Heart Structures in Healthy Han Chinese Children.',
+    where: 'J Clin Ultrasound, 2017, 45(5): 293–303',
     dl: [
       { t: '需订阅', u: 'https://doi.org/10.1002/jcu.22436' },
     ],

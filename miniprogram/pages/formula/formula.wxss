@@ -205,7 +205,7 @@
 
 .ref-item__where {
   font-size: 21rpx;
-  color: #8a9099;
+  color: #5d6673;
   margin-top: 2rpx;
   line-height: 1.5;
 }
