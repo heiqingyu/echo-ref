@@ -406,7 +406,7 @@
   };
 
   const STD_SOURCE = {
-    CN: '中华医学会超声医学分会《中国成年人超声心动图检查测量指南》（2016，男 678 / 女 716，37 项 95% 参考范围）',
+    CN: '中华医学会超声医学分会《中国成年人超声心动图检查测量指南》（2016，男 678 / 女 716，37 项 95% 参考范围；LVM/身高^2.7、内径/身高两行为派生值）',
     ASE: 'ASE/EACVI 2015《Recommendations for Cardiac Chamber Quantification in Adults》',
   };
 

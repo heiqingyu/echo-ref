@@ -58,6 +58,8 @@ const REFERENCE = {
      * ★ 数值直接取自该指南表 2～表 5 的「总人群」列（男 678 / 女 716，95% 参考范围）。
      *   指南另给 6 个年龄段各自的界限，本表未展开 —— 展开会让每个指标多出 12 个数，
      *   界面放不下，故统一取多年龄段合并值；年龄偏移在「正常值」说明里提示。
+     * ★ IVSLd/IVSLs（左室下侧壁厚度）原表并无此参数，数值曾是 LVPWd/LVPWs 的副本，
+     *   1.7.2 已删；换成原表确有的 LVPWs（后壁收缩末期）与 LAV（左房容积）。
      * ★ 男女差异是真实的，不要拿一个性别去套另一个：女 LVEDD 上限 49.7 mm，男 54.0 mm；
      *   女 LVM 上限 157.5 g，男 194.0 g。旧版把女性左心各项填成了接近男性的数值，已按原表校正。
      */
@@ -67,6 +69,7 @@ const REFERENCE = {
       'LVOT':     [13.6,  25.0],
       'IVSd':     [ 6.4,  11.4],
       'LVPWd':    [ 6.3,  11.1],
+      'LVPWs':    [ 8.8,  16.2],
       'LVEDD':    [38.4,  54.0],
       'LVESD':    [22.6,  38.6],
       'LVEDV':    [45.9, 127.5],
@@ -84,9 +87,8 @@ const REFERENCE = {
       'RVOT':     [15.0,  31.8],
       // ★ 以下 17 项来自同指南表 2～表 5（单位 mm）
       'LA-t':     [26.7,  44.7],
+      'LAV':      [15.3,  60.7],
       'IVSs':     [ 9.0,  16.0],
-      'IVSLd':    [ 6.3,  11.1],
-      'IVSLs':    [ 8.8,  16.2],
       'RVAW':     [ 2.1,   6.1],
       'RVFW':     [ 2.2,   6.6],
       'RV-tb':    [22.2,  42.2],
@@ -107,6 +109,7 @@ const REFERENCE = {
       'LVOT':     [12.0,  23.0],
       'IVSd':     [ 5.6,  10.6],
       'LVPWd':    [ 5.5,  10.3],
+      'LVPWs':    [ 8.2,  15.2],
       'LVEDD':    [36.7,  49.7],
       'LVESD':    [20.8,  35.4],
       'LVEDV':    [37.7, 106.7],
@@ -124,9 +127,8 @@ const REFERENCE = {
       'RVOT':     [14.6,  29.8],
       // ★ 与男性同源
       'LA-t':     [26.2,  43.0],
+      'LAV':      [13.8,  55.8],
       'IVSs':     [ 8.0,  15.0],
-      'IVSLd':    [ 5.5,  10.3],
-      'IVSLs':    [ 8.2,  15.2],
       'RVAW':     [ 2.2,   5.8],
       'RVFW':     [ 2.2,   6.2],
       'RV-tb':    [19.6,  39.2],
@@ -266,8 +268,7 @@ const PARAM_META = {
   // ── 2016 中国指南新增参数 ──
   'LA-t':     { name: '左房横径',               unit: 'mm',    dec: 1 },
   'IVSs':     { name: '室间隔收缩末期厚度',      unit: 'mm',    dec: 1 },
-  'IVSLd':    { name: '左室下侧壁舒张末期厚度',   unit: 'mm',    dec: 1 },
-  'IVSLs':    { name: '左室下侧壁收缩末期厚度',   unit: 'mm',    dec: 1 },
+  'LVPWs':    { name: '左室后壁收缩末期厚度',     unit: 'mm',    dec: 1 },
   'RVAW':     { name: '右室前壁厚度',           unit: 'mm',    dec: 1 },
   'RVFW':     { name: '右室游离壁厚度',         unit: 'mm',    dec: 1 },
   'RV-tb':    { name: '右室基底横径',           unit: 'mm',    dec: 1 },
@@ -286,11 +287,10 @@ const PARAM_META = {
 /** CN 标准下要展示的参数字段（按临床分组顺序，37 项） */
 const CN_FIELDS = [
   // 左心房
-  'LA-ap', 'LA-t', 'LA-l',
+  'LA-ap', 'LA-t', 'LA-l', 'LAV',
   // 左心室结构与功能
-  'LVOT', 'IVSd', 'IVSs', 'LVPWd',
+  'LVOT', 'IVSd', 'IVSs', 'LVPWd', 'LVPWs',
   'LVEDD', 'LVESD', 'LVEDV', 'LVESV', 'LVEF',
-  'IVSLd', 'IVSLs',
   // 左室质量与指数
   'LVM', 'LVM/BSA', 'LVM/H2.7', 'LVEDD/H', 'LVRWT',
   // 右心
