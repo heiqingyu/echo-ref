@@ -406,7 +406,7 @@
   };
 
   const STD_SOURCE = {
-    CN: '中华医学会超声医学分会《中国成年人超声心动图检查测量指南》（2016，男 678 / 女 716，37 项 95% 参考范围；LVM/身高^2.7、内径/身高两行为派生值）',
+    CN: '中华医学会超声医学分会《中国成年人超声心动图检查测量指南》（2016，男 678 / 女 716，表 2～表 9 共 64 项 95% 参考范围；LVM/身高^2.7、内径/身高两行为派生值）',
     ASE: 'ASE/EACVI 2015《Recommendations for Cardiac Chamber Quantification in Adults》',
   };
 
@@ -450,6 +450,10 @@
     }
 
     rows.forEach(function (r) {
+      // 分组标题（v1.7.3：64 项按 9 个临床分组展示，只标每组第一行）
+      if (r.groupTitle) {
+        html += '<div class="ref-group">' + esc(r.groupTitle) + '</div>';
+      }
       const nameCell = '<div class="list-row__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
         (r.hasDerived
           ? '<span class="derived">按当前 BSA 折算 ' + esc(r.derivedText) + ' ' + esc(r.derivedUnit) + '</span>'

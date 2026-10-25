@@ -334,6 +334,19 @@ page {
   text-align: right;
 }
 
+/* 参考值分组标题（v1.7.3：64 项按 9 个临床分组展示） */
+.ref-group {
+  padding: 28rpx 0 10rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+  color: var(--brand);
+  border-bottom: 1rpx solid #e3e6ea;
+}
+
+.ref-group:first-child {
+  padding-top: 8rpx;
+}
+
 /* 标签 */
 .tag {
   display: inline-block;

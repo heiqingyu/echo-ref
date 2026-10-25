@@ -491,7 +491,7 @@ const dict = core.measurementsToRefDict({
   bsa: profile.bsa, height: profile.height,
 });
 const rows = core.buildReferenceList(profile.sex, dict, 'CN');
-(rows.length === 37) ? ok('reference: CN 列表 37 项') : bad('reference: CN 列表 ' + rows.length + ' 项');
+(rows.length === 64) ? ok('reference: CN 列表 64 项') : bad('reference: CN 列表 ' + rows.length + ' 项');
 const efRow = rows.find(r => r.key === 'LVEF');
 (efRow && efRow.status === 'normal') ? ok('reference: LVEF 65.4 → 正常') : bad('reference: LVEF 判定异常');
 const lvmRow = rows.find(r => r.key === 'LVM');

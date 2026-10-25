@@ -57,7 +57,7 @@ for (const r of rows.slice(0, 8)) {
   const u = r.unit ? r.unit.padEnd(5, ' ') : '     ';
   console.log(`  ${r.name.padEnd(14, '　')} ${r.value.padStart(7)}${u} 参考 ${r.range.padEnd(13)} [${r.statusText}]`);
 }
-check('列表项数 = 37（2016 指南扩充后）', rows.length, 37, 0);
+check('列表项数 = 64（2016 指南表 2～表 9 全收录）', rows.length, 64, 0);
 check('LA-ap 42 偏高', rows.find(r => r.key === 'LA-ap').status === 'high' ? 1 : 0, 1, 0);
 check('IVSd 12 偏高', rows.find(r => r.key === 'IVSd').status === 'high' ? 1 : 0, 1, 0);
 check('LVEF 62 正常', rows.find(r => r.key === 'LVEF').status === 'normal' ? 1 : 0, 1, 0);
@@ -189,7 +189,7 @@ if (cnLvm) {
   check('CN 标准的 LVM/BSA 未联动', 0, 1, 0);
 }
 const empty = C.buildReferenceList('female', {}, 'CN');
-check('空值项数 = 37', empty.length, 37, 0);
+check('空值项数 = 64', empty.length, 64, 0);
 check('全部为 none 状态', empty.every(r => r.status === 'none') ? 1 : 0, 1, 0);
 
 console.log('\n=== 10b. BMI（WS/T 428-2013）===');
@@ -352,7 +352,7 @@ console.log('\n=== 21. 合并后首页（EF 计算 + 参考值同页）===');
   check('首屏默认值即出 EF 结果', pg.data.hasResult ? 1 : 0, 1, 0);
   check('EF = 65.4%', parseFloat(pg.data.r.EF), 65.4, 0.05);
   check('参考值列表切到实测值对照', pg.data.hasMeasurements ? 1 : 0, 1, 0);
-  check('成人 CN 参考值 37 行', pg.data.rows.length, 37, 0);
+  check('成人 CN 参考值 64 行', pg.data.rows.length, 64, 0);
 
   const appJsonRaw = fsW.readFileSync(
     pathW.join(__dirname, 'miniprogram', 'app.json'), 'utf8');

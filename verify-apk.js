@@ -431,10 +431,10 @@ check('HTML 含儿童收缩功能卡 pdFuncCard', /id="pdFuncCard"/.test(html) ?
 check('app.js 含儿童 EF 推算逻辑', /computeLVFunction\(measured\.LVEDD, measured\.LVESD\)/.test(appJs) ? 1 : 0, 1, 0);
 check('app.js 含推算容积代入 Z 值', /zMeasured\.LVEDV === undefined\) zMeasured\.LVEDV = func\.EDV/.test(appJs) ? 1 : 0, 1, 0);
 
-// 引擎数据同步：CN 37 项 / 新参数抽查（与小程序引擎逐字段比对）
+// 引擎数据同步：CN 64 项 / 新参数抽查（与小程序引擎逐字段比对）
 const cnM = ApkCore.buildReferenceList('male', { ROOT: 30, MPA: 28, RVAW: 7 }, 'CN');
 const cnMmp = MpCore.buildReferenceList('male', { ROOT: 30, MPA: 28, RVAW: 7 }, 'CN');
-check('APK CN 列表 37 项（与小程序一致）', cnM.length, MpCore.buildReferenceList('male', {}, 'CN').length, 0);
+check('APK CN 列表 64 项（与小程序一致）', cnM.length, MpCore.buildReferenceList('male', {}, 'CN').length, 0);
 check('APK ROOT 30 判定一致', cnM.find(function (r) { return r.key === 'ROOT'; }).status,
   cnMmp.find(function (r) { return r.key === 'ROOT'; }).status, 0);
 check('APK MPA 28 判定一致', cnM.find(function (r) { return r.key === 'MPA'; }).status,

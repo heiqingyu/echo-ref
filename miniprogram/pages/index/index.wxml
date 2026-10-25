@@ -194,19 +194,22 @@
         <text class="list-row__range" style="font-weight:600">参考范围</text>
         <text class="list-row__tag" style="font-weight:600;color:#6b7280">判定</text>
       </view>
-      <view wx:for="{{rows}}" wx:key="key" class="list-row">
-        <view class="list-row__name">
-          {{item.name}}（{{item.key}}）
-          <view wx:if="{{item.hasDerived}}" class="derived">
-            按当前 BSA 折算 {{item.derivedText}} {{item.derivedUnit}}
+      <block wx:for="{{rows}}" wx:key="key">
+        <view wx:if="{{item.groupTitle}}" class="ref-group">{{item.groupTitle}}</view>
+        <view class="list-row">
+          <view class="list-row__name">
+            {{item.name}}（{{item.key}}）
+            <view wx:if="{{item.hasDerived}}" class="derived">
+              按当前 BSA 折算 {{item.derivedText}} {{item.derivedUnit}}
+            </view>
+          </view>
+          <text class="list-row__val">{{item.value}}{{item.unit}}</text>
+          <text class="list-row__range">{{item.range}}</text>
+          <view class="list-row__tag">
+            <text class="tag {{item.statusCls}}">{{item.statusText}}</text>
           </view>
         </view>
-        <text class="list-row__val">{{item.value}}{{item.unit}}</text>
-        <text class="list-row__range">{{item.range}}</text>
-        <view class="list-row__tag">
-          <text class="tag {{item.statusCls}}">{{item.statusText}}</text>
-        </view>
-      </view>
+      </block>
     </view>
 
     <!-- 纯参考值表 -->
@@ -217,15 +220,18 @@
         <text class="list-row__name" style="font-weight:600">参数</text>
         <text class="list-row__range" style="flex:1.6;font-weight:600;color:#6b7280">参考范围</text>
       </view>
-      <view wx:for="{{rows}}" wx:key="key" class="list-row">
-        <view class="list-row__name">
-          {{item.name}}（{{item.key}}）
-          <view wx:if="{{item.hasDerived}}" class="derived">
-            按当前 BSA 折算 {{item.derivedText}} {{item.derivedUnit}}
+      <block wx:for="{{rows}}" wx:key="key">
+        <view wx:if="{{item.groupTitle}}" class="ref-group">{{item.groupTitle}}</view>
+        <view class="list-row">
+          <view class="list-row__name">
+            {{item.name}}（{{item.key}}）
+            <view wx:if="{{item.hasDerived}}" class="derived">
+              按当前 BSA 折算 {{item.derivedText}} {{item.derivedUnit}}
+            </view>
           </view>
+          <text class="list-row__range" style="flex:1.6">{{item.range}} {{item.unit}}</text>
         </view>
-        <text class="list-row__range" style="flex:1.6">{{item.range}} {{item.unit}}</text>
-      </view>
+      </block>
     </view>
 
     <view class="note">参考值来源：{{sourceText}}</view>

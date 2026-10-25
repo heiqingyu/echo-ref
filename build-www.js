@@ -239,7 +239,7 @@ const FAVICON_DATA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMA
 const PUBNOTE_HTML = `<div class="pubnote">
     <b>关于本页</b><br>
     本页为个人整理的心脏超声（TTE）参考速查工具，四个页签：<b>EF·参考值</b>（M 型 / 二维 EF 计算、
-    成人正常参考值：中国 2016 指南 37 项 / ASE-EACVI 2015）、<b>切面学习</b>（ASE 17 节段模型与冠脉供血、
+    成人正常参考值：中国 2016 指南 64 项 / ASE-EACVI 2015）、<b>切面学习</b>（ASE 17 节段模型与冠脉供血、
     标准切面教学视频、TEE 在线演示，以及切面速查与瓣膜 TEE 切面图谱）、
     <b>儿童 Z 值</b>（PHN 数据库）、<b>公式集</b>（多个计算器与评估清单，按主题分组，
     含二尖瓣狭窄 PMBV 适合度流程、人工瓣、超声造影、危急值清单与报告标准化）。

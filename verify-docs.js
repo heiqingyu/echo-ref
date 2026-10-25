@@ -185,7 +185,7 @@ function check(name, ok, detail) {
   const refAbbr = await c.evalJs(
     '[...document.querySelectorAll("#refList .list-row__n")].filter(function(e){' +
     'return /\uff08[A-Za-z]/.test(e.textContent);}).length');
-  check('参考值行均带英文缩写', refAbbr === 37, refAbbr + ' / 37 行');
+  check('参考值行均带英文缩写', refAbbr === 64, refAbbr + ' / 64 行');
   const refSample = await c.evalJs(
     '[...document.querySelectorAll("#refList .list-row__n")]' +
     '.map(function(e){return e.textContent;}).join(" ｜ ")');
