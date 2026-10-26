@@ -1,5 +1,6 @@
 # ══════════ 构建产物 / 临时文件 ══════════
 _shot_fix/
+_cdp_sz/
 .debug-*.png
 .debug-*.html
 .debug-*.js

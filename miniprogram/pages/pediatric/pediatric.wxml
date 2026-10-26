@@ -116,7 +116,7 @@
       <view class="card__title">本页覆盖哪些结构</view>
       <view class="card__desc">
         左心室（内径 / 壁厚 / 容积 / 质量 / 长径 / 面积）· 左房 · 右房 · 右室内径 · 右室前壁 ·
-        主动脉（瓣环 → 峡部）· 肺动脉 · 冠状动脉 · 二尖瓣环与三尖瓣环
+        主动脉（瓣环 → 峡部）· 肺动脉 · 冠状动脉（PHN + 深圳 SZ 法并列）· 二尖瓣环与三尖瓣环
       </view>
       <view class="note">
         <text style="font-weight:600">三套参照，各管一段，不要混用</text>{{'\n'}}
@@ -125,6 +125,14 @@
         ③ 左房前后径、右室前后径、右室前壁厚度：Kampmann 2000（中欧白人 n=2036，M 型）{{'\n'}}
         三套的人群、测量方法与 BSA 公式都不同，同一患儿只取实际测量所用切面对应的一套判读。
       </view>
+      <view class="note">
+        <text style="font-weight:600">冠脉两行 = 两套人群、两套方程</text>{{'\n'}}
+        上行 PHN（北美多中心，幂律模型），下行深圳 SZ 法（中国儿童多中心，ln Y = a + b·ln BSA，n = 842，
+        1 月龄–17 岁）。同一测值常差 0.7–1.1 个 Z（如 LAD 2.6 mm、BSA 1.0：PHN +2.06「轻度增大」/
+        SZ +1.25「正常」），两行不可互比、不可混用，以报告采用的那一套判读。
+        SZ 队列不含 0–28 天新生儿，BSA &lt; 0.23 时该行标「外推」。
+      </view>
+
       <view class="note">
         <text style="font-weight:600">同一房室出现两行，是测法不同</text>{{'\n'}}
         左房左右径（心尖四腔）与左房前后径（M 型）数值接近；右室流入道内径（心尖四腔，约 23 mm）
@@ -186,6 +194,8 @@
         （{{summary.worstStatusText}}）
       </view>
 
+      <view wx:if="{{summary.discordText}}" class="hint">{{summary.discordText}}</view>
+
       <view class="peds-key">
         <view class="peds-key__item peds-key__item--n">|Z| ≤ 2{{'\n'}}正常</view>
         <view class="peds-key__item peds-key__item--m">2 &lt; |Z| ≤ 3{{'\n'}}轻度异常</view>
@@ -212,21 +222,38 @@
         <view class="peds-group">{{item.title}}</view>
         <view wx:if="{{item.note}}" class="peds-note">{{item.note}}</view>
 
-        <view wx:for="{{item.rows}}" wx:for-item="row" wx:key="key"
-              class="z-row {{row.hasValue ? '' : 'z-row--none'}}">
-          <view class="z-row__name">
-            {{row.name}}（{{row.key}}）
-            <text class="z-row__name-sub">均值 {{row.subText}}</text>
+        <block wx:for="{{item.rows}}" wx:for-item="row" wx:key="key">
+          <view class="z-row {{row.hasValue ? '' : 'z-row--none'}}">
+            <view class="z-row__name">
+              {{row.name}}（{{row.key}}）
+              <text class="z-row__name-sub">均值 {{row.subText}}</text>
+            </view>
+            <text class="z-row__val">{{row.value}}{{row.hasValue ? row.unit : ''}}</text>
+            <text class="z-row__range">{{row.rangeText}}</text>
+            <view class="z-row__tag">
+              <block wx:if="{{row.hasValue}}">
+                <text class="tag {{row.statusCls}}">{{row.zText}}</text>
+              </block>
+              <text wx:else class="tag tag--none">—</text>
+            </view>
           </view>
-          <text class="z-row__val">{{row.value}}{{row.hasValue ? row.unit : ''}}</text>
-          <text class="z-row__range">{{row.rangeText}}</text>
-          <view class="z-row__tag">
-            <block wx:if="{{row.hasValue}}">
-              <text class="tag {{row.statusCls}}">{{row.zText}}</text>
-            </block>
-            <text wx:else class="tag tag--none">—</text>
+
+          <!-- ★ v1.8.0：冠脉并列深圳 SZ 法（同一测值、第二套中国方程） -->
+          <view wx:if="{{row.alt}}" class="z-row z-row--alt {{row.hasValue ? '' : 'z-row--none'}}">
+            <view class="z-row__name">
+              SZ 法 · 深圳<text wx:if="{{row.alt.extrap}}" class="z-row__ext">外推</text>
+              <text class="z-row__name-sub">均值 {{row.alt.meanText}}</text>
+            </view>
+            <text class="z-row__val">{{row.hasValue ? row.value + row.unit : '—'}}</text>
+            <text class="z-row__range">{{row.alt.rangeText}}</text>
+            <view class="z-row__tag">
+              <block wx:if="{{row.hasValue}}">
+                <text class="tag {{row.alt.statusCls}}">{{row.alt.zText}}</text>
+              </block>
+              <text wx:else class="tag tag--none">—</text>
+            </view>
           </view>
-        </view>
+        </block>
       </block>
     </view>
 
@@ -243,15 +270,26 @@
       <block wx:if="{{rangesOpen}}">
         <block wx:for="{{grouped}}" wx:key="title">
           <view class="peds-group">{{item.title}}</view>
-          <view wx:for="{{item.rows}}" wx:for-item="row" wx:key="key" class="z-row">
-            <view class="z-row__name">
-              {{row.name}}（{{row.key}}）
-              <text class="z-row__name-sub">{{row.alphaText}}</text>
+          <block wx:for="{{item.rows}}" wx:for-item="row" wx:key="key">
+            <view class="z-row">
+              <view class="z-row__name">
+                {{row.name}}（{{row.key}}）
+                <text class="z-row__name-sub">{{row.alphaText}}</text>
+              </view>
+              <view style="flex:2;text-align:right">
+                <text class="z-row__range" style="display:block">±3SD　{{row.range3Text}} {{row.unit}}</text>
+              </view>
             </view>
-            <view style="flex:2;text-align:right">
-              <text class="z-row__range" style="display:block">±3SD　{{row.range3Text}} {{row.unit}}</text>
+            <view wx:if="{{row.alt}}" class="z-row z-row--alt">
+              <view class="z-row__name">
+                SZ 法 · 深圳
+                <text class="z-row__name-sub">对数尺度 · {{row.alt.r2Text}}</text>
+              </view>
+              <view style="flex:2;text-align:right">
+                <text class="z-row__range" style="display:block">±3SD　{{row.alt.range3Text}} {{row.unit}}</text>
+              </view>
             </view>
-          </view>
+          </block>
         </block>
       </block>
     </view>
@@ -292,6 +330,17 @@
         0–18 岁健康非肥胖儿童，19 个中心。{{'\n'}}
         Lopez L, Colan S, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979.（参考文献 R8）{{'\n'}}
         该研究表明 Z 值不受年龄、性别、种族临床显著影响，故本页不分性别。
+      </view>
+      <view class="note note--strong">
+        <text style="font-weight:600">冠脉的第二套：深圳 SZ 法（中国儿童）</text>{{'\n'}}
+        Fan SM, Xia B, Liu WX, et al. Establishing an appropriate Z score regression equation for Chinese
+        pediatric coronary artery echocardiography: a multicenter prospective cohort study.
+        BMC Pediatr. 2021;21:429. DOI 10.1186/s12887-021-02877-9（n = 842，6 省 9 中心，参考文献 R79）{{'\n'}}
+        Z = [ ln(实测值) − ( a + b·ln BSA ) ] ÷ RSE。系数：LCA a 1.0084 / b 0.3740 / RSE 0.115；
+        LAD a 0.8063 / b 0.3697 / RSE 0.119；RCA a 0.8040 / b 0.3291 / RSE 0.150（Haycock BSA）。{{'\n'}}
+        ★ 对数尺度下 ±2SD 区间不对称（均值 × e^±2RSE），所以下行区间不是「均值 ± 2SD」。
+        ★ 原文只测 LCA / LAD / RCA 三段，没有 LCX；本文的 LMCA 行对应原文 LCA。
+        ★ 队列为 1 月龄–17 岁，不含 0–28 天新生儿；新生儿段为外推，请以 PHN 或本单位参考值为准。
       </view>
       <view class="note note--strong">
         <text style="font-weight:600">左房与右心的另两套参照</text>{{'\n'}}

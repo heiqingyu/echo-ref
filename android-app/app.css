@@ -481,6 +481,33 @@ html, body {
   line-height: 1.35;
 }
 
+/* ★ v1.8.0：冠脉并列深圳 SZ 法 —— 第二行浅底区分，避免被当成另一支血管 */
+.zrow--alt {
+  background: #f7f9fb;
+  border-radius: 8px;
+  padding: 8px;
+  margin: -2px 0 4px;
+  border-bottom: none;
+}
+.zrow--alt .zrow__n { font-size: 12.5px; color: #4d5a6b; }
+.zrow--alt .zrow__v { font-size: 12px; font-weight: 500; color: var(--sub); }
+.zrow--alt .zrow__r { font-size: 11.5px; }
+.zrow--alt .zrow__sub { font-size: 10.5px; margin-top: 1px; }
+.zrow--alt.zrow--none .zrow__n,
+.zrow--alt.zrow--none .zrow__v,
+.zrow--alt.zrow--none .zrow__r { color: #a8aeb6; }
+.zrow__ext {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 1px 5px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #b45309;
+  background: #fef3c7;
+  border-radius: 4px;
+  vertical-align: 1px;
+}
+
 .zbig {
   display: flex;
   align-items: baseline;
@@ -1512,6 +1539,15 @@ button.fx-nav__c {
   -webkit-user-select: none;
   user-select: none;
   white-space: nowrap;
+}
+
+/* ★ v1.8.0：署名第二行 —— 单独一行，不把水印横向拉长 */
+.wmark__by {
+  display: block;
+  margin-top: 3px;
+  font-size: 8.5px;
+  letter-spacing: .2px;
+  text-align: right;
 }
 
 .copyfoot {

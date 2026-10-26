@@ -3302,6 +3302,22 @@
         ? '偏离最大：<b>' + esc(worst.name) + '</b>，Z = <b>' + esc(worst.zText) +
           '</b>（' + esc(worst.statusText) + '）'
         : '';
+
+      // ★ v1.8.0：冠脉两法若一法异常、一法正常，必须点明，否则用户会以为矛盾
+      const disc = [];
+      grouped.forEach(function (g) {
+        g.rows.forEach(function (r) {
+          if (!r.alt || !r.hasValue || r.z === null || r.alt.z === null) return;
+          if ((Math.abs(r.z) > 2) !== (Math.abs(r.alt.z) > 2)) {
+            disc.push(esc(r.name) + '（PHN ' + esc(r.zText) + ' ' + esc(r.statusText) +
+              ' / SZ ' + esc(r.alt.zText) + ' ' + esc(r.alt.statusText) + '）');
+          }
+        });
+      });
+      $('pdDiscord').innerHTML = disc.length
+        ? '⚠ 冠脉两法结论不一致：' + disc.join('；') + '。以报告所采用的那一套判读。'
+        : '';
+      $('pdDiscord').hidden = disc.length === 0;
     } else {
       $('pdSumCard').hidden = true;
     }
@@ -3321,6 +3337,19 @@
             ? '<span class="tag ' + r.statusCls + '">' + esc(r.zText) + '</span>'
             : '<span class="tag tag--none">—</span>') +
           '</div></div>';
+        // ★ v1.8.0：冠脉并列深圳 SZ 法，同一测值第二个 Z
+        if (r.alt) {
+          html += '<div class="zrow zrow--alt' + (r.hasValue ? '' : ' zrow--none') + '">' +
+            '<div class="zrow__n">SZ 法 · 深圳' +
+              (r.alt.extrap ? '<span class="zrow__ext">外推</span>' : '') +
+              '<span class="zrow__sub">均值 ' + esc(r.alt.meanText) + '</span></div>' +
+            '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
+            '<div class="zrow__r">' + esc(r.alt.rangeText) + '</div>' +
+            '<div class="zrow__g">' + (r.hasValue
+              ? '<span class="tag ' + r.alt.statusCls + '">' + esc(r.alt.zText) + '</span>'
+              : '<span class="tag tag--none">—</span>') +
+            '</div></div>';
+        }
       });
     });
     $('pdList').innerHTML = html;
@@ -3336,6 +3365,14 @@
           '<div style="flex:2;text-align:right;font-size:12px;color:var(--sub);line-height:1.6">' +
             '±3SD　' + esc(r.range3Text) + ' ' + esc(r.unit) +
           '</div></div>';
+        if (r.alt) {
+          rhtml += '<div class="zrow zrow--alt">' +
+            '<div class="zrow__n">SZ 法 · 深圳<span class="zrow__sub">对数尺度 · ' +
+              esc(r.alt.r2Text) + '</span></div>' +
+            '<div style="flex:2;text-align:right;font-size:12px;color:var(--sub);line-height:1.6">' +
+              '±3SD　' + esc(r.alt.range3Text) + ' ' + esc(r.unit) +
+            '</div></div>';
+        }
       });
     });
     $('pdRanges').innerHTML = rhtml;
@@ -3615,7 +3652,9 @@
       const mark = document.createElement('div');
       mark.className = 'wmark';
       mark.setAttribute('aria-hidden', 'true');
-      mark.textContent = 'EchoRef · 心脏超声参考';
+      // ★ v1.8.0：署名单独一行，避免横向变长压住正文
+      mark.innerHTML = 'EchoRef · 心脏超声参考' +
+        '<span class="wmark__by">by qingyu</span>';
       document.body.appendChild(mark);
     }
 

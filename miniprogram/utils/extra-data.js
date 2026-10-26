@@ -5726,6 +5726,16 @@ const REFS = [
     ],
     use: '儿童右房左右径、右室流入道内径按 BSA 的三次多项式 Z 值方程（n=515，与 R77 同一多中心队列），用于「儿童 Z 值」页「左房与右心」组',
   },
+  {
+    id: 'R79',
+    zh: '中国儿童冠状动脉超声 Z 值回归方程（842 例多中心）',
+    en: 'Fan SM, Xia B, Liu WX, et al. Establishing an Appropriate Z Score Regression Equation for Chinese Pediatric Coronary Artery Echocardiography: A Multicenter Prospective Cohort Study.',
+    where: 'BMC Pediatrics, 2021, 21: 429',
+    dl: [
+      { t: '免费全文 PDF', u: 'https://bmcpediatr.biomedcentral.com/counter/pdf/10.1186/s12887-021-02877-9.pdf' },
+    ],
+    use: '儿童冠状动脉（LCA / LAD / RCA）按 Haycock BSA 的对数线性 Z 值方程（n=842，6 省 9 中心，1 月龄–17 岁）；用于「儿童 Z 值」页冠脉组的「SZ 法」行（论文自称 SZ 法）',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════

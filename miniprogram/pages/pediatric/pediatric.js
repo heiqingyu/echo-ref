@@ -185,7 +185,7 @@ Page({
       grouped: grouped,
       hasAnyValue: anyValue,
       summary: hasBsa ? this.buildSummary(grouped) : null,
-      warnings: this.buildWarnings(valid),
+      warnings: this.buildWarnings(valid, hasBsa ? bsa : 0),
     });
 
     if (hasBsa) {
@@ -213,6 +213,18 @@ Page({
       });
     });
 
+    // ★ v1.8.0：冠脉两法（PHN / 深圳 SZ）若一法异常、一法正常，必须点明
+    const discord = [];
+    grouped.forEach(function (g) {
+      g.rows.forEach(function (r) {
+        if (!r.alt || !r.hasValue || r.z === null || r.alt.z === null) return;
+        if ((Math.abs(r.z) > 2) !== (Math.abs(r.alt.z) > 2)) {
+          discord.push(r.name + '（PHN ' + r.zText + ' ' + r.statusText +
+            ' / SZ ' + r.alt.zText + ' ' + r.alt.statusText + '）');
+        }
+      });
+    });
+
     let level = 'normal';
     if (severe > 0) level = 'severe';
     else if (mild > 0) level = 'mild';
@@ -227,10 +239,13 @@ Page({
       worstZText: worst ? worst.zText : '',
       worstStatusText: worst ? worst.statusText : '',
       worstCls: worst ? worst.statusCls : 'tag--none',
+      discordText: discord.length
+        ? '⚠ 冠脉两法结论不一致：' + discord.join('；') + '。以报告所采用的那一套判读。'
+        : '',
     };
   },
 
-  buildWarnings(valid) {
+  buildWarnings(valid, bsa) {
     const arr = [];
     if (!valid && this.data.height && this.data.weight) {
       arr.push('身高体重超出常用范围（30–220 cm / 1–150 kg），请核对后重填。');
@@ -238,6 +253,13 @@ Page({
     const a = parseFloat(this.data.age);
     if (this.data.age && !isNaN(a) && a > 18) {
       arr.push('本页 Z 值适用于 0–18 岁儿童。成人请改用「参考值」页的中国成人或 ASE 标准。');
+    }
+    // ★ v1.8.0：深圳 SZ 冠脉方程队列为 1 月龄–17 岁，新生儿段只能算外推
+    const isNeonate = (bsa > 0 && bsa < peds.SZ_RANGE.bsaMin) ||
+      (this.data.age !== '' && !isNaN(a) && a >= 0 && a < 1 / 12);
+    if (isNeonate) {
+      arr.push('新生儿段：深圳 SZ 冠脉方程建模范围为 1 月龄–17 岁，冠脉两行中的「SZ 法」仅为外推值，' +
+        '判读请以 PHN 行或本单位新生儿参考值为准。');
     }
     return arr;
   },

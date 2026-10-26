@@ -443,6 +443,34 @@ page {
   text-align: right;
 }
 
+/* ★ v1.8.0：冠脉并列深圳 SZ 法 —— 第二行浅底区分 */
+.z-row--alt {
+  background: #f7f9fb;
+  border-radius: 14rpx;
+  padding: 12rpx 14rpx;
+  margin: -4rpx 0 8rpx;
+  border-bottom: none;
+}
+
+.z-row--alt .z-row__name { font-size: 23rpx; color: #4d5a6b; }
+.z-row--alt .z-row__val { font-size: 23rpx; font-weight: 500; color: var(--sub); }
+.z-row--alt .z-row__range { font-size: 21rpx; }
+.z-row--alt .z-row__name-sub { font-size: 19rpx; margin-top: 2rpx; }
+.z-row--alt.z-row--none .z-row__name,
+.z-row--alt.z-row--none .z-row__val,
+.z-row--alt.z-row--none .z-row__range { color: #a8aeb6; }
+
+.z-row__ext {
+  display: inline-block;
+  margin-left: 8rpx;
+  padding: 2rpx 8rpx;
+  font-size: 18rpx;
+  line-height: 1.4;
+  color: #b45309;
+  background: #fef3c7;
+  border-radius: 6rpx;
+}
+
 /* Z 值大字强调 */
 .z-big {
   display: flex;

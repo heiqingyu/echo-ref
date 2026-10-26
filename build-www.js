@@ -575,6 +575,7 @@ ${SEG_HTML}
         <span class="zbig__l" id="pdSumLbl"></span>
       </div>
       <div class="note" id="pdWorst"></div>
+      <div class="note note--warn" id="pdDiscord" hidden></div>
       <div class="key">
         <div class="key__i key__i--n">|Z| ≤ 2<br>正常</div>
         <div class="key__i key__i--m">2 &lt; |Z| ≤ 3<br>轻度异常</div>
@@ -586,6 +587,7 @@ ${SEG_HTML}
       <div class="card__t">本页覆盖哪些结构</div>
       <div class="card__d">
         ① 左室（内径/壁厚/容积/质量/长径/面积）、主动脉、肺动脉、冠脉、二尖瓣环、三尖瓣环 → PHN（n=3566）<br>
+        ①b <b>冠脉另并列一套中国儿童方程</b>：深圳 SZ 法（n=842，1 月龄–17 岁）<br>
         ② 左房左右径、右房左右径、右室流入道内径 → 中国汉族儿童（n=545/515，2D 四腔）<br>
         ③ 左房前后径、右室前后径、右室前壁 → Kampmann（中欧 n=2036，M 型）
       </div>
@@ -595,6 +597,11 @@ ${SEG_HTML}
       <div class="note">
         <b>同一房室两行≠数据打架</b>：右室流入道内径（四腔，约 23 mm）比 M 型右室前后径
         （胸骨旁，约 11 mm）大一倍 —— 切面与径线不同所致，不可互比。
+      </div>
+      <div class="note">
+        <b>冠脉两行 = 两套人群、两套方程</b>：上行 PHN（北美，幂律），下行深圳 SZ 法（中国，对数线性）。
+        同一测值常差 0.7–1.1 个 Z，判读以报告采用的那套为准，<b>两行不可互比、不可混用</b>。
+        SZ 队列不含 0–28 天新生儿，BSA &lt; 0.23 时该行标「外推」。
       </div>
     </div>
 
@@ -621,6 +628,7 @@ ${SEG_HTML}
         <b>② Z 值</b><br>
         PHN 项：Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
         中国方程项：Z = ( 实测值 − M ) ÷ SD，M = β0 + β1·BSA + β2·BSA² + β3·BSA³<br>
+        SZ 冠脉项：Z = [ ln(实测值) − ( a + b·ln BSA ) ] ÷ RSE（对数尺度，故 ±2SD 区间不对称）<br>
         系数逐项不同；Kampmann 项无方程，为分组表插值。|Z| ≤ 2 覆盖约 95% 健康儿童。
       </div>
       <div class="note note--warn">
@@ -641,6 +649,16 @@ ${SEG_HTML}
         Kampmann C, et al. <i>Heart.</i> 2000;83(6):667-672.（n = 2036，见 R76）<br>
         原文给的是「按 BSA 分组的 均值 ± 2SD」表而非方程，本页对分组值做线性插值（BSA 0.25–2.0 m²）。
         原文用 DuBois BSA，本页用 Haycock，新生儿段可差 5–8%。
+      </div>
+      <div class="note note--warn">
+        <b>数据来源（第四套 · 深圳 SZ 法冠脉）</b>　Fan SM, Xia B, Liu WX, et al.
+        Establishing an appropriate Z score regression equation for Chinese pediatric coronary artery
+        echocardiography: a multicenter prospective cohort study. <i>BMC Pediatr.</i> 2021;21:429.
+        DOI 10.1186/s12887-021-02877-9.（n = 842，6 省 9 中心，1 月龄–17 岁，Haycock BSA，参考文献 R79）<br>
+        原文系数：ln LCA = 1.0084 + 0.3740 ln BSA（RSE 0.115）；ln LAD = 0.8063 + 0.3697 ln BSA（RSE 0.119）；
+        ln RCA = 0.8040 + 0.3291 ln BSA（RSE 0.150）。原文只测 LCA / LAD / RCA 三段，无 LCX。
+        ★ 队列不含 0–28 天新生儿；本页对 BSA &lt; 0.23 的患儿仍给数值但标「外推」，新生儿请以 PHN
+        或本单位参考值为准。
       </div>
     </div>
   </section>

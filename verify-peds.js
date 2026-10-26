@@ -482,6 +482,75 @@ check('CSMC 右心篇 SD（RA4C）', peds.CSMC_Z.RA4C.sd, 0.19);
 check('CSMC 来源标记（LA4C=L / RA4C=R）',
   peds.CSMC_Z.LA4C.paper + peds.CSMC_Z.RA4C.paper, 'LR');
 
+/* ------------------------------------------------------------------ *
+ * 14. 深圳 SZ 法（中国儿童冠脉，BMC Pediatr 2021）
+ *     期望值全部按原文系数手算，不得由引擎输出反填
+ * ------------------------------------------------------------------ */
+section('14. 深圳 SZ 法冠脉方程（2021 多中心）');
+
+// 14.1 系数逐项与原文 Results 段落一致
+check('SZ LCA 系数 a', peds.SZ_Z.LMCA.a, 1.0084);
+check('SZ LCA 系数 b', peds.SZ_Z.LMCA.b, 0.3740);
+check('SZ LCA 残差标准误', peds.SZ_Z.LMCA.rse, 0.115);
+check('SZ LAD 系数 a', peds.SZ_Z.LAD.a, 0.8063);
+check('SZ LAD 系数 b', peds.SZ_Z.LAD.b, 0.3697);
+check('SZ LAD 残差标准误', peds.SZ_Z.LAD.rse, 0.119);
+check('SZ RCA 系数 a', peds.SZ_Z.RCA.a, 0.8040);
+check('SZ RCA 系数 b', peds.SZ_Z.RCA.b, 0.3291);
+check('SZ RCA 残差标准误', peds.SZ_Z.RCA.rse, 0.150);
+// 原文只测 LCA / LAD / RCA 三段，没有 LCX
+check('SZ 只覆盖三段（无 LCX）', Object.keys(peds.SZ_Z).join(','), 'LMCA,LAD,RCA');
+
+// 14.2 预测均值 = exp(a + b·ln BSA)，BSA 1.0 时即 exp(a)
+//     e^1.0084 = 2.74121 · e^0.8063 = 2.23961 · e^0.8040 = 2.23446
+check('BSA 1.0 时 LCA 预测均值 mm', peds.szAt('LMCA', 1).mean, 2.74121, 2e-4);
+check('BSA 1.0 时 LAD 预测均值 mm', peds.szAt('LAD', 1).mean, 2.23961, 2e-4);
+check('BSA 1.0 时 RCA 预测均值 mm', peds.szAt('RCA', 1).mean, 2.23446, 2e-4);
+
+// 14.3 BSA 0.25：ln0.25 = −1.386294
+//     exp(1.0084 − 0.3740×1.386294) = exp(0.489926) = 1.63219
+check('BSA 0.25 时 LCA 预测均值 mm', peds.szAt('LMCA', 0.25).mean, 1.63219, 2e-4);
+
+// 14.4 Z = [ln(实测) − ln(均值)] / RSE
+//     3.4 mm / BSA 1.0：ln3.4 = 1.223775，(1.223775 − 1.0084)/0.115 = 1.87283
+check('LCA 3.4 mm @BSA1.0 → Z', peds.szZ(3.4, 'LMCA', 1), 1.87283, 1e-4);
+//     2.6 mm 对 LAD：ln2.6 = 0.955511，(0.955511 − 0.8063)/0.119 = 1.25388
+check('LAD 2.6 mm @BSA1.0 → Z', peds.szZ(2.6, 'LAD', 1), 1.25388, 1e-4);
+//     3.0 mm 对 RCA：ln3.0 = 1.098612，(1.098612 − 0.8040)/0.150 = 1.96408
+check('RCA 3.0 mm @BSA1.0 → Z', peds.szZ(3.0, 'RCA', 1), 1.96408, 1e-4);
+
+// 14.5 对数尺度：±2SD 原始值区间必须不对称（用乘性，不是加减）
+const lca1 = peds.szAt('LMCA', 1);
+check('LCA ±2SD 下限 mm（2.74121×e^−0.23=0.794534）', lca1.lo2, 2.17812, 2e-4);
+check('LCA ±2SD 上限 mm（2.74121×e^+0.23=1.258600）', lca1.hi2, 3.45011, 2e-4);
+check('±2SD 区间上下不对称（上偏 > 下偏）', (lca1.hi2 - lca1.mean) > (lca1.mean - lca1.lo2), true);
+check('上偏 / 下偏 = e^0.23（乘性区间的固有性质）',
+  (lca1.hi2 - lca1.mean) / (lca1.mean - lca1.lo2), 1.25860, 1e-4);
+
+// 14.6 与 PHN 并列：冠脉三项挂 alt，其他项不挂
+const szRows = peds.buildPedsList(1.0, { LMCA: 3.4, LAD: 2.6, RCA: 3.0, LVEDD: 38 });
+check('冠脉三项都挂上 SZ 行',
+  szRows.filter(function (r) { return ['LMCA', 'LAD', 'RCA'].indexOf(r.key) !== -1 && r.alt; }).length, 3);
+check('非冠脉项不挂 SZ 行',
+  szRows.filter(function (r) { return ['LMCA', 'LAD', 'RCA'].indexOf(r.key) === -1 && r.alt; }).length, 0);
+const ladRow = szRows.filter(function (r) { return r.key === 'LAD'; })[0];
+check('LAD 单行两套 Z：PHN +2.06 / SZ +1.25', ladRow.zText + ' / ' + ladRow.alt.zText, '+2.06 / +1.25');
+check('两法判读不同（PHN 轻度增大 / SZ 正常）',
+  ladRow.statusText + ' / ' + ladRow.alt.statusText, '轻度增大 / 正常');
+
+// 14.7 外推标记：队列为 1 月龄–17 岁（BSA 0.23–1.85）
+check('BSA 0.22（新生儿段）标外推', peds.szInRange(0.22), false);
+check('BSA 0.50 在范围内', peds.szInRange(0.5), true);
+check('BSA 1.90 超出上界', peds.szInRange(1.9), false);
+check('新生儿段 SZ 行带 extrap 标记',
+  peds.buildPedsList(0.22, { LAD: 1.2 })
+    .filter(function (r) { return r.key === 'LAD'; })[0].alt.extrap, true);
+
+// 14.8 冠脉组说明必须写清两套不可互比
+const corGroup = peds.PEDS_GROUPS.filter(function (g) { return g.title === '冠状动脉'; })[0];
+check('冠脉组带双法说明', !!(corGroup && corGroup.note && corGroup.note.indexOf('SZ') !== -1), true);
+check('冠脉组说明含「不可互相比较」', corGroup.note.indexOf('不可互相比较') !== -1, true);
+
 /* ================================================================== */
 
 console.log('\n' + '═'.repeat(60));

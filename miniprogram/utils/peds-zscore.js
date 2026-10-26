@@ -234,13 +234,63 @@ const CSMC_Z = {
   RVIDs: { b: [0.72, 2.00, -0.79,  0.13], sd: 0.26, r2: 0.63, paper: 'R' },
 };
 
+/* ------------------------------------------------------------------ *
+ * 3b-3. 深圳 SZ 法（中国儿童冠状动脉 Z 值，2021 多中心）
+ *
+ * ── 为什么冠脉要并列两套？ ──────────────────────────────────────────
+ *  川崎病冠脉判读主流用北美 Dallaire / PHN 一类方程，但中国儿童的冠脉
+ *  基线内径与离散度都不同。深圳儿童医院牵头 6 省 9 中心建立了中国儿童
+ *  自己的指数方程（文中自称 SZ 法，ShenZhen）：
+ *
+ *    Fan SM, Xia B, Liu WX, et al. Establishing an appropriate Z score
+ *    regression equation for Chinese pediatric coronary artery
+ *    echocardiography: a multicenter prospective cohort study.
+ *    BMC Pediatr. 2021;21:429.  DOI 10.1186/s12887-021-02877-9
+ *    n = 842（男 546 / 女 296），1 月龄–17 岁，Haycock BSA。
+ *
+ *      ln(y) = a + b · ln(BSA)        y = 冠脉内径 mm
+ *      Z = [ ln(实测值) − ln(预测均值) ] / RSE
+ *
+ *  原文系数（Results 段落逐字，BSAhay 版，即最终采用的 SZ 法）：
+ *      ln y LCA = 1.0084 + 0.3740 ln x   R² 0.682  RSE 0.115
+ *      ln y LAD = 0.8063 + 0.3697 ln x   R² 0.650  RSE 0.119
+ *      ln y RCA = 0.8040 + 0.3291 ln x   R² 0.482  RSE 0.150
+ *
+ *  ★ 原文只测 LCA（左冠主干）/ LAD / RCA 三段，**没有 LMCA 与 LCX**；
+ *    本模块的 LMCA 行即对应原文 LCA，键名不改（PHN 行沿用 LMCA）。
+ *  ★ 因为 Z 在对数尺度上算，±2SD 的原始值区间是**不对称**的：
+ *      上限 = 均值 × e^(+2·RSE)，下限 = 均值 × e^(−2·RSE)
+ *    直接写 均值 ± 2SD 会低估高值侧、高估低值侧，别那样算。
+ *  ★ 与 PHN 行**不可互相比较**：人群、模型、离散度都不同，同一测值
+ *    常给出相差 0.7–1.1 个 Z 的结论，判读以报告所依据的那一套为准。
+ *  ★ 队列为 1 月龄–17 岁，**不含 0–28 天新生儿**；BSA < 0.23 时本行
+ *    属外推（界面会标注），新生儿请以 PHN 或本单位参考值为准。
+ * ------------------------------------------------------------------ */
+
+const SZ_Z = {
+  LMCA: { a: 1.0084, b: 0.3740, rse: 0.115, r2: 0.682, seg: 'LCA' },
+  LAD:  { a: 0.8063, b: 0.3697, rse: 0.119, r2: 0.650, seg: 'LAD' },
+  RCA:  { a: 0.8040, b: 0.3291, rse: 0.150, r2: 0.482, seg: 'RCA' },
+};
+
+/** SZ 队列的覆盖范围（用于界面标注「外推」） */
+const SZ_RANGE = { ageMin: 1 / 12, ageMax: 17, bsaMin: 0.23, bsaMax: 1.85 };
+
 /** 展示分组（保持临床阅读顺序） */
 const PEDS_GROUPS = [
   { title: '左心室结构', keys: ['LVEDD', 'LVESD', 'LVST', 'LVPWT'] },
   { title: '左心室容积与质量', keys: ['LVEDV', 'LVESV', 'LVM'] },
   { title: '左心室长径与面积', keys: ['LVEDL', 'LVEDA'] },
   { title: '主动脉', keys: ['ANN', 'ROOT', 'STJ', 'AAO', 'ARCHP', 'ARCHD', 'ISTH'] },
-  { title: '冠状动脉', keys: ['LMCA', 'LAD', 'RCA'] },
+  {
+    title: '冠状动脉',
+    keys: ['LMCA', 'LAD', 'RCA'],
+    note: '每项两行：上行 PHN（北美多中心，幂律模型），下行深圳 SZ 法（中国儿童多中心，' +
+      'ln Y = a + b·ln BSA，n=842，1 月龄–17 岁）。两套的人群、模型与离散度都不同，' +
+      '同一测值可差 0.7–1.1 个 Z（如 LAD 2.6 mm、BSA 1.0：PHN +2.06「轻度增大」/ SZ +1.25「正常」），' +
+      '不可互相比较或混用，以报告所依据的那一套判读。SZ 队列不含 0–28 天新生儿，' +
+      'BSA < 0.23 时该行属外推（会标注「外推」）。',
+  },
   { title: '肺动脉', keys: ['PVSAX', 'PVLAX', 'MPA', 'RPA', 'LPA'] },
   { title: '二尖瓣', keys: ['MVAP', 'MVLAT', 'MVA'] },
   { title: '三尖瓣', keys: ['TVAP', 'TVLAT', 'TVA'] },
@@ -451,6 +501,48 @@ function buildKampRow(key, def, bsa, measured, hasBsa) {
 }
 
 /* ------------------------------------------------------------------ *
+ * 3e. SZ 法求值（对数线性）
+ * ------------------------------------------------------------------ */
+
+/**
+ * 在给定 BSA 上算 SZ 法的预测均值与 ±2 / ±3 SD 的原始值界
+ *
+ * ⚠️ Z 建立在对数尺度，SD 换算回原始尺度后**两侧不对称**，
+ *    所以区间必须用 exp(±k·RSE) 求，不能写 mean ± k·sd。
+ *
+ * @param {string} key LMCA / LAD / RCA
+ * @param {number} bsa 体表面积 m²（Haycock，与原文一致）
+ * @returns {{mean:number, sd:number, lo2:number, hi2:number, lo3:number, hi3:number}|null}
+ */
+function szAt(key, bsa) {
+  const d = SZ_Z[key];
+  if (!d || !bsa || bsa <= 0) return null;
+  const mean = Math.exp(d.a + d.b * Math.log(bsa));
+  return {
+    mean: mean,
+    // 均值处的等效线性 SD（仅用于显示「均值 ± SD」，Z 本身不经过它）
+    sd: mean * d.rse,
+    lo2: mean * Math.exp(-2 * d.rse),
+    hi2: mean * Math.exp(2 * d.rse),
+    lo3: mean * Math.exp(-3 * d.rse),
+    hi3: mean * Math.exp(3 * d.rse),
+  };
+}
+
+/** Z = [ ln(实测) − ln(预测均值) ] / RSE */
+function szZ(value, key, bsa) {
+  const d = SZ_Z[key];
+  const t = szAt(key, bsa);
+  if (!d || !t || !(value > 0)) return null;
+  return (Math.log(value) - Math.log(t.mean)) / d.rse;
+}
+
+/** BSA 是否落在 SZ 队列的建模范围内（<0.23 基本就是新生儿） */
+function szInRange(bsa) {
+  return !!bsa && bsa >= SZ_RANGE.bsaMin && bsa <= SZ_RANGE.bsaMax;
+}
+
+/* ------------------------------------------------------------------ *
  * 3d. CSMC 三次多项式求值（中国汉族儿童）
  * ------------------------------------------------------------------ */
 
@@ -480,6 +572,45 @@ function buildCsmcRow(key, def, bsa, measured, hasBsa) {
     '三次多项式 · R² ' + meta.r2.toFixed(2),
     t ? t.mean * 10 : null, t ? t.sd * 10 : null, v.raw, v.hasValue,
     def.dec === undefined ? 1 : def.dec);
+}
+
+/**
+ * 冠脉行的「并列第二套」：深圳 SZ 法（2021 中国儿童多中心）
+ *
+ * 结构与主行同形，界面只需在同一行的下一行渲染即可，不必另写分支。
+ * @returns {object|null} 非冠脉键返回 null
+ */
+function buildSzAlt(key, bsa, hasBsa, raw, hasValue) {
+  const d = SZ_Z[key];
+  if (!d) return null;
+  const t = hasBsa ? szAt(key, bsa) : null;
+  const z = (t && hasValue) ? (Math.log(raw) - Math.log(t.mean)) / d.rse : null;
+  const g = gradeZ(z);
+  const has = !!t;
+  const rng = function (k) {
+    if (!has) return '—';
+    return fmt(k === 2 ? t.lo2 : t.lo3, 2) + ' – ' + fmt(k === 2 ? t.hi2 : t.hi3, 2);
+  };
+  return {
+    src: 'sz',
+    srcText: 'SZ 法',
+    seg: d.seg,
+    z: z === null ? null : round(z, 2),
+    zText: z === null ? '—' : (z > 0 ? '+' : '') + fmt(z, 2),
+    status: g.level,
+    statusText: g.text,
+    statusCls: g.cls,
+    meanText: has ? fmt(t.mean, 2) + ' mm' : '—',
+    sdText: has ? 'SD ' + fmt(t.sd, 2) + ' mm' : '—',
+    subText: has ? fmt(t.mean, 2) + ' × e^±0.1' : '—',
+    rangeText: rng(2),
+    range3Text: rng(3),
+    // 对数尺度：区间不是「均值 ± kSD」，这里给出乘性写法，避免被误当线性
+    mulText: has ? '×e^±' + fmt(2 * d.rse, 2) : '—',
+    r2Text: 'R² ' + d.r2.toFixed(2),
+    extrap: hasBsa ? !szInRange(bsa) : false,
+    hasValue: hasValue,
+  };
 }
 
 /* ------------------------------------------------------------------ *
@@ -554,12 +685,16 @@ function buildPedsList(bsa, measured) {
     const meanUi = hasBsa ? def.mean * Math.pow(bsa, def.a) * uiScale : null;
     const sdUi = hasBsa ? def.sd * Math.pow(bsa, def.a) * uiScale : null;
 
+    // ★ 冠脉三项并列深圳 SZ 法（v1.8.0）：同一测值、两套方程、两个 Z
+    const alt = (hasBsa || hasValue) ? buildSzAlt(key, bsa, hasBsa, raw, hasValue) : null;
+
     rows.push({
       key: key,
       name: def.name,
       unit: uiUnit,
       src: 'phn',
       srcText: 'PHN',
+      alt: alt,
       // 指数化后的均值（界面单位），用于解释
       alphaText: 'α=' + def.a.toFixed(2),
       meanText: hasBsa ? fmt(meanUi, decOut) + ' ' + uiUnit : '—',
@@ -644,6 +779,8 @@ module.exports = {
   PEDS_FIELDS,
   KAMP_TABLE,
   CSMC_Z,
+  SZ_Z,
+  SZ_RANGE,
   // 计算
   indexedMean,
   indexedSD,
@@ -652,6 +789,9 @@ module.exports = {
   rangeFromZ,
   kampAt,
   csmcAt,
+  szAt,
+  szZ,
+  szInRange,
   describeZ,
   // 主接口
   buildPedsList,
