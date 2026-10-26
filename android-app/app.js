@@ -16,7 +16,7 @@
     height: 170,
     weight: 65,
     bsa: 0,
-    formula: 'dubois',      // dubois | mosteller
+    formula: 'mosteller',   // mosteller | dubois
     standard: 'CN',         // CN | ASE
     measurements: null,      // EF 页的测量值
     peds: null,
@@ -598,9 +598,10 @@
     { id: 'tei', title: 'Tei 指数（MPI）',
       fields: [['ivct', '等容收缩时间 IVCT', 'ms'], ['ivrt', '等容舒张时间 IVRT', 'ms'], ['et', '射血时间 ET', 'ms'], ['tside', '侧别（右室填 2，留空按左室）', '']],
       note: 'MPI = (IVCT + IVRT) / ET；左室 >0.40、右室 >0.55 为异常。心率与负荷会影响测值' },
-    { id: 'mpap', title: '平均肺动脉压',
-      fields: [['prv', '肺动脉反流峰速 Vmax', 'm/s'], ['mrap', '右房压 RAP', 'mmHg']],
-      note: 'mPAP = 4 × PR Vmax² + RAP；>25 mmHg 符合肺高压。也可用 Mahan 近似 0.61 × sPAP + 2' },
+    { id: 'mpap', sec: 'right', title: '肺动脉压（sPAP · dPAP · mPAP）',
+      fields: [['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pr', 'PR 舒张末期流速（可选）', 'm/s'],
+        ['pp_rap', '右房压 RAP', 'mmHg']],
+      note: 'sPAP = 4 × TR Vmax² + RAP（≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 近似 0.61 × sPAP + 2。肺动脉瓣狭窄或 RVOT 梗阻时 sPAP 会高估；确诊仍要右心导管' },
     { id: 'shunt', title: 'Qp/Qs 肺体循环血流比',
       fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm'],
         ['ld', 'LVOT 直径（体循环）', 'cm'], ['lvti', 'LVOT VTI（体循环）', 'cm']],
@@ -611,18 +612,11 @@
     { id: 'atrial', title: '心房容积指数',
       fields: [['lav', '左房容积', 'mL'], ['rav', '右房容积', 'mL']],
       note: '容积 ÷ BSA；LAVI 正常 ≤34 mL/m²；右房正常值需匹配测量方法' },
-    { id: 'dias', sec: 'hemo', title: '舒张功能基础比值',
-      fields: [['e', 'E 峰', 'cm/s'], ['a', 'A 峰', 'cm/s'], ['es', '间隔 e′', 'cm/s'], ['el', '侧壁 e′', 'cm/s']],
-      note: 'E/e′ <8 左房压正常，>14 升高，8–14 为灰区；完整分级需结合 LAVI、肺静脉等' },
-
     { id: 'vtir', sec: 'hemo', title: 'RVOT / LVOT VTI 比',
       fields: [['vtrvo', 'RVOT VTI', 'cm'], ['vtrlo', 'LVOT VTI', 'cm']],
       note: '正常 0.7–1.05；>1.2 提示左向右分流（可近似当 Qp/Qs），<0.6 提示肺血流减少。优点是不用测两处直径——直径平方的误差会被放大两次' },
 
     /* ── 右心与肺循环（sec: right） ── */
-    { id: 'paspv', sec: 'right', title: '肺动脉收缩压 PASP',
-      fields: [['ptrv', 'TR 峰速 Vmax', 'm/s'], ['prap', '右房压 RAP', 'mmHg']],
-      note: 'PASP = 4 × Vmax² + RAP；≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度。肺动脉瓣狭窄或 RVOT 梗阻时会高估' },
     { id: 'rvfacv', sec: 'right', title: '右室面积变化分数 FAC',
       fields: [['feda', '舒张末面积 RVEDA', 'cm²'], ['fesa', '收缩末面积 RVESA', 'cm²']],
       note: 'FAC <35% 提示右室收缩功能减低；<25% 为明显减低。与 TAPSE、S′、RVFWS 合看更可靠' },
@@ -644,9 +638,6 @@
       fields: [['pispap', '肺动脉收缩压 sPAP', 'mmHg'], ['pidpap', '肺动脉舒张压 dPAP', 'mmHg'],
         ['pirap', '右房压 RAP', 'mmHg']],
       note: 'PAPi = (sPAP − dPAP) / RAP，反映右室与肺循环的耦联。<1.85 提示失耦联，肺高压与心衰患者预后差；>2.0 相对保留。RAP 需先由 IVC 估出' },
-    { id: 'pdap', sec: 'right', title: '舒张期肺动脉压 PADP',
-      fields: [['pdprv', 'PR 舒张末期流速', 'm/s'], ['pdrap', '右房压 RAP', 'mmHg']],
-      note: 'PADP = 4 × V² + RAP，正常 8–15 mmHg。平均肺动脉压条目（mpap）用 PR 峰值速度算平均压，本条算舒张末压，两者互补' },
     { id: 'residx', sec: 'right', title: '阻力指数 PVRI / SVRI',
       fields: [['ripvr', 'PVR（可选）', 'WU'], ['risvr', 'SVR（可选）', 'dyn·s·cm⁻⁵']],
       note: 'PVRI = PVR × BSA，正常 3–5 WU·m²，>5 提示肺血管阻力显著升高（先心手术决策关键）；SVRI = SVR × BSA，正常 1970–2390 dyn·s·cm⁻⁵·m²' },
@@ -669,9 +660,6 @@
       note: 'PISA：EROA = 2πr²Va ÷ Vmax，RVol = EROA × VTI_TR；TR 峰速按 4V² 得压差，配合 IVC 内径估右房压算出 PASP。填了 VC 会给缩流颈分级' },
 
     /* ── v1.3.0 第三批：瓣膜与舒张细节 ── */
-    { id: 'evp', sec: 'hemo', title: 'E/Vp 左房压估测',
-      fields: [['evpe', 'E 峰速度', 'cm/s'], ['evpvp', 'Vp 血流传播速度', 'cm/s']],
-      note: 'E/Vp ≤1.5 正常；>1.5 提示 PCWP >15 mmHg，>2.5 提示 >18 mmHg。Vp 用彩色 M 型在四腔切面测（正常 ≥45 cm/s）。Vp 正常而 E/Vp 升高时，E 峰多被容量负荷或 MR 抬高，不等于松弛受损' },
     { id: 'laef', sec: 'recon', title: '左房排空分数 LAEF',
       fields: [['lavmax', 'LA 最大容积', 'mL'], ['lavmin', 'LA 最小容积', 'mL']],
       note: 'LAEF = (LAVmax − LAVmin) / LAVmax，正常 ≥50%；扩张指数 = (LAVmax − LAVmin) / LAVmin。LAEF 减低提示左房机械功能受损' },
@@ -708,10 +696,18 @@
       fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', ''],
         ['pbmi', 'BMI（可选；≥30 用肥胖切点）', 'kg/m²']],
       note: 'EOAi = EOA/BSA。R15（ASE 2024）：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65；二尖瓣位 正常 >1.2、中度 1.2–0.91、重度 ≤0.90（cm²/m²）。BMI ≥30 时整体下调：主动脉位 0.70 / 0.70–0.56 / ≤0.55，二尖瓣位 1.0 / 1.0–0.76 / ≤0.75' },
-    { id: 'dfun', sec: 'hemo', title: '舒张功能分级（四步法）',
+    { id: 'dfun', sec: 'hemo', title: '左室舒张功能（E/A · E/e′ · E/Vp · 分级）',
       fields: [['dfe', 'E 峰', 'cm/s'], ['dfa', 'A 峰', 'cm/s'], ['dfes', '间隔 e′', 'cm/s'],
-        ['dfel', '侧壁 e′', 'cm/s'], ['dflavi', 'LAVi（可选）', 'mL/m²'], ['dftrv', 'TR Vmax（可选）', 'm/s']],
-      note: '2016 ASE/EACVI 简化路径：E/A 加三个升高指标（E/e′ >14、LAVi >34、TR Vmax >2.8）分为 Ⅰ/Ⅱ/Ⅲ 级' },
+        ['dfel', '侧壁 e′', 'cm/s'], ['dflavi', 'LAVi（可选）', 'mL/m²'], ['dftrv', 'TR Vmax（可选）', 'm/s'],
+        ['dfvp', 'Vp 血流传播速度（可选）', 'cm/s']],
+      note: '2016 ASE/EACVI 简化路径：E/A ≥2，或 E/A ≤0.8 结合平均 E/e′ >14、LAVi >34、TR Vmax >2.8 三指标，分 Ⅰ/Ⅱ/Ⅲ 级。同屏给平均 E/e′（<8 正常、>14 升高）与 E/Vp（≤1.5 正常，>2.5 约 PCWP >18）；Vp 四腔彩色 M 型测（正常 ≥45 cm/s）' },
+
+    { id: 'sync', sec: 'recon', title: '心脏同步化（机械不同步）',
+      opts: [{ k: 'sy_flash', n: '室间隔闪动', list: [['n', '无'], ['y', '有']] },
+        { k: 'sy_rock', n: '心尖摇摆', list: [['n', '无'], ['y', '有']] }],
+      fields: [['sy_spwmd', 'SPWMD 室间隔-后壁延迟', 'ms'], ['sy_ivmd', 'IVMD 主-肺动脉射血前间期差', 'ms'],
+        ['sy_tssd', 'Ts-SD-12 应变达峰时间标准差', 'ms']],
+      note: '阈值：SPWMD ≥130 ms、IVMD ≥40 ms、Ts-SD-12 ≥33 ms；室间隔闪动与心尖摇摆出现即记阳性。数值可只填测到的，≥2 项阳性才算证据较充分。PROSPECT 研究：没有单项超声指标能优于 ECG 预测 CRT 反应，本条目只作旁证，不能单独决定是否植入' },
 
     /* ── 重构与心肌功能（sec: recon） ── */
     { id: 'volidx', sec: 'recon', title: '容积指数与重构分级',
@@ -1958,20 +1954,6 @@
       put('atrial', partsOf(parts));
     } else put('atrial');
 
-    // dias
-    {
-      const r = Calc.diastolicRatios(
-        v.e === undefined ? null : v.e,
-        v.a === undefined ? null : v.a,
-        v.es === undefined ? null : v.es,
-        v.el === undefined ? null : v.el
-      );
-      const parts = [];
-      if (r.ea !== undefined) parts.push('E/A = ' + Calc.fmt(r.ea));
-      if (r.avgEe !== undefined) parts.push('平均 E/e′ = ' + Calc.fmt(r.avgEe) + '（' + Calc.gradeEe(r.avgEe).text + '）');
-      put('dias', partsOf(parts));
-    }
-
     const female = state.sex === 'female';
 
     // 左室容积与射血分数
@@ -2020,20 +2002,20 @@
         ' 上限 ' + Calc.fmt(r.cut, 2) + '）→ ' + r.text);
     } else put('tei');
 
-    // 平均肺动脉压
-    if (has('prv', 'mrap')) {
-      const r = Calc.mpap(v.prv, v.mrap);
-      put('mpap', 'mPAP ≈ ' + Calc.fmt(r.mpap, 1) + ' mmHg → ' + r.text);
+    // 肺动脉压：sPAP / dPAP / mPAP
+    if (has('pp_tr') || has('pp_pr')) {
+      const r = Calc.pulmonaryPressures({ trv: v.pp_tr, prv: v.pp_pr, rap: v.pp_rap });
+      const parts = [];
+      if (r.spap !== undefined) parts.push('sPAP ' + Calc.fmt(r.spap, 1) + ' mmHg（' + r.spapText + '）');
+      if (r.dpap !== undefined) parts.push('dPAP ' + Calc.fmt(r.dpap, 1) + ' mmHg');
+      if (r.mpap !== undefined) {
+        parts.push('mPAP ' + Calc.fmt(r.mpap, 1) + ' mmHg（' + r.mpapText +
+          (r.mode === 'mahan' ? '，Mahan 近似' : '') + '）');
+      }
+      put('mpap', partsOf(parts));
     } else put('mpap');
 
     // ── 右心与肺循环 ──
-    // PASP
-    if (has('ptrv', 'prap')) {
-      const val = Calc.pasp(v.ptrv, v.prap);
-      put('paspv', 'PASP ≈ ' + Calc.fmt(val, 1) + ' mmHg（4×' + Calc.fmt(v.ptrv, 2) +
-        '² + ' + Calc.fmt(v.prap, 0) + '）→ ' + Calc.paspGrade(val).text);
-    } else put('paspv');
-
     // 右房压（IVC 法）
     {
       const r = Calc.rapEstimate(v.rivc, calcCollapse);
@@ -2211,8 +2193,22 @@
       if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + Calc.fmt(f.avgEe));
       if (f.count > 0) parts.push('升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
       else parts.push('升高指标 0 项');
+      if (has('dfvp') && has('dfe')) {
+        const ev = Calc.evpRatio(v.dfe, v.dfvp);
+        if (!ev.error) parts.push('E/Vp ' + Calc.fmt(ev.ratio, 2) + '（' + ev.text + '）');
+      }
       if (f.text) parts.push('→ ' + f.text);
       put('dfun', partsOf(parts));
+    }
+
+    // 心脏同步化（机械不同步）
+    {
+      const r = Calc.mechDyssynchrony({
+        spwmd: v.sy_spwmd, ivmd: v.sy_ivmd, tssd: v.sy_tssd,
+        flash: calcOpt.sy_flash === 'y', rock: calcOpt.sy_rock === 'y',
+      });
+      if (r.text) put('sync', partsOf([r.detail, '→ ' + r.text]));
+      else put('sync');
     }
 
     // ── 重构与心肌功能 ──
@@ -2427,13 +2423,6 @@
       put('papi', r.error ? r.error : 'PAPi = ' + Calc.fmt(r.papi, 2) + ' · ' + r.text);
     } else put('papi');
 
-    // PADP
-    if (has('pdprv')) {
-      const r = Calc.pulmonaryDiastolicPressure(v.pdprv, v.pdrap);
-      put('pdap', r.error ? r.error
-        : 'PADP ≈ ' + Calc.fmt(r.padp, 1) + ' mmHg（压差 ' + Calc.fmt(r.grad, 1) + ' + RAP）');
-    } else put('pdap');
-
     // 阻力指数
     if (has('ripvr') || has('risvr')) {
       const r = Calc.resistanceIndices(v.ripvr, v.risvr, bsa);
@@ -2595,25 +2584,16 @@
 
     // ── 评估类条目（切面与图像 / 心腔应变与负荷 / …）──
 
-    // CRT：SV / SVi（低流量）+ QRS 时限提示
+    // CRT 适应证分层
     {
-      const parts = [];
-      if (has('ld', 'lvti')) {
-        const sv = Calc.strokeVolume(v.ld, v.lvti);
-        parts.push('SV ' + Calc.fmt(sv, 1) + ' mL');
-        if (bsa > 0) {
-          const svi = sv / bsa;
-          parts.push('SVi ' + Calc.fmt(svi, 1) + ' mL/m²');
-          if (svi < 35) parts.push('（低流量）');
-        }
+      const r = Calc.crtIndication({
+        lvef: v.cr_lvef, qrs: v.cr_qrs, lbbb: v.cr_lbbb === 1, nyha: v.cr_nyha,
+      });
+      if (r.error) put('crt', r.error);
+      else {
+        const parts = ['推荐 ' + r.grade, '依据 ' + r.why];
+        put('crt', partsOf(parts));
       }
-      if (v.qrs !== undefined) {
-        parts.push('QRS ' + Calc.fmt(v.qrs, 0) + ' ms → ' + (
-          v.qrs >= 150 ? '≥150 ms，CRT 指征最强（LBBB 为 I 类、非 LBBB 为 IIa）'
-            : v.qrs >= 130 ? '130–149 ms，LBBB 为 IIa、非 LBBB 为 IIb'
-              : '＜130 ms，通常不满足 CRT 指征'));
-      }
-      put('crt', partsOf(parts));
     }
 
     // 左心房容积指数
@@ -3343,10 +3323,10 @@
     $('inHeight').value = 170;
     $('inWeight').value = 65;
     state.sex = 'male';
-    state.formula = 'dubois';
+    state.formula = 'mosteller';
     state.standard = 'CN';
     setSeg('sex', 'male');
-    setSeg('formula', 'dubois');
+    setSeg('formula', 'mosteller');
     setSeg('standard', 'CN');
 
     EF_IDS.forEach(function (id) { $(id).value = ''; });

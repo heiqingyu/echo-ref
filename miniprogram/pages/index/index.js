@@ -23,7 +23,7 @@ Page({
     bmiLabel: '',
     bmiCls: '',
     valid: true,
-    formula: 'dubois',
+    formula: 'mosteller',
     standard: 'CN',
     standardNote: '',
     /* —— EF 计算（合并自原「EF 计算」页） —— */

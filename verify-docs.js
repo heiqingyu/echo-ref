@@ -522,7 +522,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 127 条（计算 52 + 评估判读 75，含瓣膜解剖；切面速查与两外链组已移出）', d.items === 127, d.items);
+    check('条目 124 条（计算 49 + 评估判读 75，含瓣膜解剖；切面速查与两外链组已移出）', d.items === 124, d.items);
     check('目录不再含切面速查条目（tee-20 / tte-std / tte-measure）', d.segOnlyLeak === 0, d.segOnlyLeak);
     check('外链 <a> 条目 0 条（切面学习/TEE 演示已移出公式集目录）', d.links === 0, d.links);
     check('目录不再含操作规范专辑入口（已移入切面学习页签）', d.album === 0, d.album + ' / ' + d.albumTxt);
@@ -697,12 +697,14 @@ function check(name, ok, detail) {
     ['血流动力学、舒张与心功能', '右心与肺循环', '重构、室壁运动与心肌功能'].every((t) => newGroupTitles.indexOf(t) !== -1),
     newGroupTitles);
 
-  await openCalc('paspv');
-  await fillCalc('paspv', 'ptrv', '3.0');
-  await fillCalc('paspv', 'prap', '8');
+  await openCalc('mpap');
+  await fillCalc('mpap', 'pp_tr', '3.0');
+  await fillCalc('mpap', 'pp_pr', '1.5');
+  await fillCalc('mpap', 'pp_rap', '8');
   await new Promise((r) => setTimeout(r, 300));
-  let o = await outOf('paspv');
-  check('PASP 3.0 + 8 → 44 mmHg 轻度', /44/.test(o) && /轻度/.test(o), o);
+  let o = await outOf('mpap');
+  check('肺动脉压三合一：TR 3.0 + PR 1.5 + RAP 8 → sPAP 44 / dPAP 17 / mPAP 26',
+    /sPAP 44/.test(o) && /dPAP 17/.test(o) && /mPAP 26/.test(o), o);
 
   // —— v1.3.12：随访与术中评估 ——
   await openCalc('aortagrow');
@@ -972,7 +974,21 @@ function check(name, ok, detail) {
   o = await outOf('aortaz');
   check('切女性后参考区间随之变化（2.7–3.5）', /参考 2\.7–3\.5 cm/.test(o), o);
 
-  await openCalc('paspv'); // 收尾回到列表
+  // —— v1.7.5：心脏同步化（机械不同步）——
+  await openCalc('sync');
+  await fillCalc('sync', 'sy_spwmd', '60');
+  await fillCalc('sync', 'sy_tssd', '45');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('sync');
+  check('心脏同步化：SPWMD 60 + Ts-SD 45 → 1 项阳性（阈值 130 / 33）',
+    /1 项阳性/.test(o) && /Ts-SD/.test(o), o);
+  await pickOpt('sync', 'sy_flash', 'y');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('sync');
+  check('勾上室间隔闪动后 → 2 项阳性、证据较充分',
+    /2 项阳性/.test(o) && /较充分/.test(o), o);
+
+  await openCalc('mpap'); // 收尾回到列表
   await backToList();
 
   // 详情视图在发布版仍可用

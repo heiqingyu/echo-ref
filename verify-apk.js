@@ -508,8 +508,8 @@ check('评分条目带选项组（H2FPEF 房颤 / 降压药）',
   html.indexOf("{ k: 'haf', n: '心房颤动'") !== -1 &&
   html.indexOf("{ k: 'hbp', n: '降压药种数'") !== -1, true);
 /* v1.2.9 第二批：右心与肺循环 */
-check('含 6 个右心新计算器（rvvol / rvfws / papi / pdap / residx / rvdvdt）',
-  ['rvvol', 'rvfws', 'papi', 'pdap', 'residx', 'rvdvdt'].every(function (id) {
+check('含 6 个右心计算器（rvvol / rvfws / papi / mpap（三压合一） / residx / rvdvdt）',
+  ['rvvol', 'rvfws', 'papi', 'mpap', 'residx', 'rvdvdt'].every(function (id) {
     return html.indexOf("id: '" + id + "'") !== -1;
   }), true);
 check('右心引擎函数已内联（rvVolumeIndex / rvFreeWallStrain / pulmonaryPulseIndex / resistanceIndices / rvDpDt）',

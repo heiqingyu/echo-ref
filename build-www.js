@@ -357,8 +357,8 @@ const html = `<!DOCTYPE html>
       <div class="field">
         <label class="field__l">体表面积公式</label>
         <div class="seg" data-seg="formula">
-          <div class="seg__i seg__i--on" data-v="dubois">Du Bois</div>
-          <div class="seg__i" data-v="mosteller">Mosteller</div>
+          <div class="seg__i seg__i--on" data-v="mosteller">Mosteller</div>
+          <div class="seg__i" data-v="dubois">Du Bois</div>
         </div>
       </div>
       <div class="stat-row">
@@ -420,8 +420,9 @@ const html = `<!DOCTYPE html>
       </div>
       <div class="note">
         <b>体表面积 BSA</b><br>
+        Mosteller（默认）：BSA = √(身高 × 体重 ÷ 3600)，与多数机器计算界面一致；<br>
         Du Bois：BSA = 0.007184 × 身高<sup>0.725</sup> × 体重<sup>0.425</sup>（临床试验通用）<br>
-        Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）<br>
+        机器上显示的 BSA 与本站不同时，切换公式即可对齐<br>
         儿童页另有 <b>Haycock</b> 公式（儿科首选，PHN 研究采用）
       </div>
       <div class="note note--warn">

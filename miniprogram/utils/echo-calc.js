@@ -2561,6 +2561,133 @@ function coronaryFlowReserve(distal, proximal) {
   return r;
 }
 
+/**
+ * 肺动脉压三合一：sPAP / dPAP / mPAP 用同一个 RAP 一次算完
+ *
+ *   sPAP = 4 × TR Vmax² + RAP          （TR 峰速）
+ *   dPAP = 4 × PR(舒张末)² + RAP        （肺动脉瓣反流舒张末速度）
+ *   mPAP = (sPAP + 2 × dPAP) / 3        （两压齐全时）
+ *   mPAP ≈ 0.61 × sPAP + 2              （只有 TR 时的 Mahan 近似）
+ *
+ * ★ 肺动脉瓣狭窄 / RVOT 梗阻时 sPAP 会被高估，改看 RVOT VTI 与 PR 速度。
+ */
+function pulmonaryPressures(o) {
+  o = o || {};
+  const rap = o.rap > 0 ? o.rap : 0;
+  const out = {};
+  if (o.trv > 0) {
+    out.spap = pasp(o.trv, rap);
+    const g = paspGrade(out.spap);
+    if (g && g.text) out.spapText = g.text;
+  }
+  if (o.prv > 0) {
+    const d = pulmonaryDiastolicPressure(o.prv, rap);
+    if (d && d.padp !== undefined) out.dpap = d.padp;
+  }
+  if (out.spap === undefined && out.dpap === undefined) return {};
+  if (out.spap !== undefined && out.dpap !== undefined) {
+    out.mpap = (out.spap + 2 * out.dpap) / 3;
+    out.mode = 'mean';
+  } else if (out.spap !== undefined) {
+    out.mpap = 0.61 * out.spap + 2;
+    out.mode = 'mahan';
+  }
+  if (out.mpap !== undefined) {
+    out.mpapText = out.mpap > 25 ? '升高（>25 mmHg）'
+      : out.mpap > 20 ? '轻度升高（20–25 mmHg）' : '正常（≤20 mmHg）';
+  }
+  return out;
+}
+
+/**
+ * 机械不同步综合评估（CRT 术前旁证）
+ *
+ * 阈值：SPWMD ≥130 ms（Pitzalis 2002）、IVMD ≥40 ms、
+ *       Ts-SD-12 ≥33 ms（Yu 2004，12 段纵向应变达峰时间标准差）；
+ *       室间隔闪动 / 心尖摇摆为肉眼征象，出现即记阳性。
+ *
+ * ★ PROSPECT 研究：没有任何单项超声不同步指标能优于体表 ECG 预测 CRT 反应。
+ *   本函数只数「阳性条数」，不输出「应植入 CRT」的结论。
+ */
+function mechDyssynchrony(o) {
+  o = o || {};
+  const items = [];
+  if (o.spwmd > 0) items.push({ k: 'SPWMD', v: o.spwmd, cut: 130, pos: o.spwmd >= 130 });
+  if (o.ivmd > 0) items.push({ k: 'IVMD', v: o.ivmd, cut: 40, pos: o.ivmd >= 40 });
+  if (o.tssd > 0) items.push({ k: 'Ts-SD', v: o.tssd, cut: 33, pos: o.tssd >= 33 });
+  if (o.flash) items.push({ k: '室间隔闪动', pos: true });
+  if (o.rock) items.push({ k: '心尖摇摆', pos: true });
+  if (!items.length) return {};
+  const pos = items.filter(function (i) { return i.pos; });
+  let text;
+  if (!pos.length) text = '未见机械不同步证据';
+  else if (pos.length === 1) text = '1 项阳性：证据不足，需结合 ECG 与临床';
+  else text = pos.length + ' 项阳性：机械不同步证据较充分（仍不能单独决定 CRT）';
+  return {
+    items: items,
+    posCount: pos.length,
+    total: items.length,
+    text: text,
+    detail: items.map(function (i) {
+      if (i.v === undefined) return i.k + '（有）';
+      return i.k + ' ' + i.v + ' ms（阈值 ' + i.cut + '，'
+        + (i.pos ? '阳性' : '阴性') + '）';
+    }).join('；'),
+  };
+}
+
+/**
+ * CRT 适应证分层（ESC 2021 / AHA-ACC-HFSA 2022 口径）
+ *
+ *   LVEF ≤35%：LBBB + QRS ≥150 → Ⅰ；LBBB 130–149 或非 LBBB ≥150 → Ⅱa；
+ *              非 LBBB 130–149 → Ⅱb；QRS <130 → Ⅲ
+ *   LVEF 36–50%：仅 LBBB + QRS ≥150 可以考虑（Ⅱb）
+ *   LVEF >50%：常规不推荐
+ *   NYHA Ⅰ 级：即使满足上述条件也只在预计高心室起搏比例时考虑（Ⅱb）
+ *
+ * @param {object} o {lvef, qrs, lbbb, af, nyha}
+ */
+function crtIndication(o) {
+  o = o || {};
+  const lvef = o.lvef, qrs = o.qrs;
+  if (!(lvef > 0) || !(qrs > 0)) return { error: '需填写 LVEF（%）与 QRS 时限（ms）' };
+  const lbbb = !!o.lbbb;
+  let cls = 'Ⅲ';
+  let why = '';
+  if (lvef <= 35) {
+    if (qrs >= 150) {
+      cls = lbbb ? 'Ⅰ' : 'Ⅱa';
+      why = (lbbb ? 'LBBB' : '非 LBBB') + ' + QRS ≥150 ms';
+    } else if (qrs >= 130) {
+      cls = lbbb ? 'Ⅱa' : 'Ⅱb';
+      why = (lbbb ? 'LBBB' : '非 LBBB') + ' + QRS 130–149 ms';
+    } else {
+      why = 'QRS <130 ms，不满足宽度条件';
+    }
+  } else if (lvef <= 50) {
+    if (lbbb && qrs >= 150) { cls = 'Ⅱb'; why = 'LVEF 36–50% + LBBB + QRS ≥150 ms'; }
+    else why = 'LVEF 36–50% 且 QRS 条件不足';
+  } else {
+    why = 'LVEF >50%，常规不做 CRT';
+  }
+  if (o.nyha === 1 && cls === 'Ⅰ') {
+    cls = 'Ⅱb';
+    why += '；NYHA Ⅰ 级只在预计高心室起搏比例时考虑';
+  }
+  const grades = {
+    'Ⅰ': 'Ⅰ 类（应植入）',
+    'Ⅱa': 'Ⅱa（应当考虑）',
+    'Ⅱb': 'Ⅱb（可以考虑）',
+    'Ⅲ': 'Ⅲ 类（不推荐）',
+  };
+  return {
+    cls: cls,
+    grade: grades[cls],
+    why: why,
+    afNote: o.af ? '房颤：须保证近 100% 双室起搏（常需房室结消融），否则获益低于窦性心律' : '',
+  };
+}
+
 module.exports = {
   csaFromDiameter,
   strokeVolume,
@@ -2650,6 +2777,9 @@ module.exports = {
   lvmHeightIndex,
   // —— v1.3.2 新增：跨指标派生量 ——
   evpRatio,
+  pulmonaryPressures,
+  mechDyssynchrony,
+  crtIndication,
   laStiffness,
   vtiRatio,
   lvncRatio,

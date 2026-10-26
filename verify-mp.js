@@ -546,7 +546,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 127 条（外链两整组 + 切面速查 3 条已移入「切面学习」页签）', nItems, 127, 0);
+  check('目录共 124 条（计算 49 + 判读 75；外链两整组 + 切面速查 3 条已移入「切面学习」页签）', nItems, 124, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -685,27 +685,29 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segSim.some(i => /ct2tee/.test(i.url)) &&
     segSim.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
-  check('血流动力学、舒张与心功能 16 条（M 型三合一 / 快速比值 / Ea / VTI 比 / dias / E-Vp / 四步法）', dirById('hemo').items.length, 16, 0);
-  check('右心与肺循环 11 条（PASP / FAC / PVR / SVR + 第二批 6 条 + 肺高压可能性）',
-    dirById('right').items.length, 11, 0);
-  check('右心第二批条目齐全（rvvol / rvfws / papi / pdap / residx / rvdvdt）',
-    ['rvvol', 'rvfws', 'papi', 'pdap', 'residx', 'rvdvdt']
+  check('血流动力学、舒张与心功能 13 条（M 型三合一 / 快速比值 / Ea / VTI 比 / 舒张功能 / CRT 前 25 条）', dirById('hemo').items.length, 13, 0);
+  check('右心与肺循环 10 条（肺动脉压三合一 / FAC / PVR / SVR + 第二批 5 条 + 肺高压可能性）',
+    dirById('right').items.length, 10, 0);
+  check('右心第二批条目齐全（rvvol / rvfws / papi / residx / rvdvdt）',
+    ['rvvol', 'rvfws', 'papi', 'residx', 'rvdvdt']
       .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('右心组条目齐全',
-    ['paspv', 'rvfacv', 'pvrv', 'svrv']
+  check('右心组条目齐全（肺动脉压三合一已并入 mpap，PASP / PADP 不再单列）',
+    ['mpap', 'rvfacv', 'pvrv', 'svrv']
       .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('舒张功能 3 条已并入血流动力学组（dias / evp / dfun）',
-    ['dias', 'evp', 'dfun']
-      .every(id => dirById('hemo').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('血流动力学、舒张与心功能 16 条（原 hemo 14 + 舒张 3 − DVI）',
-    dirById('hemo').items.length, 16, 0);
-  check('重构、室壁运动与心肌功能 15 条（原 recon 12 + 评分 3）',
-    dirById('recon').items.length, 15, 0);
+  check('舒张功能合并为 1 条（dfun 收 E/A · E/e′ · E/Vp · 分级）',
+    dirById('hemo').items.some(i => i.id === 'dfun' && i.kind === 'calc') &&
+      !dirById('hemo').items.some(i => i.id === 'dias' || i.id === 'evp') ? 1 : 0, 1, 0);
+  check('心脏同步化条目在重构组',
+    dirById('recon').items.some(i => i.id === 'sync' && i.kind === 'calc') ? 1 : 0, 1, 0);
+  check('血流动力学、舒张与心功能 13 条（合并 dias / evp 之后）',
+    dirById('hemo').items.length, 13, 0);
+  check('重构、室壁运动与心肌功能 16 条（原 15 + 心脏同步化）',
+    dirById('recon').items.length, 16, 0);
   check('重构组条目齐全',
     ['volidx', 'rwsv', 'spher', 'lastrain', 'aortaidx', 'mdsv', 'swv']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('计算类条目 3 个计算组合计 42 条（另 10 条并入瓣膜 4 / 先心 4 / 心腔 2，合计 52）',
-    dirs.slice(0, 3).reduce(function (n, d) { return n + d.items.length; }, 0), 42, 0);
+  check('计算类条目 3 个计算组合计 39 条（另 10 条并入瓣膜 4 / 先心 4 / 心腔 2，合计 49）',
+    dirs.slice(0, 3).reduce(function (n, d) { return n + d.items.length; }, 0), 39, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -883,7 +885,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     pgF.refresh();
     check('小程序 ' + label, re.test(pgF.data.out) ? 1 : 0, 1, 0);
   };
-  mpCalc('paspv', { ptrv: 3.0, prap: 8 }, /PASP ≈ 44.*轻度/, 'PASP 3.0+8 = 44 轻度');
+  mpCalc('mpap', { pp_tr: 3.0, pp_rap: 8 }, /sPAP 44\.0 mmHg.*轻度升高/,
+    '肺动脉压三合一：TR 3.0 + RAP 8 → sPAP 44 轻度');
   mpCalc('rvfacv', { feda: 20, fesa: 13 }, /FAC 35\.0%/, 'RV FAC 20/13 = 35%');
   mpCalc('pvrv', { hmmpap: 45, hmpawp: 12, hmco: 5 }, /6\.60 WU.*重度/, 'PVR 6.6 WU 重度');
   mpCalc('svrv', { smap: 65, srap: 5, sco: 5 }, /960.*正常/, 'SVR 960 正常');
@@ -966,7 +969,12 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     /RVFWS 均值 -13\.7%.*减低/, 'RVFWS −13.7 减低');
   mpCalc2('papi', { pispap: 40, pidpap: 20, pirap: 15 },
     /PAPi = 1\.33.*失耦联/, 'PAPi 1.33 失耦联');
-  mpCalc2('pdap', { pdprv: 1.5, pdrap: 8 }, /PADP ≈ 17\.0 mmHg.*9\.0/, 'PADP 1.5 → 17');
+  mpCalc('mpap', { pp_tr: 3.0, pp_pr: 1.5, pp_rap: 8 }, /dPAP 17\.0 mmHg/,
+    '肺动脉压三合一：PR 1.5 → dPAP 17');
+  mpCalc('mpap', { pp_pr: 1.5, pp_rap: 8 }, /dPAP 17\.0 mmHg/, '只填 PR 也算 dPAP');
+  mpCalc('sync', { sy_spwmd: 60, sy_tssd: 45 }, /2 项阳性|1 项阳性/,
+    '心脏同步化：SPWMD 60 + Ts-SD 45 → 阳性计数');
+  mpCalc('sync', { sy_spwmd: 60 }, /未见机械不同步证据/, '心脏同步化：仅 SPWMD 60 → 阴性');
   mpCalc2('residx', { ripvr: 6, risvr: 960 }, /PVRI 10\.5.*升高.*SVRI 1680/,
     'PVRI 10.5 升高 / SVRI 1680');
   mpCalc2('rvdvdt', { rdt: 25 }, /dP\/dt ≈ 480.*保留/, 'RV dP/dt Δt25 = 480');
@@ -1025,12 +1033,12 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('CRT 含表格块', pgF.data.blocks.some(b => b.kind === 'table') ? 1 : 0, 1, 0);
   check('CRT 标注引用文献', pgF.data.refs.length >= 1 ? 1 : 0, 1, 0);
   check('CRT 导航栏标题同步', navBarTitle === 'CRT 同步化' ? 1 : 0, 1, 0);
-  pgF.data.inputs[0].value = '2';    // LVOT d
-  pgF.data.inputs[1].value = '20';   // VTI
-  pgF.data.inputs[3].value = '160';  // QRS
+  pgF.data.inputs[0].value = '28';   // LVEF
+  pgF.data.inputs[1].value = '160';  // QRS
+  pgF.data.inputs[2].value = '1';    // LBBB
   pgF.refresh();
-  check('CRT 结果含 SVi 与 QRS 提示',
-    /SVi/.test(pgF.data.out) && /QRS/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('CRT 结果给推荐等级（LVEF 28 + QRS 160 + LBBB → Ⅰ 类）',
+    /Ⅰ 类/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
   // —— 判读页 ↔ 计算器桥接（结构性解耦）——
   pgF.onLoad({ id: 'mitral' });

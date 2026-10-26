@@ -372,18 +372,6 @@ Page({
       } else if (valid(v.lav) || valid(v.rav)) {
         out = '请先在「EF·参考值」页填写身高体重（BSA 为 0 时无法计算指数）';
       }
-    } else if (gid === 'dias') {
-      // —— dias ——
-      const r = calc.diastolicRatios(
-        v.e === undefined ? null : v.e,
-        v.a === undefined ? null : v.a,
-        v.es === undefined ? null : v.es,
-        v.el === undefined ? null : v.el
-      );
-      const parts = [];
-      if (r.ea !== undefined) parts.push('E/A = ' + calc.fmt(r.ea));
-      if (r.avgEe !== undefined) parts.push('平均 E/e′ = ' + calc.fmt(r.avgEe) + '（' + calc.gradeEe(r.avgEe).text + '）');
-      out = parts.join('；');
     } else if (gid === 'ef') {
       // —— 左室容积与射血分数 ——
       if (valid(v.edv, v.esv)) {
@@ -431,11 +419,22 @@ Page({
           ' 上限 ' + calc.fmt(r.cut, 2) + '）→ ' + r.text;
       }
     } else if (gid === 'mpap') {
-      // —— 平均肺动脉压 ——
-      if (valid(v.prv, v.mrap)) {
-        const r = calc.mpap(v.prv, v.mrap);
-        out = 'mPAP ≈ ' + calc.fmt(r.mpap, 1) + ' mmHg → ' + r.text;
+      // —— 肺动脉压：sPAP / dPAP / mPAP 用同一 RAP 一次算完 ——
+      const r = calc.pulmonaryPressures({
+        trv: v.pp_tr, prv: v.pp_pr, rap: v.pp_rap,
+      });
+      const parts = [];
+      if (r.spap !== undefined) {
+        parts.push('sPAP ' + calc.fmt(r.spap, 1) + ' mmHg（' + r.spapText + '）');
       }
+      if (r.dpap !== undefined) {
+        parts.push('dPAP ' + calc.fmt(r.dpap, 1) + ' mmHg');
+      }
+      if (r.mpap !== undefined) {
+        parts.push('mPAP ' + calc.fmt(r.mpap, 1) + ' mmHg（' + r.mpapText +
+          (r.mode === 'mahan' ? '，Mahan 近似' : '') + '）');
+      }
+      out = parts.join('；');
     } else if (gid === 'ctrcd') {
       // —— CTRCD 监测 ——
       const r = calc.ctrcd({
@@ -451,24 +450,18 @@ Page({
       if (r.text) parts.push('→ ' + r.text);
       out = parts.join('；');
     } else if (gid === 'crt') {
-      // —— CRT：SV / SVi + QRS 时限提示 ——
-      const parts = [];
-      if (valid(v.ld, v.lvti)) {
-        const sv = calc.strokeVolume(v.ld, v.lvti);
-        parts.push('SV ' + calc.fmt(sv, 1) + ' mL');
-        if (bsa > 0) {
-          const svi = sv / bsa;
-          parts.push('SVi ' + calc.fmt(svi, 1) + ' mL/m²');
-          if (svi < 35) parts.push('（低流量）');
-        }
+      // —— CRT 适应证分层（2021 ESC / 2022 AHA）——
+      const r = calc.crtIndication({
+        lvef: v.cr_lvef,
+        qrs: v.cr_qrs,
+        lbbb: v.cr_lbbb === 1,
+        nyha: v.cr_nyha,
+      });
+      if (r.error) out = r.error;
+      else {
+        const parts = ['推荐 ' + r.grade, '依据 ' + r.why];
+        out = parts.join('；') + '。机械不同步旁证见「心脏同步化」条目';
       }
-      if (valid(v.qrs)) {
-        parts.push('QRS ' + calc.fmt(v.qrs, 0) + ' ms → ' +
-          (v.qrs >= 150 ? '≥150 ms，CRT 指征最强（LBBB 为 I 类、非 LBBB 为 IIa）'
-            : v.qrs >= 130 ? '130–149 ms，LBBB 为 IIa、非 LBBB 为 IIb'
-              : '＜130 ms，通常不满足 CRT 指征'));
-      }
-      out = parts.join('；');
     } else if (gid === 'la') {
       // —— 左心房容积指数 ——
       if (valid(v.lav) && bsa > 0) {
@@ -781,13 +774,6 @@ Page({
       }
       if (r.notes && r.notes.length) parts.push(r.notes.join('；'));
       out = parts.join('；');
-    } else if (gid === 'paspv') {
-      // —— 肺动脉收缩压 PASP ——
-      if (valid(v.ptrv, v.prap)) {
-        const val = calc.pasp(v.ptrv, v.prap);
-        out = 'PASP ≈ ' + calc.fmt(val, 1) + ' mmHg（4×' + calc.fmt(v.ptrv, 2) +
-          '² + ' + calc.fmt(v.prap, 0) + '）→ ' + calc.paspGrade(val).text;
-      }
     } else if (gid === 'rapv') {
       // —— 右房压（IVC 法）——
       const r = calc.rapEstimate(v.rivc, this.data.collapseV);
@@ -912,6 +898,10 @@ Page({
       if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + calc.fmt(f.avgEe));
       if (f.count > 0) parts.push('升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
       else parts.push('升高指标 0 项');
+      if (valid(v.dfvp) && valid(v.dfe)) {
+        const ev = calc.evpRatio(v.dfe, v.dfvp);
+        if (!ev.error) parts.push('E/Vp ' + calc.fmt(ev.ratio, 2) + '（' + ev.text + '）');
+      }
       if (f.text) parts.push('→ ' + f.text);
       out = parts.join('；');
     } else if (gid === 'volidx') {
@@ -1121,13 +1111,6 @@ Page({
         const r = calc.pulmonaryPulseIndex(v.pispap, v.pidpap, v.pirap);
         out = r.error ? r.error : 'PAPi = ' + calc.fmt(r.papi, 2) + ' · ' + r.text;
       }
-    } else if (gid === 'pdap') {
-      // —— 舒张期肺动脉压 ——
-      if (valid(v.pdprv)) {
-        const r = calc.pulmonaryDiastolicPressure(v.pdprv, v.pdrap);
-        out = r.error ? r.error
-          : 'PADP ≈ ' + calc.fmt(r.padp, 1) + ' mmHg（压差 ' + calc.fmt(r.grad, 1) + ' + RAP）';
-      }
     } else if (gid === 'residx') {
       // —— 阻力指数 ——
       if (valid(v.ripvr) || valid(v.risvr)) {
@@ -1146,6 +1129,16 @@ Page({
         const r = calc.rvDpDt(v.rdt);
         out = r.error ? r.error : 'RV dP/dt ≈ ' + calc.fmt(r.dpdt, 0) + ' mmHg/s · ' + r.text;
       }
+    } else if (gid === 'sync') {
+      // —— 心脏同步化：机械不同步综合评估 ——
+      const r = calc.mechDyssynchrony({
+        spwmd: v.sy_spwmd,
+        ivmd: v.sy_ivmd,
+        tssd: v.sy_tssd,
+        flash: ov.sy_flash === 'y',
+        rock: ov.sy_rock === 'y',
+      });
+      if (r.text) out = r.detail + ' → ' + r.text;
     } else if (gid === 'wilkins') {
       // —— Wilkins 形态评分（独立计算器）——
       if (valid(v.wk1) || valid(v.wk2) || valid(v.wk3) || valid(v.wk4)) {
@@ -1384,17 +1377,6 @@ Page({
           }).join(' / ');
           const parts = [segTxt, r.text];
           if (r.ascIndexText) parts.push(r.ascIndexText);
-          out = parts.join('；');
-        }
-      }
-    } else if (gid === 'evp') {
-      // —— E/Vp：左房压估测 ——
-      if (valid(v.evpe) && valid(v.evpvp)) {
-        const r = calc.evpRatio(v.evpe, v.evpvp);
-        if (r.error) out = r.error;
-        else {
-          const parts = ['E/Vp ' + calc.fmt(r.ratio, 2), r.vpText, r.text];
-          if (r.note) parts.push(r.note);
           out = parts.join('；');
         }
       }

@@ -126,7 +126,7 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 52) ok('公式集定义 52 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 49) ok('公式集定义 49 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
@@ -136,7 +136,7 @@ else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
 // v1.5.3：计算器可以直接挂在评估组上，与判读条目同组（不再单起「介入尺寸」组）
 const BRIEF_SEC_IDS = ['valve', 'chd', 'chamber'];
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1 && BRIEF_SEC_IDS.indexOf(g.sec) === -1);
-if (!badSec.length) ok('52 条公式的 sec 归属均合法（含并入评估组的 valve / chd / chamber）');
+if (!badSec.length) ok('49 条公式的 sec 归属均合法（含并入评估组的 valve / chd / chamber）');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
@@ -144,8 +144,8 @@ const nValveCalc = CG.GROUPS.filter(g => g.sec === 'valve').length;
 const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
 const nChdCalc = CG.GROUPS.filter(g => g.sec === 'chd').length;
 const nChamCalc = CG.GROUPS.filter(g => g.sec === 'chamber').length;
-if (nHemo === 16 && nRight === 11 && nRecon === 15 && nValveCalc === 4 && nChdCalc === 4 && nChamCalc === 2)
-  ok('分组条目数 16 / 11 / 15 + 瓣膜 4 + 先心 4 + 心腔 2（合计 52）');
+if (nHemo === 13 && nRight === 10 && nRecon === 16 && nValveCalc === 4 && nChdCalc === 4 && nChamCalc === 2)
+  ok('分组条目数 13 / 10 / 16 + 瓣膜 4 + 先心 4 + 心腔 2（合计 49）');
 else bad('分组条目数异常: ' + [nHemo, nRight, nRecon, nValveCalc, nChdCalc, nChamCalc].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
@@ -350,7 +350,7 @@ if (/versionCode=/.test(fs.readFileSync(path.join(ROOT, 'android-app/AndroidMani
 else bad('AndroidManifest 缺 versionCode');
 
 const formulaJs = fs.readFileSync(path.join(MP, 'pages/formula/formula.js'), 'utf8');
-['flow', 'shunt', 'bernoulli', 'atrial', 'dias'].forEach(id => {
+['flow', 'shunt', 'bernoulli', 'atrial', 'dfun', 'sync', 'mpap'].forEach(id => {
   if (formulaJs.indexOf("gid === '" + id + "'") !== -1) ok('formula 页含计算分支: ' + id);
   else bad('formula 页缺少计算分支: ' + id);
 });

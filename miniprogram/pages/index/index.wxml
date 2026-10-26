@@ -138,10 +138,10 @@
     <view class="field">
       <text class="field__label">体表面积公式</text>
       <view class="seg">
-        <view class="seg__item {{formula === 'dubois' ? 'seg__item--on' : ''}}"
-              data-v="dubois" bindtap="onFormula">Du Bois</view>
         <view class="seg__item {{formula === 'mosteller' ? 'seg__item--on' : ''}}"
               data-v="mosteller" bindtap="onFormula">Mosteller</view>
+        <view class="seg__item {{formula === 'dubois' ? 'seg__item--on' : ''}}"
+              data-v="dubois" bindtap="onFormula">Du Bois</view>
       </view>
     </view>
 
@@ -258,8 +258,9 @@
 
     <view class="result-title">体表面积（BSA）</view>
     <view class="note">
+      Mosteller（默认）：BSA = √(身高 × 体重 ÷ 3600)，与多数机器计算界面一致{{'\n'}}
       Du Bois：BSA = 0.007184 × 身高<text style="font-size:20rpx">0.725</text> × 体重<text style="font-size:20rpx">0.425</text>（临床试验通用）{{'\n'}}
-      Mosteller：BSA = √(身高 × 体重 ÷ 3600)（口算便捷）
+      机器上显示的 BSA 与本站不同时，点上方切换公式即可对齐
     </view>
 
     <view class="note note--strong">

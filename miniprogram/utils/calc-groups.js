@@ -89,13 +89,15 @@ const GROUPS = [
   },
   {
     id: 'mpap',
-    title: '平均肺动脉压',
-    sub: '舒张期肺动脉反流法',
+    sec: 'right',
+    title: '肺动脉压（sPAP · dPAP · mPAP）',
+    sub: 'TR 峰速 + PR 舒张末流速 + RAP · 三压同出',
     fields: [
-      { k: 'prv', n: '肺动脉反流峰速 Vmax', u: 'm/s' },
-      { k: 'mrap', n: '右房压 RAP', u: 'mmHg' },
+      { k: 'pp_tr', n: 'TR 峰速 Vmax', u: 'm/s' },
+      { k: 'pp_pr', n: 'PR 舒张末期流速（可选）', u: 'm/s' },
+      { k: 'pp_rap', n: '右房压 RAP', u: 'mmHg' },
     ],
-    note: 'mPAP = 4 × PR Vmax² + RAP；>25 mmHg 符合肺高压。也可用 Mahan 近似 0.61 × sPAP + 2。',
+    note: 'sPAP = 4 × TR Vmax² + RAP（≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 近似 0.61 × sPAP + 2。肺动脉瓣狭窄或 RVOT 梗阻时 sPAP 会高估；确诊肺高压仍要右心导管（mPAP >20 mmHg）',
   },
   {
     id: 'shunt',
@@ -129,34 +131,9 @@ const GROUPS = [
     ],
     note: '容积 ÷ BSA；LAVI 正常 ≤34 mL/m²；右房正常值需匹配测量方法',
   },
-  {
-    id: 'dias',
-    title: '舒张功能基础比值',
-    sub: 'E/A · 平均 E/e′',
-    sec: 'hemo',
-    fields: [
-      { k: 'e', n: 'E 峰', u: 'cm/s' },
-      { k: 'a', n: 'A 峰', u: 'cm/s' },
-      { k: 'es', n: '间隔 e′', u: 'cm/s' },
-      { k: 'el', n: '侧壁 e′', u: 'cm/s' },
-    ],
-    note: 'E/e′ <8 左房压正常，>14 升高，8–14 为灰区；完整分级需结合 LAVI、肺静脉等',
-  },
-
   /* ══════════════════════════════════════════════════════════
      右心与肺循环（sec: 'right'）
      ══════════════════════════════════════════════════════════ */
-  {
-    id: 'paspv',
-    sec: 'right',
-    title: '肺动脉收缩压 PASP',
-    sub: 'TR 压差 + 右房压 · 轻中重分级',
-    fields: [
-      { k: 'ptrv', n: 'TR 峰速 Vmax', u: 'm/s' },
-      { k: 'prap', n: '右房压 RAP', u: 'mmHg' },
-    ],
-    note: 'PASP = 4 × Vmax² + RAP；≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度。肺动脉瓣狭窄或 RVOT 梗阻时会高估',
-  },
   {
     id: 'rvfacv',
     sec: 'right',
@@ -228,17 +205,6 @@ const GROUPS = [
       { k: 'pirap', n: '右房压 RAP', u: 'mmHg' },
     ],
     note: 'PAPi = (sPAP − dPAP) / RAP，反映右室与肺循环的耦联。<1.85 提示失耦联，肺高压与心衰患者预后差；>2.0 相对保留。RAP 必须先由 IVC 估出',
-  },
-  {
-    id: 'pdap',
-    sec: 'right',
-    title: '舒张期肺动脉压 PADP',
-    sub: '4 × V(PR 舒张末)² + RAP',
-    fields: [
-      { k: 'pdprv', n: 'PR 舒张末期流速', u: 'm/s' },
-      { k: 'pdrap', n: '右房压 RAP', u: 'mmHg' },
-    ],
-    note: 'PADP = 4 × V² + RAP，正常 8–15 mmHg。平均肺动脉压条目（mpap）用 PR 峰值速度算平均压，本条算的是舒张末压，两者互补',
   },
   {
     id: 'residx',
@@ -390,17 +356,6 @@ const GROUPS = [
      v1.3.2 跨指标派生量（补的是「两项凑一个判读量」的空白）
      ══════════════════════════════════════════════════════════ */
   {
-    id: 'evp',
-    sec: 'hemo',
-    title: 'E/Vp 左房压估测',
-    sub: 'E 峰 ÷ 血流传播速度',
-    fields: [
-      { k: 'evpe', n: 'E 峰速度', u: 'cm/s' },
-      { k: 'evpvp', n: 'Vp 血流传播速度', u: 'cm/s' },
-    ],
-    note: 'E/Vp ≤1.5；>1.5 提示 PCWP >15 mmHg，>2.5 提示 >18 mmHg。Vp 用彩色 M 型在四腔切面测（正常 ≥45 cm/s），E 用同单位 cm/s。Vp 正常而 E/Vp 升高时，E 峰多被容量负荷或 MR 抬高，不等于松弛受损——这一点是 E/Vp 比 E/e′ 更稳的地方：它不受负荷影响的方向相反',
-  },
-  {
     id: 'lastiff',
     sec: 'recon',
     title: '左房僵硬度',
@@ -466,8 +421,8 @@ const GROUPS = [
   {
     id: 'dfun',
     sec: 'hemo',
-    title: '舒张功能分级（四步法）',
-    sub: 'E/A · E/e′ · LAVi · TR Vmax',
+    title: '左室舒张功能（E/A · E/e′ · E/Vp · 分级）',
+    sub: '四步法分级 + 左房压估测',
     fields: [
       { k: 'dfe', n: 'E 峰', u: 'cm/s' },
       { k: 'dfa', n: 'A 峰', u: 'cm/s' },
@@ -475,13 +430,30 @@ const GROUPS = [
       { k: 'dfel', n: '侧壁 e′', u: 'cm/s' },
       { k: 'dflavi', n: 'LAVi（可选）', u: 'mL/m²' },
       { k: 'dftrv', n: 'TR Vmax（可选）', u: 'm/s' },
+      { k: 'dfvp', n: 'Vp 血流传播速度（可选）', u: 'cm/s' },
     ],
-    note: '2016 ASE/EACVI 简化路径：E/A ≥2 或 E/A ≤0.8 结合三个升高指标（E/e′ >14、LAVi >34、TR Vmax >2.8）分为 Ⅰ/Ⅱ/Ⅲ 级。灰区需结合临床',
+    note: '2016 ASE/EACVI 简化路径：E/A ≥2，或 E/A ≤0.8 结合三个升高指标（平均 E/e′ >14、LAVi >34、TR Vmax >2.8），分 Ⅰ/Ⅱ/Ⅲ 级（Ⅰ 松弛受损 · Ⅱ 假性正常化 · Ⅲ 限制性）。同屏给出平均 E/e′（<8 正常、>14 升高、8–14 灰区）与 E/Vp（≤1.5 正常，>2.5 约 PCWP >18 mmHg）；Vp 用彩色 M 型四腔切面测（正常 ≥45 cm/s），与 E 同单位。灰区一律结合临床',
   },
 
   /* ══════════════════════════════════════════════════════════
      重构与心肌功能（sec: 'recon'）
      ══════════════════════════════════════════════════════════ */
+  {
+    id: 'sync',
+    sec: 'recon',
+    title: '心脏同步化（机械不同步）',
+    sub: 'SPWMD · IVMD · Ts-SD · 闪动 / 摇摆 · CRT 术前旁证',
+    opts: [
+      { k: 'sy_flash', n: '室间隔闪动', list: [['n', '无'], ['y', '有']] },
+      { k: 'sy_rock', n: '心尖摇摆', list: [['n', '无'], ['y', '有']] },
+    ],
+    fields: [
+      { k: 'sy_spwmd', n: 'SPWMD 室间隔-后壁延迟', u: 'ms' },
+      { k: 'sy_ivmd', n: 'IVMD 主-肺动脉射血前间期差', u: 'ms' },
+      { k: 'sy_tssd', n: 'Ts-SD-12 应变达峰时间标准差', u: 'ms' },
+    ],
+    note: '阈值：SPWMD ≥130 ms、IVMD ≥40 ms、Ts-SD-12 ≥33 ms；室间隔闪动与心尖摇摆为肉眼征象，出现即记阳性。三项数值可只填测到的，**≥2 项阳性才算证据较充分**。★ PROSPECT 研究：没有任何单项超声不同步指标能优于体表 ECG 预测 CRT 反应，本条目只作旁证描述，不能单独决定是否植入；术前仍以 LVEF、QRS 形态与时限为主',
+  },
   {
     id: 'volidx',
     sec: 'recon',
