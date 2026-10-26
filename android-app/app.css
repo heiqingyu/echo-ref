@@ -1524,6 +1524,12 @@ button.fx-nav__c {
   text-align: center;
 }
 .copyfoot b { color: #475569; font-weight: 600; }
+.copyfoot__by {
+  margin-left: 7px;
+  font-size: 10.5px;
+  letter-spacing: .35px;
+  color: #8b96a5;
+}
 
 /* ★ 以上公式集样式（.fx-nav / .fx-group / .ref-dl / .chip 等）必须留在
    下面「已裁掉的瓣膜专页」注释块之前：build-www.js 的 stripCssBlock 会把

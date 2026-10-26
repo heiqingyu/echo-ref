@@ -646,7 +646,7 @@ ${SEG_HTML}
   </section>
 
 <footer class="copyfoot">
-  <b>EchoRef · 心脏超声参考工具</b><br>
+  <b>EchoRef · 心脏超声参考工具</b><span class="copyfoot__by">by qingyu</span><br>
   欢迎自用与转发；禁止去除署名后转载。
 </footer>
 

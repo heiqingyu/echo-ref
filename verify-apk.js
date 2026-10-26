@@ -581,8 +581,9 @@ check('水印不是竖排（避免压正文）',
   wmBlock.indexOf('writing-mode') === -1, true);
 // v1.6.0：页脚只留「品牌行 + 禁止去除署名后转载」，
 // 用户 2026-10-24 明确「不需要包含其他端的地址」（各端不用互相导流）
-check('含页脚品牌行（EchoRef · 心脏超声参考工具）',
-  html.indexOf('copyfoot') !== -1 && html.indexOf('EchoRef · 心脏超声参考工具') !== -1, true);
+check('含页脚品牌行（EchoRef · 心脏超声参考工具 by qingyu）',
+  html.indexOf('copyfoot') !== -1 && html.indexOf('EchoRef · 心脏超声参考工具') !== -1 &&
+  html.indexOf('copyfoot__by') !== -1 && html.indexOf('by qingyu') !== -1, true);
 check('含页脚版权声明（禁止去除署名后转载）',
   html.indexOf('禁止去除署名后转载') !== -1, true);
 check('页脚不出现其他端的引导地址',
