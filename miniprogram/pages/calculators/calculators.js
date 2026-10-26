@@ -85,7 +85,7 @@ function buildSections() {
       items: CG.GROUPS.filter(function (g) {
         return (g.sec || 'hemo') === cs.id;
       }).map(function (g) {
-        return { kind: 'calc', id: g.id, title: g.title, sub: g.sub || '' };
+        return { kind: 'calc', id: g.id, ab: g.ab || '', title: g.title, sub: g.sub || '' };
       }),
     };
   });
@@ -104,14 +104,14 @@ function buildSections() {
     const calcs = CG.GROUPS.filter(function (g) {
       return g.sec === s.id;
     }).map(function (g) {
-      return { kind: 'calc', id: g.id, title: g.title, sub: g.sub || '' };
+      return { kind: 'calc', id: g.id, ab: g.ab || '', title: g.title, sub: g.sub || '' };
     });
     const items = calcs.concat(s.items.filter(function (it) {
       // ★ v1.6.4：segOnly 条目（切面速查 / 标准切面）只在「切面学习」页签列出，
       //   不进公式集目录；条目定义仍留在 BRIEF_SECTIONS 里，详情页照常可取。
       return !it.segOnly;
     }).map(function (it) {
-      return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };
+      return { kind: 'brief', id: it.id, ab: it.ab || '', title: it.title, sub: it.sub || '' };
     }));
     // mergeInto：并入同名组（如「瓣膜评估」计算器组），不另起一个组
     if (s.mergeInto) {
@@ -140,7 +140,7 @@ function buildSections() {
       if (from) {
         from.items = from.items.filter(function (x) { return x.id !== it.id; });
       }
-      host.items.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
+      host.items.push({ kind: 'brief', id: it.id, ab: it.ab || '', title: it.title, sub: it.sub || '' });
     });
   });
 

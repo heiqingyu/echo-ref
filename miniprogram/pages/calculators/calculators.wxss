@@ -57,38 +57,69 @@
   color: #2563eb;
 }
 
+/* ★ v1.8.2 目录改版：一组一张卡，组头带竖色条 + 条目数，条目左侧缩写徽标
+   好处：120 条不再是一张张浮动的小白卡，滚动时靠组块与徽标列定位 */
+.fx-card {
+  margin-bottom: 26rpx;
+  border-radius: 18rpx;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 2rpx 10rpx rgba(16, 32, 64, 0.05);
+}
+
+.fx-hd {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 24rpx 24rpx 18rpx;
+  border-bottom: 1rpx solid #f0f2f7;
+}
+
 .fx-group {
-  margin: 28rpx 4rpx 12rpx;
-  font-size: 25rpx;
-  font-weight: 600;
-  color: #6b7280;
-  letter-spacing: 1rpx;
+  flex: 1;
+  min-width: 0;
+  padding-left: 14rpx;
+  border-left: 6rpx solid #2563eb;
+  font-size: 27rpx;
+  font-weight: 700;
+  color: #1f2329;
+  letter-spacing: 0.5rpx;
+  line-height: 1.35;
+}
+
+.fx-hd__n {
+  flex: none;
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+  background: #f4f6fa;
+  font-size: 21rpx;
+  color: #98a1b0;
 }
 
 /* 分组说明（如书籍的编者 / 出版社 / ISBN） */
 .fx-group__note {
-  margin: 0 4rpx 10rpx;
-  padding: 12rpx 16rpx;
-  border-radius: 10rpx;
-  background: #eef2f9;
+  margin: 0;
+  padding: 14rpx 24rpx;
+  border-bottom: 1rpx solid #f0f2f7;
+  background: #f7f9fd;
   font-size: 22rpx;
   line-height: 1.6;
   color: #5b6472;
 }
 
 .fx-list {
-  background: #fff;
-  border-radius: 18rpx;
-  overflow: hidden;
-  box-shadow: 0 2rpx 10rpx rgba(16, 32, 64, 0.04);
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
 }
 
 .fx-item {
   display: flex;
   align-items: center;
   gap: 16rpx;
-  padding: 26rpx 24rpx;
-  border-bottom: 1rpx solid #f0f1f3;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #f2f4f8;
 }
 
 .fx-item:last-child {
@@ -97,6 +128,31 @@
 
 .fx-item--tap {
   background: #f2f7ff;
+}
+
+/* 缩写徽标：靠它一眼扫到条目，同组内等宽排成一条竖列 */
+.fx-bd {
+  flex: none;
+  width: 84rpx;
+  height: 84rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4rpx;
+  border-radius: 18rpx;
+  background: #eef3fd;
+  color: #2563eb;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  letter-spacing: -0.5rpx;
+}
+
+/* 5 个字符以上（MAPSE / Qp/Qs / Fontan…）降一档字号，避免在固定宽度里挤成一坨 */
+.fx-bd--s {
+  font-size: 19rpx;
+  letter-spacing: -0.8rpx;
 }
 
 .fx-item__main {

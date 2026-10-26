@@ -33,24 +33,32 @@
   </view>
 
   <block wx:for="{{sections}}" wx:key="id" wx:for-item="sec">
-    <view class="fx-group" id="g-{{sec.id}}">{{sec.title}}</view>
-    <view wx:if="{{sec.note}}" class="fx-group__note">{{sec.note}}</view>
+    <!-- ★ v1.8.2：一组一张卡 —— 组头带竖色条与条目数，组内用分隔线，条目左侧给缩写徽标 -->
+    <view class="fx-card">
+      <view class="fx-hd">
+        <view class="fx-group" id="g-{{sec.id}}">{{sec.title}}</view>
+        <view class="fx-hd__n">{{sec.items.length}} 项</view>
+      </view>
+      <view wx:if="{{sec.note}}" class="fx-group__note">{{sec.note}}</view>
 
-    <view class="fx-list">
-      <view wx:for="{{sec.items}}" wx:key="id" wx:for-item="it"
-            class="fx-item" hover-class="fx-item--tap"
-            data-kind="{{it.kind}}" data-id="{{it.id}}" data-url="{{it.url}}"
-            data-sec="{{it.sec}}" data-title="{{it.title}}" bindtap="onOpen">
-        <view class="fx-item__main">
-          <view class="fx-item__n">{{it.title}}</view>
-          <view class="fx-item__d">{{it.sub}}</view>
+      <view class="fx-list">
+        <view wx:for="{{sec.items}}" wx:key="id" wx:for-item="it"
+              class="fx-item" hover-class="fx-item--tap"
+              data-kind="{{it.kind}}" data-id="{{it.id}}" data-url="{{it.url}}"
+              data-sec="{{it.sec}}" data-title="{{it.title}}" bindtap="onOpen">
+          <view wx:if="{{it.ab}}" class="fx-bd {{it.ab.length >= 5 ? 'fx-bd--s' : ''}}">{{it.ab}}</view>
+          <view class="fx-item__main">
+            <view class="fx-item__n">{{it.title}}</view>
+            <view wx:if="{{it.sub}}" class="fx-item__d">{{it.sub}}</view>
+          </view>
+          <!-- 收藏星标：catchtap 拦住冒泡，点星不会打开条目（v1.7.7） -->
+          <view wx:if="{{it.kind === 'calc' || it.kind === 'brief' || it.kind === 'valveana'}}"
+                class="fx-item__f {{it.fav ? 'fx-item__f--on' : ''}}"
+                data-id="{{it.id}}" catchtap="onFav"
+                hover-class="fx-item__f--tap">{{it.fav ? '★' : '☆'}}</view>
+          <!-- v1.8.2：普通条目不再挂「›」，只保留有信息量的标识（专辑段数 / 视频可播） -->
+          <view wx:if="{{it.kind === 'album' || it.video}}" class="fx-item__a">{{it.kind === 'album' ? it.count + ' ›' : '▶'}}</view>
         </view>
-        <!-- 收藏星标：catchtap 拦住冒泡，点星不会打开条目（v1.7.7） -->
-        <view wx:if="{{it.kind === 'calc' || it.kind === 'brief' || it.kind === 'valveana'}}"
-              class="fx-item__f {{it.fav ? 'fx-item__f--on' : ''}}"
-              data-id="{{it.id}}" catchtap="onFav"
-              hover-class="fx-item__f--tap">{{it.fav ? '★' : '☆'}}</view>
-        <view class="fx-item__a">{{it.kind === 'album' ? it.count + ' ›' : (it.video ? '▶' : '›')}}</view>
       </view>
     </view>
   </block>

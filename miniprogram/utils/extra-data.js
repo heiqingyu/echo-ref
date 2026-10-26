@@ -199,6 +199,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'tee-safety',
+        ab: 'TEE',
         title: 'TEE 适应证、禁忌与并发症处理',
         sub: '什么情况必须做 TEE · 相对禁忌 · 并发症识别',
         source: ['R60', 'R61', 'R10'],
@@ -256,6 +257,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'artifact-guide',
+        ab: '伪影',
         title: '超声伪影识别与规避（2026 ASE 指南）',
         sub: '混响 · 镜像 · 声影 · 侧瓣 · 多普勒 · 3D 与造影伪影',
         source: ['R50'],
@@ -395,6 +397,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'mimic',
+        ab: '假病变',
         title: '正常结构被误判为病变（高频假病变）',
         sub: '调节束 · Chiari 网 · 假腱索 · 左心耳分叶 · 右室小梁',
         source: ['R50', 'R9'],
@@ -418,6 +421,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'contrast-echo',
+        ab: 'CEUS',
         title: '超声造影（CEUS）规范与判读',
         sub: '适应证 · MI 与机器设置 · 制剂剂量 · EBD 手法 · 判读 · 安全性',
         source: ['R47', 'R48'],
@@ -514,6 +518,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: '3d-tee',
+        ab: '3D',
         title: '3D TEE：采集、多平面重建与术前规划',
         sub: '窄角与全容积 · 六个重建平面 · 二尖瓣与左心耳定量 · 拼接伪影',
         source: ['R10', 'R38'],
@@ -588,6 +593,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'report-std',
+        ab: '报告',
         title: '超声报告标准化清单（ASE 2025）',
         sub: '完整 · 简洁 · 正确 · 有临床用途 · 危急值清单',
         source: ['R41'],
@@ -657,6 +663,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'critical',
+        ab: '危急',
         title: '超声危急值与报告措辞分级',
         sub: '必须电话通知的十类 · 措辞三级 · 复查间隔',
         source: ['R41', 'R1'],
@@ -692,6 +699,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'doppler-basics',
+        ab: '多普勒',
         title: '多普勒定量：五种最常见的错',
         sub: '角度误差 · 增益与壁滤波 · 混叠 · 压差与 VTI · 流量计算',
         source: ['R7', 'R9'],
@@ -766,6 +774,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'echo-interv',
+        ab: '介入',
         title: '超声引导下有创操作（心包穿刺 · 活检 · 房间隔 · 消融）',
         sub: 'TTE/TEE/ICE 选谁 · 12 类操作对照表 · 心包穿刺要点 · 活检与消融',
         source: ['R49'],
@@ -907,6 +916,7 @@ const BRIEF_SECTIONS = [
     items: [
       {
         id: 'lv',
+        ab: 'LV',
         title: '左心评估',
         sub: 'EF 分级 · 室壁厚度 · 质量指数 · 肥厚鉴别',
         source: ['R2', 'R1'],
@@ -979,6 +989,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'rv',
+        ab: 'RV',
         title: '右心评估',
         sub: 'RAP · PASP · PVR · PADP · PH 概率 · 右室功能',
         source: ['R5', 'R11', 'R12'],
@@ -1075,6 +1086,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'rcoupling',
+        ab: '耦联',
         title: '右室-肺动脉耦联',
         sub: 'TAPSE / PASP 比值 · 右室储备与预后',
         source: ['R16', 'R12'],
@@ -1123,6 +1135,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'rvfail',
+        ab: '右心衰',
         title: '右室功能分级与右心衰',
         sub: '六指标积分 · RV 应变 · 右心衰分期',
         source: ['R12'],
@@ -1198,6 +1211,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'rv-strain',
+        ab: 'RVFW',
         title: '右室应变与 RVFWS 细化',
         sub: '两种测法 · 基底-心尖梯度 · 储备与耦联',
         source: ['R24', 'R5', 'R36'],
@@ -1295,6 +1309,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'strain',
+        ab: 'GLS',
         title: '心肌应变',
         sub: 'GLS · 分层应变 · 左房/右室应变',
         source: ['R3', 'R4', 'R40'],
@@ -1355,6 +1370,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'la-strain',
+        ab: 'LAS',
         title: '左房应变与 HFpEF 诊断路径',
         sub: 'LASr 三时相 · HFA-PEFF 超声计分 · 负荷试验',
         source: ['R24', 'R25'],
@@ -1433,6 +1449,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'peri',
+        ab: '心包',
         title: '心包积液与心脏压塞',
         sub: '半定量 · 压塞征象 · 缩窄鉴别',
         source: ['R13'],
@@ -1485,6 +1502,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'cp-rm',
+        ab: '缩窄',
         title: '缩窄性心包炎 vs 限制型心肌病',
         sub: '呼吸变异量化 · 瓣环反转 · 鉴别要点',
         source: ['R21', 'R13'],
@@ -1533,6 +1551,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'ctrcd',
+        ab: 'CTRCD',
         title: '肿瘤治疗相关心功能不全（CTRCD）',
         sub: 'GLS 相对下降 · 三级分档 · 监测节点',
         source: ['R29', 'R3', 'R40'],
@@ -1580,6 +1599,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'zh-normal',
+        ab: 'CN',
         title: '中国人群正常值：EMINCA 与测量指南',
         sub: '何时该用中国界值 · 与 ASE 的关键差异 · 体型与年龄校正 · 三种常见误用',
         source: ['R1', 'R2'],
@@ -1635,6 +1655,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'mass',
+        ab: '占位',
         title: '心脏占位：血栓 / 黏液瘤 / 赘生物 / 恶性肿瘤',
         sub: '部位→概率 · 四条鉴别主线 · 易误判的正常结构 · 下一步查什么',
         source: ['R47', 'R17', 'R41'],
@@ -1703,6 +1724,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'stress-echo',
+        ab: '负荷',
         title: '运动负荷超声缺血判读',
         sub: '室壁运动评分 · 阳性标准 · Duke 评分',
         source: ['R26'],
@@ -1797,6 +1819,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'hcm-stress',
+        ab: 'HCM激',
         title: 'HCM 激发负荷试验（隐匿性梗阻）',
         sub: '什么情况要激发 · 阳性阈值 · SAM 判读 · 风险控制',
         source: ['R65', 'R65', 'R39'],
@@ -1860,6 +1883,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'dse',
+        ab: 'DSE',
         title: '多巴酚丁胺负荷超声（DSE）',
         sub: '存活心肌 · 低流速低梯度 AS · 剂量方案与终止指征',
         source: ['R26', 'R36'],
@@ -1894,6 +1918,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'hcm',
+        ab: 'HCM',
         title: '肥厚型心肌病评估',
         sub: '最大壁厚 · SAM · LVOT 压差 · 心尖型',
         source: ['R18'],
@@ -1938,6 +1963,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'amyloid',
+        ab: '淀粉',
         title: '心脏淀粉样变超声提示',
         sub: '室壁增厚 +「苹果核」应变 · 心尖保留',
         source: ['R19'],
@@ -1983,6 +2009,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'rcm-strain',
+        ab: 'RCM',
         title: '限制型心肌病 vs 淀粉样变的应变鉴别',
         sub: '心尖保留比值 · 分层应变 · 三类限制性表型对照',
         source: ['R19', 'R31', 'R3'],
@@ -2057,6 +2084,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'dcm',
+        ab: 'DCM',
         title: '扩张型心肌病（DCM）',
         sub: 'LVEF 减低 · 病因筛查 · 缺血性鉴别',
         source: ['R2'],
@@ -2121,6 +2149,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'athlete',
+        ab: '运动',
         title: '运动员心脏与生理性重构',
         sub: '生理性 vs 病理性 · 灰区处理',
         source: ['R18'],
@@ -2167,6 +2196,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'fabry',
+        ab: 'Fabry',
         title: '法布雷病心脏受累的超声识别',
         sub: '向心性肥厚 · 基底下侧壁应变 · 与 HCM/淀粉样变鉴别',
         source: ['R66', 'R40', 'R39'],
@@ -2214,6 +2244,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'arvc',
+        ab: 'ARVC',
         title: '致心律失常性心肌病（ACM / ARVC）',
         sub: 'Padua 标准 · 右室局部运动异常 · 与运动员右室鉴别',
         source: ['R67', 'R40'],
@@ -2272,6 +2303,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'myocarditis',
+        ab: '心肌炎',
         title: '急性心肌炎：超声能看出什么',
         sub: '四种表型 · 与 takotsubo / 心梗的鉴别 · 应变与水肿线索 · 暴发性心肌炎的床旁要点',
         source: ['R55', 'R70'],
@@ -2340,6 +2372,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'sarcoid',
+        ab: '结节',
         title: '心脏结节病：最会伪装的心肌病',
         sub: '与 ARVC / 心肌炎 / DCM 的鉴别 · 节段性变薄 · 应变与 PET 的分工 · 随访',
         source: ['R74', 'R66'],
@@ -2409,6 +2442,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'crt',
+        ab: 'CRT',
         title: 'CRT 同步化',
         sub: 'CRT 起搏 · QRS 指征 · 超声随访',
         source: ['R6', 'R2'],
@@ -2455,6 +2489,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'la',
+        ab: 'LAD',
         title: 'LAD 参数（左心房）',
         sub: '前后径 · 长径 · 横径 · 容积指数',
         source: ['R1', 'R2'],
@@ -2502,6 +2537,7 @@ const BRIEF_SECTIONS = [
     items: [
       {
         id: 'mitral',
+        ab: 'MS/MR',
         title: '二尖瓣疾病评估',
         sub: '狭窄 MS：MVA 三法 · 压差 · PASP · Wilkins → PMBV 适合度｜反流 MR：PISA · VC · dP/dt · RF',
         source: ['R42', 'R43', 'R20', 'R23', 'R75'],
@@ -2670,6 +2706,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'aortic',
+        ab: 'AS/AR',
         title: '主动脉瓣疾病评估',
         sub: '狭窄 AS：AVA / DVI / 压差 三联 · 低流量低压差｜反流 AR：PISA · VC · PHT · RF',
         source: ['R43', 'R44'],
@@ -2802,6 +2839,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'asload',
+        ab: 'ELI',
         title: 'AS 负荷量化（压力恢复 · ELI · Zva）',
         sub: '瓣膜阻力 + 动脉阻力的合成量化',
         source: ['R51', 'R52'],
@@ -2881,6 +2919,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'bav',
+        ab: 'BAV',
         title: '主动脉瓣二叶式畸形（BAV）',
         sub: 'Sievers 分型 · 主动脉扩张随访',
         source: ['R23', 'R27', 'R43'],
@@ -2931,6 +2970,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'lf-lg',
+        ab: 'LF-LG',
         title: '主动脉瓣狭窄 LF-LG 判读',
         sub: '低流量低压差 · 真性 / 假性重度 · 负荷试验',
         source: ['R20', 'R43'],
@@ -2983,6 +3023,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'ie',
+        ab: 'IE',
         title: '感染性心内膜炎赘生物评估',
         sub: '赘生物特征 · Duke-ISCVID 2023 标准 · 栓塞风险 · TEE 指征',
         source: ['R17', 'R46'],
@@ -3056,6 +3097,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'aortic-root',
+        ab: '根部',
         title: '主动脉根部与升主动脉：测在哪一条线上',
         sub: '瓣环 / 窦部 / 窦管交界 / 升主动脉 · 四个正常上限 · 与 CT 的对齐',
         source: ['R2', 'R27'],
@@ -3116,6 +3158,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'rheumatic',
+        ab: '风心',
         title: '风湿性瓣膜病：中国患者仍常见',
         sub: '交界融合 · 与退行性变的鉴别 · Wilkins 与 PMBV 适合度 · 左心耳血栓',
         source: ['R42'],
@@ -3182,6 +3225,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'tr-interv',
+        ab: 'TTVI',
         title: '三尖瓣介入（TTVI）：机制 · 术式 · 术前术后',
         sub: '机制五型 · 夹合 / 环成形 / 置换怎么选 · 术前 TEE 清单 · 术后随访',
         source: ['R22', 'R12', 'R44', 'R59'],
@@ -3290,6 +3334,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'mv-interv',
+        ab: 'TEER',
         title: '二尖瓣介入（TEER）：术前评估与术后判读',
         sub: 'Carpentier 分型 · 解剖适配 · TEER 还是外科 · 术后压差',
         source: ['R23', 'R38'],
@@ -3351,6 +3396,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'tavr',
+        ab: 'TAVR',
         title: '主动脉瓣介入（TAVR）：术前评估与术后随访',
         sub: '瓣环测量 · 二叶瓣分型 · TAVR 还是 SAVR · 冠脉高度 · PPM 预测',
         source: ['R62', 'R30', 'R20', 'R38'],
@@ -3440,6 +3486,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'prosthetic',
+        ab: '人工瓣',
         title: '人工瓣膜评估',
         sub: '正常压差 · PPM · 瓣周漏',
         source: ['R15'],
@@ -3515,6 +3562,7 @@ const BRIEF_SECTIONS = [
     items: [
       {
         id: 'shd',
+        ab: '分流',
         title: '先心病分流判读（ASD / VSD / PDA）',
         sub: 'Qp/Qs 分级 · 取样位置 · 分型与封堵可行性',
         source: ['R32', 'R33', 'R11'],
@@ -3600,6 +3648,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'pht-rev',
+        ab: 'PVR',
         title: '分流性肺高压的可手术性',
         sub: 'Qp/Qs · PVR · 急性血管反应试验',
         source: ['R33', 'R11'],
@@ -3646,6 +3695,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'tof-pr',
+        ab: 'PR',
         title: '法洛四联症术后肺动脉瓣反流评估',
         sub: 'PR 半定量 · RV 容量阈值 · 肺动脉瓣置换时机',
         source: ['R32', 'R35'],
@@ -3715,6 +3765,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'ebstein',
+        ab: 'Eb',
         title: 'Ebstein 畸形',
         sub: '三尖瓣下移 · Carpentier 分型 · 可修复性判断',
         source: ['R32', 'R33'],
@@ -3766,6 +3817,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'dorv',
+        ab: 'DORV',
         title: '右室双出口（DORV）',
         sub: '骑跨 >50% · Lev 分型 · 术式对应',
         source: ['R32', 'R33'],
@@ -3799,6 +3851,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'asd-close',
+        ab: 'ASD',
         title: '房间隔缺损分型与封堵前 TEE',
         sub: '四型定位 · 五项边缘测量 · 选伞与即刻判读',
         source: ['R38', 'R32', 'R10'],
@@ -3837,6 +3890,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'coa-echo',
+        ab: '弓部',
         title: '主动脉缩窄（CoA）与弓部评估',
         sub: '压差会骗人 · 分型与弓发育 · 术后再缩窄',
         source: ['R32', 'R33', 'R27'],
@@ -3873,6 +3927,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'mustard',
+        ab: 'MUS',
         title: 'Mustard / Senning 术后（心房转流）',
         sub: '两套挡板 · 体循环右室 · 三尖瓣反流',
         source: ['R32', 'R33'],
@@ -3914,6 +3969,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'fontan',
+        ab: 'Fontan',
         title: 'Fontan 术后（腔肺连接）',
         sub: '管道通畅 · 开窗分流 · 肝静脉反向血流',
         source: ['R33'],
@@ -3955,6 +4011,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'as-switch',
+        ab: 'ASO',
         title: '大动脉调转术后（ASO）',
         sub: '新主动脉瓣反流 · 根部扩张 · 冠脉与肺动脉',
         source: ['R32', 'R33'],
@@ -3997,6 +4054,7 @@ const BRIEF_SECTIONS = [
     items: [
       {
         id: 'aorta',
+        ab: '主动脉',
         title: '主动脉疾病评估',
         sub: '根部扩张 · 二叶式瓣 · 夹层征象',
         source: ['R27', 'R1'],
@@ -4046,6 +4104,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'pe',
+        ab: 'PE',
         title: '肺栓塞超声征象',
         sub: '右心负荷 · McConnell 征 · 危险分层',
         source: ['R28', 'R5'],
@@ -4080,6 +4139,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'thrombus',
+        ab: '血栓',
         title: '心腔内血栓与占位鉴别',
         sub: '形态鉴别 · 好发部位 · 造影增强',
         source: ['R7', 'R2'],
@@ -4112,6 +4172,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'zh-ph',
+        ab: 'PH',
         title: '中国肺高血压指南：超声三档分层',
         sub: 'TRV + 支持指标 → 低/中/高可能 · 右心功能与预后 · 与左心病的鉴别 · 三个高估低估陷阱',
         source: ['R68', 'R72'],
@@ -4191,6 +4252,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'ami-comp',
+        ab: 'AMI并',
         title: '急性心梗机械并发症：床旁超声抢先看',
         sub: '乳头肌断裂 · 室间隔穿孔 · 游离壁破裂 · 假性室壁瘤 · 附壁血栓',
         source: ['R69', 'R41'],
@@ -4253,6 +4315,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'takotsubo',
+        ab: 'TTS',
         title: '应激性心肌病（Takotsubo）超声判读',
         sub: '心尖球形 · 基底段应变保留 · 排除性诊断',
         source: ['R55'],
@@ -4304,6 +4367,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'osa',
+        ab: 'OSA',
         title: '睡眠呼吸暂停与心衰的超声视角',
         sub: '右心负荷 · 容量状态 · 判读陷阱',
         source: ['R56'],
@@ -4342,6 +4406,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'myowork',
+        ab: 'MW',
         title: '心肌做功指数（Myocardial Work）解读',
         sub: 'GWI · GCW · GWE · 适用边界',
         source: ['R57'],
@@ -4379,6 +4444,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'ecmo',
+        ab: 'ECMO',
         title: 'ECMO 支持下的超声监测',
         sub: '心室卸载 · 插管位置 · 血栓 · 并发症',
         source: ['R58'],
@@ -4418,6 +4484,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'pregnancy-echo',
+        ab: '妊娠',
         title: '妊娠期心血管超声评估',
         sub: '生理性改变 · 参考值陷阱 · 瓣膜与主动脉',
         source: ['R53', 'R54'],
@@ -4488,6 +4555,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'ppcm',
+        ab: 'PPCM',
         title: '围产期心肌病与妊娠期高血压疾病',
         sub: '生理性改变基线 · PPCM 诊断门槛 · 子痫前期超声窗口',
         source: ['R53', 'R54'],
@@ -4526,6 +4594,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'sepsis',
+        ab: '脓毒',
         title: '脓毒症与感染性休克：床旁超声怎么用',
         sub: '容量反应性 · 脓毒症心肌病 · 液体过负荷的超声证据 · 四个不可靠指标',
         source: ['R73', 'R41'],
@@ -4592,6 +4661,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'postop-icu',
+        ab: 'ICU',
         title: '心脏术后 ICU：低心排与并发症',
         sub: '术后 6 小时必查清单 · 填塞的术后特殊性 · 瓣膜与瓣周漏 · 撤机评估',
         source: ['R34', 'R45', 'R15'],
@@ -4654,6 +4724,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'lung-us',
+        ab: 'LUS',
         title: '肺超声：B 线、积液与气胸',
         sub: '八个分区的扫法 · B 线计数 · 积液定量 · 气胸的肺点',
         source: ['R50', 'R41'],
@@ -4718,6 +4789,7 @@ const BRIEF_SECTIONS = [
       },
       {
         id: 'lvad',
+        ab: 'LVAD',
         title: '机械辅助循环（LVAD）超声评估',
         sub: '入血道 / 出血道 · 泵速优化 · 抽吸事件',
         source: ['R34', 'R5', 'R45'],

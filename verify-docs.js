@@ -489,12 +489,17 @@ function check(name, ok, detail) {
       links: idx.querySelectorAll('a.fx-item').length,
       valve: idx.querySelectorAll('.fx-item[data-kind="valve"]').length,
       valveCalc: (function () {
-        // fx-group 与 fx-list 是兄弟节点，条目不在 group 里 → 按 group 之后的第一个 fx-list 取
+        // ★ v1.8.2：组头被包进 .fx-hd，列表与 .fx-hd 同级（同在 .fx-card 内），
+        //   不再能从 .fx-group 直接 nextElementSibling 找到 —— 先上溯卡片再取列表。
         var gs = idx.querySelectorAll('.fx-group');
         for (var i = 0; i < gs.length; i += 1) {
           if (gs[i].textContent.indexOf('瓣膜评估') === 0) {
-            var lst = gs[i].nextElementSibling;
-            while (lst && !lst.classList.contains('fx-list')) lst = lst.nextElementSibling;
+            var card = gs[i].closest ? gs[i].closest('.fx-card') : null;
+            var lst = card ? card.querySelector('.fx-list') : null;
+            if (!lst) {
+              lst = gs[i].nextElementSibling;
+              while (lst && !lst.classList.contains('fx-list')) lst = lst.nextElementSibling;
+            }
             return lst ? lst.querySelectorAll('.fx-item[data-kind="calc"]').length : -1;
           }
         }

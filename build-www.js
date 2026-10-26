@@ -813,7 +813,9 @@ function removeSectionById(out, id) {
  */
 function stripCssBlock(src, startMark, endMark) {
   const lines = src.split('\n');
-  const i = lines.findIndex(function (l) { return l.indexOf(startMark) !== -1; });
+  // ★ 标记按 trim 后比对：源文件里的块注释可能被压成单行（缩进/边框随注释压缩一起变了）
+  const key = startMark.trim();
+  const i = lines.findIndex(function (l) { return l.indexOf(key) !== -1; });
   if (i === -1) throw new Error('发布版：未找到 CSS 块 ' + startMark);
 
   // 若上一行是块注释开头 "/*"，一并从那里开始删

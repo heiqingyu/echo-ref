@@ -36,6 +36,7 @@ function wilkinsBlocks() {
 const GROUPS = [
   {
     id: 'flow',
+    ab: 'CO',
     title: 'LVOT · 每搏量与心排量',
     sub: 'SV · CO · SVi · CI',
     fields: [
@@ -47,6 +48,7 @@ const GROUPS = [
   },
   {
     id: 'ef',
+    ab: 'EF',
     title: '左室容积与射血分数',
     sub: 'Simpson 双平面 · EF · SVi · ESVi',
     fields: [
@@ -57,6 +59,7 @@ const GROUPS = [
   },
   {
     id: 'lvmass',
+    ab: 'LVMI',
     title: '左室质量与几何构型',
     sub: 'LV Mass · LVMI · RWT · 四分法',
     fields: [
@@ -68,6 +71,7 @@ const GROUPS = [
   },
   {
     id: 'mapse',
+    ab: 'MAPSE',
     title: 'MAPSE 长轴收缩',
     sub: '二尖瓣环收缩期位移',
     fields: [
@@ -77,6 +81,7 @@ const GROUPS = [
   },
   {
     id: 'tei',
+    ab: 'Tei',
     title: 'Tei 指数（MPI）',
     sub: '等容时间之和 ÷ 射血时间',
     fields: [
@@ -89,6 +94,7 @@ const GROUPS = [
   },
   {
     id: 'mpap',
+    ab: 'sPAP',
     sec: 'right',
     title: '肺动脉压 · 肺高压评估',
     sub: 'IVC 估 RAP · sPAP / dPAP / mPAP · ESC/ERS 可能性',
@@ -103,6 +109,7 @@ const GROUPS = [
   },
   {
     id: 'shunt',
+    ab: 'Qp/Qs',
     title: 'Qp/Qs 肺体循环血流比',
     sub: '分流方向与分流量分级',
     fields: [
@@ -115,6 +122,7 @@ const GROUPS = [
   },
   {
     id: 'bernoulli',
+    ab: 'ΔP',
     title: '简化伯努利压差',
     sub: 'ΔP = 4(V₂² − V₁²)',
     fields: [
@@ -125,6 +133,7 @@ const GROUPS = [
   },
   {
     id: 'atrial',
+    ab: 'LAVI',
     title: '心房容积指数',
     sub: 'LAVI · RAVI',
     fields: [
@@ -138,6 +147,7 @@ const GROUPS = [
      ══════════════════════════════════════════════════════════ */
   {
     id: 'rvfacv',
+    ab: 'FAC',
     sec: 'right',
     title: '右室面积变化分数 FAC',
     sub: '(RVEDA − RVESA) ÷ RVEDA',
@@ -149,6 +159,7 @@ const GROUPS = [
   },
   {
     id: 'pvrv',
+    ab: 'PVR',
     sec: 'right',
     title: '肺血管阻力 PVR',
     sub: '(mPAP − PAWP) ÷ CO · WU',
@@ -161,6 +172,7 @@ const GROUPS = [
   },
   {
     id: 'svrv',
+    ab: 'SVR',
     sec: 'right',
     title: '体循环血管阻力 SVR',
     sub: '(MAP − RAP) × 80 ÷ CO',
@@ -175,6 +187,7 @@ const GROUPS = [
   /* ══ v1.2.9 第二批：右心与肺循环补全 ══ */
   {
     id: 'rvvol',
+    ab: 'RV',
     sec: 'right',
     title: '右室容积指数 RVEDVi / RVESVi',
     sub: '按性别分档 · 右室扩大与 ARVC 随访',
@@ -186,6 +199,7 @@ const GROUPS = [
   },
   {
     id: 'rvfws',
+    ab: 'RVFWS',
     sec: 'right',
     title: '右室游离壁应变 RVFWS',
     sub: '三节段均值 · |均值| <20% 提示减低',
@@ -198,6 +212,7 @@ const GROUPS = [
   },
   {
     id: 'papi',
+    ab: 'PAPi',
     sec: 'right',
     title: 'PAPi 肺动脉搏动指数',
     sub: '(sPAP − dPAP) ÷ RAP · <1.85 失耦联',
@@ -210,6 +225,7 @@ const GROUPS = [
   },
   {
     id: 'residx',
+    ab: 'PVRI',
     sec: 'right',
     title: '阻力指数 PVRI / SVRI',
     sub: 'PVR、SVR 按 BSA 指数化',
@@ -221,6 +237,7 @@ const GROUPS = [
   },
   {
     id: 'rvdvdt',
+    ab: 'dP/dt',
     sec: 'right',
     title: '右室 dP/dt',
     sub: 'TR 反流谱 1→2 m/s 的 Δt · <400 减低',
@@ -238,6 +255,7 @@ const GROUPS = [
    *   输入与结果都在评估页内完成，公式集目录不再单列；TR 仍为独立计算条目。 */
   {
     id: 'tr',
+    ab: 'TR',
     sec: 'valve',
     title: 'TR 三尖瓣反流定量',
     sub: 'EROA · RVol · TR 峰速 · IVC',
@@ -256,6 +274,7 @@ const GROUPS = [
   /* ══ v1.3.0 第三批：瓣膜与舒张细节 ══ */
   {
     id: 'laef',
+    ab: 'LAEF',
     sec: 'recon',
     title: '左房排空分数 LAEF',
     sub: 'LAEF 与 LA 扩张指数',
@@ -267,6 +286,7 @@ const GROUPS = [
   },
   {
     id: 'quickratio',
+    ab: 'LA/Ao',
     sec: 'hemo',
     title: '快速比值：LA/Ao · RV/LV',
     sub: '床头最常用的两个半定量比值',
@@ -280,6 +300,7 @@ const GROUPS = [
   },
   {
     id: 'lvmih',
+    ab: 'H2.7',
     sec: 'recon',
     title: 'LVMI 身高^2.7（肥胖适用）',
     sub: 'de Simone 指数 · 男 >50 女 >47',
@@ -293,6 +314,7 @@ const GROUPS = [
   /* ══ v1.3.0 第四批：先心 / 心肌 / 耦联 ══ */
   {
     id: 'paidx',
+    ab: 'PA',
     sec: 'chd',
     title: 'McGoon 比值与 Nakata 指数',
     sub: '肺动脉发育 · 先心根治可行性',
@@ -305,6 +327,7 @@ const GROUPS = [
   },
   {
     id: 'ras',
+    ab: 'RAS',
     sec: 'recon',
     title: '心尖保留比值 RAS',
     sub: '心尖段 ÷ 基底段 · ≥1 提示淀粉样变',
@@ -316,6 +339,7 @@ const GROUPS = [
   },
   {
     id: 'ea',
+    ab: 'Ea',
     sec: 'hemo',
     title: '有效动脉弹性 Ea / Ees-Ea 耦联',
     sub: 'ESP ÷ SV · Ees/Ea ≈ SV ÷ ESV',
@@ -328,6 +352,7 @@ const GROUPS = [
   },
   {
     id: 'coa',
+    ab: 'CoA',
     sec: 'chd',
     title: '主动脉缩窄压差与拖尾',
     sub: '峰值压差 · 舒张末期持续血流',
@@ -339,6 +364,7 @@ const GROUPS = [
   },
   {
     id: 'aortaz',
+    ab: 'AoZ',
     sec: 'chd',
     title: '主动脉分节段 Z 值',
     sub: '瓣环 / 窦部 / 窦管交界 / 升主动脉 · 成人参考区间',
@@ -359,6 +385,7 @@ const GROUPS = [
      ══════════════════════════════════════════════════════════ */
   {
     id: 'lastiff',
+    ab: 'LARS',
     sec: 'recon',
     title: '左房僵硬度',
     sub: 'E/e′ ÷ LARS',
@@ -370,6 +397,7 @@ const GROUPS = [
   },
   {
     id: 'vtir',
+    ab: 'VTI',
     sec: 'hemo',
     title: 'RVOT / LVOT VTI 比',
     sub: '不测直径的分流替代量',
@@ -381,6 +409,7 @@ const GROUPS = [
   },
   {
     id: 'lvnc',
+    ab: 'NC/C',
     sec: 'recon',
     title: '致密化不全 NC/C 比',
     sub: '非致密层 ÷ 致密层',
@@ -396,6 +425,7 @@ const GROUPS = [
      ══════════════════════════════════════════════════════════ */
   {
     id: 'ppm',
+    ab: 'EOAi',
     sec: 'valve',
     title: '人工瓣 EOAi 与 PPM',
     sub: '有效开口面积指数 · 患者-瓣膜不匹配',
@@ -408,6 +438,7 @@ const GROUPS = [
   },
   {
     id: 'dfun',
+    ab: 'E/A',
     sec: 'hemo',
     title: '左室舒张功能（E/A · E/e′ · E/Vp · 分级）',
     sub: '四步法分级 · 左房压估测 · 2022 更新',
@@ -428,6 +459,7 @@ const GROUPS = [
      ══════════════════════════════════════════════════════════ */
   {
     id: 'sync',
+    ab: 'SYNC',
     sec: 'recon',
     title: '心脏同步化（机械不同步）',
     sub: 'SPWMD · IVMD · Ts-SD · 闪动 / 摇摆 · CRT 术前旁证',
@@ -444,6 +476,7 @@ const GROUPS = [
   },
   {
     id: 'volidx',
+    ab: 'EDVi',
     sec: 'recon',
     title: '容积指数与重构分级',
     sub: 'EDVi · ESVi · SVi（按性别）',
@@ -455,6 +488,7 @@ const GROUPS = [
   },
   {
     id: 'rwsv',
+    ab: 'RWS',
     sec: 'recon',
     title: '相对室壁应力 RWS',
     sub: '后负荷与室壁厚度的匹配',
@@ -467,6 +501,7 @@ const GROUPS = [
   },
   {
     id: 'spher',
+    ab: 'SI',
     sec: 'recon',
     title: '左室球形指数',
     sub: '短径 ÷ 长径（舒张末）',
@@ -478,6 +513,7 @@ const GROUPS = [
   },
   {
     id: 'lastrain',
+    ab: 'LASr',
     sec: 'recon',
     title: '左房应变三值',
     sub: '储备 LASr · 管道 LAScd · 泵 LASct',
@@ -490,6 +526,7 @@ const GROUPS = [
   },
   {
     id: 'aortaidx',
+    ab: 'Ao',
     sec: 'recon',
     title: '升主动脉直径指数',
     sub: '内径 ÷ BSA · 扩张分层',
@@ -500,6 +537,7 @@ const GROUPS = [
   },
   {
     id: 'mdsv',
+    ab: 'MDS',
     sec: 'recon',
     title: '应变离散度 MDS',
     sub: '六壁峰值应变的均值与标准差',
@@ -515,6 +553,7 @@ const GROUPS = [
   },
   {
     id: 'swv',
+    ab: 'SW',
     sec: 'recon',
     title: '每搏功 SW / SWi',
     sub: 'SV × MAP × 0.0136',
@@ -528,6 +567,7 @@ const GROUPS = [
   /* ══ v1.2.8 第一批：M 型 / 评分体系 / 介入尺寸 ══ */
   {
     id: 'mtype',
+    ab: 'FS',
     sec: 'hemo',
     title: 'M 型三合一：FS · Teichholz EF · EPSS',
     sub: '缩短分数 · 立方公式 EF · 二尖瓣 EPSS',
@@ -540,6 +580,7 @@ const GROUPS = [
   },
   {
     id: 'wmsi',
+    ab: 'WMSI',
     sec: 'recon',
     title: 'WMSI 室壁运动积分',
     sub: '按分值节段个数录入 · 1.0 正常 · ≥1.7 提示大面积缺血',
@@ -557,6 +598,7 @@ const GROUPS = [
   },
   {
     id: 'h2fpef',
+    ab: 'H2F',
     sec: 'recon',
     title: 'H2FPEF 评分',
     sub: 'BMI · 房颤 · 年龄 · 降压药 · E/e′ · PASP → 0–9 分',
@@ -574,6 +616,7 @@ const GROUPS = [
   },
   {
     id: 'hfapeff',
+    ab: 'HFA',
     sec: 'recon',
     title: 'HFA-PEFF 评分',
     sub: '形态学 / 功能学 / 生物标志物 三类取最高后相加',
@@ -597,6 +640,7 @@ const GROUPS = [
   },
   {
     id: 'tavrsz',
+    ab: '瓣环',
     sec: 'valve',
     title: 'TAVR 瓣环尺寸与 oversizing',
     sub: '周长/面积导出直径 · 面积 oversizing 判读',
@@ -609,6 +653,7 @@ const GROUPS = [
   },
   {
     id: 'laasz',
+    ab: 'LAA',
     sec: 'chamber',
     title: '左心耳封堵尺寸推荐',
     sub: '着陆区最大径 → 推荐型号 · 深度与椭圆度提示',
@@ -621,6 +666,7 @@ const GROUPS = [
   },
   {
     id: 'aortagrow',
+    ab: 'Δ%',
     sec: 'chd',
     title: '主动脉扩张增长率',
     sub: '两次测量之差 ÷ 间隔年数',
@@ -633,6 +679,7 @@ const GROUPS = [
   },
   {
     id: 'pvfu',
+    ab: '跨瓣',
     sec: 'valve',
     title: '人工瓣术后跨瓣血流',
     sub: 'TAVR / 换瓣后 EOA 与压差',
@@ -647,6 +694,7 @@ const GROUPS = [
   },
   {
     id: 'cfr',
+    ab: 'CFR',
     sec: 'chamber',
     title: '冠脉血流储备 CFR',
     sub: '远端 ÷ 近端冠脉舒张期流速',

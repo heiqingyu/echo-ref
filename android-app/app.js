@@ -33,9 +33,7 @@
     if (el) el.textContent = text;
   }
 
-  /* ══════════════════════════════════════════════════════════
-     一、页签切换
-     ══════════════════════════════════════════════════════════ */
+  /* 一、页签切换 */
 
   const TAB_TITLE = {
     index: 'EF·参考值',
@@ -279,9 +277,7 @@
 
   toTopBtn.addEventListener('click', function () { goToY(0); });
 
-  /* ══════════════════════════════════════════════════════════
-     二、分段选择器（通用）
-     ══════════════════════════════════════════════════════════ */
+  /* 二、分段选择器（通用） */
 
   /**
    * 同一个 data-seg 分组内的选择器保持同步（如「性别」在多页都有）
@@ -324,9 +320,7 @@
     });
   }
 
-  /* ══════════════════════════════════════════════════════════
-     三、Tab1 基本参数
-     ══════════════════════════════════════════════════════════ */
+  /* 三、Tab1 基本参数 */
 
   function computeBsa() {
     const h = parseFloat($('inHeight').value);
@@ -396,9 +390,7 @@
     goToY(el.getBoundingClientRect().top + window.pageYOffset - 56);
   });
 
-  /* ══════════════════════════════════════════════════════════
-     四、Tab2 参考值
-     ══════════════════════════════════════════════════════════ */
+  /* 四、Tab2 参考值 */
 
   const STD_NOTE = {
     CN: '《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围（多年龄段合并）',
@@ -487,9 +479,7 @@
     return h;
   }
 
-  /* ══════════════════════════════════════════════════════════
-     五、Tab1 EF 计算（与参考值同页，置于卡片最上方）
-     ══════════════════════════════════════════════════════════ */
+  /* 五、Tab1 EF 计算（与参考值同页，置于卡片最上方） */
 
   const EF_IDS = ['efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd'];
 
@@ -578,9 +568,7 @@
   });
 
 /*<<<PUBLIC-CUT:calc>>>*/
-  /* ══════════════════════════════════════════════════════════
-     五B、Tab3 公式集（目录 + 单个公式详情）
-     ══════════════════════════════════════════════════════════ */
+  /* 五B、Tab3 公式集（目录 + 单个公式详情） */
 
   const CALC_GROUPS = [
     { id: 'flow', title: 'LVOT · 每搏量与心排量',
@@ -819,6 +807,36 @@
   /** 选项组状态（性别 / 心律 / 节段总数 …），键为 calcc-groups 里的 opts.k */
   const calcOpt = {};
 
+  /**
+   * 目录条目的缩写徽标（v1.8.2）
+   * ★ 与 miniprogram/utils/calc-groups.js 的 ab 字段逐条对应，
+   *   verify-project 会解析两处并比对，改一处漏另一处会直接报错。
+   */
+  const CALC_AB = {
+    flow: 'CO', ef: 'EF', lvmass: 'LVMI', mapse: 'MAPSE', tei: 'Tei', shunt: 'Qp/Qs',
+    bernoulli: 'ΔP', atrial: 'LAVI', quickratio: 'LA/Ao', ea: 'Ea', vtir: 'VTI',
+    dfun: 'E/A', mtype: 'FS',
+    mpap: 'sPAP', rvfacv: 'FAC', pvrv: 'PVR', svrv: 'SVR', rvvol: 'RV', rvfws: 'RVFWS',
+    papi: 'PAPi', residx: 'PVRI', rvdvdt: 'dP/dt',
+    laef: 'LAEF', lvmih: 'H2.7', ras: 'RAS', lastiff: 'LARS', lvnc: 'NC/C', sync: 'SYNC',
+    volidx: 'EDVi', rwsv: 'RWS', spher: 'SI', lastrain: 'LASr', aortaidx: 'Ao', mdsv: 'MDS',
+    swv: 'SW', wmsi: 'WMSI', h2fpef: 'H2F', hfapeff: 'HFA',
+    tr: 'TR', ppm: 'EOAi', tavrsz: '瓣环', pvfu: '跨瓣', mitral: 'MS/MR', aortic: 'AS/AR',
+    asload: 'ELI', bav: 'BAV', 'lf-lg': 'LF-LG', ie: 'IE', 'aortic-root': '根部',
+    rheumatic: '风心', 'tr-interv': 'TTVI', 'mv-interv': 'TEER', tavr: 'TAVR', prosthetic: '人工瓣',
+    laasz: 'LAA', cfr: 'CFR', lv: 'LV', rv: 'RV', rcoupling: '耦联', rvfail: '右心衰',
+    'rv-strain': 'RVFW', strain: 'GLS', 'la-strain': 'LAS', peri: '心包', 'cp-rm': '缩窄',
+    ctrcd: 'CTRCD', 'zh-normal': 'CN', mass: '占位', 'stress-echo': '负荷', 'hcm-stress': 'HCM激',
+    dse: 'DSE', hcm: 'HCM', amyloid: '淀粉', 'rcm-strain': 'RCM', dcm: 'DCM', athlete: '运动',
+    fabry: 'Fabry', arvc: 'ARVC', myocarditis: '心肌炎', sarcoid: '结节', crt: 'CRT', la: 'LAD',
+    paidx: 'PA', coa: 'CoA', aortaz: 'AoZ', aortagrow: 'Δ%', shd: '分流', 'pht-rev': 'PVR',
+    'tof-pr': 'PR', ebstein: 'Eb', dorv: 'DORV', 'asd-close': 'ASD', 'coa-echo': '弓部',
+    mustard: 'MUS', fontan: 'Fontan', 'as-switch': 'ASO',
+    aorta: '主动脉', pe: 'PE', thrombus: '血栓', 'zh-ph': 'PH', 'ami-comp': 'AMI并',
+    takotsubo: 'TTS', osa: 'OSA', myowork: 'MW', ecmo: 'ECMO', 'pregnancy-echo': '妊娠',
+    ppcm: 'PPCM', sepsis: '脓毒', 'postop-icu': 'ICU', 'lung-us': 'LUS', lvad: 'LVAD',
+  };
+
   /** 目录里每条公式的一句话说明 */
   const CALC_SUB = {
     // 瓣膜专用定量（v1.4.1：从小程序瓣膜页搬进公式集）
@@ -911,9 +929,13 @@
     return null;
   }
 
-  /** 目录：分组标题 + 分组说明（可选） + 列表开标签 */
-  function fxGroupHtml(id, title, note) {
-    let h = '<div class="fx-group" id="g-' + esc(id) + '">' + esc(title) + '</div>';
+  /** 目录：分组卡片开标签（组头带竖色条与条目数，条目从下一层 .fx-list 开始）
+   *  ★ v1.8.2：原来 120 条各自是一张浮动小白卡，滚动时既找不到位置也看不出层次；
+   *    改成「一组一张卡」，组头与条目同处一张卡内，组间留白区分。 */
+  function fxGroupHtml(id, title, note, count) {
+    let h = '<div class="fx-card"><div class="fx-hd">' +
+      '<div class="fx-group" id="g-' + esc(id) + '">' + esc(title) + '</div>' +
+      '<span class="fx-hd__n">' + (count || 0) + ' 项</span></div>';
     if (note) h += '<div class="fx-gnote">' + esc(note) + '</div>';
     return h + '<div class="fx-list">';
   }
@@ -922,9 +944,10 @@
    *  link 为纯外链条目：渲染成 <a target="_blank">，不加载任何图片或 iframe
    *  url 为 .mp4 时用 ▶ 标识，点击由浏览器直接播放
    *  album 为专辑（整本书的视频）：右侧显示段数，点击进入二级列表 */
-  function fxItemHtml(kind, id, title, sub, url, count, secId, fav) {
+  function fxItemHtml(kind, id, title, sub, url, count, secId, fav, ab) {
     const isVid = /\.mp4(\?|$)/i.test(url || '');
-    let arrow = '›';
+    // ★ v1.8.2：普通条目不再挂「›」，只保留有信息量的标识（专辑段数 / 视频可播）
+    let arrow = '';
     if (kind === 'album') arrow = (count || 0) + ' ›';
     else if (isVid) arrow = '▶';
     // 星标只给「点开有内容」的条目（外链 / 专辑不收藏）；v1.7.7
@@ -932,10 +955,12 @@
       ? '<span class="fx-fav' + (fav ? ' fx-fav--on' : '') + '" data-fav="' + esc(id) + '">' +
         (fav ? '★' : '☆') + '</span>'
       : '';
-    const inner = '<span class="fx-item__main">' +
+    const bd = ab ? '<span class="fx-bd' + (ab.length >= 5 ? ' fx-bd--s' : '') + '">' + esc(ab) + '</span>' : '';
+    const inner = bd + '<span class="fx-item__main">' +
       '<span class="fx-item__n">' + esc(title) + '</span>' +
       '<span class="fx-item__d">' + esc(sub) + '</span>' +
-      '</span>' + star + '<span class="fx-item__a">' + arrow + '</span>';
+      '</span>' + star +
+      (arrow ? '<span class="fx-item__a">' + arrow + '</span>' : '');
     if (kind === 'link') {
       return '<a class="fx-item" href="' + esc(url || '#') +
         '" target="_blank" rel="noopener noreferrer">' + inner + '</a>';
@@ -1211,7 +1236,7 @@
         items: CALC_GROUPS.filter(function (g) {
           return (g.sec || 'hemo') === cs.id;
         }).map(function (g) {
-          return { kind: 'calc', id: g.id, title: g.title, sub: CALC_SUB[g.id] || '' };
+          return { kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || '' };
         }),
       });
     });
@@ -1225,12 +1250,12 @@
     CALC_GROUPS.filter(function (g) {
       return g.sec === 'valve';
     }).forEach(function (g) {
-      valveItems.push({ kind: 'calc', id: g.id, title: g.title, sub: CALC_SUB[g.id] || '' });
+      valveItems.push({ kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || '' });
     });
     (MERGED.valve || []).forEach(function (sec) {
       sec.items.forEach(function (it) {
         if (it.segOnly) return;   // ★ 只在「切面学习」页签列出
-        valveItems.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
+        valveItems.push({ kind: 'brief', id: it.id, ab: it.ab || '', title: it.title, sub: it.sub || '' });
       });
     });
     // ★ v1.7.9：「瓣膜解剖 · TEE 标准切面」已移出公式集，只在「切面学习」页签列出
@@ -1243,7 +1268,7 @@
       const calcs = CALC_GROUPS.filter(function (g) {
         return g.sec === sec.id;
       }).map(function (g) {
-        return { kind: 'calc', id: g.id, title: g.title, sub: CALC_SUB[g.id] || '' };
+        return { kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || '' };
       });
       secs.push({
         id: sec.id,
@@ -1253,7 +1278,7 @@
           //   不进公式集目录；条目定义仍留在 BRIEF_SECTIONS 里，详情卡与 rel 照常可用。
           return !it.segOnly;
         }).map(function (it) {
-          return { kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' };
+          return { kind: 'brief', id: it.id, ab: it.ab || '', title: it.title, sub: it.sub || '' };
         })),
       });
     });
@@ -1274,7 +1299,7 @@
         if (from) {
           from.items = from.items.filter(function (x) { return x.id !== it.id; });
         }
-        host.items.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
+        host.items.push({ kind: 'brief', id: it.id, ab: it.ab || '', title: it.title, sub: it.sub || '' });
       });
     });
 
@@ -1345,13 +1370,13 @@
     const out = { look: [], views: [], sim: [] };
     // ★ v1.7.9：瓣膜解剖排块首（它与切面速查同属图谱，且是进入 TEE 图谱的入口）
     out.look.push({
-      kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
+      kind: 'valveana', id: 'valveana', ab: 'TEE', title: '瓣膜解剖 · TEE 标准切面',
       sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1',
     });
     BRIEF.forEach(function (sec) {
       sec.items.forEach(function (it) {
         if (!it.segOnly) return;
-        out.look.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
+        out.look.push({ kind: 'brief', id: it.id, ab: it.ab || '', title: it.title, sub: it.sub || '' });
       });
     });
     ['views', 'sim'].forEach(function (secId) {
@@ -1559,11 +1584,11 @@
         });
       });
       if (!items.length) return;
-      list += fxGroupHtml(sec.id, sec.title, sec.note);
+      list += fxGroupHtml(sec.id, sec.title, sec.note, items.length);
       items.forEach(function (it) {
-        list += fxItemHtml(it.kind, it.id, it.title, it.sub, it.url, it.count, it.sec, it.fav);
+        list += fxItemHtml(it.kind, it.id, it.title, it.sub, it.url, it.count, it.sec, it.fav, it.ab);
       });
-      list += '</div>';
+      list += '</div></div>';
     });
 
     if (!list) {
@@ -3148,9 +3173,7 @@
 
 /*<<<END-CUT:calc>>>*/
 
-  /* ══════════════════════════════════════════════════════════
-     六、Tab4 儿童 Z 值
-     ══════════════════════════════════════════════════════════ */
+  /* 六、Tab4 儿童 Z 值 */
 
   // ★ 左房（LAAP）与右室内径（RVDD）放进快速区：儿童超声里房室大小比壁厚更常被问，
   //   之前快速区只有左室 + 主动脉根部，用户要「其他房室大小」得先展开 36 项才找得到。
@@ -3502,9 +3525,7 @@
     renderPeds();
   });
 
-  /* ══════════════════════════════════════════════════════════
-     七、重置
-     ══════════════════════════════════════════════════════════ */
+  /* 七、重置 */
 
   $('resetBtn').addEventListener('click', function () {
     if (!confirm('确定要清空全部输入与结果吗？')) return;
@@ -3544,9 +3565,7 @@
     if (currentTab !== 'index') switchTab(currentTab);
   });
 
-  /* ══════════════════════════════════════════════════════════
-     工具
-     ══════════════════════════════════════════════════════════ */
+  /* 工具 */
 
   function esc(s) {
     if (s === null || s === undefined) return '';
@@ -3613,9 +3632,7 @@
 
 /*<<<END-CUT:seg>>>*/
 
-  /* ══════════════════════════════════════════════════════════
-     瓣膜解剖（公式集内）：解剖分区选中 ↔ 所有示意图同步高亮
-     ══════════════════════════════════════════════════════════ */
+  /* 瓣膜解剖（公式集内）：解剖分区选中 ↔ 所有示意图同步高亮 */
 
   let selValvePart = null;   // 选中的解剖分区（如 lcc / a2 / sep）
 
@@ -3640,9 +3657,7 @@
     }
   }
 
-  /* ══════════════════════════════════════════════════════════
-     启动
-     ══════════════════════════════════════════════════════════ */
+  /* 启动 */
 
   function boot() {
     // 基本参数默认值
