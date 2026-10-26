@@ -422,7 +422,7 @@ const GROUPS = [
     id: 'dfun',
     sec: 'hemo',
     title: '左室舒张功能（E/A · E/e′ · E/Vp · 分级）',
-    sub: '四步法分级 + 左房压估测',
+    sub: '四步法分级 · 左房压估测 · 2022 更新',
     fields: [
       { k: 'dfe', n: 'E 峰', u: 'cm/s' },
       { k: 'dfa', n: 'A 峰', u: 'cm/s' },

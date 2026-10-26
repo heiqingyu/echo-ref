@@ -546,7 +546,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 124 条（计算 49 + 判读 75；外链两整组 + 切面速查 3 条已移入「切面学习」页签）', nItems, 124, 0);
+  check('目录共 123 条（计算 49 + 判读 74；外链两整组 + 切面速查 3 条已移入「切面学习」页签）', nItems, 123, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -727,7 +727,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('器械与介入组已拆散：CRT / LAD 进心腔组、LVAD 进急症组',
     ['crt', 'la'].every(id => dirById('chamber').items.some(i => i.id === id)) &&
     dirById('vascular').items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
-  check('心腔、心肌与应变 29 条（心腔 16 + 心肌病变 9 + CRT / LAD + 左心耳封堵 / CFR）', dirById('chamber').items.length, 29, 0);
+  check('心腔、心肌与应变 28 条（心腔 15 + 心肌病变 9 + CRT / LAD + 左心耳封堵 / CFR；舒张功能已并入 dfun）', dirById('chamber').items.length, 28, 0);
   ['lv', 'rv', 'rcoupling', 'rvfail', 'rv-strain', 'strain', 'la-strain', 'peri', 'cp-rm', 'ctrcd'].forEach(id => {
     check('心腔、应变与负荷含 ' + id,
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
@@ -1359,7 +1359,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       return (b.text || '') + (b.rows ? JSON.stringify(b.rows) : '');
     }).join(' ');
   };
-  const dTxt = briefText('diastolic');
+  // v1.7.6：判读条目 diastolic 已并入计算条目 dfun（同一页既算分也给分级细则）
+  const dTxt = briefText('dfun');
   check('舒张功能分级：六个基本量齐全',
     ['间隔 e′', '侧壁 e′', '平均 E/e′', 'LAVi', 'TR Vmax', 'LARS']
       .every(function (k) { return dTxt.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);

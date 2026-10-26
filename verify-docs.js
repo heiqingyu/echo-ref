@@ -522,7 +522,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 124 条（计算 49 + 评估判读 75，含瓣膜解剖；切面速查与两外链组已移出）', d.items === 124, d.items);
+    check('条目 123 条（计算 49 + 评估判读 74，含瓣膜解剖；切面速查与两外链组已移出）', d.items === 123, d.items);
     check('目录不再含切面速查条目（tee-20 / tte-std / tte-measure）', d.segOnlyLeak === 0, d.segOnlyLeak);
     check('外链 <a> 条目 0 条（切面学习/TEE 演示已移出公式集目录）', d.links === 0, d.links);
     check('目录不再含操作规范专辑入口（已移入切面学习页签）', d.album === 0, d.album + ' / ' + d.albumTxt);
