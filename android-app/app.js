@@ -1233,12 +1233,7 @@
         valveItems.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
       });
     });
-    // v1.5.0：瓣膜解剖也收进公式集，放在瓣膜组末尾（与小程序目录顺序一致）
-    valveItems.push({
-      kind: 'valveana', id: 'valveana',
-      title: '瓣膜解剖 · TEE 标准切面',
-      sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1',
-    });
+    // ★ v1.7.9：「瓣膜解剖 · TEE 标准切面」已移出公式集，只在「切面学习」页签列出
     secs.push({ id: 'valve', title: '瓣膜评估', items: valveItems });
 
     BRIEF.forEach(function (sec) {
@@ -1348,15 +1343,16 @@
   /** 切面学习页三块列表的数据（单一来源：extra-data.js，不在这里重复维护标题） */
   function segItems() {
     const out = { look: [], views: [], sim: [] };
+    // ★ v1.7.9：瓣膜解剖排块首（它与切面速查同属图谱，且是进入 TEE 图谱的入口）
+    out.look.push({
+      kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
+      sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1',
+    });
     BRIEF.forEach(function (sec) {
       sec.items.forEach(function (it) {
         if (!it.segOnly) return;
         out.look.push({ kind: 'brief', id: it.id, title: it.title, sub: it.sub || '' });
       });
-    });
-    out.look.push({
-      kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
-      sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1',
     });
     ['views', 'sim'].forEach(function (secId) {
       const sec = LINKS.filter(function (s) { return s.id === secId; })[0];

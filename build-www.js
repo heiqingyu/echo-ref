@@ -193,7 +193,7 @@ function buildSegPage() {
     </div>
     <div class="card" id="lookpart">
       <div class="card__t">切面速查与图谱</div>
-      <div class="card__d">标准切面的角度、显示结构与必测项速查；瓣膜解剖为 TEE 交互图谱。点条目直接打开公式集里的判读详情，返回时回到本页。</div>
+      <div class="card__d">标准切面的角度、显示结构与必测项速查；瓣膜解剖为 TEE 交互图谱。点条目打开详情（速查为判读条目、解剖为图谱），返回时回到本页。</div>
       <div class="fx-list" id="segLookList"></div>
     </div>
     <div class="card" id="viewspart">

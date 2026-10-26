@@ -546,7 +546,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 121 条（计算 48 + 判读 73；外链两整组 + 切面速查 3 条已移入「切面学习」页签）', nItems, 121, 0);
+  check('目录共 120 条（计算 48 + 判读 72；外链两整组 + 切面速查 3 条 + 瓣膜解剖已移入「切面学习」页签）', nItems, 120, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -589,7 +589,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segLook.length, 4, 0);
   check('切面速查条目 id 与顺序',
     segLook.map(function (i) { return i.id; }).join(',') ===
-      'tee-20,tte-std,tte-measure,valveana' ? 1 : 0, 1, 0);
+      'valveana,tee-20,tte-std,tte-measure' ? 1 : 0, 1, 0);
   check('页内导航 4 块且顺序为 节段/速查/视频/演示',
     pgS.data.segNav.map(function (n) { return n.t; }).join('|') ===
       '节段划分|切面速查|教学视频|TEE 演示' ? 1 : 0, 1, 0);
@@ -649,9 +649,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segViews.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('切面速查含「TTE 标准切面与测量项目」brief 条目',
     segLook.some(i => i.id === 'tte-measure' && i.kind === 'brief') ? 1 : 0, 1, 0);
-  check('切面速查末条为「瓣膜解剖」valveana 条目',
-    segLook[segLook.length - 1].id === 'valveana' &&
-      segLook[segLook.length - 1].kind === 'valveana' ? 1 : 0, 1, 0);
+  check('切面速查首条为「瓣膜解剖」valveana 条目（v1.7.9 从公式集移入）',
+    segLook[0] && segLook[0].id === 'valveana' &&
+      segLook[0].kind === 'valveana' ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
     segViews[0] && segViews[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进页面数据（省 setData）',
@@ -733,7 +733,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 9 条通用/专用计算 + 8 条判读 + 1 个解剖示意图（v1.4.4 起 AS/AR/MS/MR 并入两个评估页）
-  check('瓣膜评估组 17 条（4 计算 + 12 判读含器械介入 + 1 解剖示意图）', dirById('valve').items.length, 17, 0);
+  check('瓣膜评估组 16 条（4 计算 + 12 判读含器械介入；解剖示意图已移至「切面学习」）', dirById('valve').items.length, 16, 0);
   // v1.4.9：VCW/RF/PR/AS 负荷/DVI/TAPSE-PASP/RAP 这些纯查表或已被评估页覆盖的也删了，只剩 2 条
   check('瓣膜评估组 4 条计算（tr / ppm / tavrsz / pvfu）',
     ['tr', 'ppm', 'tavrsz', 'pvfu']

@@ -103,7 +103,11 @@ Page({
     const sim = (links.filter(function (s) { return s.id === 'sim'; })[0] || {}).items || [];
     // ★ 切面速查 / 标准切面：标题与说明只在 extra-data.js 维护一份，
     //   这里按 segOnly 标记取（与网页 / APK 的 renderSegLists 同源）
-    const look = [];
+    // ★ v1.7.9：「瓣膜解剖 · TEE 标准切面」从公式集移到这里，排块首（图谱是入口，先看到）
+    const look = [{
+      kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
+      sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1', url: '',
+    }];
     (EX.BRIEF_SECTIONS || []).forEach(function (s) {
       (s.items || []).forEach(function (it) {
         if (!it.segOnly) return;
@@ -111,10 +115,6 @@ Page({
           kind: 'brief', id: it.id, title: it.title, sub: it.sub || '', url: '',
         });
       });
-    });
-    look.push({
-      kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
-      sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1', url: '',
     });
     this._raw = { look: look, views: views, sim: sim };
     this.applySegKw(this.data.segKw || '');

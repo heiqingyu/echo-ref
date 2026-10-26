@@ -522,7 +522,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 121 条（计算 48 + 评估判读 73，含瓣膜解剖；切面速查与两外链组已移出）', d.items === 121, d.items);
+    check('条目 120 条（计算 48 + 评估判读 72；切面速查、瓣膜解剖与两外链组已移出）', d.items === 120, d.items);
     check('目录不再含切面速查条目（tee-20 / tte-std / tte-measure）', d.segOnlyLeak === 0, d.segOnlyLeak);
     check('外链 <a> 条目 0 条（切面学习/TEE 演示已移出公式集目录）', d.links === 0, d.links);
     check('目录不再含操作规范专辑入口（已移入切面学习页签）', d.album === 0, d.album + ' / ' + d.albumTxt);
@@ -1161,13 +1161,17 @@ function check(name, ok, detail) {
   const verText = await c.evalJs('(document.querySelector("#page-index .verline") || {}).textContent || ""');
   check('版本号已递增（非 1.0.0）', /v\d+\.\d+\.\d+/.test(verText) && !/v1\.0\.0/.test(verText), verText);
 
-  console.log('\n【三b】公式集内的瓣膜解剖条目（只留 TEE 切面）');
-  // v1.5.0：不再是页签，改成从公式集目录点进去
+  console.log('\n【三b】切面学习页签的瓣膜解剖条目（v1.7.9 从公式集移入）');
   await c.evalJs('document.querySelector(\'.tab[data-tab="calc"]\').click()');
   await new Promise((r) => setTimeout(r, 300));
-  check('公式集目录里有「瓣膜解剖 · TEE 标准切面」条目',
-    (await c.evalJs('!!document.querySelector(\'#calcList .fx-item[data-kind="valveana"]\')')) === true);
-  await c.evalJs('document.querySelector(\'#calcList .fx-item[data-kind="valveana"]\').click()');
+  check('公式集目录已不再列出「瓣膜解剖 · TEE 标准切面」',
+    (await c.evalJs('!document.querySelector(\'#calcList .fx-item[data-kind="valveana"]\')')) === true);
+  await c.evalJs('document.querySelector(\'.tab[data-tab="segments"]\').click()');
+  await new Promise((r) => setTimeout(r, 400));
+  check('切面学习「切面速查与图谱」首条即「瓣膜解剖 · TEE 标准切面」',
+    (await c.evalJs('(function(){var b=document.querySelector("#segLookList .fx-item");' +
+      'return !!b && b.dataset.kind === "valveana";})()')) === true);
+  await c.evalJs('document.querySelector(\'#segLookList .fx-item[data-kind="valveana"]\').click()');
   await new Promise((r) => setTimeout(r, 700));
   check('点条目后进入详情并显示解剖卡',
     (await c.evalJs('!document.querySelector(\'#calcGroups .card[data-g="valveana"]\').hidden')) === true);
@@ -1196,11 +1200,13 @@ function check(name, ok, detail) {
     (await c.evalJs('document.querySelectorAll(\'#calcGroups .card[data-g="valveana"] .segchip--on\').length')) >= 1);
   check('高亮说明列出该分区出现的所有视图',
     (await c.evalJs('(document.getElementById("vaSelInfo")||{textContent:""}).textContent')).indexOf('见于') !== -1);
-  // 返回公式集
+  // 返回切面学习（v1.7.9：从切面学习进入，返回文案随之变为「返回切面学习」）
+  check('从切面学习进入时返回按钮文案为「返回切面学习」',
+    (await c.evalJs('document.getElementById("calcBack").textContent')).indexOf('切面学习') !== -1);
   await c.evalJs('document.getElementById("calcBack").click()');
   await new Promise((r) => setTimeout(r, 400));
-  check('返回公式集后目录重新可见',
-    (await c.evalJs('!document.getElementById("calcIndex").hidden')) === true);
+  check('返回切面学习后该页签重新激活',
+    (await c.evalJs('document.querySelector(\'.tab[data-tab="segments"]\').classList.contains("tab--on")')) === true);
   const refCopy = await c.evalJs(`(function(){
     const el = document.querySelector('#calcRefs .refs-copy');
     return el ? el.textContent.replace(/\\s+/g, '') : '';

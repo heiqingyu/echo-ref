@@ -21,10 +21,9 @@ const EXTRA = [
   {
     id: 'valve',
     title: '瓣膜评估',
-    items: [
-      { kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
-        sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1' },
-    ],
+    // ★ v1.7.9：「瓣膜解剖 · TEE 标准切面」已移到「切面学习」页签（与切面速查同属图谱，
+    //   不是计算器也不是判读条目）。组壳保留，供 BRIEF_SECTIONS 的 mergeInto 并入用。
+    items: [],
   },
 ];
 
@@ -124,17 +123,6 @@ function buildSections() {
     }
     sections.push({ id: s.id, title: s.title, items: items });
   });
-
-  // ★ 瓣膜解剖示意图挪到组末尾：先给计算器与判读条目，再看示意图
-  const valveTail = sections.filter(function (x) { return x.id === 'valve'; })[0];
-  if (valveTail) {
-    const jumps = valveTail.items.filter(function (it) { return it.kind === 'valveana'; });
-    if (jumps.length) {
-      valveTail.items = valveTail.items
-        .filter(function (it) { return it.kind !== 'valveana'; })
-        .concat(jumps);
-    }
-  }
 
   // ★ 切面学习与 TEE 切面在线演示（LINK_SECTIONS 的 views / sim）已收进「切面学习」页签，
   //   公式集目录不再重复列出（与网页 / APK 三端一致，v1.6.3）。
