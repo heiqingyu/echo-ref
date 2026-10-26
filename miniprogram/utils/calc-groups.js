@@ -90,14 +90,16 @@ const GROUPS = [
   {
     id: 'mpap',
     sec: 'right',
-    title: '肺动脉压（sPAP · dPAP · mPAP）',
-    sub: 'TR 峰速 + PR 舒张末流速 + RAP · 三压同出',
+    title: '肺动脉压 · 肺高压评估',
+    sub: 'IVC 估 RAP · sPAP / dPAP / mPAP · ESC/ERS 可能性',
     fields: [
+      { k: 'pp_ivc', n: 'IVC 内径（估 RAP）', u: 'mm', opt: true },
+      { k: 'pp_rap', n: '右房压 RAP（可选，填了优先）', u: 'mmHg', opt: true },
       { k: 'pp_tr', n: 'TR 峰速 Vmax', u: 'm/s' },
-      { k: 'pp_pr', n: 'PR 舒张末期流速（可选）', u: 'm/s' },
-      { k: 'pp_rap', n: '右房压 RAP', u: 'mmHg' },
+      { k: 'pp_pr', n: 'PR 舒张末期流速（可选）', u: 'm/s', opt: true },
+      { k: 'pp_rvotat', n: 'RVOT 加速时间（可选）', u: 'ms', opt: true },
     ],
-    note: 'sPAP = 4 × TR Vmax² + RAP（≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 近似 0.61 × sPAP + 2。肺动脉瓣狭窄或 RVOT 梗阻时 sPAP 会高估；确诊肺高压仍要右心导管（mPAP >20 mmHg）',
+    note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5，>10 提示升高）。sPAP = 4 × TR Vmax² + RAP（≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）',
   },
   {
     id: 'shunt',
@@ -387,20 +389,6 @@ const GROUPS = [
       { k: 'lnvc', n: '致密层厚度', u: 'mm' },
     ],
     note: 'Jenni（超声，收缩末期短轴）>2.0；Petersen（CMR，舒张末期）>2.3。★ 比值只是三条标准之一，还必须有：两层结构分明、深陷隐窝与左室腔血流相通（彩色多普勒见穿入血流）。把乳头肌与小梁误当非致密层是假阳性最常见原因，必须同部位同时相测量',
-  },
-  {
-    id: 'phprob',
-    sec: 'right',
-    title: '超声肺高压可能性',
-    sub: '2022 ESC/ERS 三步法',
-    opts: [
-      { k: 'phsign', n: '其他右心征象', list: [['n', '无'], ['y', '有']] },
-    ],
-    fields: [
-      { k: 'phv', n: 'TR Vmax', u: 'm/s' },
-      { k: 'phrvotat', n: 'RVOT 加速时间（可选）', u: 'ms' },
-    ],
-    note: 'TR Vmax ≤2.8 无征象 → 低；≤2.8 有征象 或 2.9–3.4 无征象 → 中；2.9–3.4 有征象 或 >3.4 → 高。右心征象指 RV/LV >1、室间隔变平/矛盾运动、RVOT AT <105 ms、右房面积 >18 cm²、IVC >21 mm 不塌陷、收缩期切迹。★ 超声只给「可能性」，确诊必须右心导管（mPAP >20 mmHg）',
   },
 
   /* ══════════════════════════════════════════════════════════

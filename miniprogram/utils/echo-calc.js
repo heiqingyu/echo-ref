@@ -2600,6 +2600,63 @@ function pulmonaryPressures(o) {
 }
 
 /**
+ * 肺动脉压 · 肺高压 一站式（v1.7.7 三合一）
+ *
+ * o = { ivc, collapse, rap, trv, prv, rvotAt, signs }
+ *   rap      手填右房压，填了优先（>0 生效）
+ *   ivc      下腔静脉内径 mm；没填 rap 时用它 + collapse 估（ASE 三分级）
+ *   collapse 'yes'(>50%) | 'no'(≤50%) | ''(未评估)
+ *   signs     true 有 / false 无 / null 未评估
+ *
+ * 顺序：RAP → sPAP / dPAP / mPAP（同一个 RAP，避免分开算时填不一致）→ 可能性。
+ * ★ 超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）。
+ */
+function pulmonaryScreen(o) {
+  o = o || {};
+  const out = {};
+  let rap = 0;
+
+  if (o.rap > 0) {
+    rap = o.rap;
+    out.rapSource = 'manual';
+    out.rapText = 'RAP ' + rap + ' mmHg（手动填写；正常 0–5，>10 提示升高）';
+  } else if (o.ivc > 0) {
+    const re = rapEstimate(o.ivc, o.collapse);
+    rap = re.rap;
+    out.rapSource = 'ivc';
+    out.ivc = o.ivc;
+    const lbl = rap === 3 ? '右房压正常'
+      : rap === 15 ? '右房压明显升高' : '中间档，需结合 IVC 形态与其他右心指标';
+    out.rapText = 'RAP ≈ ' + rap + ' mmHg（IVC ' + Math.round(o.ivc) + ' mm，' +
+      (o.collapse === 'yes' ? '塌陷 >50%' : o.collapse === 'no' ? '塌陷 ≤50%' : '塌陷未评估') +
+      ' → ' + lbl + '；正常 0–5，>10 提示升高）';
+  } else {
+    out.rapSource = 'none';
+    out.rapText = 'RAP 未填（按 0 计，sPAP / dPAP 会偏低 3–8 mmHg）';
+  }
+  out.rap = rap;
+
+  const pp = pulmonaryPressures({ trv: o.trv, prv: o.prv, rap: rap });
+  if (pp.spap !== undefined) { out.spap = pp.spap; out.spapText = pp.spapText; }
+  if (pp.dpap !== undefined) out.dpap = pp.dpap;
+  if (pp.mpap !== undefined) {
+    out.mpap = pp.mpap;
+    out.mpapText = pp.mpapText;
+    out.mode = pp.mode;
+  }
+
+  // 可能性：TR 速度 + 其他右心征象（RVOT AT <105 ms 也算征象）
+  const signsUnset = (o.signs === null || o.signs === undefined);
+  const ph = phLikelihood(o.trv, o.signs === true, o.rvotAt);
+  out.prob = ph.prob;
+  out.probText = ph.text + (signsUnset ? '（右心征象未评估：若有征象，档次还会更高）' : '');
+  if (ph.atText) out.atText = ph.atText;
+
+  out.hasResult = (out.spap !== undefined || out.dpap !== undefined);
+  return out;
+}
+
+/**
  * 机械不同步综合评估（CRT 术前旁证）
  *
  * 阈值：SPWMD ≥130 ms（Pitzalis 2002）、IVMD ≥40 ms、
@@ -2778,6 +2835,7 @@ module.exports = {
   // —— v1.3.2 新增：跨指标派生量 ——
   evpRatio,
   pulmonaryPressures,
+  pulmonaryScreen,
   mechDyssynchrony,
   crtIndication,
   laStiffness,

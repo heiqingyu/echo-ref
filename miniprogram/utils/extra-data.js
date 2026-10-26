@@ -982,7 +982,7 @@ const BRIEF_SECTIONS = [
         title: '右心评估',
         sub: 'RAP · PASP · PVR · PADP · PH 概率 · 右室功能',
         source: ['R5', 'R11', 'R12'],
-        rel: ['ph', 'rvfail'],
+        rel: ['zh-ph', 'rvfail'],
         blocks: [
           { kind: 'h', text: '一、右房压 RAP 估算' },
           {
@@ -1078,7 +1078,7 @@ const BRIEF_SECTIONS = [
         title: '右室-肺动脉耦联',
         sub: 'TAPSE / PASP 比值 · 右室储备与预后',
         source: ['R16', 'R12'],
-        rel: ['ph', 'rvfail'],
+        rel: ['zh-ph', 'rvfail'],
         blocks: [
           { kind: 'h', text: '一、这个比值解决什么问题' },
           { kind: 'text', text: 'TAPSE 单独看只回答「右室收缩好不好」，PASP 单独看只回答「肺动脉压高不高」。但临床上真正决定症状与预后的是**右室能不能扛住当前的负荷**——两者放进同一个比值才看得出来。' },
@@ -3603,7 +3603,7 @@ const BRIEF_SECTIONS = [
         title: '分流性肺高压的可手术性',
         sub: 'Qp/Qs · PVR · 急性血管反应试验',
         source: ['R33', 'R11'],
-        rel: ['ph', 'shd'],
+        rel: ['zh-ph', 'shd'],
         blocks: [
           { kind: 'h', text: '一、能不能关闭，看三组数字' },
           {
@@ -3649,7 +3649,7 @@ const BRIEF_SECTIONS = [
         title: '法洛四联症术后肺动脉瓣反流评估',
         sub: 'PR 半定量 · RV 容量阈值 · 肺动脉瓣置换时机',
         source: ['R32', 'R35'],
-        rel: ['rv', 'ph'],
+        rel: ['rv', 'zh-ph'],
         blocks: [
           { kind: 'h', text: '一、为什么 TOF 术后几乎都存在 PR' },
           { kind: 'text', text: '根治手术中若使用了**跨瓣环补片**（transannular patch），肺动脉瓣环的完整性被切开，术后必然存在不同程度的 PR。补片越大、手术年龄越小，PR 越重。少数保留瓣环者（如双心室修补 + 瓣膜成形）可以没有明显 PR。' },
@@ -4049,7 +4049,7 @@ const BRIEF_SECTIONS = [
         title: '肺栓塞超声征象',
         sub: '右心负荷 · McConnell 征 · 危险分层',
         source: ['R28', 'R5'],
-        rel: ['rv', 'ph'],
+        rel: ['rv', 'zh-ph'],
         fields: [],
         blocks: [
           { kind: 'h', text: '一、先明确一件事：超声不能诊断也不能排除肺栓塞' },
@@ -4077,59 +4077,6 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '出院前应留基线右心功能。约 0.5–4% 患者发展为**慢性血栓栓塞性肺高压（CTEPH）**，抗凝 3 个月后仍有呼吸困难者需复查超声，右心功能未恢复或 PASP 持续升高应转诊评估。' },
         ],
         note: '急诊床旁超声在 PE 里的正确问法不是「有没有血栓」，而是「右室扛不扛得住」。',
-      },
-      {
-        id: 'ph',
-        title: '肺动脉高压（PH）评估',
-        sub: '2022 ESC/ERS · 超声只给可能性',
-        source: ['R11'],
-        rel: ['zh-ph', 'rcoupling'],
-        fields: [],
-        blocks: [
-          { kind: 'h', text: '一、2022 新定义：门槛降了' },
-          {
-            kind: 'table',
-            heads: ['指标', '阈值', '说明'],
-            rows: [
-              ['mPAP', '>20 mmHg', '旧标准 25，2022 下调'],
-              ['PVR', '>2 WU', '旧标准 3 WU'],
-              ['PAWP', '≤15 mmHg', '毛细血管前；>15 为毛细血管后'],
-            ],
-          },
-          { kind: 'note', text: '**超声测不出 mPAP，也不能确诊 PH**。超声只给「可能性」，确诊必须右心导管。把 PASP 直接当 PH 诊断依据，是超声报告里最常见的过度诊断。', warn: true },
-          { kind: 'h', text: '二、超声三步法（2022 ESC/ERS）' },
-          {
-            kind: 'table',
-            heads: ['TR Vmax', '其他右心征象', '超声 PH 可能性'],
-            rows: [
-              ['≤2.8 m/s', '无', '低'],
-              ['≤2.8 m/s', '有', '中'],
-              ['2.9–3.4 m/s', '无', '中'],
-              ['2.9–3.4 m/s', '有', '高'],
-              ['>3.4 m/s', '不计', '高'],
-            ],
-          },
-          { kind: 'text', text: '「其他右心征象」：RV/LV 基底径比 >1、室间隔变平或矛盾运动、RVOT 加速时间 <105 ms、右房面积 >18 cm²、IVC >21 mm 且不塌陷、肺动脉收缩中期切迹（notching）。' },
-          { kind: 'h', text: '三、毛细血管前 vs 后：超声能给的线索' },
-          {
-            kind: 'table',
-            heads: ['线索', '毛细血管前（PAH / CTEPH / 肺病）', '毛细血管后（左心相关）'],
-            rows: [
-              ['左房扩大', '无', '常有'],
-              ['E/e′', '正常', '升高'],
-              ['左室壁厚 / 舒张功能', '正常', '异常'],
-              ['MR / MS', '无', '可有'],
-              ['RV 扩大与 TR 速度', '较匹配', '可不匹配，左心病变会掩盖右心表现'],
-            ],
-          },
-          { kind: 'note', text: '用 E/e′ 估 PAWP 在房颤、重度 MR、心包病变时不成立。分不清前后时写「需右心导管」，比硬判一个方向更有价值。', warn: true },
-          { kind: 'h', text: '四、PASP 估测的五个坑' },
-          { kind: 'text', text: '① TR 束不完整或偏心，包络只取到峰值一半 → 低估；② 右房压靠 IVC 估，误差可达 ±5 mmHg；③ 血容量、麻醉、机械通气都影响；④ 严重 TR 时右房压接近右室压，压差被压缩；⑤ 高动力状态（贫血、甲亢、分流）压差虚高但阻力不高。' },
-          { kind: 'h', text: '五、随访看哪几个数' },
-          { kind: 'text', text: '**TAPSE/PASP（RV-PA 耦联）** 比单看 PASP 更有预后价值：<0.55 mm/mmHg 提示失耦联。再加 RVFWS（>−20% 为异常，即绝对值 <20%）、右房面积、IVC、NT-proBNP 与 6 分钟步行。若 PASP 下降但 TAPSE/PASP 未改善，说明右室本身在恶化，别被「压差降了」误导。' },
-          { kind: 'note', text: '分流相关肺高压（ASD / VSD / PDA）看「先天性心脏病」组的可手术性判读，那套标准与本页不同，不要混用。' },
-        ],
-        note: '报告四句话最有用：TR Vmax 是多少、有无右心征象、可能性低/中/高、建议是否转诊做右心导管。',
       },
       {
         id: 'thrombus',
@@ -4168,7 +4115,7 @@ const BRIEF_SECTIONS = [
         title: '中国肺高血压指南：超声三档分层',
         sub: 'TRV + 支持指标 → 低/中/高可能 · 右心功能与预后 · 与左心病的鉴别 · 三个高估低估陷阱',
         source: ['R68', 'R72'],
-        rel: ['ph', 'rcoupling'],
+        rel: ['rcoupling', 'rvfail'],
         blocks: [
           { kind: 'h', text: '一、超声在 PH 里到底负责什么' },
           { kind: 'text', text: '《中国肺动脉高压诊断与治疗指南（2021 版）》把超声的位置写得很清楚：**用于筛查、病因鉴别和心功能评价**，而不是确诊。确诊靠右心导管（静息 mPAP ≥ 20 mmHg）。所以超声报告的落点不是「有没有肺高压」这一句话，而是**「PH 的可能性有多高 + 右心有没有受累 + 提示哪一类病因」**。' },
@@ -4360,7 +4307,7 @@ const BRIEF_SECTIONS = [
         title: '睡眠呼吸暂停与心衰的超声视角',
         sub: '右心负荷 · 容量状态 · 判读陷阱',
         source: ['R56'],
-        rel: ['ph', 'rvfail'],
+        rel: ['zh-ph', 'rvfail'],
         fields: [],
         blocks: [
           { kind: 'h', text: '为什么超声能看见 OSA' },
@@ -5910,7 +5857,6 @@ var CALC_LINKS = {
   /* 大血管与急症 */
   aorta: ['aortaz', 'aortaidx'],
   pe: ['rvvol', 'papi'],
-  ph: ['phprob', 'mpap', 'residx'],
   /* 先心病 */
   shd: ['paidx', 'shunt'],
   'pht-rev': ['pvrv', 'residx', 'mpap'],

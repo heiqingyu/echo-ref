@@ -58,7 +58,7 @@ check('www 完整版体积 < 1050 KB', Buffer.byteLength(html, 'utf8') < 1050 * 
 check('docs 发布版存在（APK 打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 1050 KB（8 组 123 条目录 + 78 条文献 + 40 项儿童参数，含三套来源说明）', Buffer.byteLength(dh, 'utf8') < 1050 * 1024, true);
+  check('docs 发布版体积 < 1050 KB（8 组 121 条目录 + 78 条文献 + 40 项儿童参数，含三套来源说明）', Buffer.byteLength(dh, 'utf8') < 1050 * 1024, true);
   check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
   // v1.5.0：瓣膜解剖不再是页签，改成公式集里的一条

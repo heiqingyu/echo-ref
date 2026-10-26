@@ -33,6 +33,42 @@ function isVideo(url) {
   return /\.mp4(\?|$)/i.test(url || '');
 }
 
+/* ────────── 收藏（v1.7.7）──────────
+   存 id 数组，跨启动保留；没有收藏时不显示「收藏」组。 */
+const FAV_KEY = 'echoref_favs';
+
+function readFavs() {
+  try {
+    const a = wx.getStorageSync(FAV_KEY);
+    return Array.isArray(a) ? a : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveFavs(arr) {
+  try { wx.setStorageSync(FAV_KEY, arr); } catch (e) { /* 存储满 / 隐私模式：静默 */ }
+}
+
+/** 把某个 id 的组挪到最前（桌面端与网页端同一套规则） */
+function moveSectionFirst(sections, id) {
+  const i = sections.map(function (s) { return s.id; }).indexOf(id);
+  if (i > 0) sections.unshift(sections.splice(i, 1)[0]);
+}
+
+/** 组内若干条目提到最前，顺序按 ids 给定 */
+function headItems(sections, secId, ids) {
+  const sec = sections.filter(function (s) { return s.id === secId; })[0];
+  if (!sec) return;
+  const head = ids.map(function (id) {
+    return sec.items.filter(function (it) { return it.id === id; })[0];
+  }).filter(Boolean);
+  if (!head.length) return;
+  sec.items = head.concat(sec.items.filter(function (it) {
+    return head.indexOf(it) === -1;
+  }));
+}
+
 /**
  * 组装目录：4 个计算组 + 瓣膜 + 各评估分组 + 外链分组
  *
@@ -136,6 +172,29 @@ function buildSections() {
     });
   }
 
+  // ★ v1.7.7：瓣膜评估整组前置（临床使用频率最高），组内二尖瓣 / 主动脉瓣评估再提到最前
+  moveSectionFirst(sections, 'valve');
+  headItems(sections, 'valve', ['mitral', 'aortic']);
+
+  // ★ v1.7.7：收藏组置顶（没有收藏时不出现），每条目也记一个 fav 标记给星标用
+  const favs = readFavs();
+  const byId = {};
+  sections.forEach(function (s) {
+    s.items.forEach(function (it) {
+      it.fav = favs.indexOf(it.id) !== -1;
+      if (!byId[it.id]) byId[it.id] = it;
+    });
+  });
+  const favItems = favs.map(function (id) { return byId[id]; }).filter(Boolean);
+  if (favItems.length) {
+    sections.unshift({
+      id: 'fav',
+      title: '收藏',
+      note: '点条目右侧的 ☆ / ★ 可加入或移出；收藏只存在本机，不上传',
+      items: favItems,
+    });
+  }
+
   return sections;
 }
 
@@ -162,6 +221,7 @@ function searchSections(all, kw) {
   const q = kw.toLowerCase();
   const out = [];
   all.forEach(function (sec) {
+    if (sec.id === 'fav') return;   // 收藏组只是镜像，命中时按原位置给出，避免结果里出现两条
     const items = [];
     sec.items.forEach(function (it) {
       if (it.kind !== 'album') {
@@ -277,7 +337,8 @@ Page({
   /** 「共 N 项」/「找到 N 项」（hasKw 由调用方传入，避免读到还没刷新的 this.data.kw） */
   countTextOf(list, hasKw) {
     let n = 0;
-    list.forEach(function (s) { n += s.items.length; });
+    // 收藏组只是同一批条目的镜像，计数时要排除，否则同一台计算器会被数两次
+    list.forEach(function (s) { if (s.id !== 'fav') n += s.items.length; });
     return (hasKw ? '找到 ' + n + ' 项' : '共 ' + n + ' 项');
   },
 
@@ -328,6 +389,37 @@ Page({
    *   valve → 瓣膜评估页并预选该瓣膜
    *   其余  → 公式 / 评估内容详情页
    */
+  /**
+   * 收藏 / 取消收藏（v1.7.7）
+   * 星标用 catchtap 拦住冒泡，点星不会同时打开条目；收藏组置顶、没有收藏时不显示。
+   */
+  onFav(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    const favs = readFavs();
+    const i = favs.indexOf(id);
+    if (i === -1) favs.unshift(id); else favs.splice(i, 1);
+    saveFavs(favs);
+    this.allSections = buildSections();
+    // 搜索状态下重绘后要保住关键词，否则列表会跳回完整目录
+    if (this.data.kw) {
+      this.applySearch(this.data.kw);
+      return;
+    }
+    this.setData({
+      sections: this.allSections,
+      navGroups: this.navGroupsOf(this.allSections),
+      countText: this.countTextOf(this.allSections),
+    });
+  },
+
+  /** 组名跳转条数据（目录重绘时同步） */
+  navGroupsOf(list) {
+    return list.map(function (s) {
+      return { id: s.id, title: s.title.replace(/（.*?）/g, '') };
+    }).concat([{ id: 'refs', title: '参考文献' }]);
+  },
+
   onOpen(e) {
     const d = e.currentTarget.dataset;
     if (d.kind === 'album') {
@@ -382,9 +474,9 @@ Page({
      ★ 微信规定：不定义 onShareAppMessage，右上角「转发给朋友」根本不显示。
      之前四个页面都没有，别人只能靠搜名字找到小程序 —— 这是「给别人用」最大的障碍。 */
   onShareAppMessage() {
-    return { title: '超声公式集 · 49 个计算器与评估清单', path: '/pages/calculators/calculators' };
+    return { title: '超声公式集 · 48 个计算器与评估清单', path: '/pages/calculators/calculators' };
   },
   onAddToFavorites() {
-    return { title: '超声公式集 · 49 个计算器与评估清单', query: '/pages/calculators/calculators' };
+    return { title: '超声公式集 · 48 个计算器与评估清单', query: '/pages/calculators/calculators' };
   },
 });

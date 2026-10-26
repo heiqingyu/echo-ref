@@ -45,6 +45,11 @@
           <view class="fx-item__n">{{it.title}}</view>
           <view class="fx-item__d">{{it.sub}}</view>
         </view>
+        <!-- 收藏星标：catchtap 拦住冒泡，点星不会打开条目（v1.7.7） -->
+        <view wx:if="{{it.kind === 'calc' || it.kind === 'brief' || it.kind === 'valveana'}}"
+              class="fx-item__f {{it.fav ? 'fx-item__f--on' : ''}}"
+              data-id="{{it.id}}" catchtap="onFav"
+              hover-class="fx-item__f--tap">{{it.fav ? '★' : '☆'}}</view>
         <view class="fx-item__a">{{it.kind === 'album' ? it.count + ' ›' : (it.video ? '▶' : '›')}}</view>
       </view>
     </view>

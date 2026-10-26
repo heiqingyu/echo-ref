@@ -126,7 +126,7 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 49) ok('公式集定义 49 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
+if (CG.GROUPS.length === 48) ok('公式集定义 48 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
 else bad('公式集分组数异常: ' + CG.GROUPS.length);
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
@@ -136,7 +136,7 @@ else bad('CALC_SECTIONS 异常: ' + calcSecIds.join('/'));
 // v1.5.3：计算器可以直接挂在评估组上，与判读条目同组（不再单起「介入尺寸」组）
 const BRIEF_SEC_IDS = ['valve', 'chd', 'chamber'];
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1 && BRIEF_SEC_IDS.indexOf(g.sec) === -1);
-if (!badSec.length) ok('49 条公式的 sec 归属均合法（含并入评估组的 valve / chd / chamber）');
+if (!badSec.length) ok('48 条公式的 sec 归属均合法（含并入评估组的 valve / chd / chamber）');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
 const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
 const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
@@ -144,8 +144,8 @@ const nValveCalc = CG.GROUPS.filter(g => g.sec === 'valve').length;
 const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
 const nChdCalc = CG.GROUPS.filter(g => g.sec === 'chd').length;
 const nChamCalc = CG.GROUPS.filter(g => g.sec === 'chamber').length;
-if (nHemo === 13 && nRight === 10 && nRecon === 16 && nValveCalc === 4 && nChdCalc === 4 && nChamCalc === 2)
-  ok('分组条目数 13 / 10 / 16 + 瓣膜 4 + 先心 4 + 心腔 2（合计 49）');
+if (nHemo === 13 && nRight === 9 && nRecon === 16 && nValveCalc === 4 && nChdCalc === 4 && nChamCalc === 2)
+  ok('分组条目数 13 / 9 / 16 + 瓣膜 4 + 先心 4 + 心腔 2（合计 48）');
 else bad('分组条目数异常: ' + [nHemo, nRight, nRecon, nValveCalc, nChdCalc, nChamCalc].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
@@ -184,7 +184,7 @@ const EX = require(exPath);
 if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（切面图像与质控 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,lf-lg,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,aorta,pe,ph,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 76 条（5 个分组）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,lf-lg,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 75 条（5 个分组）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -596,8 +596,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
       }
     });
   });
-  (bridged.length === 76) ? ok('76 个判读条目全部挂上「相关计算」桥接')
-    : bad('桥接条目数 ' + bridged.length + '（期望 76）');
+  (bridged.length === 75) ? ok('75 个判读条目全部挂上「相关计算」桥接')
+    : bad('桥接条目数 ' + bridged.length + '（期望 75）');
   bridged.every(function (b) { return b.text.indexOf('公式集 → ') !== -1; })
     ? ok('桥接文案统一指向「公式集 → 组 · 计算器」')
     : bad('桥接文案格式不一致');
@@ -873,12 +873,12 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   if (css160.indexOf('.chip--rel') !== -1) ok('「相关内容」胶囊专用配色已定义');
   else bad('缺少 .chip--rel 配色');
 
-  // 「相关计算」桥接：76 条判读全有，且目标计算器真实存在（brief 评估页也算合法目标）
+  // 「相关计算」桥接：75 条判读全有，且目标计算器真实存在（brief 评估页也算合法目标）
   const CG160 = require(path.join(ROOT, 'miniprogram', 'utils', 'calc-groups.js'));
   const calcIds160 = CG160.GROUPS.map(g => g.id).concat(briefs160.map(b => b.id));
   const links160 = EX160.CALC_LINKS || {};
   const missingLinks = briefs160.filter(b => !(links160[b.id] || []).length).map(b => b.id);
-  if (!missingLinks.length) ok('76 条判读全部带「相关计算」跳转目标');
+  if (!missingLinks.length) ok('75 条判读全部带「相关计算」跳转目标');
   else bad('缺相关计算的条目：' + missingLinks.join(','));
   const badTarget = [];
   Object.keys(links160).forEach(function (k) {

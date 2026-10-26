@@ -419,20 +419,29 @@ Page({
           ' 上限 ' + calc.fmt(r.cut, 2) + '）→ ' + r.text;
       }
     } else if (gid === 'mpap') {
-      // —— 肺动脉压：sPAP / dPAP / mPAP 用同一 RAP 一次算完 ——
-      const r = calc.pulmonaryPressures({
-        trv: v.pp_tr, prv: v.pp_pr, rap: v.pp_rap,
+      // —— 肺动脉压 · 肺高压评估：IVC→RAP，再出 sPAP / dPAP / mPAP 与可能性 ——
+      const signs = this.data.signsV === '' ? null : this.data.signsV === 'yes';
+      const r = calc.pulmonaryScreen({
+        ivc: v.pp_ivc, collapse: this.data.collapseV, rap: v.pp_rap,
+        trv: v.pp_tr, prv: v.pp_pr, rvotAt: v.pp_rvotat, signs: signs,
       });
+      // 只有 RVOT AT / 征象、没有任何压力输入时不给压力结论，但仍报可能性
       const parts = [];
-      if (r.spap !== undefined) {
-        parts.push('sPAP ' + calc.fmt(r.spap, 1) + ' mmHg（' + r.spapText + '）');
+      if (r.hasResult) {
+        parts.push(r.rapText);
+        if (r.spap !== undefined) {
+          parts.push('sPAP ' + calc.fmt(r.spap, 1) + ' mmHg（' + r.spapText + '）');
+        }
+        if (r.dpap !== undefined) {
+          parts.push('dPAP ' + calc.fmt(r.dpap, 1) + ' mmHg');
+        }
+        if (r.mpap !== undefined) {
+          parts.push('mPAP ' + calc.fmt(r.mpap, 1) + ' mmHg（' + r.mpapText +
+            (r.mode === 'mahan' ? '，Mahan 近似' : '') + '）');
+        }
       }
-      if (r.dpap !== undefined) {
-        parts.push('dPAP ' + calc.fmt(r.dpap, 1) + ' mmHg');
-      }
-      if (r.mpap !== undefined) {
-        parts.push('mPAP ' + calc.fmt(r.mpap, 1) + ' mmHg（' + r.mpapText +
-          (r.mode === 'mahan' ? '，Mahan 近似' : '') + '）');
+      if (valid(v.pp_tr) || valid(v.pp_rvotat) || signs === true) {
+        parts.push('超声 PH 可能性 ' + r.prob + (r.atText ? '（' + r.atText + '）' : ''));
       }
       out = parts.join('；');
     } else if (gid === 'ctrcd') {
@@ -1404,18 +1413,6 @@ Page({
         if (r.error) out = r.error;
         else {
           const parts = ['NC/C ' + calc.fmt(r.ratio, 2), r.text];
-          if (r.note) parts.push(r.note);
-          out = parts.join('；');
-        }
-      }
-    } else if (gid === 'phprob') {
-      // —— 超声肺高压可能性（2022 ESC/ERS 三步法）——
-      if (valid(v.phv) || valid(v.phrvotat) || ov.phsign === 'y') {
-        const r = calc.phLikelihood(v.phv, ov.phsign === 'y', v.phrvotat);
-        if (r.error) out = r.error;
-        else {
-          const parts = ['可能性 ' + r.prob, r.text];
-          if (r.atText) parts.push(r.atText);
           if (r.note) parts.push(r.note);
           out = parts.join('；');
         }

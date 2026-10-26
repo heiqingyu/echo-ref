@@ -598,10 +598,11 @@
     { id: 'tei', title: 'Tei 指数（MPI）',
       fields: [['ivct', '等容收缩时间 IVCT', 'ms'], ['ivrt', '等容舒张时间 IVRT', 'ms'], ['et', '射血时间 ET', 'ms'], ['tside', '侧别（右室填 2，留空按左室）', '']],
       note: 'MPI = (IVCT + IVRT) / ET；左室 >0.40、右室 >0.55 为异常。心率与负荷会影响测值' },
-    { id: 'mpap', sec: 'right', title: '肺动脉压（sPAP · dPAP · mPAP）',
-      fields: [['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pr', 'PR 舒张末期流速（可选）', 'm/s'],
-        ['pp_rap', '右房压 RAP', 'mmHg']],
-      note: 'sPAP = 4 × TR Vmax² + RAP（≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 近似 0.61 × sPAP + 2。肺动脉瓣狭窄或 RVOT 梗阻时 sPAP 会高估；确诊仍要右心导管' },
+    { id: 'mpap', sec: 'right', title: '肺动脉压 · 肺高压评估',
+      fields: [['pp_ivc', 'IVC 内径（估 RAP）', 'mm'], ['pp_rap', '右房压 RAP（可选，填了优先）', 'mmHg'],
+        ['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pr', 'PR 舒张末期流速（可选）', 'm/s'],
+        ['pp_rvotat', 'RVOT 加速时间（可选）', 'ms']],
+      note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
     { id: 'shunt', title: 'Qp/Qs 肺体循环血流比',
       fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm'],
         ['ld', 'LVOT 直径（体循环）', 'cm'], ['lvti', 'LVOT VTI（体循环）', 'cm']],
@@ -645,10 +646,6 @@
       fields: [['rdt', '1→2 m/s 时间差 Δt', 'ms']],
       note: '两点压差差为 4×2² − 4×1² = 12 mmHg，故 dP/dt = 12 ÷ Δt(s)，单位 mmHg/s。<400 提示右室收缩功能减低' },
 
-    { id: 'phprob', sec: 'right', title: '超声肺高压可能性',
-      opts: [{ k: 'phsign', n: '其他右心征象', list: [['n', '无'], ['y', '有']] }],
-      fields: [['phv', 'TR Vmax', 'm/s'], ['phrvotat', 'RVOT 加速时间（可选）', 'ms']],
-      note: 'TR Vmax ≤2.8 无征象 → 低；≤2.8 有征象 或 2.9–3.4 无征象 → 中；2.9–3.4 有征象 或 >3.4 → 高。右心征象指 RV/LV >1、室间隔变平 / 矛盾运动、RVOT AT <105 ms、右房面积 >18 cm²、IVC >21 mm 不塌陷、收缩期切迹。超声只给「可能性」，确诊必须右心导管' },
 
     /* ── 瓣膜专用定量（v1.4.1 起与小程序 calc-groups.js 同源，走 valve-calc 引擎）
        ★ v1.4.4：AS / AR / MS / MR 并入两个评估页，此处只留 TR ── */
@@ -795,6 +792,29 @@
 
   const calcVal = {};
   let calcCollapse = '';
+  /* ────────── 收藏（v1.7.7）：只存 id 数组，存在本机 localStorage ────────── */
+  const FAV_KEY = 'echoref_favs';
+  function readFavs() {
+    try {
+      const a = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+      return Array.isArray(a) ? a : [];
+    } catch (e) {
+      return [];
+    }
+  }
+  function writeFavs(a) {
+    try { localStorage.setItem(FAV_KEY, JSON.stringify(a)); } catch (e) { /* 隐私模式：忽略 */ }
+  }
+
+  /** 收藏 / 取消收藏后重绘目录（保持当前搜索词） */
+  function toggleFav(id) {
+    if (!id) return;
+    const favs = readFavs();
+    const i = favs.indexOf(id);
+    if (i === -1) favs.unshift(id); else favs.splice(i, 1);
+    writeFavs(favs);
+    renderCalcList($('fxSearch') ? $('fxSearch').value : '');
+  }
   let calcSigns = '';
   /** 选项组状态（性别 / 心律 / 节段总数 …），键为 calcc-groups 里的 opts.k */
   const calcOpt = {};
@@ -813,13 +833,12 @@
     mapse: '二尖瓣环收缩期位移',
     dvi: 'LVOT VTI ÷ 主动脉瓣 VTI',
     tei: '等容时间之和 ÷ 射血时间',
-    mpap: '舒张期肺动脉反流法',
+    mpap: 'IVC 估 RAP · 三压 + ESC/ERS 可能性',
     shunt: '分流方向与分流量分级',
     bernoulli: 'ΔP = 4(V₂² − V₁²)',
     atrial: 'LAVI · RAVI',
     dias: 'E/A · 平均 E/e′',
     paspv: 'TR 压差 + 右房压 · 轻中重分级',
-    rapv: 'ASE 三分级 · 3 / 8 / 15 mmHg',
     rvfacv: '(RVEDA − RVESA) ÷ RVEDA',
     rcratiov: '右室收缩 ÷ 肺动脉负荷',
     pvrv: '(mPAP − PAWP) ÷ CO · WU',
@@ -855,7 +874,6 @@
     lastiff: 'E/e′ ÷ LARS',
     vtir: '不测直径的分流替代量',
     lvnc: '非致密层 ÷ 致密层',
-    phprob: '2022 ESC/ERS 三步法',
     laef: 'LAEF 与 LA 扩张指数',
     quickratio: '床头最常用的两个半定量比值',
     lvmih: 'de Simone 指数 · 男 >50 女 >47',
@@ -904,15 +922,20 @@
    *  link 为纯外链条目：渲染成 <a target="_blank">，不加载任何图片或 iframe
    *  url 为 .mp4 时用 ▶ 标识，点击由浏览器直接播放
    *  album 为专辑（整本书的视频）：右侧显示段数，点击进入二级列表 */
-  function fxItemHtml(kind, id, title, sub, url, count, secId) {
+  function fxItemHtml(kind, id, title, sub, url, count, secId, fav) {
     const isVid = /\.mp4(\?|$)/i.test(url || '');
     let arrow = '›';
     if (kind === 'album') arrow = (count || 0) + ' ›';
     else if (isVid) arrow = '▶';
+    // 星标只给「点开有内容」的条目（外链 / 专辑不收藏）；v1.7.7
+    const star = (kind === 'calc' || kind === 'brief' || kind === 'valveana')
+      ? '<span class="fx-fav' + (fav ? ' fx-fav--on' : '') + '" data-fav="' + esc(id) + '">' +
+        (fav ? '★' : '☆') + '</span>'
+      : '';
     const inner = '<span class="fx-item__main">' +
       '<span class="fx-item__n">' + esc(title) + '</span>' +
       '<span class="fx-item__d">' + esc(sub) + '</span>' +
-      '</span><span class="fx-item__a">' + arrow + '</span>';
+      '</span>' + star + '<span class="fx-item__a">' + arrow + '</span>';
     if (kind === 'link') {
       return '<a class="fx-item" href="' + esc(url || '#') +
         '" target="_blank" rel="noopener noreferrer">' + inner + '</a>';
@@ -1273,6 +1296,39 @@
       });
     }
 
+    // ★ v1.7.7：瓣膜评估整组前置（临床使用频率最高），组内二尖瓣 / 主动脉瓣评估再提到最前
+    const vIdx = secs.map(function (s) { return s.id; }).indexOf('valve');
+    if (vIdx > 0) secs.unshift(secs.splice(vIdx, 1)[0]);
+    const vSec = secs[0];
+    if (vSec && vSec.id === 'valve') {
+      const head = ['mitral', 'aortic'].map(function (id) {
+        return vSec.items.filter(function (it) { return it.id === id; })[0];
+      }).filter(Boolean);
+      if (head.length) {
+        vSec.items = head.concat(vSec.items.filter(function (it) {
+          return head.indexOf(it) === -1;
+        }));
+      }
+    }
+
+    // ★ v1.7.7：收藏组置顶（没有收藏时不出现）；每条目记 fav 标记给星标用
+    const favs = readFavs();
+    const byId = {};
+    secs.forEach(function (s) {
+      s.items.forEach(function (it) {
+        it.fav = favs.indexOf(it.id) !== -1;
+        if (!byId[it.id]) byId[it.id] = it;
+      });
+    });
+    const favItems = favs.map(function (id) { return byId[id]; }).filter(Boolean);
+    if (favItems.length) {
+      secs.unshift({
+        id: 'fav', title: '收藏',
+        note: '点条目右侧的 ☆ / ★ 可加入或移出；收藏只存在本机，不上传',
+        items: favItems,
+      });
+    }
+
     return secs;
   }
 
@@ -1492,6 +1548,7 @@
     let list = '';
 
     secs.forEach(function (sec) {
+      if (sec.id === 'fav' && q) return;   // 搜索时收藏组只是镜像，别重复列出
       const items = [];
       sec.items.forEach(function (it) {
         if (it.kind !== 'album') {
@@ -1508,7 +1565,7 @@
       if (!items.length) return;
       list += fxGroupHtml(sec.id, sec.title, sec.note);
       items.forEach(function (it) {
-        list += fxItemHtml(it.kind, it.id, it.title, it.sub, it.url, it.count, it.sec);
+        list += fxItemHtml(it.kind, it.id, it.title, it.sub, it.url, it.count, it.sec, it.fav);
       });
       list += '</div>';
     });
@@ -1574,6 +1631,12 @@
         toggleRefs(true);   // 文献默认折叠，点标签直接展开
         const t = $('calcRefs');
         if (t) goToY(t.getBoundingClientRect().top + window.pageYOffset - 56);
+        return;
+      }
+      // 星标：只收藏 / 取消收藏，不打开条目
+      const fv = ev.target.closest ? ev.target.closest('[data-fav]') : null;
+      if (fv) {
+        toggleFav(fv.dataset.fav);
         return;
       }
       const el = ev.target.closest ? ev.target.closest('.fx-item') : null;
@@ -1736,8 +1799,11 @@
         bl.html +
         fieldsHtml(g.fields.map(function (f) { return { k: f[0], n: f[1], u: f[2] }; }));
       if (g.opts) html += optsHtml(g.opts);
-      // 右房压条目需要 IVC 塌陷选项（与右心评估条目共用同一条状态）
-      if (g.id === 'rapv') html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse);
+      // 肺高压条目需要 IVC 塌陷 + 支持征象两个选项（与右心评估共用同一条状态）
+      if (g.id === 'mpap') {
+        html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse) +
+          segHtml('calcsigns', CALC_SIGNS, calcSigns);
+      }
       html += '<div class="note">' + mdInline(g.note) + '</div>' +
         '<div class="calc-out" id="calcOut-' + g.id + '">' +
         '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div></div>';
@@ -2002,27 +2068,30 @@
         ' 上限 ' + Calc.fmt(r.cut, 2) + '）→ ' + r.text);
     } else put('tei');
 
-    // 肺动脉压：sPAP / dPAP / mPAP
-    if (has('pp_tr') || has('pp_pr')) {
-      const r = Calc.pulmonaryPressures({ trv: v.pp_tr, prv: v.pp_pr, rap: v.pp_rap });
+    // 肺动脉压 · 肺高压评估：IVC→RAP，再出 sPAP / dPAP / mPAP 与可能性（v1.7.7 三合一）
+    {
+      const signs = calcSigns === '' ? null : calcSigns === 'yes';
+      const r = Calc.pulmonaryScreen({
+        ivc: v.pp_ivc, collapse: calcCollapse, rap: v.pp_rap,
+        trv: v.pp_tr, prv: v.pp_pr, rvotAt: v.pp_rvotat, signs: signs,
+      });
       const parts = [];
-      if (r.spap !== undefined) parts.push('sPAP ' + Calc.fmt(r.spap, 1) + ' mmHg（' + r.spapText + '）');
-      if (r.dpap !== undefined) parts.push('dPAP ' + Calc.fmt(r.dpap, 1) + ' mmHg');
-      if (r.mpap !== undefined) {
-        parts.push('mPAP ' + Calc.fmt(r.mpap, 1) + ' mmHg（' + r.mpapText +
-          (r.mode === 'mahan' ? '，Mahan 近似' : '') + '）');
+      if (r.hasResult) {
+        parts.push(r.rapText);
+        if (r.spap !== undefined) parts.push('sPAP ' + Calc.fmt(r.spap, 1) + ' mmHg（' + r.spapText + '）');
+        if (r.dpap !== undefined) parts.push('dPAP ' + Calc.fmt(r.dpap, 1) + ' mmHg');
+        if (r.mpap !== undefined) {
+          parts.push('mPAP ' + Calc.fmt(r.mpap, 1) + ' mmHg（' + r.mpapText +
+            (r.mode === 'mahan' ? '，Mahan 近似' : '') + '）');
+        }
+      }
+      if (has('pp_tr') || has('pp_rvotat') || signs === true) {
+        parts.push('超声 PH 可能性 ' + r.prob + (r.atText ? '（' + r.atText + '）' : ''));
       }
       put('mpap', partsOf(parts));
-    } else put('mpap');
+    }
 
     // ── 右心与肺循环 ──
-    // 右房压（IVC 法）
-    {
-      const r = Calc.rapEstimate(v.rivc, calcCollapse);
-      if (r.rap !== undefined) {
-        put('rapv', 'RAP ≈ ' + r.rap + ' mmHg · IVC ' + Calc.fmt(r.ivc, 0) + ' mm · ' + r.text);
-      } else put('rapv');
-    }
 
     // 右室 FAC
     if (has('feda', 'fesa')) {
@@ -2491,17 +2560,6 @@
       put('lvnc', partsOf(parts));
     } else put('lvnc');
 
-    // 超声肺高压可能性（2022 ESC/ERS）
-    {
-      const signs = calcOpt.phsign === 'y';
-      if (has('phv') || has('phrvotat') || signs) {
-        const r = Calc.phLikelihood(v.phv, signs, v.phrvotat);
-        const parts = r.error ? [r.error] : ['可能性 ' + r.prob, r.text];
-        if (!r.error && r.atText) parts.push(r.atText);
-        if (!r.error && r.note) parts.push(r.note);
-        put('phprob', partsOf(parts));
-      } else put('phprob');
-    }
 
     // 左房排空分数
     if (has('lavmax', 'lavmin')) {

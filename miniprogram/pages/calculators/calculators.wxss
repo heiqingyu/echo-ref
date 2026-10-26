@@ -125,6 +125,23 @@
   line-height: 1;
 }
 
+/* 收藏星标（v1.7.7）：catchtap 独立命中区，点星不会打开条目 */
+.fx-item__f {
+  flex: none;
+  padding: 6rpx 8rpx;
+  font-size: 32rpx;
+  line-height: 1;
+  color: #c8ced8;
+}
+
+.fx-item__f--on {
+  color: #e8a020;
+}
+
+.fx-item__f--tap {
+  opacity: 0.55;
+}
+
 /* ── 参考文献 ── */
 
 /* 折叠头：默认收起，点标题展开全部 */

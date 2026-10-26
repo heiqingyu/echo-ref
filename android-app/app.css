@@ -956,6 +956,24 @@ html, body {
   line-height: 1;
 }
 
+/* 收藏星标（v1.7.7）：独立命中区，点星不打开条目 */
+.fx-fav {
+  flex: none;
+  padding: 2px 4px;
+  font-size: 16px;
+  line-height: 1;
+  color: #c8ced8;
+  cursor: pointer;
+}
+
+.fx-fav--on {
+  color: #e8a020;
+}
+
+.fx-fav:active {
+  opacity: 0.55;
+}
+
 .fx-back {
   display: block;
   width: 100%;

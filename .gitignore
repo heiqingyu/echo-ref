@@ -1,4 +1,6 @@
 # ══════════ 构建产物 / 临时文件 ══════════
+_shot_fix/
+.debug-*.png
 .debug-*.html
 .debug-*.js
 .workbuddy/

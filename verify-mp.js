@@ -542,11 +542,11 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('公式集分 8 个大组（3 计算 + 1 瓣膜 + 4 评估；v1.6.3 起「切面学习 / TEE 演示」移出目录）', dirs.length, 8, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|瓣膜评估|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景' ? 1 : 0, 1, 0);
+      '瓣膜评估|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 123 条（计算 49 + 判读 74；外链两整组 + 切面速查 3 条已移入「切面学习」页签）', nItems, 123, 0);
+  check('目录共 121 条（计算 48 + 判读 73；外链两整组 + 切面速查 3 条已移入「切面学习」页签）', nItems, 121, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -686,8 +686,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segSim.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
   check('血流动力学、舒张与心功能 13 条（M 型三合一 / 快速比值 / Ea / VTI 比 / 舒张功能 / CRT 前 25 条）', dirById('hemo').items.length, 13, 0);
-  check('右心与肺循环 10 条（肺动脉压三合一 / FAC / PVR / SVR + 第二批 5 条 + 肺高压可能性）',
-    dirById('right').items.length, 10, 0);
+  check('右心与肺循环 9 条（肺动脉压·肺高压三合一 / FAC / PVR / SVR + 第二批 5 条）',
+    dirById('right').items.length, 9, 0);
   check('右心第二批条目齐全（rvvol / rvfws / papi / residx / rvdvdt）',
     ['rvvol', 'rvfws', 'papi', 'residx', 'rvdvdt']
       .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -706,8 +706,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('重构组条目齐全',
     ['volidx', 'rwsv', 'spher', 'lastrain', 'aortaidx', 'mdsv', 'swv']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('计算类条目 3 个计算组合计 39 条（另 10 条并入瓣膜 4 / 先心 4 / 心腔 2，合计 49）',
-    dirs.slice(0, 3).reduce(function (n, d) { return n + d.items.length; }, 0), 39, 0);
+  check('计算类条目 3 个计算组合计 38 条（另 10 条并入瓣膜 4 / 先心 4 / 心腔 2，合计 48）',
+    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 38, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -760,7 +760,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     ['hcm', 'amyloid', 'rcm-strain', 'dcm', 'athlete', 'fabry', 'arvc', 'myocarditis', 'sarcoid']
       .every(id => dirById('chamber').items.some(i => i.id === id)) &&
     !dirs.some(g => g.id === 'myopathy') ? 1 : 0, 1, 0);
-  check('急症与特殊场景 16 条（大血管 6 + 特殊人群 8 + 肺超声 + LVAD）', dirById('vascular').items.length, 16, 0);
+  check('急症与特殊场景 15 条（大血管与急症 + 特殊人群 + 肺超声 + LVAD；肺高压判读已并入 mpap）', dirById('vascular').items.length, 15, 0);
   ['aorta', 'pe', 'thrombus'].forEach(id => {
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
@@ -887,6 +887,13 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   };
   mpCalc('mpap', { pp_tr: 3.0, pp_rap: 8 }, /sPAP 44\.0 mmHg.*轻度升高/,
     '肺动脉压三合一：TR 3.0 + RAP 8 → sPAP 44 轻度');
+  // v1.7.7：RAP 可由 IVC 内径 + 吸气塌陷估出（手填 RAP 优先）
+  mpCalc('mpap', { pp_ivc: 20, pp_tr: 3.0 }, /RAP ≈ 8 mmHg.*sPAP 44\.0/,
+    '肺高压：IVC 20 未选塌陷 → RAP 8 / sPAP 44', '');
+  mpCalc('mpap', { pp_ivc: 24, pp_tr: 3.0 }, /RAP ≈ 15 mmHg.*sPAP 51\.0/,
+    '肺高压：IVC 24 且不塌陷 → RAP 15 / sPAP 51', 'no');
+  mpCalc('mpap', { pp_ivc: 18, pp_tr: 3.0 }, /RAP ≈ 3 mmHg.*sPAP 39\.0/,
+    '肺高压：IVC 18 且塌陷 >50% → RAP 3 / sPAP 39', 'yes');
   mpCalc('rvfacv', { feda: 20, fesa: 13 }, /FAC 35\.0%/, 'RV FAC 20/13 = 35%');
   mpCalc('pvrv', { hmmpap: 45, hmpawp: 12, hmco: 5 }, /6\.60 WU.*重度/, 'PVR 6.6 WU 重度');
   mpCalc('svrv', { smap: 65, srap: 5, sco: 5 }, /960.*正常/, 'SVR 960 正常');
@@ -1368,7 +1375,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('舒张功能分级：覆盖房颤与二尖瓣病变的特殊处理',
     dTxt.indexOf('房颤') !== -1 && dTxt.indexOf('E/A 不可用') !== -1 ? 1 : 0, 1, 0);
 
-  const phTxt = briefText('ph');
+  // v1.7.7：PH 判读条目已并入计算条目 mpap，细则块现在挂在该计算页末尾
+  const phTxt = briefText('mpap');
   check('肺高压：2022 新定义 mPAP >20', phTxt.indexOf('mPAP') !== -1 && phTxt.indexOf('>20') !== -1 ? 1 : 0, 1, 0);
   check('肺高压：三步法五档可能性', phTxt.indexOf('2.9–3.4') !== -1 && phTxt.indexOf('>3.4') !== -1 ? 1 : 0, 1, 0);
   check('肺高压：强调超声只给可能性、确诊需右心导管',
