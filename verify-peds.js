@@ -551,9 +551,99 @@ const corGroup = peds.PEDS_GROUPS.filter(function (g) { return g.title === '冠�
 check('冠脉组带双法说明', !!(corGroup && corGroup.note && corGroup.note.indexOf('SZ') !== -1), true);
 check('冠脉组说明含「不可互相比较」', corGroup.note.indexOf('不可互相比较') !== -1, true);
 
-/* ================================================================== */
+/* ================================================================== *
+ * 15. 新生儿体重法（深圳 2014，0–28 天，n=288）
+ * ================================================================== */
 
-console.log('\n' + '═'.repeat(60));
+section('15. 新生儿体重法（深圳 2014，体重三次多项式）');
+
+const NEO_KEYS = peds.NEO_GROUPS.reduce(function (a, g) { return a.concat(g.keys); }, []);
+
+// 15.1 结构与覆盖
+check('新生儿 17 项', NEO_KEYS.length, 17);
+check('分 3 组（心室与大血管 / 房室瓣环 / 容积与质量）', peds.NEO_GROUPS.length, 3);
+check('组内条数 9/5/3', peds.NEO_GROUPS.map(function (g) { return g.keys.length; }).join('/'), '9/5/3');
+check('需自填 8 项，其余 9 项沿用上方', peds.NEO_OWN_KEYS.length, 8);
+check('自填项不含 LVEDD', peds.NEO_OWN_KEYS.indexOf('LVEDD'), -1);
+check('自填项不含 LVM', peds.NEO_OWN_KEYS.indexOf('LVM'), -1);
+
+// 15.2 原文缺陷项一律不入表
+check('原文荒谬的 AI / AO-Dia 未纳入', ['AI', 'AODia', 'AODIA'].filter(function (k) { return peds.NEO_Z[k]; }).length, 0);
+check('系数与 LAV 重复的 SV 未纳入', peds.NEO_Z.SV, undefined);
+check('幂指数误标的 LV mass/BSA 未纳入', peds.NEO_Z.LVMBSA, undefined);
+check('本组不含冠状动脉（原文 39 项亦无）',
+  ['LMCA', 'LAD', 'RCA'].filter(function (k) { return peds.NEO_Z[k]; }).length, 0);
+
+// 15.3 系数逐字核对（原文表 2 与正文）
+const nL = peds.NEO_Z.LVEDD;
+check('LVEDD a=3.062', nL.a, 3.062);
+check('LVEDD b=-0.313', nL.b, -0.313);
+check('LVEDD c=0.117', nL.c, 0.117);
+check('LVEDD d=-0.011', nL.d, -0.011);
+check('LVEDD s̄x=0.099', nL.sx, 0.099);
+check('RVD a/b=1.313/0.478', peds.NEO_Z.RVD.a + '/' + peds.NEO_Z.RVD.b, '1.313/0.478');
+check('LAV a/b/c/d=-2.085/2.019/-0.547/0.055',
+  [peds.NEO_Z.LAV.a, peds.NEO_Z.LAV.b, peds.NEO_Z.LAV.c, peds.NEO_Z.LAV.d].join('/'),
+  '-2.085/2.019/-0.547/0.055');
+check('ARD b 为负（-0.211）', peds.NEO_Z.ARD.b, -0.211);
+
+// 15.4 预测均值（手算：lnY = a+bW+cW²+dW³）
+check('LVEDD 3.3 kg → 18.32 mm', peds.neoMean('LVEDD', 3.3), 18.3187, 0.002);
+check('RVD 3.25 kg → 7.29 mm', peds.neoMean('RVD', 3.25), 7.2949, 0.002);
+check('LVM 3.3 kg → 8.07 g', peds.neoMean('LVM', 3.3), 8.0675, 0.002);
+check('LAV 3.3 kg → 1.82 mL', peds.neoMean('LAV', 3.3), 1.8174, 0.002);
+// ★ 与原文表 5「3.0–3.5 kg 组 RVD 7.34±1.21 mm」互证（不同统计口径，容差 2%）
+check('RVD 与原文表 5 偏差 < 2%',
+  Math.abs(peds.neoMean('RVD', 3.25) - 7.34) / 7.34 < 0.02 ? 1 : 0, 1);
+// ★ s̄x 是对数尺度残差（相当于 CV）：等效线性 SD = 均值 × s̄x
+check('等效线性 SD = 均值 × s̄x', peds.neoAt('LVEDD', 3.3).sd, 18.3187 * 0.099, 0.002);
+
+// 15.5 Z 值（对数尺度）
+check('均值处 Z=0', peds.neoZ(peds.neoMean('LVEDD', 3.3), 'LVEDD', 3.3), 0, 1e-9);
+check('测值 ×e^s̄x 恰为 +1 Z',
+  peds.neoZ(18.3187 * Math.exp(0.099), 'LVEDD', 3.3), 1, 1e-4);
+check('测值 ÷e^s̄x 恰为 −1 Z',
+  peds.neoZ(18.3187 / Math.exp(0.099), 'LVEDD', 3.3), -1, 1e-4);
+check('非正测值返回 null', peds.neoZ(0, 'LVEDD', 3.3), null);
+
+// 15.6 区间为乘性（对数尺度天然不对称）
+const nt = peds.neoAt('LVEDD', 3.3);
+check('hi2/mean = e^0.198', nt.hi2 / nt.mean, 1.218962, 1e-5);
+check('mean/lo2 = e^0.198（几何对称）', nt.mean / nt.lo2, 1.218962, 1e-5);
+check('上下不对称：hi2−mean > mean−lo2', (nt.hi2 - nt.mean) > (nt.mean - nt.lo2) ? 1 : 0, 1);
+check('上下偏比 = e^0.396（不是 均值±kSD）', nt.hi2 / nt.lo2, 1.485869, 1e-5);
+
+// 15.7 与上方同名测值复用
+const ng = peds.buildNeoGrouped(3.3, { RVDD: 7.4, ANN: 6.8, MPA: 8.2 });
+check('RVD 取上方 RVDD', ng[0].rows[0].value, '7.4');
+check('RVD 行带「←RVDD」标记', ng[0].rows[0].fromText, '←RVDD');
+check('ARD 取上方 ANN', ng[0].rows[2].value, '6.8');
+check('PA 取上方 MPA（不取 PHN 的 PA）', ng[0].rows[7].value, '8.2');
+check('未填的项仍给出 ±2SD 区间',
+  ng[0].rows[6].hasValue === false && ng[0].rows[6].rangeText !== '—' ? 1 : 0, 1);
+
+// 15.8 覆盖范围与外推
+check('neoInRange 1.4/1.5/5.0/5.1',
+  [1.4, 1.5, 5.0, 5.1].map(function (w) { return peds.neoInRange(w); }).join(','),
+  'false,true,true,false');
+check('1.2 kg 行标外推', peds.buildNeoGrouped(1.2, {})[0].rows[0].extrap, true);
+check('3.3 kg 行不标外推', peds.buildNeoGrouped(3.3, {})[0].rows[0].extrap, false);
+
+// 15.9 单位与单调性
+check('17 项单位只有 mm / mL / g',
+  NEO_KEYS.every(function (k) { return ['mm', 'mL', 'g'].indexOf(peds.NEO_Z[k].unit) !== -1; }) ? 1 : 0, 1);
+check('17 项均值随体重单调递增',
+  NEO_KEYS.filter(function (k) { return !(peds.neoMean(k, 5.0) > peds.neoMean(k, 1.8)); }).join(','), '');
+
+// 15.10 文献入库
+const exd = require('./miniprogram/utils/extra-data.js');
+const r80 = exd.REFS.filter(function (r) { return r.id === 'R80'; })[0];
+check('R80 已入库', !!r80, true);
+check('R80 为中文期刊（需订阅 DOI）', r80 && r80.dl.length === 1 && r80.dl[0].t === '需订阅', true);
+check('R80 题录含卷期页 11(2): 142–154',
+  r80 && /11\(2\): 142–154/.test(r80.where) ? 1 : 0, 1);
+
+/* ================================================================== */
 if (fail === 0) {
   console.log('✅ 全部通过：' + pass + ' 项断言');
 } else {

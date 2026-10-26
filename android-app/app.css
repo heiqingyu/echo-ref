@@ -508,6 +508,12 @@ html, body {
   vertical-align: 1px;
 }
 
+/* ★ v1.8.1：新生儿体重法 17 行 —— 参数名偏长，收窄实测 / Z 列，把宽度让给名字与区间 */
+.zrow--neo .zrow__v { flex: 0.62; font-size: 13px; }
+.zrow--neo .zrow__r { flex: 1.18; font-size: 11.5px; }
+.zrow--neo .zrow__g { flex: 0 0 66px; }
+.zrow--neo .zrow__n { font-size: 13px; }
+
 .zbig {
   display: flex;
   align-items: baseline;

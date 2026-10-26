@@ -41,6 +41,13 @@ Page({
     warnings: [],
     rangesOpen: false,
 
+    // ★ v1.8.1 新生儿（0–28 天）体重法：独立输入 + 独立区块
+    neoInputs: [],
+    neoGrouped: [],
+    neoOpen: false,
+    neoWeight: '',
+    neoHasRows: false,
+
     showFormula: false,
   },
 
@@ -77,6 +84,15 @@ Page({
       moreInputs: this.mkRows(peds.PEDS_FIELDS.filter(function (k) {
         return QUICK_KEYS.indexOf(k) === -1;
       })),
+      neoInputs: this.mkNeoRows(),
+    });
+  },
+
+  /** 新生儿体重法里需要自填的 8 项（其余 9 项从上方同名测值带入） */
+  mkNeoRows() {
+    return peds.NEO_OWN_KEYS.map(function (k) {
+      const d = peds.NEO_Z[k];
+      return { key: k, name: d.name, unit: d.unit, value: '' };
     });
   },
 
@@ -104,8 +120,18 @@ Page({
   onWeight(e) { this.setData({ weight: e.detail.value }); this.refresh(); },
 
   onToggleMore()    { this.setData({ moreOpen: !this.data.moreOpen }); },
+  onToggleNeo()     { this.setData({ neoOpen: !this.data.neoOpen }); },
   onToggleFormula() { this.setData({ showFormula: !this.data.showFormula }); },
   onToggleRanges()  { this.setData({ rangesOpen: !this.data.rangesOpen }); },
+
+  /** 新生儿区块的 8 个自填项（与上方 40 项互不干扰） */
+  onNeoInput(e) {
+    const key = e.currentTarget.dataset.k;
+    const arr = this.data.neoInputs;
+    for (let i = 0; i < arr.length; i++) if (arr[i].key === key) arr[i].value = e.detail.value;
+    this.setData({ neoInputs: arr });
+    this.refresh();
+  },
 
   onInput(e) {
     const key = e.currentTarget.dataset.k;
@@ -128,6 +154,7 @@ Page({
     this.setData({
       inputs: clr(this.data.inputs),
       moreInputs: clr(this.data.moreInputs),
+      neoInputs: clr(this.data.neoInputs),
       moreOpen: false,
     });
     this.refresh();
@@ -175,6 +202,21 @@ Page({
 
     const grouped = hasBsa ? peds.buildPedsGrouped(bsa, zMeasured) : [];
 
+    // ★ v1.8.1 新生儿体重法：只认体重，不依赖 BSA（新生儿 BSA 太小，三套 BSA 模型全在外推区）
+    const neoOwn = {};
+    this.data.neoInputs.forEach(function (r) {
+      const v = parseFloat(r.value);
+      if (r.value !== '' && !isNaN(v)) neoOwn[r.key] = v;
+    });
+    const neoMeasured = Object.assign({}, measured, neoOwn);
+    const neoW = (w > 0 && w < 150) ? w : 0;
+    const neoGrouped = neoW ? peds.buildNeoGrouped(neoW, neoMeasured) : [];
+    // 体重落在 1.5–5.0 kg 时自动展开一次（用户手动收起后不再自动弹开）
+    if (neoW >= peds.NEO_RANGE.wMin && neoW <= peds.NEO_RANGE.wMax && !this._neoAuto) {
+      this._neoAuto = true;
+      this.setData({ neoOpen: true });
+    }
+
     this.setData({
       bsaValid: valid,
       hasBsa: hasBsa,
@@ -183,6 +225,10 @@ Page({
       bmiText: bmiText,
       func: func,
       grouped: grouped,
+      neoGrouped: neoGrouped,
+      neoWeight: neoW ? neoW.toFixed(1) : '',
+      neoHasRows: neoGrouped.length > 0 && neoW > 0 && neoW <= 8,
+      neoExtrap: neoW > 0 && (neoW < peds.NEO_RANGE.wMin || neoW > peds.NEO_RANGE.wMax),
       hasAnyValue: anyValue,
       summary: hasBsa ? this.buildSummary(grouped) : null,
       warnings: this.buildWarnings(valid, hasBsa ? bsa : 0),

@@ -471,6 +471,12 @@ page {
   border-radius: 6rpx;
 }
 
+/* ★ v1.8.1：新生儿体重法 17 行 —— 参数名偏长，收窄实测 / Z 列 */
+.z-row--neo .z-row__val { flex: 0.62; font-size: 25rpx; }
+.z-row--neo .z-row__range { flex: 1.18; font-size: 22rpx; }
+.z-row--neo .z-row__tag { flex: 0 0 110rpx; }
+.z-row--neo .z-row__name { font-size: 25rpx; }
+
 /* Z 值大字强调 */
 .z-big {
   display: flex;

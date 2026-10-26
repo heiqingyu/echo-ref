@@ -108,6 +108,91 @@
     <view class="btn" bindtap="onClear" style="margin-top:22rpx">清空全部测量值</view>
   </view>
 
+  <!-- ★ v1.8.1 新生儿（0–28 天）体重法：不依赖 BSA，只要有体重就能算 -->
+  <view class="card" wx:if="{{neoHasRows}}">
+    <view class="card__title">新生儿（0–28 天）· 体重法</view>
+    <view class="card__desc">
+      深圳市儿童医院 288 名 0–28 d 健康新生儿，直接按<text style="font-weight:600">体重</text>建模：
+      ln Y = a + bW + cW² + dW³（W = 体重 kg）。新生儿体表面积仅 0.15–0.25 m²，
+      上方三套 BSA 模型在这一段全部属于外推；本组才是原生区间。
+    </view>
+
+    <view wx:if="{{neoExtrap}}" class="hint">
+      当前体重 {{neoWeight}} kg 超出原文建模范围（1.5–5.0 kg），本组结果为外推，仅供参考。
+    </view>
+
+    <view class="btn btn--ghost" bindtap="onToggleNeo">
+      {{neoOpen ? '收起新生儿 17 项' : '展开新生儿 17 项（按体重）'}}
+    </view>
+
+    <block wx:if="{{neoOpen}}">
+      <!-- 需要自填的 8 项；其余 9 项自动取上方同名测值 -->
+      <view class="peds-group">本组另填（其余 9 项自动沿用上方同名测值）</view>
+      <view class="row" wx:for="{{neoInputs}}" wx:key="key" wx:if="{{index % 2 === 0}}">
+        <view class="field">
+          <text class="field__label">{{neoInputs[index].name}} / {{neoInputs[index].unit}}</text>
+          <input class="field__input" type="digit" value="{{neoInputs[index].value}}"
+                 data-k="{{neoInputs[index].key}}" bindinput="onNeoInput" placeholder="留空跳过" />
+        </view>
+        <view class="field" wx:if="{{neoInputs[index + 1]}}">
+          <text class="field__label">{{neoInputs[index + 1].name}} / {{neoInputs[index + 1].unit}}</text>
+          <input class="field__input" type="digit" value="{{neoInputs[index + 1].value}}"
+                 data-k="{{neoInputs[index + 1].key}}" bindinput="onNeoInput" placeholder="留空跳过" />
+        </view>
+      </view>
+
+      <view class="z-row z-row--neo" style="border-bottom:1rpx solid #e3e6ea;padding-bottom:14rpx;margin-top:10rpx">
+        <text class="z-row__name" style="font-weight:600">参数</text>
+        <text class="z-row__val" style="font-weight:600">实测</text>
+        <text class="z-row__range" style="font-weight:600">±2SD 正常范围</text>
+        <text class="z-row__tag" style="font-weight:600;color:#6b7280">Z 值</text>
+      </view>
+
+      <block wx:for="{{neoGrouped}}" wx:key="title">
+        <view class="peds-group">{{item.title}}</view>
+        <block wx:for="{{item.rows}}" wx:for-item="row" wx:key="key">
+          <view class="z-row z-row--neo {{row.hasValue ? '' : 'z-row--none'}}">
+            <view class="z-row__name">
+              {{row.name}}（{{row.key}}）
+              <block wx:if="{{row.fromText}}">
+                <text class="z-row__ext">{{row.fromText}}</text>
+              </block>
+              <text class="z-row__name-sub">均值 {{row.subText}} · {{row.r2Text}}</text>
+            </view>
+            <text class="z-row__val">{{row.value}}{{row.hasValue ? row.unit : ''}}</text>
+            <text class="z-row__range">{{row.rangeText}}</text>
+            <view class="z-row__tag">
+              <block wx:if="{{row.hasValue}}">
+                <text class="tag {{row.statusCls}}">{{row.zText}}</text>
+              </block>
+              <text wx:else class="tag tag--none">—</text>
+            </view>
+          </view>
+        </block>
+      </block>
+
+      <view class="note">
+        <text style="font-weight:600">为什么单独一套</text>{{'\n'}}
+        Z = [ ln(实测) − ln(预测均值) ] ÷ s̄x。s̄x 是对数尺度残差（相当于变异系数），
+        所以 ±2SD 区间是<text style="font-weight:600">乘性</text>的（均值 × e^±2s̄x），
+        上下不对称，不能写成「均值 ± 2SD」。
+      </view>
+      <view class="note">
+        <text style="font-weight:600">本组没有冠脉</text>{{'\n'}}
+        原文 39 项里不含 LCA / LAD / RCA，新生儿冠脉目前无中国公开方程；
+        冠脉仍见上方「冠状动脉」组（PHN 与深圳 SZ 法），新生儿段为外推。
+      </view>
+      <view class="note note--strong">
+        <text style="font-weight:600">数据来源</text>{{'\n'}}
+        林洲, 夏焙, 许娜, 等. 新生儿超声心动图正常参考值及 Z 值回归方程式的研究.
+        中华医学超声杂志(电子版), 2014, 11(2): 142-154.（参考文献 R80）{{'\n'}}
+        男 183 / 女 105，体重 3.33±0.75 / 3.17±0.83 kg，体表面积 0.20 m²，性别间差异无统计学意义，
+        故本组不分性别。原始方程中主动脉峡部、主动脉膈段的非线性系数与实测不符，
+        本组不采用这两项。
+      </view>
+    </block>
+  </view>
+
   <!-- ③ 结果 -->
   <block wx:if="{{hasBsa}}">
 
@@ -116,14 +201,17 @@
       <view class="card__title">本页覆盖哪些结构</view>
       <view class="card__desc">
         左心室（内径 / 壁厚 / 容积 / 质量 / 长径 / 面积）· 左房 · 右房 · 右室内径 · 右室前壁 ·
-        主动脉（瓣环 → 峡部）· 肺动脉 · 冠状动脉（PHN + 深圳 SZ 法并列）· 二尖瓣环与三尖瓣环
+        主动脉（瓣环 → 峡部）· 肺动脉 · 冠状动脉（PHN + 深圳 SZ 法并列）· 二尖瓣环与三尖瓣环 ·
+        新生儿 17 项（0–28 天，体重法，独立区块）
       </view>
       <view class="note">
-        <text style="font-weight:600">三套参照，各管一段，不要混用</text>{{'\n'}}
-        ① 左室、大血管、瓣环、冠脉：PHN 数据集（Lopez 2017，n=3566，多种族）{{'\n'}}
+        <text style="font-weight:600">五套参照，各管一段，不要混用</text>{{'\n'}}
+        ① 左室、大血管、瓣环：PHN 数据集（Lopez 2017，n=3566，多种族）{{'\n'}}
         ② 左房左右径、右房左右径、右室流入道内径：中国汉族儿童（上海儿童医学中心多中心，n=545 / 515，2D·心尖四腔）{{'\n'}}
         ③ 左房前后径、右室前后径、右室前壁厚度：Kampmann 2000（中欧白人 n=2036，M 型）{{'\n'}}
-        三套的人群、测量方法与 BSA 公式都不同，同一患儿只取实际测量所用切面对应的一套判读。
+        ④ 冠状动脉：PHN 为主，另并列深圳 SZ 法（n=842，1 月龄–17 岁）{{'\n'}}
+        ⑤ 新生儿 17 项：深圳 2014（n=288，0–28 天，体重法，不经 BSA）{{'\n'}}
+        五套的人群、测量方法与建模变量都不同，同一患儿只取实际测量所用切面对应的一套判读。
       </view>
       <view class="note">
         <text style="font-weight:600">冠脉两行 = 两套人群、两套方程</text>{{'\n'}}
@@ -141,7 +229,8 @@
       </view>
       <view class="note">
         <text style="font-weight:600">本页仍没有的参数</text>{{'\n'}}
-        腔静脉、右室面积 / 容积、左房容积 —— 现有三套数据源都没有，儿童也暂无公认方程。
+        腔静脉、右室面积 / 容积 —— 现有数据源都没有，儿童也暂无公认方程。
+        左房容积只有新生儿体重法（深圳 2014）有，1 月龄以上暂无公认方程。
         本页不采用未经原文核对的系数来凑数。
       </view>
     </view>
@@ -359,6 +448,18 @@
         Heart. 2000;83(6):667-672.（n = 2036，参考文献 R76）{{'\n'}}
         该文给的是「按 BSA 分组的 均值 ± 2SD」表而非方程，本页直接对分组值做线性插值（BSA 0.25–2.0 m²）。
         原文用 DuBois BSA，本页统一用 Haycock 计算 BSA；新生儿段两者可差 5–8%，判读临界值时请留意。
+      </view>
+      <view class="note note--strong">
+        <text style="font-weight:600">④ 新生儿（0–28 天）体重法（深圳 2014）</text>{{'\n'}}
+        288 名 0–28 d 健康新生儿，直接按体重建模，不经 BSA：{{'\n'}}
+        ln Y = a + bW + cW² + dW³（W = 体重 kg），预测均值 = exp(上式){{'\n'}}
+        Z = [ ln(实测) − ln(预测均值) ] ÷ s̄x{{'\n'}}
+        ★ s̄x 是对数尺度残差（相当于变异系数），所以 ±2SD 区间是乘性的（均值 × e^±2s̄x），
+        上下不对称。原文写作 Z=(M−Y)/s̄x，若把 s̄x 当绝对值，会把 0.3 mm 的差算成 2 个 Z
+        （RV 的 s̄x=0.141、均值 7.3 mm → 1 个 Z 约 1.03 mm，与原文表 5「7.34±1.21 mm」相符），
+        故本页按对数尺度实现。{{'\n'}}
+        林洲, 夏焙, 许娜, 等. 新生儿超声心动图正常参考值及 Z 值回归方程式的研究.
+        中华医学超声杂志(电子版), 2014, 11(2): 142-154.（参考文献 R80）
       </view>
     </block>
   </view>

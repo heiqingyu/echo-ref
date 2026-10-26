@@ -5736,6 +5736,16 @@ const REFS = [
     ],
     use: '儿童冠状动脉（LCA / LAD / RCA）按 Haycock BSA 的对数线性 Z 值方程（n=842，6 省 9 中心，1 月龄–17 岁）；用于「儿童 Z 值」页冠脉组的「SZ 法」行（论文自称 SZ 法）',
   },
+  {
+    id: 'R80',
+    zh: '新生儿（0–28 天）超声心动图正常参考值及 Z 值回归方程（288 例，按体重）',
+    en: 'Lin Z, Xia B, Xu N, et al. The Reference Values and Z Scores Regression Equations of Normal Newborns Undergoing Echocardiography.',
+    where: '中华医学超声杂志(电子版), 2014, 11(2): 142–154',
+    dl: [
+      { t: '需订阅', u: 'https://doi.org/10.3877/cma.j.issn.1672-6448.2014.02.012' },
+    ],
+    use: '新生儿 17 项按体重的一次三次多项式 Z 值方程（n=288，0–28 d）；用于「儿童 Z 值」页「新生儿（0–28 天）· 体重法」区块',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════

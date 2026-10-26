@@ -21,6 +21,15 @@ const MP = path.join(ROOT, 'miniprogram');
 const OUT = path.join(ROOT, 'www', 'index.html');
 
 /**
+ * ★ 本机（Windows + 宿主 fs 代理）不允许「截断写已存在的文件」，
+ *   直接 writeFileSync 会 EPERM。统一先删再写。
+ */
+function writeFresh(p, data) {
+  try { if (fs.existsSync(p)) fs.unlinkSync(p); } catch (e) { /* 锁定时再试一次 */ }
+  fs.writeFileSync(p, data, 'utf8');
+}
+
+/**
  * 页签：v1.5.0 起完整版与发布版统一为 4 个（EF·参考值 / 儿童 Z 值 / 切面学习 / 公式集）。
  * ★ 用户 2026-10-24：「网页下面标签页怎么变成了 6 组，瓣膜评估、瓣膜解剖放入公式集里，
  *   变四组和小程序统一」。瓣膜评估与瓣膜解剖已作为公式集里的条目存在，
@@ -554,6 +563,31 @@ ${SEG_HTML}
       <button class="btn" id="pdClear">清空全部测量值</button>
     </div>
 
+    <div class="card" id="pdNeoCard" hidden>
+      <div class="card__t">新生儿（0–28 天）· 体重法</div>
+      <div class="card__d">
+        深圳市儿童医院 288 名 0–28 d 健康新生儿，直接按<b>体重</b>建模：
+        ln Y = a + bW + cW² + dW³（W = 体重 kg）。新生儿体表面积仅 0.15–0.25 m²，
+        上面三套 BSA 模型在这一段全部属于外推；本组才是原生区间。
+      </div>
+      <div class="hint" id="pdNeoWarn" hidden></div>
+      <button class="btn btn--ghost" id="pdNeoBtn">展开新生儿 17 项（按体重）</button>
+      <div id="pdNeoBody" hidden>
+        <div class="pgroup">本组另填（其余 9 项自动沿用上方同名测值）</div>
+        <div id="pdNeoInputs"></div>
+        <div id="pdNeoList"></div>
+        <div class="note">
+          <b>本组没有冠脉</b>：原文 39 项里不含 LCA / LAD / RCA，新生儿冠脉目前无中国公开方程；
+          冠脉仍见上方「冠状动脉」组（PHN 与深圳 SZ 法），新生儿段为外推。
+        </div>
+        <div class="note">
+          <b>数据来源</b>：林洲, 夏焙, 许娜, 等. 中华医学超声杂志(电子版), 2014, 11(2): 142-154.（见 R80）<br>
+          n=288，0–28 d，男 183 / 女 105，性别间差异无统计学意义，故本组不分性别。
+          原文中主动脉峡部、主动脉膈段的非线性系数与实测不符，本组不采用这两项。
+        </div>
+      </div>
+    </div>
+
     <div class="card" id="pdFuncCard" hidden>
       <div class="card__t">收缩功能（自动推算）</div>
       <div class="card__d" id="pdFuncDesc"></div>
@@ -586,13 +620,15 @@ ${SEG_HTML}
     <div class="card">
       <div class="card__t">本页覆盖哪些结构</div>
       <div class="card__d">
-        ① 左室（内径/壁厚/容积/质量/长径/面积）、主动脉、肺动脉、冠脉、二尖瓣环、三尖瓣环 → PHN（n=3566）<br>
-        ①b <b>冠脉另并列一套中国儿童方程</b>：深圳 SZ 法（n=842，1 月龄–17 岁）<br>
+        ① 左室（内径/壁厚/容积/质量/长径/面积）、主动脉、肺动脉、二尖瓣环、三尖瓣环 → PHN（n=3566）<br>
         ② 左房左右径、右房左右径、右室流入道内径 → 中国汉族儿童（n=545/515，2D 四腔）<br>
-        ③ 左房前后径、右室前后径、右室前壁 → Kampmann（中欧 n=2036，M 型）
+        ③ 左房前后径、右室前后径、右室前壁 → Kampmann（中欧 n=2036，M 型）<br>
+        ④ 冠状动脉 → PHN，另并列深圳 SZ 法（n=842，1 月龄–17 岁）<br>
+        ⑤ 新生儿 17 项（心室与大血管 / 房室瓣环 / 左房容积·左室容积·心肌质量）→ 深圳 2014（n=288，0–28 天，<b>体重法</b>）
       </div>
       <div class="note">
-        三套人群与测法不同，同一患儿只取实际所用切面对应的一套。
+        五套人群与测法不同，同一患儿只取实际所用切面对应的一套；0–28 天用第五套 ——
+        它不经 BSA、直接按体重建模，是唯一在 0.20 m² 上不算外推的一套。
       </div>
       <div class="note">
         <b>同一房室两行≠数据打架</b>：右室流入道内径（四腔，约 23 mm）比 M 型右室前后径
@@ -652,13 +688,19 @@ ${SEG_HTML}
       </div>
       <div class="note note--warn">
         <b>数据来源（第四套 · 深圳 SZ 法冠脉）</b>　Fan SM, Xia B, Liu WX, et al.
-        Establishing an appropriate Z score regression equation for Chinese pediatric coronary artery
-        echocardiography: a multicenter prospective cohort study. <i>BMC Pediatr.</i> 2021;21:429.
-        DOI 10.1186/s12887-021-02877-9.（n = 842，6 省 9 中心，1 月龄–17 岁，Haycock BSA，参考文献 R79）<br>
-        原文系数：ln LCA = 1.0084 + 0.3740 ln BSA（RSE 0.115）；ln LAD = 0.8063 + 0.3697 ln BSA（RSE 0.119）；
+        <i>BMC Pediatr.</i> 2021;21:429. DOI 10.1186/s12887-021-02877-9.
+        （n = 842，6 省 9 中心，1 月龄–17 岁，Haycock BSA，见 R79）<br>
+        ln LCA = 1.0084 + 0.3740 ln BSA（RSE 0.115）；ln LAD = 0.8063 + 0.3697 ln BSA（RSE 0.119）；
         ln RCA = 0.8040 + 0.3291 ln BSA（RSE 0.150）。原文只测 LCA / LAD / RCA 三段，无 LCX。
-        ★ 队列不含 0–28 天新生儿；本页对 BSA &lt; 0.23 的患儿仍给数值但标「外推」，新生儿请以 PHN
-        或本单位参考值为准。
+        ★ 队列不含 0–28 天新生儿；BSA &lt; 0.23 时仍给数值但标「外推」。
+      </div>
+      <div class="note note--warn">
+        <b>数据来源（第五套 · 深圳 2014 新生儿体重法）</b>　林洲, 夏焙, 许娜, 等.
+        新生儿超声心动图正常参考值及 Z 值回归方程式的研究. 中华医学超声杂志(电子版),
+        2014, 11(2): 142–154.（n = 288，0–28 d，体重法，见 R80）<br>
+        ln Y = a + bW + cW² + dW³（W = 体重 kg），Z = [ ln(实测) − ln(预测均值) ] ÷ s̄x；
+        s̄x 为对数尺度残差，故 ±2SD 区间乘性不对称。原文中主动脉峡部、主动脉膈段的
+        非线性系数与实测不符（3.27 kg 算得 495 / 338 mm），本页不采用这两项。
       </div>
     </div>
   </section>
@@ -713,7 +755,7 @@ ${js}
 `;
 
 const wwwHtml = insertPubnote(html);
-fs.writeFileSync(OUT, wwwHtml, 'utf8');
+writeFresh(OUT, wwwHtml);
 const kb = (Buffer.byteLength(wwwHtml, 'utf8') / 1024).toFixed(1);
 console.log('✅ 已生成 ' + path.relative(ROOT, OUT) + '  (' + kb + ' KB)');
 
@@ -944,7 +986,7 @@ function buildPublicHtml() {
 if (process.argv.indexOf('--full') === -1) {
   const publicHtml = buildPublicHtml();
   fs.mkdirSync(path.join(ROOT, 'docs'), { recursive: true });
-  fs.writeFileSync(path.join(ROOT, 'docs', 'index.html'), publicHtml, 'utf8');
+  writeFresh(path.join(ROOT, 'docs', 'index.html'), publicHtml);
   fs.writeFileSync(path.join(ROOT, 'docs', '.nojekyll'), '', 'utf8');
   console.log('✅ 已生成 ' + path.join('docs', 'index.html') +
     '  (' + (Buffer.byteLength(publicHtml, 'utf8') / 1024).toFixed(1) + ' KB，仅 ' +

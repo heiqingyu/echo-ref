@@ -276,6 +276,79 @@ const SZ_Z = {
 /** SZ 队列的覆盖范围（用于界面标注「外推」） */
 const SZ_RANGE = { ageMin: 1 / 12, ageMax: 17, bsaMin: 0.23, bsaMax: 1.85 };
 
+/* ------------------------------------------------------------------ *
+ * 2f. 新生儿（0–28 天）体重法 —— 深圳儿童医院 2014
+ *  林洲, 夏焙, 许娜, 等. 中华医学超声杂志(电子版), 2014, 11(2): 142-154.
+ *  DOI 10.3877/cma.j.issn.1672-6448.2014.02.012（n=288，0–28 d）
+ *
+ *  lnY = a + bX + cX² + dX³，**X 为体重(kg)，不是 BSA**；覆盖 1.5–5.0 kg。
+ *  ★ Z = [ ln(实测) − ln(预测均值) ] / s̄x —— 原文写 Z=(M−Y)/s̄x，但 s̄x 是对数
+ *    尺度残差（≈CV），换算到实测尺度须乘 Mean；直接除会把 0.3 mm 的差算成
+ *    2 个 Z（RV 的 s̄x=0.141、均值 7.3 mm → 1 Z ≈ 1.03 mm，与原文表 5
+ *    「7.34±1.21 mm」相符）。故 ±2/±3 区间为乘性，与 SZ 法同处理。
+ *  ★ 本文不含冠状动脉（冠脉见夏焙 2013，1 月龄起）。
+ *  ⚠️ 原文缺陷（用平均体重反算核对，35 条吻合 ±7%）：AI 与 AO-Dia 的非线性
+ *    系数算得 495 / 338 mm；SV 的非线性系数与 LAV 完全相同而 R² 不同；
+ *    LV mass/BSA、LV mass/H2.7 标「lnY=」但系数在自然尺度成立 —— 均不入表。
+ * ------------------------------------------------------------------ */
+
+const NEO_Z = {
+  // ── 心室与大血管（M 型 / 二维，原文表 2 与正文；单位 mm）──────────
+  RVD:   { a: 1.313, b: 0.478, c: -0.119, d: 0.011, sx: 0.141, r2: 0.118, unit: 'mm',
+           name: '右室前后径（M 型）', from: 'RVDD' },
+  LVEDD: { a: 3.062, b: -0.313, c: 0.117, d: -0.011, sx: 0.099, r2: 0.277, unit: 'mm',
+           name: '左室舒张末内径', from: 'LVEDD' },
+  ARD:   { a: 1.946, b: -0.211, c: 0.097, d: -0.011, sx: 0.098, r2: 0.206, unit: 'mm',
+           name: '主动脉瓣环', from: 'ANN' },
+  ASD:   { a: 2.365, b: -0.296, c: 0.121, d: -0.013, sx: 0.094, r2: 0.257, unit: 'mm',
+           name: '主动脉窦', from: 'ROOT' },
+  AAO:   { a: 1.667, b: 0.243, c: -0.062, d: 0.006, sx: 0.089, r2: 0.152, unit: 'mm',
+           name: '升主动脉', from: 'AAO' },
+  TA:    { a: 1.286, b: 0.528, c: -0.152, d: 0.015, sx: 0.098, r2: 0.138, unit: 'mm',
+           name: '主动脉弓' },
+  PVD:   { a: 2.434, b: -0.438, c: 0.159, d: -0.016, sx: 0.194, r2: 0.194, unit: 'mm',
+           name: '肺动脉瓣环', from: 'PVSAX' },
+  PA:    { a: 1.881, b: 0.069, c: 0.004, d: -0.001, sx: 0.117, r2: 0.164, unit: 'mm',
+           name: '主肺动脉', from: 'MPA' },
+  RVOT:  { a: 1.609, b: 0.571, c: -0.138, d: 0.012, sx: 0.143, r2: 0.128, unit: 'mm',
+           name: '右室流出道' },
+
+  // ── 房室瓣环（二维，单位 mm）──────────────────────────────────────
+  MVD1:  { a: 2.221, b: 0.044, c: -0.002, d: 0.001, sx: 0.123, r2: 0.098, unit: 'mm',
+           name: '二尖瓣环·四腔' },
+  MVD2:  { a: 2.261, b: 0.008, c: 0.012, d: -0.001, sx: 0.109, r2: 0.080, unit: 'mm',
+           name: '二尖瓣环·二腔' },
+  MVD3:  { a: 2.082, b: 0.099, c: -0.010, d: 0.001, sx: 0.124, r2: 0.098, unit: 'mm',
+           name: '二尖瓣环·长轴' },
+  TVD1:  { a: 2.160, b: 0.068, c: -0.009, d: 0.001, sx: 0.144, r2: 0.052, unit: 'mm',
+           name: '三尖瓣环·四腔' },
+  TVD2:  { a: 1.975, b: 0.180, c: -0.025, d: 0.001, sx: 0.130, r2: 0.117, unit: 'mm',
+           name: '三尖瓣环·流入道' },
+
+  // ── 容积与质量（双平面法，原文正文）──────────────────────────────
+  LAV:   { a: -2.085, b: 2.019, c: -0.547, d: 0.055, sx: 0.348, r2: 0.276, unit: 'mL',
+           name: '左房容积' },
+  LVEDV: { a: -0.953, b: 2.022, c: -0.595, d: 0.062, sx: 0.250, r2: 0.316, unit: 'mL',
+           name: '左室舒张末容积', from: 'LVEDV' },
+  LVM:   { a: 0.908, b: 0.443, c: -0.016, d: -0.003, sx: 0.175, r2: 0.560, unit: 'g',
+           name: '左室质量', from: 'LVM' },
+};
+
+/** 新生儿体重法覆盖范围（原文表 5 的体重分组：1.5–5.0 kg） */
+const NEO_RANGE = { wMin: 1.5, wMax: 5.0, ageMaxDays: 28 };
+
+/** 新生儿区块的分组展示（17 项） */
+const NEO_GROUPS = [
+  { title: '心室与大血管', keys: ['RVD', 'LVEDD', 'ARD', 'ASD', 'AAO', 'TA', 'PVD', 'PA', 'RVOT'] },
+  { title: '房室瓣环', keys: ['MVD1', 'MVD2', 'MVD3', 'TVD1', 'TVD2'] },
+  { title: '容积与质量', keys: ['LAV', 'LVEDV', 'LVM'] },
+];
+
+/** 需要自填的 8 项（其余 9 项从上方同名测值带过来） */
+const NEO_OWN_KEYS = NEO_GROUPS.reduce(function (acc, g) {
+  return acc.concat(g.keys);
+}, []).filter(function (k) { return !NEO_Z[k].from; });
+
 /** 展示分组（保持临床阅读顺序） */
 const PEDS_GROUPS = [
   { title: '左心室结构', keys: ['LVEDD', 'LVESD', 'LVST', 'LVPWT'] },
@@ -614,6 +687,117 @@ function buildSzAlt(key, bsa, hasBsa, raw, hasValue) {
 }
 
 /* ------------------------------------------------------------------ *
+ * 3f. 新生儿体重法求值（对数三次多项式）
+ * ------------------------------------------------------------------ */
+
+/** 预测均值 Mean = exp(a + bW + cW² + dW³)，W 为体重 kg */
+function neoMean(key, w) {
+  const def = NEO_Z[key];
+  if (!def || !(w > 0)) return NaN;
+  const ln = def.a + def.b * w + def.c * w * w + def.d * w * w * w;
+  // 三次项在极端体重下可能外抛出非物理值，做一次兜底
+  if (!isFinite(ln) || ln < -6 || ln > 8) return NaN;
+  return Math.exp(ln);
+}
+
+/**
+ * 在给定体重上算预测均值与 ±2 / ±3 界
+ *
+ * ⚠️ s̄x 是对数尺度残差 → 区间乘性：Mean×e^(±k·s̄x)，两侧不对称。
+ *    显示「均值 ± SD」时用 Mean×s̄x 作等效线性 SD（仅为方便阅读）。
+ */
+function neoAt(key, w) {
+  const def = NEO_Z[key];
+  const mean = neoMean(key, w);
+  if (!def || isNaN(mean)) return null;
+  return {
+    mean: mean,
+    sd: mean * def.sx,
+    lo2: mean * Math.exp(-2 * def.sx),
+    hi2: mean * Math.exp(2 * def.sx),
+    lo3: mean * Math.exp(-3 * def.sx),
+    hi3: mean * Math.exp(3 * def.sx),
+  };
+}
+
+/** Z = [ ln(实测) − ln(预测均值) ] / s̄x */
+function neoZ(value, key, w) {
+  const def = NEO_Z[key];
+  const mean = neoMean(key, w);
+  if (!def || isNaN(mean) || !(value > 0)) return null;
+  return (Math.log(value) - Math.log(mean)) / def.sx;
+}
+
+/** 体重是否落在新生儿队列的建模范围内 */
+function neoInRange(w) {
+  return !!w && w >= NEO_RANGE.wMin && w <= NEO_RANGE.wMax;
+}
+
+/**
+ * 组装一行新生儿体重法结果（结构与 buildRefRow 一致，界面无需分支）
+ */
+function buildNeoRow(key, w, measured, hasW) {
+  const def = NEO_Z[key];
+  const t = hasW ? neoAt(key, w) : null;
+
+  // 测值来源：优先本组自填，其次从上方同名测值带入
+  let raw;
+  if (measured && measured[key] !== undefined) raw = measured[key];
+  else if (def.from && measured) raw = measured[def.from];
+  const hasValue = raw !== undefined && raw !== null && raw !== '' && !isNaN(raw);
+
+  const z = (t && hasValue) ? neoZ(parseFloat(raw), key, w) : null;
+  const g = gradeZ(z);
+  const has = !!t;
+  const u = ' ' + def.unit;
+  const dec = def.unit === 'mL' ? 2 : 1;
+  const rng = function (k) {
+    if (!has) return '—';
+    return fmt(k === 2 ? t.lo2 : t.lo3, dec) + ' – ' + fmt(k === 2 ? t.hi2 : t.hi3, dec);
+  };
+
+  return {
+    key: key,
+    name: def.name,
+    unit: def.unit,
+    src: 'neo',
+    srcText: '深圳 2014',
+    fromText: def.from ? '←' + def.from : '',
+    alphaText: '体重法',
+    meanText: has ? fmt(t.mean, dec) + u : '—',
+    sdText: has ? 'SD ' + fmt(t.sd, dec) + u : '—',
+    subText: has ? fmt(t.mean, dec) + ' ± ' + fmt(t.sd, dec) : '—',
+    rangeText: rng(2),
+    range3Text: rng(3),
+    value: hasValue ? fmt(parseFloat(raw), dec) : '—',
+    z: z === null ? null : round(z, 2),
+    zText: z === null ? '—' : (z > 0 ? '+' : '') + fmt(z, 2),
+    status: g.level,
+    statusText: g.text,
+    statusCls: g.cls,
+    hasValue: hasValue,
+    r2Text: 'R² ' + def.r2.toFixed(2),
+    extrap: hasW ? !neoInRange(w) : false,
+  };
+}
+
+/**
+ * 新生儿体重法完整列表（按 3 组）
+ * @param {number} w 体重 kg
+ * @param {object} measured 测值字典（含上方主表的同名键即可复用）
+ * @returns {Array<{title:string, rows:Array}>}
+ */
+function buildNeoGrouped(w, measured) {
+  const hasW = !!w && w > 0;
+  return NEO_GROUPS.map(function (g) {
+    return {
+      title: g.title,
+      rows: g.keys.map(function (k) { return buildNeoRow(k, w, measured, hasW); }),
+    };
+  });
+}
+
+/* ------------------------------------------------------------------ *
  * 4. 对外主接口
  * ------------------------------------------------------------------ */
 
@@ -781,6 +965,10 @@ module.exports = {
   CSMC_Z,
   SZ_Z,
   SZ_RANGE,
+  NEO_Z,
+  NEO_RANGE,
+  NEO_GROUPS,
+  NEO_OWN_KEYS,
   // 计算
   indexedMean,
   indexedSD,
@@ -792,6 +980,11 @@ module.exports = {
   szAt,
   szZ,
   szInRange,
+  neoMean,
+  neoAt,
+  neoZ,
+  neoInRange,
+  buildNeoGrouped,
   describeZ,
   // 主接口
   buildPedsList,

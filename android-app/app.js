@@ -3163,6 +3163,11 @@
   const pdVal = {};     // 儿童页测量值（界面单位）
   let pdMoreOpen = false;
 
+  // ★ v1.8.1 新生儿（0–28 天）体重法：只认体重，不依赖 BSA
+  const pdNeoVal = {};  // 本组另需自填的 8 项
+  let pdNeoOpen = false;
+  let pdNeoAuto = false;  // 体重进 1.5–5.0 kg 时自动展开一次
+
   /** 参数在界面上的显示单位 */
   function uiUnit(key) {
     return Peds.PEDS_Z[key].unit === 'cm' ? 'mm' : Peds.PEDS_Z[key].unit;
@@ -3201,12 +3206,97 @@
       : '展开其他参数（共 ' + Peds.PEDS_FIELDS.length + ' 项）';
   }
 
+  /* ── ★ v1.8.1 新生儿体重法（深圳 2014，17 项）───────────────── */
+
+  /** 本组需自填的 8 项；其余 9 项自动沿用上方同名测值（ARD←ANN、PA←MPA…） */
+  function buildNeoInputs() {
+    const keys = Peds.NEO_OWN_KEYS;
+    let html = '';
+    for (let i = 0; i < keys.length; i += 2) {
+      html += '<div class="row">';
+      for (let j = i; j < i + 2 && j < keys.length; j++) {
+        const k = keys[j];
+        const def = Peds.NEO_Z[k];
+        html += '<div class="field">' +
+          '<label class="field__l">' + esc(def.name) + ' / ' + def.unit + '</label>' +
+          '<input class="field__i" type="number" inputmode="decimal" step="0.1" ' +
+          'data-nk="' + k + '" placeholder="留空跳过" ' +
+          'value="' + (pdNeoVal[k] !== undefined ? pdNeoVal[k] : '') + '">' +
+          '</div>';
+      }
+      html += '</div>';
+    }
+    $('pdNeoInputs').innerHTML = html;
+    $('pdNeoInputs').querySelectorAll('input').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        const k = inp.dataset.nk;
+        if (inp.value === '') delete pdNeoVal[k];
+        else pdNeoVal[k] = inp.value;
+        renderPeds();
+      });
+    });
+  }
+
+  /**
+   * 渲染新生儿区块
+   * @param {number} w 体重 kg（0 表示未填）
+   */
+  function renderNeo(w) {
+    const card = $('pdNeoCard');
+    const show = w > 0 && w <= 8;   // 超过 8 kg 基本不是 0–28 天，整块收起
+    card.hidden = !show;
+    if (!show) return;
+
+    const extrap = w < Peds.NEO_RANGE.wMin || w > Peds.NEO_RANGE.wMax;
+    const warn = $('pdNeoWarn');
+    warn.hidden = !extrap;
+    warn.textContent = extrap
+      ? '⚠ 当前体重 ' + w.toFixed(1) + ' kg 超出原文建模范围（1.5–5.0 kg），本组结果为外推，仅供参考。'
+      : '';
+
+    if (!pdNeoAuto && !extrap) {
+      pdNeoAuto = true;
+      pdNeoOpen = true;
+    }
+    $('pdNeoBody').hidden = !pdNeoOpen;
+    $('pdNeoBtn').textContent = pdNeoOpen
+      ? '收起新生儿 17 项'
+      : '展开新生儿 17 项（按体重）';
+
+    const neo = Object.assign({}, pdVal, pdNeoVal);
+    const groups = Peds.buildNeoGrouped(w, neo);
+
+    let html = '<div class="zrow zrow--neo" style="border-bottom:1px solid #e3e6ea;color:#6b7280;font-weight:600">' +
+      '<div class="zrow__n">参数</div><div class="zrow__v">实测</div>' +
+      '<div class="zrow__r">±2SD 正常范围</div><div class="zrow__g">Z 值</div></div>';
+
+    groups.forEach(function (g) {
+      html += '<div class="pgroup">' + esc(g.title) + '</div>';
+      g.rows.forEach(function (r) {
+        html += '<div class="zrow zrow--neo' + (r.hasValue ? '' : ' zrow--none') + '">' +
+          '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
+            (r.fromText ? '<span class="zrow__ext">' + esc(r.fromText) + '</span>' : '') +
+            '<span class="zrow__sub">均值 ' + esc(r.subText) + ' · ' + esc(r.r2Text) + '</span></div>' +
+          '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
+          '<div class="zrow__r">' + esc(r.rangeText) + '</div>' +
+          '<div class="zrow__g">' + (r.hasValue
+            ? '<span class="tag ' + r.statusCls + '">' + esc(r.zText) + '</span>'
+            : '<span class="tag tag--none">—</span>') +
+          '</div></div>';
+      });
+    });
+    $('pdNeoList').innerHTML = html;
+  }
+
   function renderPeds() {
     const h = parseFloat($('pdHeight').value);
     const w = parseFloat($('pdWeight').value);
     const age = parseFloat($('pdAge').value);
     const valid = h > 30 && h < 220 && w > 1 && w < 150;
     const bsa = valid ? Peds.bsaHaycock(h, w) : 0;
+
+    // ★ v1.8.1 新生儿体重法只依赖体重，故在 BSA 校验之前先渲染
+    renderNeo((w > 0 && w < 150) ? w : 0);
 
     $('pdBsa').textContent = valid ? bsa.toFixed(2) : '—';
     $('pdBmi').textContent = valid ? Core.bmi(h, w).toFixed(1) : '—';
@@ -3389,6 +3479,12 @@
     buildPedsInputs();
   });
 
+  // 新生儿区块：默认随体重自动展开一次，之后由用户手动控制
+  $('pdNeoBtn').addEventListener('click', function () {
+    pdNeoOpen = !pdNeoOpen;
+    renderPeds();
+  });
+
   // ±3SD 阈值表默认折叠：±2SD 已在主表「正常范围」列，两处都摊开容易看成两套数
   $('pdRangesBtn').addEventListener('click', function () {
     const box = $('pdRanges');
@@ -3399,8 +3495,10 @@
 
   $('pdClear').addEventListener('click', function () {
     Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
+    Object.keys(pdNeoVal).forEach(function (k) { delete pdNeoVal[k]; });
     pdMoreOpen = false;
     buildPedsInputs();
+    buildNeoInputs();
     renderPeds();
   });
 
@@ -3425,8 +3523,12 @@
 
     ['pdHeight', 'pdWeight', 'pdAge'].forEach(function (id) { $(id).value = ''; });
     Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
+    Object.keys(pdNeoVal).forEach(function (k) { delete pdNeoVal[k]; });
     pdMoreOpen = false;
+    pdNeoOpen = false;
+    pdNeoAuto = false;
     buildPedsInputs();
+    buildNeoInputs();
 
     Object.keys(calcVal).forEach(function (k) { delete calcVal[k]; });
     calcCollapse = '';
@@ -3552,6 +3654,7 @@
     renderIndex();
     renderEF();
     buildPedsInputs();
+    buildNeoInputs();
     renderPeds();
     renderCalc();
 
