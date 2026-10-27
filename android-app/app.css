@@ -98,7 +98,8 @@ html, body {
 
 /* ────────── 内容区 ────────── */
 .main {
-  padding: calc(var(--appbar-h) + var(--safe-t) + 14px) 14px
+  /* ★ v1.9.0：版权提示条显示时（--guard-h > 0）内容整体下移，首屏卡片不再被压住 */
+  padding: calc(var(--appbar-h) + var(--safe-t) + var(--guard-h, 0px) + 14px) 14px
            calc(var(--tabbar-h) + var(--safe-b) + 26px);
   max-width: 760px;
   margin: 0 auto;
