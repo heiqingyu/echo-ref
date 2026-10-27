@@ -558,8 +558,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ v1.6.5：公式集搜索给出「切面学习」的跨页签入口；从那边跳来时接手关键词
   pgA.applySearch('房间隔');
   check('公式集搜「房间隔」时提示切面学习里也有命中', pgA.data.segCrossN > 0 ? 1 : 0, 1, 0);
-  pgA.applySearch('TAPSE');
-  check('公式集搜「TAPSE」时切面学习无命中 → 不给提示', pgA.data.segCrossN, 0, 0);
+  // ★ v1.8.5：切面学习新增「心课堂」17 段视频后，TAPSE 在那边也有命中（kt-12），
+  //   改用两边确实不重叠的词（Du Bois 只出现在公式集的 BSA 条目里）
+  pgA.applySearch('Du Bois');
+  check('公式集搜「Du Bois」时切面学习无命中 → 不给提示', pgA.data.segCrossN, 0, 0);
   pgA.applySearch('');
   gData23.pendingCalcKw = 'TAPSE';
   pgA.onShow();
@@ -583,7 +585,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const segViews = pgS.data.viewsList;
   const segSim = pgS.data.simList;
   const segLook = pgS.data.lookList;
-  check('切面学习页签：教学视频列表 6 条', segViews.length, 6, 0);
+  check('切面学习页签：教学视频列表 7 条（2 专辑 + 5 外链）', segViews.length, 7, 0);
   check('切面学习页签：TEE 演示列表 3 条', segSim.length, 3, 0);
   check('切面学习页签：切面速查与图谱 4 条（TEE 20 切面 / TTE 规范切面 / TTE 标准切面测量 / 瓣膜解剖）',
     segLook.length, 4, 0);
@@ -610,8 +612,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('切面学习搜不到时给空态文案', /没有匹配/.test(pgS.data.segEmpty) ? 1 : 0, 1, 0);
   check('两边都搜不到时不给跨页签提示', pgS.data.segCrossN, 0, 0);
   pgS.applySegKw('');
-  check('清空搜索后切面学习恢复完整列表（4 / 6 / 3）',
-    pgS.data.lookList.length === 4 && pgS.data.viewsList.length === 6 &&
+  check('清空搜索后切面学习恢复完整列表（4 / 7 / 3）',
+    pgS.data.lookList.length === 4 && pgS.data.viewsList.length === 7 &&
       pgS.data.simList.length === 3 ? 1 : 0, 1, 0);
   global.__lastSwitchTab = '';
   pgS.applySegKw('TAPSE');
@@ -646,7 +648,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('专辑标题为「实用超声规范化检查与操作（视频）」',
     segViews[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
   check('外链条目为 link 类型（专辑除外）',
-    segViews.slice(1).every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
+    segViews.filter(i => i.kind !== 'album')
+      .every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('切面速查含「TTE 标准切面与测量项目」brief 条目',
     segLook.some(i => i.id === 'tte-measure' && i.kind === 'brief') ? 1 : 0, 1, 0);
   check('切面速查首条为「瓣膜解剖」valveana 条目（v1.7.9 从公式集移入）',

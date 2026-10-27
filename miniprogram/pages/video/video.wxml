@@ -2,7 +2,7 @@
 
   <view class="card">
     <view class="card__title">{{title || '视频'}}</view>
-    <view class="card__desc">《实用超声规范化检查与操作》第三章配套动图 · 点击画面播放</view>
+    <view class="card__desc">点击画面播放 · 加载慢时可复制直链用浏览器打开</view>
 
     <video wx:if="{{url}}"
            class="vid"
@@ -21,7 +21,7 @@
   </view>
 
   <view class="note">
-    视频版权归原出版方与作者所有，本工具仅作学习索引，不存储、不转码任何视频文件。
+    视频版权归原出版方与作者所有，本工具仅作学习索引，未做二次分发。
   </view>
 
 </view>

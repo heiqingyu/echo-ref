@@ -262,7 +262,7 @@ console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 
 if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 切面在线演示）');
 else bad('外链分组数异常: ' + (EX.LINK_SECTIONS || []).length);
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
-if (linkIds.length === 9) ok('外链条目 9 条（8 条单条外链 + 操作规范专辑 1 条）');
+if (linkIds.length === 10) ok('外链条目 10 条（8 条单条外链 + 操作规范专辑 + 心课堂视频专辑）');
 else bad('外链条目数异常: ' + linkIds.length);
 const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it => {
   if (!it.id || !it.title || !it.sub) return true;
@@ -303,6 +303,16 @@ if (bvAlb && bvAlb.children.every(function (it) { return /\.mp4$/.test(it.url) &
 else bad('专辑内存在非 mp4 或缺字段的条目');
 if (bvAlb && /王辉/.test(bvAlb.note || '') && /978-7-5189-8028-4/.test(bvAlb.note || '')) ok('专辑标注编者与 ISBN');
 else bad('专辑缺少书籍出处');
+// v1.8.5：心课堂 17 段（微信文章视频无法直链，转 720p 后托管在独立仓库 echo-ref-media 的 Pages）
+const ktAlb = views ? views.items.filter(function (it) { return it.id === 'ktvid'; })[0] : null;
+if (ktAlb && ktAlb.album && (ktAlb.children || []).length === 17) ok('心课堂视频专辑 17 段');
+else bad('心课堂视频专辑异常: ' + (ktAlb ? (ktAlb.children || []).length : 'missing'));
+if (ktAlb && ktAlb.children.every(function (it) {
+  return /^https://////heiqingyu//.github//.io///echo-ref-media///videos///[//w-]+//.mp4$/.test(it.url) && it.id && it.title && it.sub;
+})) ok('17 段均为 echo-ref-media 的 mp4 直链且含 id / 标题 / 说明');
+else bad('心课堂视频存在地址异常或缺字段的条目');
+if (views && views.items[0].id === 'bookvid' && views.items[1].id === 'ktvid') ok('心课堂专辑排在操作规范专辑之后（未抢占第一条）');
+else bad('切面学习视频专辑顺序异常: ' + (views ? views.items.slice(0, 3).map(function (x) { return x.id; }).join(',') : 'missing'));
 const extSrc = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
 if (extSrc.indexOf('EX.LINK_SECTIONS') !== -1) ok('目录页已接入 LINK_SECTIONS（搜索 / 专辑子条目仍复用）');
 else bad('目录页未接入 LINK_SECTIONS');

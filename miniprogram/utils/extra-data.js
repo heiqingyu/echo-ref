@@ -4900,6 +4900,39 @@ const BOOK_CH3_VIDEOS = [
           { id: 'bv-3-1-72d', title: '典型病例：致心律失常性右室心肌病（四）', sub: '动图 3-1-72D · 典型病例', url: BV_BASE + '3-1-72D.mp4' },
 ];
 
+/**
+ * 《心脏超声术语及标准切面》上下篇 —— GE 心课堂「心脏超声基础规范学习班」学习笔记，
+ * 2021-07-25 发布于微信公众号「GE超声」，共 17 段演示（上篇 7 段讲术语与手法，下篇 10 段逐个过标准切面）。
+ *
+ * ★ 为什么视频不在这里直接引用公众号原文：
+ *   mpvideo.qpic.cn 的直链带 auth_info / auth_key 签名，HTML 里那条地址在页面加载后很快就 403，
+ *   去掉签名参数同样 403；单视频页（readtemplate?t=pages/video_player_tmpl&vid=…）在普通浏览器里是白屏，
+ *   只在微信客户端内工作。唯一可行的取法是用浏览器加载文章、由微信现场签发新链接后立刻下载。
+ *   原片 1080p 共 420 MB，转 720p 后约 101 MB，托管在独立仓库 echo-ref-media 的 GitHub Pages，
+ *   不占本仓库体积（本仓库 35 MB 的底线不动）。
+ */
+const KT_VID_BASE = 'https://heiqingyu.github.io/echo-ref-media/videos/';
+
+const KT_VIDEOS = [
+  { id: 'kt-01', title: '探头标记', sub: '上篇 1/7 · 方向标记与屏幕方位', url: KT_VID_BASE + 'kt-01-mark.mp4' },
+  { id: 'kt-02', title: '常用声窗', sub: '上篇 2/7 · 胸骨旁 / 心尖 / 剑突下 / 胸骨上窝', url: KT_VID_BASE + 'kt-02-windows.mp4' },
+  { id: 'kt-03', title: '探头手法总览与扫查 Sweep', sub: '上篇 3/7 · 六种基本手法 · 连续扫查剪辑', url: KT_VID_BASE + 'kt-03-maneuvers.mp4' },
+  { id: 'kt-04', title: '探头手法：旋转 Rotate', sub: '上篇 4/7 · 指示标记转到新方位', url: KT_VID_BASE + 'kt-04-rotate.mp4' },
+  { id: 'kt-05', title: '探头手法：滑行 Slide', sub: '上篇 5/7 · 在体表移到新位置', url: KT_VID_BASE + 'kt-05-slide.mp4' },
+  { id: 'kt-06', title: '探头手法：摆动 Rock', sub: '上篇 6/7 · 同一切面内远离 / 靠近', url: KT_VID_BASE + 'kt-06-rock.mp4' },
+  { id: 'kt-07', title: '探头手法：成角 Angle', sub: '上篇 7/7 · 声束指向目标结构', url: KT_VID_BASE + 'kt-07-angle.mp4' },
+  { id: 'kt-08', title: '胸骨旁左室长轴 PLAX', sub: '下篇 1/10 · 含 LVOT / 主动脉瓣放大', url: KT_VID_BASE + 'kt-08-plax.mp4' },
+  { id: 'kt-09', title: '右室流出道 RVOT', sub: '下篇 2/10 · PV · 主肺动脉 · 右室流入道', url: KT_VID_BASE + 'kt-09-rvot.mp4' },
+  { id: 'kt-10', title: '胸骨旁短轴 PSAX 系列', sub: '下篇 3/10 · 大血管 → 二尖瓣 → 乳头肌 → 心尖', url: KT_VID_BASE + 'kt-10-psax.mp4' },
+  { id: 'kt-11', title: '心尖切面：窗口定位', sub: '下篇 4/10 · 心尖位置与四腔心入路', url: KT_VID_BASE + 'kt-11-apical.mp4' },
+  { id: 'kt-12', title: '关注右室的心尖四腔心 RV-focused A4C', sub: '下篇 5/10 · TAPSE 与右室应变测量切面', url: KT_VID_BASE + 'kt-12-rv-a4c.mp4' },
+  { id: 'kt-13', title: '心尖五腔心与冠状静脉窦', sub: '下篇 6/10 · 5C View · CS View', url: KT_VID_BASE + 'kt-13-5c-cs.mp4' },
+  { id: 'kt-14', title: '心尖二腔心 / 长轴 A2C · A3C', sub: '下篇 7/10 · 全扇形 + 聚焦双剪辑', url: KT_VID_BASE + 'kt-14-a2c.mp4' },
+  { id: 'kt-15', title: '关注肺静脉的心尖切面', sub: '下篇 8/10 · 肺静脉入左房 · 房颤评估', url: KT_VID_BASE + 'kt-15-pulvns.mp4' },
+  { id: 'kt-16', title: '剑突下切面 Subcostal', sub: '下篇 9/10 · IVC · 肝静脉 · 腹部大血管', url: KT_VID_BASE + 'kt-16-subcostal.mp4' },
+  { id: 'kt-17', title: '胸骨上窝主动脉弓长轴 SSN', sub: '下篇 10/10 · 弓部三支 · 右肺动脉', url: KT_VID_BASE + 'kt-17-ssn.mp4' },
+];
+
 const LINK_SECTIONS = [
   {
     id: 'views',
@@ -4912,6 +4945,14 @@ const LINK_SECTIONS = [
         album: true,
         note: '王辉、王小丛 主编 · 科学技术文献出版社 2021 年 9 月北京 · ISBN 978-7-5189-8028-4',
         children: BOOK_CH3_VIDEOS,
+      },
+      {
+        id: 'ktvid',
+        title: '心脏超声术语及标准切面（视频）',
+        sub: 'GE 心课堂 上下篇 17 段 · 探头手法 + 逐个标准切面',
+        album: true,
+        note: 'GE 心课堂「心脏超声基础规范学习班」学习笔记（上 / 下篇）· 微信公众号「GE超声」2021-07-25 · 720p 转存',
+        children: KT_VIDEOS,
       },
       {
         id: 'tee-sv',
