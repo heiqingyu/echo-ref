@@ -11,8 +11,14 @@ Page({
   },
 
   onLoad(query) {
-    const url = query && query.url ? decodeURIComponent(query.url) : '';
-    const title = query && query.title ? decodeURIComponent(query.title) : '';
+    // ★ v1.8.9：只在上游没解过码时才 decode。
+    //   微信会把页面参数解一次码，若这里无条件再解一次，飞利浦那种**全中文 percent-encode**
+    //   的地址（`live_broadcast/%E8%B6%85%E5%A3%B0/...`）就变成裸中文，
+    //   再交给 video 组件重新编码一次，容易与 OSS 对象名对不上。以 `http` 开头即视为已解码。
+    const rawUrl = (query && query.url) || '';
+    const url = /^https?%3A/i.test(rawUrl) ? decodeURIComponent(rawUrl) : rawUrl;
+    const rawTitle = (query && query.title) || '';
+    const title = /%[0-9A-Fa-f]{2}/.test(rawTitle) ? decodeURIComponent(rawTitle) : rawTitle;
 
     // 只接受 https 的 mp4，避免被拼接成非法地址
     if (!/^https:\/\/.+\.mp4(\?|$)/i.test(url)) {
