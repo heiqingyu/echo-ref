@@ -17,11 +17,30 @@
       </view>
     </view>
 
+    <!-- ★ v1.9.0 搜索框 + 专题导航（151 段太长，先筛再跳） -->
+    <view class="album__bar">
+      <view class="album__search">
+        <text class="album__ico">🔍</text>
+        <input class="album__input" value="{{kw}}" placeholder="搜片名 / 讲者 / 年份，如 应变、TEE、2024"
+               placeholder-class="album__ph" confirm-type="search" bindinput="onKw" />
+        <view wx:if="{{kw}}" class="album__clr" bindtap="onClear">✕</view>
+      </view>
+
+      <scroll-view wx:if="{{hasNav}}" class="album__nav" scroll-x scroll-with-animation
+                   scroll-into-view="{{navInto}}" show-scrollbar="{{false}}">
+        <view wx:for="{{chips}}" wx:key="k" wx:for-item="c" id="nc{{c.k}}"
+              class="album__chip {{navOn === c.k ? 'album__chip--on' : ''}}"
+              data-k="{{c.k}}" bindtap="onChip">{{c.n}}</view>
+      </scroll-view>
+    </view>
+
+    <view wx:if="{{!rows.length}}" class="album__empty">没有匹配的条目，换个关键词试试。</view>
+
     <view class="fx-list">
-      <block wx:for="{{items}}" wx:key="id" wx:for-item="it">
-        <view wx:if="{{it.g}}" class="album__g">{{it.g}}</view>
+      <block wx:for="{{rows}}" wx:key="id" wx:for-item="it">
+        <view wx:if="{{it.g}}" class="album__g" id="ag{{it.gi}}">{{it.g}}</view>
         <view wx:else class="fx-item" hover-class="fx-item--tap"
-              data-url="{{it.url}}" data-title="{{it.title}}" bindtap="onOpen">
+              data-id="{{it.id}}" bindtap="onOpen">
           <view class="fx-item__main">
             <view class="fx-item__n">{{it.title}}</view>
             <view class="fx-item__d">{{it.sub}}</view>

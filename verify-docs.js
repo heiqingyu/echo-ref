@@ -353,7 +353,104 @@ function check(name, ok, detail) {
   check('切面学习页 TEE 演示列表 3 条', se.sim === 3, segExtras);
   check('切面学习页切面速查与图谱 4 条', se.look === 4, segExtras);
   check('教学视频含 3 个专辑入口（操作规范 / 心课堂 / 飞利浦云课堂）', se.albumInViews === 3, se.albumInViews);
-  check('飞利浦专辑入口显示 152 段（组标题不计入）', /152/.test(se.philipsTxt), se.philipsTxt.replace(/\s+/g, ' ').slice(0, 80));
+  check('飞利浦专辑入口显示 151 段（组标题不计入）', /151/.test(se.philipsTxt), se.philipsTxt.replace(/\s+/g, ' ').slice(0, 80));
+
+  // ── v1.9.0：151 段的飞利浦专辑页要有搜索框与专题导航，否则只能死滚 ──
+  await c.evalJs(`(function(){
+    var el = document.querySelector('#segViewsList .fx-item[data-id="philips"]');
+    if (el) el.dispatchEvent(new MouseEvent('click',{bubbles:true}));
+  })()`);
+  await new Promise((r) => setTimeout(r, 400));
+
+  const albInfo = await c.evalJs(`(function(){
+    return JSON.stringify({
+      open: !document.getElementById('calcAlbum').hidden,
+      bar: !document.getElementById('albumBar').hidden,
+      search: !!document.getElementById('albumSearch'),
+      chips: document.querySelectorAll('#albumNav .album-nav__b').length,
+      chip0: (document.querySelector('#albumNav .album-nav__b') || {}).textContent || '',
+      rows: document.querySelectorAll('#albumList .fx-item').length,
+      groups: document.querySelectorAll('#albumList .album__g').length,
+      gids: [...document.querySelectorAll('#albumList .album__g')].map(function(e){return e.id;}).join(',')
+    });
+  })()`);
+  const alb = JSON.parse(albInfo);
+  check('飞利浦专辑页已打开', alb.open === true, albInfo);
+  check('专辑页出现搜索框与导航条', alb.bar === true && alb.search === true, albInfo);
+  check('专辑页导航 9 个 chip（全部 + 8 专题）', alb.chips === 9, alb.chips);
+  check('首位 chip 文案 = 全部 151', /^全部\s*151$/.test(alb.chip0.trim()), alb.chip0);
+  check('专辑页默认列出 151 段 + 8 个组标题', alb.rows === 151 && alb.groups === 8, albInfo);
+  check('组标题锚点 id = ag0…ag7', alb.gids === 'ag0,ag1,ag2,ag3,ag4,ag5,ag6,ag7', alb.gids);
+
+  // 搜索：PISA 只剩 2 条（重复条目已删）
+  await c.evalJs(`(function(){
+    var i=document.getElementById('albumSearch');
+    i.value='PISA';
+    i.dispatchEvent(new Event('input',{bubbles:true}));
+  })()`);
+  await new Promise((r) => setTimeout(r, 250));
+  const albF = JSON.parse(await c.evalJs(`(function(){
+    return JSON.stringify({
+      rows: document.querySelectorAll('#albumList .fx-item').length,
+      groups: document.querySelectorAll('#albumList .album__g').length,
+      txt: [...document.querySelectorAll('#albumList .fx-item__n')].map(function(e){return e.textContent;}).join(' / '),
+      clr: !document.getElementById('albumSearchClr').hidden
+    });
+  })()`));
+  check('搜「PISA」命中 2 条（站内转存 + 操作流程，无重复）', albF.rows === 2, albF.txt);
+  check('搜「PISA」只保留有命中的组标题', albF.groups === 2, albF.groups);
+  check('搜索时右侧清除按钮出现', albF.clr === true, albF.clr);
+
+  // 空结果
+  await c.evalJs(`(function(){
+    var i=document.getElementById('albumSearch');
+    i.value='zzz不存在的关键词';
+    i.dispatchEvent(new Event('input',{bubbles:true}));
+  })()`);
+  await new Promise((r) => setTimeout(r, 200));
+  const albEmpty = await c.evalJs(`document.querySelectorAll('#albumList .album-empty').length`);
+  check('无命中时显示空态提示', albEmpty === 1, albEmpty);
+
+  // 清除 → 恢复 151
+  await c.evalJs(`document.getElementById('albumSearchClr').click()`);
+  await new Promise((r) => setTimeout(r, 250));
+  const albBack = await c.evalJs(`document.querySelectorAll('#albumList .fx-item').length`);
+  check('点清除后恢复全部 151 段', albBack === 151, albBack);
+
+  // 点第 4 个专题 chip（k=3）→ 页面确实滚下去
+  const beforeY = await c.evalJs('window.scrollY');
+  await c.evalJs(`(function(){
+    var bs=document.querySelectorAll('#albumNav .album-nav__b');
+    if (bs[4]) bs[4].dispatchEvent(new MouseEvent('click',{bubbles:true}));
+  })()`);
+  await new Promise((r) => setTimeout(r, 700));
+  const afterY = await c.evalJs('window.scrollY');
+  const chipOn = await c.evalJs(`document.querySelectorAll('#albumNav .album-nav__b--on').length`);
+  check('点第 5 个 chip 后页面向下滚动', afterY > beforeY + 200, beforeY + ' → ' + afterY);
+  check('chip 只有一个处于选中态', chipOn === 1, chipOn);
+  check('选中 chip = ④ 三维（k=3）',
+    (await c.evalJs(`(document.querySelector('#albumNav .album-nav__b--on')||{}).dataset
+      ? document.querySelector('#albumNav .album-nav__b--on').dataset.k : ''`)) === '3');
+
+  // 吸顶条与目标组标题的相对位置：组标题必须在吸顶条下方，不能被压住
+  const pos = JSON.parse(await c.evalJs(`(function(){
+    var bar=document.getElementById('albumBar').getBoundingClientRect();
+    var g=document.getElementById('ag3').getBoundingClientRect();
+    var on=document.querySelector('#albumNav .album-nav__b--on').getBoundingClientRect();
+    var nav=document.getElementById('albumNav').getBoundingClientRect();
+    return JSON.stringify({barB:Math.round(bar.bottom), gT:Math.round(g.top),
+      chipL:Math.round(on.left), chipR:Math.round(on.right),
+      navL:Math.round(nav.left), navR:Math.round(nav.right)});
+  })()`));
+  check('跳转后目标组标题落在吸顶条下方（没被压住）', pos.gT >= pos.barB - 2,
+    'bar 底 ' + pos.barB + ' / 组标题顶 ' + pos.gT);
+  check('选中的 chip 已滚进可视区（高亮看得见）',
+    pos.chipL >= pos.navL - 1 && pos.chipR <= pos.navR + 1,
+    'chip ' + pos.chipL + '–' + pos.chipR + ' / 可视 ' + pos.navL + '–' + pos.navR);
+
+  // 复位：回到切面学习页签，免得影响后面的搜索用例
+  await c.evalJs(`document.getElementById('albumBack').click()`);
+  await new Promise((r) => setTimeout(r, 400));
 
   // ── v1.6.5：切面学习页自带搜索 + 与公式集互为补充的跨页签提示 ──
   const segType = async function (v) {

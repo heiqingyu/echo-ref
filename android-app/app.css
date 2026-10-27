@@ -18,6 +18,8 @@
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --appbar-h: 52px;
+  /* 版权提示条高度：它 fixed 在标题栏下方，出现时吸顶元素要让位（JS 动态写） */
+  --guard-h: 0px;
   --tabbar-h: 56px;
 }
 
@@ -1066,7 +1068,7 @@ html, body {
   line-height: 1.5;
 }
 
-/* ★ v1.8.8 专辑分组小节标题（飞利浦专辑 152 段按 8 个专题分） */
+/* ★ v1.8.8 专辑分组小节标题（飞利浦专辑 151 段按 8 个专题分） */
 .album__g {
   padding: 14px 14px 6px;
   background: #f7f9fc;
@@ -1077,14 +1079,108 @@ html, body {
   letter-spacing: 0.3px;
 }
 
+/* ★★★ v1.9.0 专辑页搜索框 + 专题导航条
+ * 151 段一屏只能看 6 条，先搜关键词、再点 ①–⑧ 跳组。
+ * sticky 的 top 要避开 fixed 的标题栏（--appbar-h + 安全区），否则吸上去就被盖住。
+ */
+.album-bar {
+  position: sticky;
+  top: calc(var(--appbar-h) + var(--safe-t) + var(--guard-h, 0px));
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 8px;
+  padding: 8px 0 6px;
+  background: var(--bg);
+}
+
+.album-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 1px 4px rgba(16, 32, 64, .06);
+}
+
+.album-search__ico { font-size: 12px; opacity: .55; flex: none; }
+
+.album-search__in {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text);
+  -webkit-appearance: none;
+}
+
+.album-search__in::placeholder { color: #b3b9c2; }
+
+.album-search__clr {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: #eef0f3;
+  color: #8a9099;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.album-nav {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.album-nav::-webkit-scrollbar { display: none; }
+
+.album-nav__b {
+  flex: none;
+  padding: 5px 11px;
+  border: 1px solid #e3e8ef;
+  border-radius: 999px;
+  background: var(--card);
+  color: #5b6472;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.album-nav__b--on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+.album-empty {
+  margin-top: 10px;
+  padding: 24px 14px;
+  border-radius: 12px;
+  background: var(--card);
+  text-align: center;
+  color: #8a9099;
+  font-size: 13px;
+}
+
 .fx-item__a {
   flex: none;
   font-size: 18px;
   color: #c4c9d1;
   line-height: 1;
-}
-
-/* 收藏星标（v1.7.7）：独立命中区，点星不打开条目 */
+}/* 收藏星标（v1.7.7）：独立命中区，点星不打开条目 */
 .fx-fav {
   flex: none;
   padding: 2px 4px;

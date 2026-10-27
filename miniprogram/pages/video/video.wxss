@@ -17,6 +17,17 @@
   font-size: 24rpx;
 }
 
+/* ★ v1.9.0：非 mp4（网页 / HLS 索引页）的说明块 */
+.vid__hint {
+  margin-top: 16rpx;
+  padding: 14rpx 18rpx;
+  border-radius: 10rpx;
+  background: #eef4ff;
+  color: #2f5fb3;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
 .vid__act {
   margin-top: 20rpx;
   padding: 20rpx 0;

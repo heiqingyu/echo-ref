@@ -1741,6 +1741,101 @@
     }
   }
 
+  /* ★★★ v1.9.0 专辑页：搜索 + 专题导航
+   * 飞利浦专辑到 151 段，一屏只能看 6 条，光靠滚动找太费劲。
+   * 与小程序的 album 页同逻辑：关键词过滤（组标题只留有命中的组）+ ①–⑧ 跳到该组。
+   */
+  let curAlbum = null;      // 当前打开的专辑（搜索改了要重绘）
+  let curAlbumKw = '';
+
+  /** 组名压成 chip 短名：取「·」之前那一段，去掉「（1–3 分钟）」这类时长，保留编号 */
+  function chipName(g) {
+    const m = /^([①②③④⑤⑥⑦⑧⑨])\s*(.*)$/.exec(g || '');
+    const no = m ? m[1] : '';
+    let rest = m ? m[2] : String(g || '');
+    rest = rest.split('·')[0].split('・')[0].replace(/[（(][^）)]*[）)]/g, '').trim();
+    return (no + ' ' + rest).trim() || '分组';
+  }
+
+  /** 专辑 children 展平成行；有 kw 时按标题+副标题过滤（副标题含日期/来源/时长） */
+  function albumRows(alb, kw) {
+    const k = String(kw || '').trim().toLowerCase();
+    const rows = [];
+    let gi = -1;
+    (alb.children || []).forEach(function (c) {
+      if (c.g) {
+        gi += 1;
+        rows.push({ g: c.g, gi: gi });
+        return;
+      }
+      rows.push({
+        id: c.id, gi: gi < 0 ? 0 : gi,
+        title: c.title || '', sub: c.sub || '', url: c.url || '',
+        key: ((c.title || '') + ' ' + (c.sub || '')).toLowerCase(),
+      });
+    });
+    if (!k) return rows;
+    const hit = {};
+    rows.forEach(function (r) {
+      if (!r.g && r.key.indexOf(k) >= 0) hit[r.gi] = (hit[r.gi] || 0) + 1;
+    });
+    return rows.filter(function (r) {
+      return r.g ? !!hit[r.gi] : r.key.indexOf(k) >= 0;
+    });
+  }
+
+  /** 按当前关键词重绘列表 */
+  function paintAlbum(alb, kw) {
+    const box = $('albumList');
+    if (!box) return;
+    const rows = albumRows(alb, kw);
+    if (!rows.length) {
+      box.innerHTML = '<div class="album-empty">没有匹配的条目，换个关键词试试。</div>';
+      return;
+    }
+    let h = '<div class="fx-list">';
+    rows.forEach(function (r) {
+      if (r.g) {
+        h += '<div class="album__g" id="ag' + r.gi + '">' + esc(r.g) + '</div>';
+        return;
+      }
+      h += '<a class="fx-item" href="' + esc(r.url) + '" target="_blank" rel="noopener noreferrer">' +
+        '<span class="fx-item__main">' +
+        '<span class="fx-item__n">' + esc(r.title) + '</span>' +
+        '<span class="fx-item__d">' + esc(r.sub) + '</span>' +
+        '</span><span class="fx-item__a">▶</span></a>';
+    });
+    h += '</div>';
+    box.innerHTML = h;
+  }
+
+  /** 搜索框 + chips 的初始状态（每次开专辑都要重置） */
+  function resetAlbumBar(alb, nk) {
+    curAlbum = alb;
+    curAlbumKw = '';
+    if ($('albumSearch')) $('albumSearch').value = '';
+    if ($('albumSearchClr')) $('albumSearchClr').hidden = true;
+
+    const groups = (alb.children || []).filter(function (c) { return c.g; });
+    const nav = $('albumNav');
+    const bar = $('albumBar');
+    if (!nav || !bar) return;
+    if (groups.length > 1) {
+      const chips = [{ k: 'all', n: '全部 ' + nk }].concat(groups.map(function (c, i) {
+        return { k: String(i), n: chipName(c.g) };
+      }));
+      nav.innerHTML = chips.map(function (c) {
+        return '<button type="button" class="album-nav__b' +
+          (c.k === 'all' ? ' album-nav__b--on' : '') +
+          '" data-k="' + c.k + '">' + esc(c.n) + '</button>';
+      }).join('');
+      bar.hidden = false;
+    } else {
+      nav.innerHTML = '';
+      bar.hidden = true;
+    }
+  }
+
   /** 打开专辑：在公式集 Tab 内的第三个视图列出全部切面 */
   function openAlbum(secId, itemId, fromHistory) {
     const alb = albumOf(secId, itemId);
@@ -1777,22 +1872,9 @@
       }
     }
 
-    if ($('albumList')) {
-      let h = '<div class="fx-list">';
-      kids.forEach(function (c) {
-        if (c.g) {
-          h += '<div class="album__g">' + esc(c.g) + '</div>';
-          return;
-        }
-        h += '<a class="fx-item" href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer">' +
-          '<span class="fx-item__main">' +
-          '<span class="fx-item__n">' + esc(c.title) + '</span>' +
-          '<span class="fx-item__d">' + esc(c.sub || '') + '</span>' +
-          '</span><span class="fx-item__a">▶</span></a>';
-      });
-      h += '</div>';
-      $('albumList').innerHTML = h;
-    }
+    // ★ v1.9.0：先重置搜索框 / 专题 chips，再按（空）关键词绘列表
+    resetAlbumBar(alb, kids.filter(function (c) { return !c.g; }).length);
+    paintAlbum(alb, '');
 
     if ($('calcIndex')) $('calcIndex').hidden = true;
     if ($('calcDetail')) $('calcDetail').hidden = true;
@@ -2043,6 +2125,47 @@
 
   if ($('calcBack')) $('calcBack').addEventListener('click', closeCalcGroup);
   if ($('albumBack')) $('albumBack').addEventListener('click', closeAlbum);
+
+  /* ★ v1.9.0 专辑页搜索与专题导航 */
+  if ($('albumSearch')) {
+    $('albumSearch').addEventListener('input', function () {
+      curAlbumKw = this.value;
+      if ($('albumSearchClr')) $('albumSearchClr').hidden = !curAlbumKw;
+      if (curAlbum) paintAlbum(curAlbum, curAlbumKw);
+    });
+  }
+  if ($('albumSearchClr')) {
+    $('albumSearchClr').addEventListener('click', function () {
+      curAlbumKw = '';
+      if ($('albumSearch')) { $('albumSearch').value = ''; $('albumSearch').focus(); }
+      this.hidden = true;
+      if (curAlbum) paintAlbum(curAlbum, '');
+    });
+  }
+  if ($('albumNav')) {
+    $('albumNav').addEventListener('click', function (ev) {
+      const b = ev.target.closest ? ev.target.closest('.album-nav__b') : null;
+      if (!b) return;
+      const k = b.dataset.k;
+      Array.prototype.forEach.call(this.querySelectorAll('.album-nav__b'), function (x) {
+        x.classList.toggle('album-nav__b--on', x === b);
+      });
+      // 选中的 chip 可能在横向滚动区视口外，滚到中间才看得见高亮
+      try {
+        b.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+      } catch (e) { /* 老 WebView 不认对象参数 */ }
+      if (k === 'all') { goToY(0); return; }
+      const el = document.getElementById('ag' + k);
+      if (!el) return;
+      // ★ 落点扣掉「标题栏 + 吸顶搜索条 + 版权提示条」的高度，否则目标组标题正好被压住
+      const appbar = document.querySelector('.appbar');
+      const bar = document.getElementById('albumBar');
+      const gb = document.querySelector('.guardbar');
+      const cover = (appbar ? appbar.offsetHeight : 0) + (bar ? bar.offsetHeight : 0) +
+        (gb ? gb.offsetHeight : 0);
+      goToY(el.getBoundingClientRect().top + window.scrollY - cover - 10);
+    });
+  }
 
   function segHtml(group, opts, cur) {
     let h = '<div class="field"><label class="field__l">' +
@@ -3880,9 +4003,16 @@
           '<span class="guardbar__t">内容原创整理，欢迎自用；请勿去除署名后转载。</span>' +
           '<button class="guardbar__b" type="button">知道了</button>';
         document.body.appendChild(bar);
+        // ★ v1.9.0：提示条 fixed 在标题栏下方，专辑页吸顶的搜索条要让位，否则被盖住
+        try {
+          document.documentElement.style.setProperty('--guard-h', bar.offsetHeight + 'px');
+        } catch (e) { /* 老 WebView */ }
         bar.querySelector('.guardbar__b').addEventListener('click', function () {
           if (bar.parentNode) bar.parentNode.removeChild(bar);
-          try { localStorage.setItem('echoref.guard', '1'); } catch (e) {}
+          try {
+            document.documentElement.style.setProperty('--guard-h', '0px');
+            localStorage.setItem('echoref.guard', '1');
+          } catch (e) { /* 隐私模式 */ }
         });
       }
     } catch (e) { /* 隐私模式禁用 localStorage：不弹即可 */ }

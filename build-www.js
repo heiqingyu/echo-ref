@@ -506,6 +506,15 @@ const html = `<!DOCTYPE html>
         <div class="fx-gnote" id="albumNote" hidden></div>
         <div class="fx-linkrow" id="albumLinks" hidden></div>
       </div>
+      <div class="album-bar" id="albumBar" hidden>
+        <div class="album-search">
+          <span class="album-search__ico">🔍</span>
+          <input class="album-search__in" id="albumSearch" type="text" autocomplete="off"
+                 placeholder="搜片名 / 讲者 / 年份，如 应变、TEE、2024">
+          <button class="album-search__clr" id="albumSearchClr" hidden>✕</button>
+        </div>
+        <div class="album-nav" id="albumNav"></div>
+      </div>
       <div id="albumList"></div>
     </div>
   </section>

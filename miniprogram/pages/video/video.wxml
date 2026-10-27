@@ -15,9 +15,10 @@
            play-btn-position="center"
            binderror="onError"></video>
 
+    <view wx:if="{{hint}}" class="vid__hint">{{hint}}</view>
     <view wx:if="{{errText}}" class="vid__err">{{errText}}</view>
 
-    <view class="vid__act" bindtap="onCopy">复制视频直链</view>
+    <view wx:if="{{copyUrl}}" class="vid__act" bindtap="onCopy">复制视频直链</view>
   </view>
 
   <view class="note">

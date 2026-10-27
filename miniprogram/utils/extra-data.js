@@ -4875,7 +4875,8 @@ const BV_BASE = 'https://image.medonhand.com/E03DACD18D37A094/';
  *   1080p / 692 MB，且 **moov 在文件末尾**（没做 faststart）—— 微信小程序 `<video>`
  *   组件点了只会转圈，用户只能复制链接去浏览器看。转 720p + `+faststart` 后 40 MB，
  *   站内直接可播（实测幻灯片文字与超声图仍清晰）。
- * ★ 转码命令与说明见 echo-ref-media/README.md；原片备份在仓库外 videos/_raw2/pisa.mp4。
+ * ★ 转码命令记在 `_dump/pisa-720p.txt`（仓库外）；原片备份在仓库外 videos/_raw2/pisa.mp4。
+ *   v1.9.0 起 echo-ref-media 仓库不再放 README（纯说明文档，与播放无关）。
  */
 const PHILIPS_PISA = 'https://heiqingyu.github.io/echo-ref-media/videos/pisa-lect.mp4';
 
@@ -5349,10 +5350,6 @@ const PHILIPS_CLASS = [
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/10.28-LV%20LA%20RV%20%E5%BA%94%E5%8F%98%E5%88%86%E6%9E%90%E5%9B%BE%E5%83%8F%E9%87%87%E9%9B%86%E8%A6%81%E6%B1%82%E5%8F%8A%E6%93%8D%E4%BD%9C%E8%A7%84%E8%8C%83--%E7%8E%8B%E5%AE%9C%E5%90%9B_1.mp4',
   },
   {
-    id: 'ph-112', title: 'PISA 原理、误区及应用（35 分钟）', sub: '2026.03.23 · 云教室 · 36 分钟',
-    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/2026.3.23%20PISA%E5%8E%9F%E7%90%86%EF%BC%8C%E8%AF%AF%E5%8C%BA%E5%8F%8A%E5%BA%94%E7%94%A8-%E5%BE%90%E5%AD%90%E7%89%B9.mp4',
-  },
-  {
     id: 'ph-113', title: 'Heart model的存图与分析', sub: '2018.10.11 · 云教室 · 35 分钟',
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/Heart%20model%E7%9A%84%E5%AD%98%E5%9B%BE%E4%B8%8E%E5%88%86%E6%9E%90.mp4',
   },
@@ -5611,7 +5608,7 @@ const LINK_SECTIONS = [
       {
         id: 'philips',
         title: '飞利浦云课堂 · 心脏超声讲座（视频）',
-        sub: '152 段 / 66 小时 · 十个心脏类目 · 按 8 个专题分组',
+        sub: '151 段 / 65 小时 · 十个心脏类目 · 按 8 个专题分组 · 可搜索',
         album: true,
         note: '飞利浦超声云课堂公开回放，按 8 个专题排列：探头维护 / 标准切面 / 定量操作 / 三维与多平面 / '
           + '瓣膜病与结构性心脏病介入 / 心功能定量 / 心肌病与造影 / 先心与胎儿。地址是飞利浦 OSS 原片直链'

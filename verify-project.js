@@ -110,15 +110,23 @@ else bad('video 播放页未注册');
 if (appJson.pages.includes('pages/album/album')) ok('album 专辑二级页已注册');
 else bad('album 专辑页未注册');
 const albJs = fs.readFileSync(path.join(MP, 'pages/album/album.js'), 'utf8');
-if (albJs.indexOf("'/pages/video/video?url='") !== -1 && albJs.indexOf('children') !== -1)
-  ok('专辑页按 children 列出切面并跳播放页');
+if (albJs.indexOf("'/pages/video/video?sec='") !== -1 && albJs.indexOf('&kid=') !== -1 &&
+    albJs.indexOf('children') !== -1)
+  ok('专辑页按 children 列出切面，跳播放页用 id 传参（v1.9.0 起不再拼 URL）');
 else bad('专辑页未接入视频列表');
+if (albJs.indexOf('onKw') !== -1 && albJs.indexOf('onChip') !== -1 && albJs.indexOf('rebuild') !== -1)
+  ok('专辑页带搜索过滤（onKw / rebuild）与专题导航（onChip）');
+else bad('专辑页缺搜索或导航');
 const vidJs = fs.readFileSync(path.join(MP, 'pages/video/video.js'), 'utf8');
-if (vidJs.indexOf('.mp4') !== -1 && vidJs.indexOf('https:') !== -1) ok('video 页仅接受 https 的 mp4 地址');
+if (vidJs.indexOf('.mp4') !== -1 && /findEntry\(/.test(vidJs) && vidJs.indexOf('hint') !== -1)
+  ok('video 页按 id 取地址、仅接受 https 的 mp4，非 mp4 给复制提示');
 else bad('video 页未校验视频地址');
 const calcJs2 = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
-if (calcJs2.indexOf("'/pages/video/video?url='") !== -1) ok('目录点击 mp4 条目跳转站内播放页');
+if (calcJs2.indexOf("'/pages/video/video?sec='") !== -1) ok('目录点击 mp4 条目跳转站内播放页（id 传参）');
 else bad('目录未接入站内播放页');
+const segJs2 = fs.readFileSync(path.join(MP, 'pages/segments/segments.js'), 'utf8');
+if (segJs2.indexOf("'/pages/video/video?sec='") !== -1) ok('切面学习页点击视频跳站内播放页（id 传参）');
+else bad('切面学习页未用 id 传参');
 const tabCalc = appJson.tabBar.list.find(t => t.pagePath === 'pages/calculators/calculators');
 if (tabCalc && tabCalc.text === '公式集') ok('tabBar 页签名 = 公式集');
 else bad('tabBar 公式集页签名异常: ' + (tabCalc && tabCalc.text));
@@ -313,23 +321,35 @@ if (ktAlb && ktAlb.children.every(function (it) {
 else bad('心课堂视频存在地址异常或缺字段的条目');
 if (views && views.items[0].id === 'bookvid' && views.items[1].id === 'ktvid') ok('心课堂专辑排在操作规范专辑之后（未抢占第一条）');
 else bad('切面学习视频专辑顺序异常: ' + (views ? views.items.slice(0, 3).map(function (x) { return x.id; }).join(',') : 'missing'));
-// v1.8.8：飞利浦云课堂心脏类目全部课程（152 段，按 8 个专题分组）
+// v1.9.0：飞利浦云课堂心脏类目全部课程（151 段，按 8 个专题分组；原 152，去掉平台重复收录的 PISA）
 const phAlb = views ? views.items.filter(function (it) { return it.id === 'philips'; })[0] : null;
 const phKids = (phAlb && phAlb.children) || [];
 const phReal = phKids.filter(function (c) { return !c.g; });
 const phGroups = phKids.filter(function (c) { return !!c.g; });
-if (phAlb && phAlb.album && phReal.length === 152) ok('飞利浦云课堂专辑 152 段');
+if (phAlb && phAlb.album && phReal.length === 151) ok('飞利浦云课堂专辑 151 段');
 else bad('飞利浦专辑段数异常: ' + phReal.length);
 if (phGroups.length === 8) ok('飞利浦专辑按 8 个专题分组（组标题不计入段数）');
 else bad('飞利浦专辑分组数异常: ' + phGroups.length);
 if (phReal.every(function (c) { return c.id && c.title && c.sub && /^https:\/\//.test(c.url); }))
-  ok('152 段均含 id / 标题 / 说明 / https 地址');
+  ok('151 段均含 id / 标题 / 说明 / https 地址');
 else bad('飞利浦专辑存在缺字段的条目');
-if (new Set(phReal.map(function (c) { return c.id; })).size === 152) ok('飞利浦专辑 id 无重复');
+if (new Set(phReal.map(function (c) { return c.id; })).size === 151) ok('飞利浦专辑 id 无重复');
 else bad('飞利浦专辑 id 有重复');
 const phMp4 = phReal.filter(function (c) { return /\.mp4$/.test(c.url); }).length;
-if (phMp4 === 149) ok('149 段为 mp4 直链，3 段 HLS 指向官方详情页');
+if (phMp4 === 148) ok('148 段为 mp4 直链，3 段 HLS 指向官方详情页');
 else bad('飞利浦专辑可播条目数异常: ' + phMp4);
+// v1.9.0：平台把同一场讲座挂在两个类目下重复收录，曾出现两条 PISA（ph-108 / ph-112）
+const phSameTitle = {};
+phReal.forEach(function (c) {
+  const k = (c.title || '').replace(/[\s（）()·、,，]/g, '') + '|' + (c.sub || '').slice(0, 10);
+  phSameTitle[k] = (phSameTitle[k] || 0) + 1;
+});
+const phDup = Object.keys(phSameTitle).filter(function (k) { return phSameTitle[k] > 1; });
+if (!phDup.length) ok('飞利浦专辑无同题重复条目（PISA 只留站内转存那条）');
+else bad('飞利浦专辑有重复条目: ' + phDup.join(' / '));
+if (!phReal.some(function (c) { return c.id === 'ph-112'; })) ok('重复的 ph-112 已删除');
+else bad('ph-112 仍在专辑里');
+
 const phPisa = phReal.filter(function (c) { return c.id === 'ph-108'; })[0];
 if (phPisa && phPisa.url === 'https://heiqingyu.github.io/echo-ref-media/videos/pisa-lect.mp4')
   ok('PISA 讲座指向站内 720p 转存（原片 moov 在尾、小程序起播不了）');

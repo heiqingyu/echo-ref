@@ -669,7 +669,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segViews.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含 TEE 速查表',
     segViews.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
-  // ★ v1.8.8：飞利浦专辑在专辑页展开成 8 个组标题 + 152 段（组标题不计入段数）
+  // ★ v1.9.0：飞利浦专辑在专辑页展开成 8 个组标题 + 151 段（组标题不计入段数）
   {
     let pgAlb = null;
     const _pPrev = global.Page;
@@ -681,8 +681,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       Object.keys(patch).forEach(function (k) { self.data[k] = patch[k]; });
     };
     pgAlb.onLoad({ sec: 'views', item: 'philips' });
-    check('飞利浦专辑页：段数 152（8 个组标题不计入）', pgAlb.data.count, 152, 0);
-    check('飞利浦专辑页：列表 160 行（152 段 + 8 个组标题）', pgAlb.data.items.length, 160, 0);
+    check('飞利浦专辑页：段数 151（8 个组标题不计入）', pgAlb.data.count, 151, 0);
+    check('飞利浦专辑页：列表 159 行（151 段 + 8 个组标题）', pgAlb.data.items.length, 159, 0);
     check('飞利浦专辑页：8 个组标题，id 前缀 g:，且排在首个视频之前',
       pgAlb.data.items.filter(function (i) { return i.g; }).length === 8 &&
       pgAlb.data.items.filter(function (i) { return i.g; }).every(function (i) { return i.id.indexOf('g:') === 0; }) &&
@@ -692,6 +692,61 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
         .every(function (i) { return i.url.indexOf('https://') === 0 && i.title; }) ? 1 : 0, 1, 0);
     check('飞利浦专辑页：出处链接 1 条（云课堂全部课程）',
       pgAlb.data.links.length, 1, 0);
+    // ★ v1.9.0：151 段太长 → 搜索框 + 专题导航
+    check('飞利浦专辑页：导航 chips 9 个（全部 + 8 个专题）', pgAlb.data.chips.length, 9, 0);
+    check('飞利浦专辑页：默认「全部 151」chip 在首位',
+      /^全部 \d+$/.test(pgAlb.data.chips[0].n) ? 1 : 0, 1, 0);
+    check('飞利浦专辑页：组锚点 gi 连续 0–7 且唯一',
+      pgAlb.data.rows.filter(function (r) { return r.g; })
+        .map(function (r) { return r.gi; }).join(',') === '0,1,2,3,4,5,6,7' ? 1 : 0, 1, 0);
+
+    pgAlb.onKw({ detail: { value: 'PISA' } });
+    const hitP = pgAlb.data.rows.filter(function (r) { return !r.g; });
+    check('搜「PISA」命中 2 条（操作流程 + 讲座，重复条目已删）', hitP.length, 2, 0);
+    check('搜「PISA」只保留 2 个组标题', pgAlb.data.rows.filter(function (r) { return r.g; }).length, 2, 0);
+
+    pgAlb.onKw({ detail: { value: '应变' } });
+    check('搜「应变」有命中且组标题同步收窄',
+      pgAlb.data.rows.filter(function (r) { return !r.g; }).length > 0 &&
+      pgAlb.data.rows.filter(function (r) { return r.g; }).length < 8 ? 1 : 0, 1, 0);
+
+    pgAlb.onKw({ detail: { value: 'zzz不存在的关键词' } });
+    check('搜无结果时列表为空（显示空态）', pgAlb.data.rows.length, 0, 0);
+
+    pgAlb.onClear();
+    check('清除关键词后恢复全部 159 行', pgAlb.data.rows.length, 159, 0);
+
+    // 播放页改为传 id（不再把中文 percent 地址塞进 query）
+    {
+      let nav = '';
+      const _nav = global.wx.navigateTo;
+      global.wx.navigateTo = function (o) { nav = o.url; };
+      pgAlb.onOpen({ currentTarget: { dataset: { id: 'ph-108' } } });
+      global.wx.navigateTo = _nav;
+      check('专辑页点条目 → 播放页传 id 而非 URL',
+        /\/pages\/video\/video\?sec=views&item=philips&kid=ph-108$/.test(nav) ? 1 : 0, 1, 0);
+
+      let pgVid = null;
+      const _pPrev2 = global.Page;
+      global.Page = function (c) { pgVid = c; };
+      require(pathW.join(__dirname, 'miniprogram', 'pages', 'video', 'video.js'));
+      global.Page = _pPrev2;
+      pgVid.setData = function (patch) {
+        const self = this;
+        Object.keys(patch).forEach(function (k) { self.data[k] = patch[k]; });
+      };
+      pgVid.onLoad({ sec: 'views', item: 'philips', kid: 'ph-108' });
+      check('播放页按 id 取到站内 720p 地址',
+        pgVid.data.url === 'https://heiqingyu.github.io/echo-ref-media/videos/pisa-lect.mp4' ? 1 : 0, 1, 0);
+      pgVid.onLoad({ sec: 'views', item: 'philips', kid: 'ph-037' });
+      check('播放页按 id 取到中文 percent 编码的 OSS 地址（不报「地址无效」）',
+        /\.mp4$/.test(pgVid.data.url) && !pgVid.data.errText ? 1 : 0, 1, 0);
+      pgVid.onLoad({ url: 'https%253A%252F%252Fx.mp4' });
+      check('播放页对多层编码的旧链接仍能兜底解码', pgVid.data.url === 'https://x.mp4' ? 1 : 0, 1, 0);
+      pgVid.onLoad({});
+      check('播放页缺参数时给明确提示（不再笼统「地址无效」）',
+        /没有找到这条视频/.test(pgVid.data.errText) ? 1 : 0, 1, 0);
+    }
   }
 
   // 原「切面指南」4 条 ASE 官方 PDF 已并入参考文献（R9 中/英、R10、R38）

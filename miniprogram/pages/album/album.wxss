@@ -73,8 +73,7 @@
   color: #5b6472;
 }
 
-/* ★ v1.8.5 专辑出处链接（公众号原文等） */
-.album__links {
+/* ★ v1.8.5 专辑出处链接（公众号原文等） */.album__links {
   display: flex;
   flex-wrap: wrap;
   gap: 12rpx;
@@ -92,4 +91,93 @@
 
 .album__link--tap {
   background: #d8e3f8;
+}
+
+/* ★★★ v1.9.0 搜索框 + 专题导航条（吸顶）
+ * 飞利浦专辑 151 段，光靠滚动找片子太费劲：先搜关键词，再点 ①–⑧ 跳到该专题。
+ * sticky 依赖父级不设 overflow，.page-wrap 未设 overflow，故可用。
+ */
+.album__bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 16rpx 0 0;
+  padding: 14rpx 0 8rpx;
+  background: #f5f6f8;
+}
+
+.album__search {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 0 22rpx;
+  height: 76rpx;
+  border-radius: 14rpx;
+  background: #fff;
+  box-shadow: 0 2rpx 10rpx rgba(16, 32, 64, 0.05);
+}
+
+.album__ico {
+  font-size: 24rpx;
+  line-height: 1;
+  opacity: 0.55;
+}
+
+.album__input {
+  flex: 1;
+  min-width: 0;
+  height: 76rpx;
+  font-size: 27rpx;
+  color: #1f2329;
+}
+
+.album__ph {
+  color: #b3b9c2;
+  font-size: 25rpx;
+}
+
+.album__clr {
+  flex: none;
+  width: 44rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  text-align: center;
+  border-radius: 50%;
+  background: #eef0f3;
+  color: #8a9099;
+  font-size: 22rpx;
+}
+
+.album__nav {
+  margin-top: 12rpx;
+  white-space: nowrap;
+}
+
+.album__chip {
+  display: inline-block;
+  margin-right: 12rpx;
+  padding: 10rpx 22rpx;
+  border-radius: 999rpx;
+  background: #fff;
+  border: 1rpx solid #e3e8ef;
+  color: #5b6472;
+  font-size: 23rpx;
+  line-height: 1.4;
+}
+
+.album__chip--on {
+  background: #2f5fb3;
+  border-color: #2f5fb3;
+  color: #fff;
+  font-weight: 600;
+}
+
+.album__empty {
+  margin-top: 16rpx;
+  padding: 40rpx 24rpx;
+  border-radius: 18rpx;
+  background: #fff;
+  text-align: center;
+  color: #8a9099;
+  font-size: 25rpx;
 }

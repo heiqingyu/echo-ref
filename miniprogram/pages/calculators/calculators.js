@@ -420,9 +420,9 @@ Page({
     if (d.kind === 'link') {
       // 视频直链（.mp4）在站内播放页打开，不必让用户复制到浏览器
       if (isVideo(d.url)) {
+        // ★ v1.9.0：按 id 传参（不再拼 URL，中文/百分号地址不会在 query 里失真）
         wx.navigateTo({
-          url: '/pages/video/video?url=' + encodeURIComponent(d.url) +
-            '&title=' + encodeURIComponent(d.title || ''),
+          url: '/pages/video/video?sec=' + (d.sec || 'views') + '&item=' + d.id,
         });
         return;
       }
