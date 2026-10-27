@@ -14,7 +14,8 @@ function toListItem(it, secId) {
   if (it.album) {
     return {
       kind: 'album', id: it.id, sec: secId, title: it.title,
-      sub: it.sub || '', count: (it.children || []).length, url: '',
+      // ★ v1.8.8：children 里的 { g: '…' } 是小节标题，不算段数
+      sub: it.sub || '', count: (it.children || []).filter(function (c) { return !c.g; }).length, url: '',
     };
   }
   return {

@@ -585,7 +585,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const segViews = pgS.data.viewsList;
   const segSim = pgS.data.simList;
   const segLook = pgS.data.lookList;
-  check('切面学习页签：教学视频列表 8 条（2 专辑 + 6 外链）', segViews.length, 8, 0);
+  check('切面学习页签：教学视频列表 8 条（3 专辑 + 5 外链）', segViews.length, 8, 0);
   check('切面学习页签：TEE 演示列表 3 条', segSim.length, 3, 0);
   check('切面学习页签：切面速查与图谱 4 条（TEE 20 切面 / TTE 规范切面 / TTE 标准切面测量 / 瓣膜解剖）',
     segLook.length, 4, 0);
@@ -669,6 +669,31 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segViews.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含 TEE 速查表',
     segViews.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
+  // ★ v1.8.8：飞利浦专辑在专辑页展开成 8 个组标题 + 152 段（组标题不计入段数）
+  {
+    let pgAlb = null;
+    const _pPrev = global.Page;
+    global.Page = function (c) { pgAlb = c; };
+    require(pathW.join(__dirname, 'miniprogram', 'pages', 'album', 'album.js'));
+    global.Page = _pPrev;
+    pgAlb.setData = function (patch) {
+      const self = this;
+      Object.keys(patch).forEach(function (k) { self.data[k] = patch[k]; });
+    };
+    pgAlb.onLoad({ sec: 'views', item: 'philips' });
+    check('飞利浦专辑页：段数 152（8 个组标题不计入）', pgAlb.data.count, 152, 0);
+    check('飞利浦专辑页：列表 160 行（152 段 + 8 个组标题）', pgAlb.data.items.length, 160, 0);
+    check('飞利浦专辑页：8 个组标题，id 前缀 g:，且排在首个视频之前',
+      pgAlb.data.items.filter(function (i) { return i.g; }).length === 8 &&
+      pgAlb.data.items.filter(function (i) { return i.g; }).every(function (i) { return i.id.indexOf('g:') === 0; }) &&
+      !!pgAlb.data.items[0].g ? 1 : 0, 1, 0);
+    check('飞利浦专辑页：视频行均带 https 地址与标题',
+      pgAlb.data.items.filter(function (i) { return !i.g; })
+        .every(function (i) { return i.url.indexOf('https://') === 0 && i.title; }) ? 1 : 0, 1, 0);
+    check('飞利浦专辑页：出处链接 1 条（云课堂全部课程）',
+      pgAlb.data.links.length, 1, 0);
+  }
+
   // 原「切面指南」4 条 ASE 官方 PDF 已并入参考文献（R9 中/英、R10、R38）
   check('切面指南已并入参考文献（不在目录里单列）',
     dirs.every(d => d.title !== '切面指南') ? 1 : 0, 1, 0);

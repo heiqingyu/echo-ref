@@ -18,15 +18,17 @@
     </view>
 
     <view class="fx-list">
-      <view wx:for="{{items}}" wx:key="id" wx:for-item="it"
-            class="fx-item" hover-class="fx-item--tap"
-            data-url="{{it.url}}" data-title="{{it.title}}" bindtap="onOpen">
-        <view class="fx-item__main">
-          <view class="fx-item__n">{{it.title}}</view>
-          <view class="fx-item__d">{{it.sub}}</view>
+      <block wx:for="{{items}}" wx:key="id" wx:for-item="it">
+        <view wx:if="{{it.g}}" class="album__g">{{it.g}}</view>
+        <view wx:else class="fx-item" hover-class="fx-item--tap"
+              data-url="{{it.url}}" data-title="{{it.title}}" bindtap="onOpen">
+          <view class="fx-item__main">
+            <view class="fx-item__n">{{it.title}}</view>
+            <view class="fx-item__d">{{it.sub}}</view>
+          </view>
+          <view class="fx-item__a">▶</view>
         </view>
-        <view class="fx-item__a">▶</view>
-      </view>
+      </block>
     </view>
   </block>
 

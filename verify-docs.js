@@ -341,7 +341,8 @@ function check(name, ok, detail) {
       views: document.querySelectorAll('#segViewsList .fx-item').length,
       sim: document.querySelectorAll('#segSimList .fx-item').length,
       look: document.querySelectorAll('#segLookList .fx-item').length,
-      albumInViews: document.querySelectorAll('#segViewsList .fx-item[data-kind="album"]').length
+      albumInViews: document.querySelectorAll('#segViewsList .fx-item[data-kind="album"]').length,
+      philipsTxt: (document.querySelector('#segViewsList .fx-item[data-id="philips"]') || {}).textContent || ''
     });
   })()`);
   const se = JSON.parse(segExtras);
@@ -351,7 +352,8 @@ function check(name, ok, detail) {
   check('切面学习页教学视频列表 8 条', se.views === 8, segExtras);
   check('切面学习页 TEE 演示列表 3 条', se.sim === 3, segExtras);
   check('切面学习页切面速查与图谱 4 条', se.look === 4, segExtras);
-  check('教学视频含 2 个专辑入口（操作规范 / 心课堂）', se.albumInViews === 2, se.albumInViews);
+  check('教学视频含 3 个专辑入口（操作规范 / 心课堂 / 飞利浦云课堂）', se.albumInViews === 3, se.albumInViews);
+  check('飞利浦专辑入口显示 152 段（组标题不计入）', /152/.test(se.philipsTxt), se.philipsTxt.replace(/\s+/g, ' ').slice(0, 80));
 
   // ── v1.6.5：切面学习页自带搜索 + 与公式集互为补充的跨页签提示 ──
   const segType = async function (v) {

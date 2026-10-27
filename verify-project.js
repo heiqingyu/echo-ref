@@ -262,7 +262,7 @@ console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 
 if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 切面在线演示）');
 else bad('外链分组数异常: ' + (EX.LINK_SECTIONS || []).length);
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
-if (linkIds.length === 11) ok('外链条目 11 条（9 条单条外链 + 操作规范专辑 + 心课堂视频专辑）');
+if (linkIds.length === 11) ok('外链条目 11 条（切面学习 5 条单链 + 3 个专辑；TEE 演示 3 条）');
 else bad('外链条目数异常: ' + linkIds.length);
 const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it => {
   if (!it.id || !it.title || !it.sub) return true;
@@ -313,6 +313,30 @@ if (ktAlb && ktAlb.children.every(function (it) {
 else bad('心课堂视频存在地址异常或缺字段的条目');
 if (views && views.items[0].id === 'bookvid' && views.items[1].id === 'ktvid') ok('心课堂专辑排在操作规范专辑之后（未抢占第一条）');
 else bad('切面学习视频专辑顺序异常: ' + (views ? views.items.slice(0, 3).map(function (x) { return x.id; }).join(',') : 'missing'));
+// v1.8.8：飞利浦云课堂心脏类目全部课程（152 段，按 8 个专题分组）
+const phAlb = views ? views.items.filter(function (it) { return it.id === 'philips'; })[0] : null;
+const phKids = (phAlb && phAlb.children) || [];
+const phReal = phKids.filter(function (c) { return !c.g; });
+const phGroups = phKids.filter(function (c) { return !!c.g; });
+if (phAlb && phAlb.album && phReal.length === 152) ok('飞利浦云课堂专辑 152 段');
+else bad('飞利浦专辑段数异常: ' + phReal.length);
+if (phGroups.length === 8) ok('飞利浦专辑按 8 个专题分组（组标题不计入段数）');
+else bad('飞利浦专辑分组数异常: ' + phGroups.length);
+if (phReal.every(function (c) { return c.id && c.title && c.sub && /^https:\/\//.test(c.url); }))
+  ok('152 段均含 id / 标题 / 说明 / https 地址');
+else bad('飞利浦专辑存在缺字段的条目');
+if (new Set(phReal.map(function (c) { return c.id; })).size === 152) ok('飞利浦专辑 id 无重复');
+else bad('飞利浦专辑 id 有重复');
+const phMp4 = phReal.filter(function (c) { return /\.mp4$/.test(c.url); }).length;
+if (phMp4 === 149) ok('149 段为 mp4 直链，3 段 HLS 指向官方详情页');
+else bad('飞利浦专辑可播条目数异常: ' + phMp4);
+const phPisa = phReal.filter(function (c) { return c.id === 'ph-108'; })[0];
+if (phPisa && phPisa.url === 'https://heiqingyu.github.io/echo-ref-media/videos/pisa-lect.mp4')
+  ok('PISA 讲座指向站内 720p 转存（原片 moov 在尾、小程序起播不了）');
+else bad('PISA 条目地址异常: ' + (phPisa ? phPisa.url : 'missing'));
+if (phAlb && (phAlb.links || []).length === 1 && /app\.ma\.scrmtech\.com/.test(phAlb.links[0].url))
+  ok('飞利浦专辑标注云课堂全部课程入口');
+else bad('飞利浦专辑缺少云课堂入口');
 // v1.8.5：视频专辑必须给出公众号原文出处（视频是转存的，原文才是第一手）
 const ktLk = ktAlb && (ktAlb.links || []);
 if (ktLk && ktLk.length === 2 && ktLk.every(function (l) {

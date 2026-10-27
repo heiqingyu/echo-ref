@@ -43,14 +43,17 @@ Page({
       title: alb.title,
       // 书籍出处优先取专辑条目自带的 note，其次取分组 note
       note: alb.note || sec.note || '',
-      count: kids.length,
+      // ★ v1.8.8：children 里 { g: '…' } 是小节标题，不计入段数
+      count: kids.filter(function (c) { return !c.g; }).length,
       // ★ v1.8.5：专辑可带公众号原文等出处链接（视频是转存的，原文才是第一手）
       links: (alb.links || []).map(function (l) {
         return { n: l.n, url: l.url };
       }),
       items: kids.map(function (c) {
+        if (c.g) return { id: 'g:' + c.g, g: c.g, title: '', sub: '', url: '' };
         return {
           id: c.id,
+          g: '',
           title: c.title,
           sub: c.sub || '',
           url: c.url,

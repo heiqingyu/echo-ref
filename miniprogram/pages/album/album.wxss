@@ -51,6 +51,17 @@
   line-height: 1;
 }
 
+/* ★ v1.8.8 分组小节标题（飞利浦专辑 152 段按 8 个专题分） */
+.album__g {
+  padding: 22rpx 24rpx 10rpx;
+  background: #f7f9fc;
+  border-bottom: 1rpx solid #f0f1f3;
+  font-size: 23rpx;
+  font-weight: 600;
+  color: #2f5fb3;
+  letter-spacing: 0.5rpx;
+}
+
 /* 书籍出处 */
 .album__note {
   margin-top: 14rpx;

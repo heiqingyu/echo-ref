@@ -1431,7 +1431,8 @@
       ((sec && sec.items) || []).forEach(function (it) {
         out[secId].push({
           kind: it.album ? 'album' : 'link', id: it.id, title: it.title, sub: it.sub || '',
-          url: it.url, count: (it.children || []).length, sec: secId,
+          // ★ v1.8.8：children 里的 { g: '…' } 是小节标题，不算段数
+          url: it.url, count: (it.children || []).filter(function (c) { return !c.g; }).length, sec: secId,
         });
       });
     });
@@ -1749,7 +1750,9 @@
 
     if ($('albumTitle')) $('albumTitle').textContent = alb.title;
     if ($('albumDesc')) {
-      $('albumDesc').textContent = '共 ' + kids.length + ' 段 · 点击条目在新窗口播放';
+      // ★ v1.8.8：children 里 { g: '…' } 是小节标题，不计入段数
+      const nk = kids.filter(function (c) { return !c.g; }).length;
+      $('albumDesc').textContent = '共 ' + nk + ' 段 · 点击条目在新窗口播放';
     }
     const nt = $('albumNote');
     if (nt) {
@@ -1777,6 +1780,10 @@
     if ($('albumList')) {
       let h = '<div class="fx-list">';
       kids.forEach(function (c) {
+        if (c.g) {
+          h += '<div class="album__g">' + esc(c.g) + '</div>';
+          return;
+        }
         h += '<a class="fx-item" href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer">' +
           '<span class="fx-item__main">' +
           '<span class="fx-item__n">' + esc(c.title) + '</span>' +

@@ -4869,19 +4869,653 @@ const BRIEF_SECTIONS = [
 const BV_BASE = 'https://image.medonhand.com/E03DACD18D37A094/';
 
 /**
- * 飞利浦云课堂（poc.martech-global.com）的讲座视频。
+ * PISA 那一场讲座的**站内转存**地址（其余 151 段是热链，见 PHILIPS_CLASS）。
  *
- * ★★ 该平台播放器 `player.html?url=<base64>` 只是把参数解码后赋给 `<video src>`，
- *   **没有任何签名 / 防盗链 / 加密**，所以 base64 解出来的就是可直链播放的 OSS 地址。
- *   实测不带 Referer、不带签名请求即 206 video/mp4，可直接 <video> 播放、可拖进度条。
- * ★ 但地址属于对方（philips-idp.oss-cn-shanghai.aliyuncs.com，公开读、不可列举），
- *   他们若改权限 / 删文件 / 加 Referer 白名单，链接会失效 —— 属**热链**，非转存。
- *   原始备份在仓库外 `videos/_raw2/pisa.mp4`（692 MB，35:34，1080p）。
+ * ★★ 原片 `live_broadcast/超声/云教室/2026.3.23 PISA原理，误区及应用-徐子特.mp4`
+ *   1080p / 692 MB，且 **moov 在文件末尾**（没做 faststart）—— 微信小程序 `<video>`
+ *   组件点了只会转圈，用户只能复制链接去浏览器看。转 720p + `+faststart` 后 40 MB，
+ *   站内直接可播（实测幻灯片文字与超声图仍清晰）。
+ * ★ 转码命令与说明见 echo-ref-media/README.md；原片备份在仓库外 videos/_raw2/pisa.mp4。
  */
-const PHILIPS_PISA = 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/' +
-  '%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/' +
-  '2026.3.23%20PISA%E5%8E%9F%E7%90%86%EF%BC%8C%E8%AF%AF%E5%8C%BA%E5%8F%8A%E5%BA%94%E7%94%A8-' +
-  '%E5%BE%90%E5%AD%90%E7%89%B9.mp4';
+const PHILIPS_PISA = 'https://heiqingyu.github.io/echo-ref-media/videos/pisa-lect.mp4';
+
+/**
+ * 飞利浦超声云课堂（poc.martech-global.com / app.ma.scrmtech.com）心脏类目全部课程。
+ *
+ * ★★ 数据来源：`POST /meetings/MeetingPc/meetingList`（cid = 类目 id，分页参数 page_no / page_size），
+ *   返回的 `playback_url` 形如 `player.html?url=<base64>`，base64 解出来就是 OSS 直链。
+ *   bucket 公开读、不可列举（ListObjects 返回 AccessDenied），只能走接口枚举。
+ *   心脏类目 10 个：心血管 29877 / 心脏应用 30021 / 心功能定量 31829 / 食道超声 31828 /
+ *   TEE 33083 / 心脏三维 32991 / 心脏应用-微课堂 32990 / 心血管-微课堂 30332 /
+ *   心血管-非公 33681 / 心脏应用-非公频道 33690。
+ *   去同题重复后 152 段 / 66 小时 / 原片 62 GB，按 8 个专题分组（`{ g: '…' }` 是组标题）。
+ * ★ 地址是**热链**（philips-idp.oss-cn-shanghai.aliyuncs.com，公开读），不是转存：
+ *   对方改权限 / 删文件即失效。别把它当成自有资源。
+ * ★ 小程序能不能站内播取决于原片有没有 faststart（moov 在文件头）：
+ *   实测 152 段里约 2/3 是 faststart，可直接播；其余 moov 在尾巴，小程序起播不了 ——
+ *   所以 PISA 那一场（ph-108）单独转 720p + faststart 存到 echo-ref-media，见 PHILIPS_PISA。
+ * ★ 3 条 HLS（.m3u8 分片）网页与小程序都播不了，url 直接指向飞利浦官方详情页。
+ */
+const PHILIPS_CLASS = [
+  { g: '① 探头清洁 · 消毒 · 保养' },
+  {
+    id: 'ph-001', title: '围手术期经食道探头消毒及保养', sub: '2024.03.14 · 操作短片 · 18 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/%E4%BF%AE%E6%94%B9.mp4',
+  },
+  {
+    id: 'ph-002', title: '探头消毒-X8-2t操作手柄使用', sub: '2024.03.07 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/X8-2t%E6%93%8D%E4%BD%9C%E6%89%8B%E6%9F%84%E4%BD%BF%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-003', title: '经食道探头消毒九步法和存放', sub: '2024.01.24 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/us_0627_TEE%E6%88%90%E5%93%81.mp4',
+  },
+  {
+    id: 'ph-004', title: '患者温度设置及探头温度保护', sub: '2024.01.23 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/%E6%82%A3%E8%80%85%E6%B8%A9%E5%BA%A6%E8%AE%BE%E7%BD%AE%E5%8F%8A%E6%8E%A2%E5%A4%B4%E6%B8%A9%E5%BA%A6%E4%BF%9D%E6%8A%A4.mp4',
+  },
+  {
+    id: 'ph-005', title: 'TEE探头保养', sub: '2024.01.20 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/%E6%8E%A2%E5%A4%B4%E4%BF%9D%E5%85%BB.mp4',
+  },
+  { g: '② 标准切面与血流频谱（1–3 分钟）' },
+  {
+    id: 'ph-006', title: '心脏超声常规检查规范（切面及测量）', sub: '2018.05.01 · 云教室 · 12 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E5%BF%83%E8%84%8F%E8%B6%85%E5%A3%B0%E5%B8%B8%E8%A7%84%E6%A3%80%E6%9F%A5%E8%A7%84%E8%8C%83%EF%BC%88%E5%88%87%E9%9D%A2%E5%8F%8A%E6%B5%8B%E9%87%8F%EF%BC%89.mp4',
+  },
+  {
+    id: 'ph-007', title: '心尖四腔切面', sub: '2024.03.07 · 操作短片 · 3 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0928_%E5%BF%83%E5%B0%96%E5%9B%9B%E8%85%94%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-008', title: 'S9-2儿科心脏探头介绍', sub: '2024.01.26 · 微课堂 · 3 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/S9-2%E5%84%BF%E7%A7%91%E5%BF%83%E8%84%8F%E6%8E%A2%E5%A4%B4%E4%BB%8B%E7%BB%8D.mp4',
+  },
+  {
+    id: 'ph-009', title: '左室流出道血流频谱', sub: '2024.04.05 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0907_D2%E5%B7%A6%E5%AE%A4%E6%B5%81%E5%87%BA%E9%81%93%E8%A1%80%E6%B5%81%E9%A2%91%E8%B0%B1.mp4',
+  },
+  {
+    id: 'ph-010', title: '胸骨旁主动脉瓣水平短轴切面', sub: '2024.07.03 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_XGP4%E8%83%B8%E9%AA%A8%E6%97%81%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E6%B0%B4%E5%B9%B3%E7%9F%AD%E8%BD%B4%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-011', title: '胸骨旁左心室长轴切面', sub: '2024.07.04 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_XGP1%E8%83%B8%E9%AA%A8%E6%97%81%E5%B7%A6%E5%BF%83%E5%AE%A4%E9%95%BF%E8%BD%B4%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-012', title: '胸骨上窝主动脉弓短轴切面', sub: '2024.03.07 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/%E8%83%B8%E9%AA%A8%E4%B8%8A%E7%AA%9D%E4%B8%BB%E5%8A%A8%E8%84%89%E5%BC%93%E7%9F%AD%E8%BD%B4%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-013', title: '肺动脉瓣血流频谱', sub: '2024.03.14 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0907_D3%E8%82%BA%E5%8A%A8%E8%84%89%E7%93%A3%E8%A1%80%E6%B5%81%E9%A2%91%E8%B0%B1.mp4',
+  },
+  {
+    id: 'ph-014', title: 'M型心室波群', sub: '2024.01.01 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_M1%E5%BF%83%E5%AE%A4%E6%B3%A2%E7%BE%A4.mp4',
+  },
+  {
+    id: 'ph-015', title: '主动脉瓣血流频谱', sub: '2024.03.14 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0907_D1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E8%A1%80%E6%B5%81%E9%A2%91%E8%B0%B1.mp4',
+  },
+  {
+    id: 'ph-016', title: 'M型超声心动图总论', sub: '2024.02.06 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0907_M%E5%9E%8B%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%80%BB%E8%AE%BA%E6%94%B9.mp4',
+  },
+  {
+    id: 'ph-017', title: '升主动脉和降主动脉血流频谱', sub: '2024.03.07 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_D8%E5%8D%87%E4%B8%BB%E5%8A%A8%E8%84%89%E5%92%8C%E9%99%8D%E4%B8%BB%E5%8A%A8%E8%84%89%E8%A1%80%E6%B5%81.mp4',
+  },
+  {
+    id: 'ph-018', title: '胸骨旁二尖瓣水平短轴切面', sub: '2024.07.03 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_XGP5%E8%83%B8%E9%AA%A8%E6%97%81%E4%BA%8C%E5%B0%96%E7%93%A3%E6%B0%B4%E5%B9%B3%E7%9F%AD%E8%BD%B4%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-019', title: '三尖瓣血流频谱', sub: '2024.03.07 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0907_D6%E4%B8%89%E5%B0%96%E7%93%A3%E8%A1%80%E6%B5%81%E9%A2%91%E8%B0%B1.mp4',
+  },
+  {
+    id: 'ph-020', title: 'M型肺动脉瓣波群', sub: '2024.07.11 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_M5%E8%82%BA%E5%8A%A8%E8%84%89%E7%93%A3%E6%B3%A2%E7%BE%A4.mp4',
+  },
+  {
+    id: 'ph-021', title: '剑突下四腔切面', sub: '2024.04.06 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_JX1%E5%89%91%E4%B8%8B%E5%9B%9B%E8%85%94%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-022', title: '右室流出道血流频谱', sub: '2024.03.07 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0907_D4%E5%8F%B3%E5%AE%A4%E6%B5%81%E5%87%BA%E9%81%93%E8%A1%80%E6%B5%81%E9%A2%91%E8%B0%B1.mp4',
+  },
+  {
+    id: 'ph-023', title: '心尖五腔切面', sub: '2024.03.07 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_XJ2%E5%BF%83%E5%B0%96%E4%BA%94%E8%85%94%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-024', title: '剑突下下腔静脉长轴切面', sub: '2024.02.08 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_JX2%E5%89%91%E4%B8%8B%E4%B8%8B%E8%85%94%E9%9D%99%E8%84%89%E9%95%BF%E8%BD%B4%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-025', title: '下腔静脉波群', sub: '2024.03.09 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0928_%E4%B8%8B%E8%85%94%E9%9D%99%E8%84%89%E6%B3%A2%E7%BE%A4.mp4',
+  },
+  {
+    id: 'ph-026', title: '心尖左室长轴切面', sub: '2024.03.07 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_XJ4%E5%BF%83%E5%B0%96%E5%B7%A6%E5%AE%A4%E9%95%BF%E8%BD%B4%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-027', title: '胸骨旁右心室流出道切面', sub: '2024.09.16 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E4%B8%B4%E5%BA%8A/us_0904_XGP3%E8%83%B8%E9%AA%A8%E6%97%81%E5%8F%B3%E5%BF%83%E5%AE%A4%E6%B5%81%E5%87%BA%E9%81%93%E5%88%87%E9%9D%A2%E6%94%B9.mp4',
+  },
+  {
+    id: 'ph-028', title: '胸骨旁左心室乳头肌水平短轴切面', sub: '2024.03.07 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_XGP6%E8%83%B8%E9%AA%A8%E6%97%81%E5%B7%A6%E5%BF%83%E5%AE%A4%E4%B9%B3%E5%A4%B4%E8%82%8C%E6%B0%B4%E5%B9%B3%E7%9F%AD%E8%BD%B4%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-029', title: '心尖二腔切面', sub: '2024.03.07 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0928_%E5%BF%83%E5%B0%96%E4%BA%8C%E8%85%94%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-030', title: '剑突下双心房切面', sub: '2024.03.07 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E4%B8%B4%E5%BA%8A/us_0904_JX5%E5%89%91%E4%B8%8B%E5%8F%8C%E5%BF%83%E6%88%BF%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-031', title: '剑突下右心室流出道切面', sub: '2024.03.07 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_JX4%E5%89%91%E4%B8%8B%E5%8F%B3%E5%BF%83%E5%AE%A4%E6%B5%81%E5%87%BA%E9%81%93%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-032', title: '胸骨旁切面体位', sub: '2024.08.08 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_XGP0%E8%83%B8%E9%AA%A8%E6%97%81%E5%88%87%E9%9D%A2%E4%BD%93%E4%BD%8D.mp4',
+  },
+  {
+    id: 'ph-033', title: '剑突下左心室流出道长轴切面', sub: '2024.03.07 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_JX3%E5%89%91%E4%B8%8B%E5%B7%A6%E5%BF%83%E5%AE%A4%E6%B5%81%E5%87%BA%E9%81%93%E9%95%BF%E8%BD%B4%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-034', title: '胸骨旁左心室心尖水平短轴切面', sub: '2024.03.07 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0904_XGP7%E8%83%B8%E9%AA%A8%E6%97%81%E5%B7%A6%E5%BF%83%E5%AE%A4%E5%BF%83%E5%B0%96%E6%B0%B4%E5%B9%B3%E7%9F%AD%E8%BD%B4%E5%88%87%E9%9D%A2.mp4',
+  },
+  {
+    id: 'ph-035', title: '剑下切面体位', sub: '2024.02.08 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/us_0928_%E5%89%91%E4%B8%8B%E5%88%87%E9%9D%A2%E4%BD%93%E4%BD%8D.mp4',
+  },
+  { g: '③ 定量与应变快捷操作（1–5 分钟）' },
+  {
+    id: 'ph-036', title: 'Heart Model三维心功能定量系统', sub: '2024.02.29 · 操作短片 · 4 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/%E6%88%90%E5%93%81-%E4%B8%80%E4%B8%AA.mp4',
+  },
+  {
+    id: 'ph-037', title: 'PISA(MR)操作流程', sub: '2024.01.31 · 微课堂 · 3 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/PISA(MR)%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B.mp4',
+  },
+  {
+    id: 'ph-038', title: 'AutoStrain LV操作', sub: '2024.10.23 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/AutoStrain%20LV/AutoStrain%20LV%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-039', title: '左房容积指数', sub: '2024.01.31 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/08-%E5%B7%A6%E6%88%BF%E5%AE%B9%E7%A7%AF%E6%8C%87%E6%95%B0-HD.mp4',
+  },
+  {
+    id: 'ph-040', title: 'TMAD快捷操作', sub: '2024.01.29 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/TMAD%E5%BF%AB%E6%8D%B7%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-041', title: 'a2DQ快捷操作', sub: '2024.01.29 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/a2DQ%E5%BF%AB%E6%8D%B7%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-042', title: '整体纵向应变（GLS）快捷操作', sub: '2024.01.30 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/3.%20%E6%95%B4%E4%BD%93%E7%BA%B5%E5%90%91%E5%BA%94%E5%8F%98(GLS)%E5%BF%AB%E6%8D%B7%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-043', title: 'Heart Model 快捷操作', sub: '2024.02.24 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/1.HeartModel%20%E5%BF%AB%E6%8D%B7%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-044', title: 'Tei指数公式的添加', sub: '2024.01.27 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/Tei%E6%8C%87%E6%95%B0%E5%85%AC%E5%BC%8F%E7%9A%84%E6%B7%BB%E5%8A%A0.mp4',
+  },
+  {
+    id: 'ph-045', title: '超声心动图扫查', sub: '2024.01.26 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/us_0627_%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%88%90%E5%93%81.mp4',
+  },
+  {
+    id: 'ph-046', title: 'E/E’测量的快捷操作', sub: '2024.10.24 · 讲座 · 2 分钟',
+    url: 'https://img02.ma.scrmtech.com/cms/1744274886015_E%E6%AF%94E%27%E7%9A%84%E5%BF%AB%E6%8D%B7%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-047', title: '心脏彩色M型的快捷操作', sub: '2024.01.27 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/%E5%BF%83%E8%84%8F%E5%BD%A9%E8%89%B2M%E5%9E%8B%E7%9A%84%E5%BF%AB%E6%8D%B7%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-048', title: 'AutoStrain RV操作', sub: '2024.01.03 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/AutoStrain%20RV/AutoStrain%20RV%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-049', title: 'AutoStrain RV简介', sub: '2024.03.07 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/AutoStrain%20RV/AutoStrain%20RV%E7%AE%80%E4%BB%8B.mp4',
+  },
+  {
+    id: 'ph-050', title: 'AutoStrain LA操作', sub: '2024.06.19 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/AutoStrain%20LA/AutoStrain%20LA%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-051', title: 'AutoStrain LA简介', sub: '2024.05.26 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/AutoStrain%20LA/AutoStrain%20LA%E7%AE%80%E4%BB%8B.mp4',
+  },
+  {
+    id: 'ph-052', title: 'AutoStrain LV简介', sub: '2024.02.13 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/AutoStrain%20LV/AutoStrain%20LV%E7%AE%80%E4%BB%8B.mp4',
+  },
+  {
+    id: 'ph-053', title: '双屏术中模式的使用方法', sub: '2024.01.21 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/%C3%8B%C2%AB%C3%86%C3%81%C3%8A%C3%B5%C3%96%C3%90%C3%84%C2%A3%C3%8A%C2%BD%C2%B5%C3%84%C3%8A%C2%B9%C3%93%C3%83%C2%B7%C2%BD%C2%B7%C2%A8.mp4',
+  },
+  {
+    id: 'ph-054', title: 'AutoStrain RV总结', sub: '2024.03.06 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/AutoStrain%20RV/AutoStrain%20RV%E6%80%BB%E7%BB%93.mp4',
+  },
+  {
+    id: 'ph-055', title: 'AutoStrain LV总结', sub: '2024.03.07 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/AutoStrain%20LV/AutoStrain%20LV%20%E6%80%BB%E7%BB%93.mp4',
+  },
+  {
+    id: 'ph-056', title: 'AutoStrain LA总结', sub: '2024.03.14 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/AutoStrain%20LA/AutoStrain%20LA%E6%80%BB%E7%BB%93.mp4',
+  },
+  { g: '④ 三维 · 多平面 · 心腔重建' },
+  {
+    id: 'ph-057', title: '飞利浦3D多平面技术的临床应用及操作技巧', sub: '2022.07.25 · 云教室 · 45 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E9%A3%9E%E5%88%A9%E6%B5%A63D%E5%A4%9A%E5%B9%B3%E9%9D%A2%E6%8A%80%E6%9C%AF%E7%9A%84%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%8A%80%E5%B7%A7_v2.mp4',
+  },
+  {
+    id: 'ph-058', title: '矩阵心脏三维图像获取及切割', sub: '2022.10.24 · 云教室 · 37 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E7%9F%A9%E9%98%B5%E5%BF%83%E8%84%8F%E4%B8%89%E7%BB%B4%E8%8E%B7%E5%8F%96%E5%8F%8A%E5%88%87%E5%89%B2.mp4',
+  },
+  {
+    id: 'ph-059', title: 'TEE三维图像存图及格式说明', sub: '2025.12.08 · 微课堂 · 5 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/2025%E5%B9%B4%E5%BE%AE%E8%AF%BE%E5%A0%82%20-TEE%E4%B8%89%E7%BB%B4%E5%9B%BE%E5%83%8F%E5%AD%98%E5%9B%BE%E5%8F%8A%E6%A0%BC%E5%BC%8F%E8%AF%B4%E6%98%8E.mp4',
+  },
+  {
+    id: 'ph-060', title: 'MultiVue- AutoDepth&Layout操作步骤2', sub: '2024.02.27 · 微课堂 · 4 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/MultiVue-2%EF%BC%9AResference%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4-1.mp4',
+  },
+  {
+    id: 'ph-061', title: 'MultiVue- AutoDepth&Layout操作步骤1', sub: '2024.02.27 · 微课堂 · 3 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/MultiVue-1%EF%BC%9AAuto%20Depth&Layout%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4.mp4',
+  },
+  {
+    id: 'ph-062', title: 'xPlane-双平面Simpson心功能测量步骤', sub: '2024.02.26 · 微课堂 · 3 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/xPlane-2%EF%BC%9A%E5%8F%8C%E5%B9%B3%E9%9D%A2Simpson%E5%BF%83%E5%8A%9F%E8%83%BD%E6%B5%8B%E9%87%8F%E6%AD%A5%E9%AA%A4.mp4',
+  },
+  {
+    id: 'ph-063', title: 'TrueVue- TouchVue操作步骤', sub: '2024.02.25 · 微课堂 · 3 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/TrueVue-2%EF%BC%9ATouchVue%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4_1.mp4',
+  },
+  {
+    id: 'ph-064', title: 'TrueVue- Glass采图要点及操作步骤', sub: '2024.02.25 · 微课堂 · 3 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/TrueVue-1%EF%BC%9AGlass%E9%87%87%E5%9B%BE%E8%A6%81%E7%82%B9%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4.mp4',
+  },
+  {
+    id: 'ph-065', title: 'DHM单心动周期操作流程', sub: '2024.02.24 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/2022%E5%B9%B4%E4%B8%8A%E6%96%B0/DHM%E5%8D%95%E5%BF%83%E5%8A%A8%E5%91%A8%E6%9C%9F%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B.mp4',
+  },
+  {
+    id: 'ph-066', title: 'xPlane-基本操作步骤及应用实例介绍', sub: '2024.02.26 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/xPlane-1%EF%BC%9A%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4%E5%8F%8A%E5%BA%94%E7%94%A8%E5%AE%9E%E4%BE%8B%E4%BB%8B%E7%BB%8D.mp4',
+  },
+  {
+    id: 'ph-067', title: 'MaxVue快捷操作', sub: '2024.01.22 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/MaxVue%E5%BF%AB%E6%8D%B7%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-068', title: 'iCrop的快捷应用', sub: '2024.02.25 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/iCrop%E7%9A%84%E5%BF%AB%E6%8D%B7%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-069', title: '3D ZOOM快捷应用', sub: '2024.02.25 · 操作短片 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/3D%20ZOOM%E5%BF%AB%E6%8D%B7%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-070', title: '3D AutoRV操作', sub: '2024.02.23 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/3D%20AutoRV/3D%20AutoRV%E6%93%8D%E4%BD%9C.mp4',
+  },
+  {
+    id: 'ph-071', title: '3D AutoRV简介', sub: '2024.02.23 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/3D%20AutoRV/3D%20AutoRV%E7%AE%80%E4%BB%8B.mp4',
+  },
+  {
+    id: 'ph-072', title: 'xPlane的快捷应用', sub: '2024.02.26 · 微课堂 · 2 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/%E6%8A%80%E6%9C%AF/xPlane%E7%9A%84%E5%BF%AB%E6%8D%B7%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-073', title: 'DHM操作流程', sub: '2024.02.24 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/2022%E5%B9%B4%E4%B8%8A%E6%96%B0/DHM%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B.mp4',
+  },
+  {
+    id: 'ph-074', title: 'iRotate的快捷应用', sub: '2024.02.25 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/iRotate%E7%9A%84%E5%BF%AB%E6%8D%B7%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-075', title: '3D AutoRV总结', sub: '2024.02.23 · 微课堂 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E5%BE%AE%E8%AF%BE%E5%A0%82/3D%20AutoRV/3D%20AutoRV%E6%80%BB%E7%BB%93.mp4',
+  },
+  {
+    id: 'ph-076', title: '导出心脏三维AVI格式数据', sub: '2024.02.22 · 操作短片 · 1 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/%E5%AF%BC%E5%87%BA%E5%BF%83%E8%84%8F%E4%B8%89%E7%BB%B4AVI%E6%A0%BC%E5%BC%8F%E6%95%B0%E6%8D%AE.mp4',
+  },
+  { g: '⑤ 瓣膜病 · TEE · 结构性心脏病介入' },
+  {
+    id: 'ph-077', title: '瓣膜之声', sub: '2025.03.19 · 百家讲坛 · 1 小时 54 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/3.19-%E7%93%A3%E8%86%9C%E4%B9%8B%E5%A3%B0.mp4',
+  },
+  {
+    id: 'ph-078', title: '结构性心脏病介入治疗 经食管超声心动图术前筛查规范建议 ASE指南解读', sub: '2021.09.08 · 百家讲坛 · 1 小时 31 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E7%BB%93%E6%9E%84%E6%80%A7%E5%BF%83%E8%84%8F%E7%97%85%E4%BB%8B%E5%85%A5%E6%B2%BB%E7%96%97%20%E7%BB%8F%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%9C%AF%E5%89%8D%E7%AD%9B%E6%9F%A5%E8%A7%84%E8%8C%83%E5%BB%BA%E8%AE%AE%20ASE%E6%8C%87%E5%8D%97%E8%A7%A3%E8%AF%BB.mp4',
+  },
+  {
+    id: 'ph-079', title: '经食道超声在二尖瓣成形中的临床应用', sub: '2024.02.16 · 操作短片 · 1 小时 16 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/1583926250_1583930820.mp4',
+  },
+  {
+    id: 'ph-080', title: '右心瓣膜反流的超声评价与治疗策略', sub: '2021.10.20 · 百家讲坛 · 1 小时 8 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%8F%B3%E5%BF%83%E7%93%A3%E8%86%9C%E5%8F%8D%E6%B5%81%E7%9A%84%E8%B6%85%E5%A3%B0%E8%AF%84%E4%BB%B7%E4%B8%8E%E6%B2%BB%E7%96%97%E7%AD%96%E7%95%A5.mp4',
+  },
+  {
+    id: 'ph-081', title: 'TEE在介入术中应用', sub: '2024.02.09 · 操作短片 · 1 小时 3 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/1542799835_1542803681.mp4',
+  },
+  {
+    id: 'ph-082', title: '经食管超声心动图基础及规范', sub: '2024.01.03 · 操作短片 · 1 小时 2 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/1568201651_1568205420.mp4',
+  },
+  {
+    id: 'ph-083', title: 'TEE与非心脏手术-非诊断性应用前景', sub: '2024.02.05 · 操作短片 · 60 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/1583753370_1583756937.mp4',
+  },
+  {
+    id: 'ph-084', title: '经食道超声心动图（TEE）在二尖瓣手术中的应用', sub: '2022.05.25 · 百家讲坛 · 59 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/Medvcom/2022.5.25%20%E7%BB%8F%E9%A3%9F%E9%81%93%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%EF%BC%88TEE%EF%BC%89%E5%9C%A8%E4%BA%8C%E5%B0%96%E7%93%A3%E6%89%8B%E6%9C%AF%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-085', title: '心腔视界，豁然开朗—实时三维超声心动图在结构性心脏病的应用价值', sub: '2020.03.18 · 百家讲坛 · 58 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%BF%83%E8%85%94%E8%A7%86%E7%95%8C%EF%BC%8C%E8%B1%81%E7%84%B6%E5%BC%80%E6%9C%97%E2%80%94%E5%AE%9E%E6%97%B6%E4%B8%89%E7%BB%B4%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%9C%A8%E7%BB%93%E6%9E%84%E6%80%A7%E5%BF%83%E8%84%8F%E7%97%85%E7%9A%84%E5%BA%94%E7%94%A8%E4%BB%B7%E5%80%BC.mp4',
+  },
+  {
+    id: 'ph-086', title: '结构性心脏病介入时代对三尖瓣反流的新认识', sub: '2023.08.02 · 百家讲坛 · 54 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E7%BB%93%E6%9E%84%E6%80%A7%E5%BF%83%E8%84%8F%E7%97%85%E4%BB%8B%E5%85%A5%E6%97%B6%E4%BB%A3%E5%AF%B9%E4%B8%89%E5%B0%96%E7%93%A3%E5%8F%8D%E6%B5%81%E7%9A%84%E6%96%B0%E8%AE%A4%E8%AF%86.mp4',
+  },
+  {
+    id: 'ph-087', title: '三维食管超声在新型二尖瓣支架瓣膜植入手术中的应用', sub: '2022.03.16 · 百家讲坛 · 54 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E4%B8%89%E7%BB%B4%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%9C%A8%E6%96%B0%E5%9E%8B%E4%BA%8C%E5%B0%96%E7%93%A3%E6%94%AF%E6%9E%B6%E7%93%A3%E8%86%9C%E6%A4%8D%E5%85%A5%E6%89%8B%E6%9C%AF%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-088', title: '实时三维经食道超声在瓣膜病介入治疗中的应用', sub: '2024.01.09 · 操作短片 · 53 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/1575459195_1575462420.mp4',
+  },
+  {
+    id: 'ph-089', title: 'TEE引导下结构性心脏病介入治疗', sub: '2022.10.19 · 百家讲坛 · 53 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/TEE%E5%BC%95%E5%AF%BC%E4%B8%8B%E7%BB%93%E6%9E%84%E6%80%A7%E5%BF%83%E8%84%8F%E7%97%85%E4%BB%8B%E5%85%A5%E6%B2%BB%E7%96%97.mp4',
+  },
+  {
+    id: 'ph-090', title: '超声心动图在二尖瓣介入术中的应用-昨天· 今天· 明天', sub: '2021.05.19 · 百家讲坛 · 51 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%9C%A8%E4%BA%8C%E5%B0%96%E7%93%A3%E4%BB%8B%E5%85%A5%E6%9C%AF%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8-%E6%98%A8%E5%A4%A9%C2%B7%20%E4%BB%8A%E5%A4%A9%C2%B7%20%E6%98%8E%E5%A4%A9.mp4',
+  },
+  {
+    id: 'ph-091', title: '经食道超声心动图在心脏手术中应用的体会', sub: '2024.03.07 · 操作短片 · 50 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/%E6%A2%81%E6%9D%B0%E8%B4%A4222222mp4.mp4',
+  },
+  {
+    id: 'ph-092', title: '经食道超声在急危重症麻醉手术中的应用', sub: '2022.04.13 · 百家讲坛 · 47 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/Medvcom/2022.4.13%20%E7%BB%8F%E9%A3%9F%E9%81%93%E8%B6%85%E5%A3%B0%E5%9C%A8%E6%80%A5%E5%8D%B1%E9%87%8D%E7%97%87%E9%BA%BB%E9%86%89%E6%89%8B%E6%9C%AF%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-093', title: '3DTEE在瓣膜病微创介入治疗中的应用', sub: '2021.08.11 · 百家讲坛 · 45 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/3DTEE%E5%9C%A8%E7%93%A3%E8%86%9C%E7%97%85%E5%BE%AE%E5%88%9B%E4%BB%8B%E5%85%A5%E6%B2%BB%E7%96%97%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-094', title: '经食管超声心动图TEE-在心血管急重症的应用', sub: '2023.09.20 · 百家讲坛 · 45 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E7%BB%8F%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BETEE-%E5%9C%A8%E5%BF%83%E8%A1%80%E7%AE%A1%E6%80%A5%E9%87%8D%E7%97%87%E7%9A%84%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-095', title: '经导管主动脉瓣置入术超声心动图检查指南解读', sub: '2024.04.24 · 百家讲坛 · 45 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E7%BD%AE%E5%85%A5%E6%9C%AF%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%A3%80%E6%9F%A5%E6%8C%87%E5%8D%97%E8%A7%A3%E8%AF%BB.mp4',
+  },
+  {
+    id: 'ph-096', title: '3D-TEE在临床及科研中的应用', sub: '2023.03.15 · 百家讲坛 · 38 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/3D-TEE%E5%9C%A8%E4%B8%B4%E5%BA%8A%E5%8F%8A%E7%A7%91%E7%A0%94%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-097', title: '超声心动图在TAVR中的应用', sub: '2022.06.15 · 百家讲坛 · 36 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/Medvcom/2022.6.15%20%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%9C%A8TAVR%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-098', title: '二尖瓣缘对缘修复(TEER)术前经食道超声筛查要点', sub: '2025.12.03 · 百家讲坛 · 32 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/2025-12-03%20%E9%A3%9E%E5%88%A9%E6%B5%A6-%E8%B5%B5%E5%BD%A9%E6%98%8E%E8%80%81%E5%B8%88.mp4',
+  },
+  {
+    id: 'ph-099', title: '超声在纯主动脉反流TAVI中的应用', sub: '2024.09.11 · 百家讲坛 · 32 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/2024.9.11-%E8%B6%85%E5%A3%B0%E5%9C%A8%E7%BA%AF%E4%B8%BB%E5%8A%A8%E8%84%89%E5%8F%8D%E6%B5%81TAVI%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-100', title: '主动脉瓣反流临床评估和超声心动图指南解析', sub: '2025.03.12 · 百家讲坛 · 31 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%89%AA%E8%BE%91-3.12-%E5%AD%99%E9%B9%8F%E6%B6%9B-%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E5%8F%8D%E6%B5%81%E4%B8%B4%E5%BA%8A%E8%AF%84%E4%BC%B0%E5%92%8C%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%8C%87%E5%8D%97%E8%A7%A3%E6%9E%90.mp4',
+  },
+  {
+    id: 'ph-101', title: '经导管左心耳封堵术(LAAC)飞利浦TEE解决方案', sub: '2025.03.24 · 云教室 · 28 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/2025.3.24%E7%BB%8F%E5%AF%BC%E7%AE%A1%E5%B7%A6%E5%BF%83%E8%80%B3%E5%B0%81%E5%A0%B5%E6%9C%AF%EF%BC%88LAAC%EF%BC%89%E9%A3%9E%E5%88%A9%E6%B5%A6TEE%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%20%E9%BB%84%E5%B0%8F%E6%9D%BE.mp4',
+  },
+  {
+    id: 'ph-102', title: '二尖瓣结构评估的临床价值及操作流程', sub: '2025.05.26 · 云教室 · 25 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E4%BA%8C%E5%B0%96%E7%93%A3%E7%BB%93%E6%9E%84%E8%AF%84%E4%BC%B0%E7%9A%84%E4%B8%B4%E5%BA%8A%E4%BB%B7%E5%80%BC%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B-%E5%AD%9F%E5%BA%86%E4%BD%B3.mp4',
+  },
+  { g: '⑥ 心功能定量 · 应变 · 心腔测量' },
+  {
+    id: 'ph-103', title: '左心房功能的超声评价与心房衰竭和相关疾病', sub: '2025.05.14 · 百家讲坛 · 1 小时 10 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/5.14-%E5%8D%97%E9%98%B3%E5%B8%82%E4%B8%AD%E5%BF%83%E5%8C%BB%E9%99%A2-%E4%B8%81%E6%97%AD%E8%90%8C-%E8%A7%86%E9%A2%91.mp4',
+  },
+  {
+    id: 'ph-104', title: '中国成人超声心动图正常参考值', sub: '2018.09.19 · 百家讲坛 · 1 小时 4 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E4%B8%AD%E5%9B%BD%E6%88%90%E4%BA%BA%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%AD%A3%E5%B8%B8%E5%8F%82%E8%80%83%E5%80%BC.mp4',
+  },
+  {
+    id: 'ph-105', title: '中国健康孕妇超声心动图正常参考值及TMAD应用初步探讨', sub: '2024.05.29 · 讲座 · 54 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/bizconf/2024.5.29%E9%A3%9E%E5%88%A9%E6%B5%A6-%E4%B8%AD%E5%9B%BD%E5%81%A5%E5%BA%B7%E5%AD%95%E5%A6%87%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%AD%A3%E5%B8%B8%E5%8F%82%E8%80%83%E5%80%BC%E5%8F%8ATMAD%E5%BA%94%E7%94%A8%E5%88%9D%E6%AD%A5%E6%8E%A2%E8%AE%A8%E7%9B%B4%E6%92%AD%E8%A7%86%E9%A2%91.mp4',
+  },
+  {
+    id: 'ph-106', title: '超声评估心脏功能', sub: '2020.09.02 · 百家讲坛 · 52 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E8%B6%85%E5%A3%B0%E8%AF%84%E4%BC%B0%E5%BF%83%E8%84%8F%E5%8A%9F%E8%83%BD.mp4',
+  },
+  {
+    id: 'ph-107', title: '超声心动图心腔定量评价的指南与进展', sub: '2024.02.02 · 操作短片 · 49 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/1547033397_1547036399.mp4',
+  },
+  {
+    id: 'ph-108', title: 'PISA 原理、误区及应用（35 分钟）',
+    sub: '2026.03.23 · 云教室 · 36 分钟 · 720p 站内转存（原片 1080p 692 MB）',
+    url: PHILIPS_PISA,
+  },
+  {
+    id: 'ph-109', title: '心脏同步性超声造影评估方法及定量工具', sub: '2024.03.14 · 操作短片 · 37 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/PoC/1577102422_1577104652.mp4',
+  },
+  {
+    id: 'ph-110', title: '右心功能评价及测量的标准化建议', sub: '2022.07.20 · 百家讲坛 · 36 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/Medvcom/2022.7.20%20%E5%8F%B3%E5%BF%83%E5%8A%9F%E8%83%BD%E8%AF%84%E4%BB%B7%E5%8F%8A%E6%B5%8B%E9%87%8F%E7%9A%84%E6%A0%87%E5%87%86%E5%8C%96%E5%BB%BA%E8%AE%AE.mp4',
+  },
+  {
+    id: 'ph-111', title: 'LV/LA/RV应变分析图像采集要求及操作规范', sub: '2024.10.28 · 云教室 · 36 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/10.28-LV%20LA%20RV%20%E5%BA%94%E5%8F%98%E5%88%86%E6%9E%90%E5%9B%BE%E5%83%8F%E9%87%87%E9%9B%86%E8%A6%81%E6%B1%82%E5%8F%8A%E6%93%8D%E4%BD%9C%E8%A7%84%E8%8C%83--%E7%8E%8B%E5%AE%9C%E5%90%9B_1.mp4',
+  },
+  {
+    id: 'ph-112', title: 'PISA 原理、误区及应用（35 分钟）', sub: '2026.03.23 · 云教室 · 36 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/2026.3.23%20PISA%E5%8E%9F%E7%90%86%EF%BC%8C%E8%AF%AF%E5%8C%BA%E5%8F%8A%E5%BA%94%E7%94%A8-%E5%BE%90%E5%AD%90%E7%89%B9.mp4',
+  },
+  {
+    id: 'ph-113', title: 'Heart model的存图与分析', sub: '2018.10.11 · 云教室 · 35 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/Heart%20model%E7%9A%84%E5%AD%98%E5%9B%BE%E4%B8%8E%E5%88%86%E6%9E%90.mp4',
+  },
+  {
+    id: 'ph-114', title: '心功能的评价方法及操作流程', sub: '2018.08.16 · 云教室 · 35 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E5%BF%83%E5%8A%9F%E8%83%BD%E7%9A%84%E8%AF%84%E4%BB%B7%E6%96%B9%E6%B3%95%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B.mp4',
+  },
+  {
+    id: 'ph-115', title: '左室功能评估及飞利浦定量技术应用', sub: '2022.06.27 · 云教室 · 34 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E5%B7%A6%E5%AE%A4%E5%8A%9F%E8%83%BD%E8%AF%84%E4%BC%B0%E5%8F%8A%E9%A3%9E%E5%88%A9%E6%B5%A6%E5%AE%9A%E9%87%8F%E6%8A%80%E6%9C%AF%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-116', title: 'TMAD的操作规范及临床应用', sub: '2024.05.27 · 云教室 · 28 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/TMAD%E7%9A%84%E6%93%8D%E4%BD%9C%E8%A7%84%E8%8C%83%E5%8F%8A%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-117', title: 'a2DQ 左心功能定量参数解读', sub: '2019.04.22 · 云教室 · 26 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/a2DQ%20%E5%B7%A6%E5%BF%83%E5%8A%9F%E8%83%BD%E5%AE%9A%E9%87%8F%E5%8F%82%E6%95%B0%E8%A7%A3%E8%AF%BB.mp4',
+  },
+  {
+    id: 'ph-118', title: 'AutoStrain的临床应用思考（黄鹤）', sub: '2024.01.03 · 讲座 · HLS 分片，需浏览器打开',
+    url: 'https://app.ma.scrmtech.com/meetings/MeetingPc/Detail?pf_uid=37564_2395&pf_type=3&id=99334',
+  },
+  {
+    id: 'ph-119', title: '新超声定量技术在心脏功能评估中的应用（许迪）', sub: '2024.01.16 · 讲座 · HLS 分片，需浏览器打开',
+    url: 'https://app.ma.scrmtech.com/meetings/MeetingPc/Detail?pf_uid=37564_2395&pf_type=3&id=99332',
+  },
+  { g: '⑦ 心肌病 · 造影 · 负荷与急重症' },
+  {
+    id: 'ph-120', title: '心肌病超声诊断', sub: '2019.06.05 · 百家讲坛 · 1 小时 39 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%BF%83%E8%82%8C%E7%97%85%E8%B6%85%E5%A3%B0%E8%AF%8A%E6%96%AD.mp4',
+  },
+  {
+    id: 'ph-121', title: '以科研之矛攻临床之盾——Liwen术式治疗肥厚型心肌病的成长之路', sub: '2020.09.11 · 百家讲坛 · 1 小时 26 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E4%BB%A5%E7%A7%91%E7%A0%94%E4%B9%8B%E7%9F%9B%E6%94%BB%E4%B8%B4%E5%BA%8A%E4%B9%8B%E7%9B%BE%E2%80%94%E2%80%94Liwen%E6%9C%AF%E5%BC%8F%E6%B2%BB%E7%96%97%E8%82%A5%E5%8E%9A%E5%9E%8B%E5%BF%83%E8%82%8C%E7%97%85%E7%9A%84%E6%88%90%E9%95%BF%E4%B9%8B%E8%B7%AF.mp4',
+  },
+  {
+    id: 'ph-122', title: '2023欧洲负荷超声心动图共识解读', sub: '2024.06.26 · 百家讲坛 · 1 小时 15 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/2024.6.26-%E5%BC%A0%E5%8D%9A-2023%E6%AC%A7%E6%B4%B2%E8%B4%9F%E8%8D%B7%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%85%B1%E8%AF%86%E8%A7%A3%E8%AF%BB.mp4',
+  },
+  {
+    id: 'ph-123', title: '从宏观到微观：心脏造影的临床应用', sub: '2018.10.24 · 百家讲坛 · 1 小时 10 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E4%BB%8E%E5%AE%8F%E8%A7%82%E5%88%B0%E5%BE%AE%E8%A7%82%EF%BC%9A%E5%BF%83%E8%84%8F%E9%80%A0%E5%BD%B1%E7%9A%84%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-124', title: '冠心病不容忽视的问题——冠脉微循环障碍', sub: '2020.07.15 · 百家讲坛 · 1 小时 5 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%86%A0%E5%BF%83%E7%97%85%E4%B8%8D%E5%AE%B9%E5%BF%BD%E8%A7%86%E7%9A%84%E9%97%AE%E9%A2%98%E2%80%94%E2%80%94%E5%86%A0%E8%84%89%E5%BE%AE%E5%BE%AA%E7%8E%AF%E9%9A%9C%E7%A2%8D.mp4',
+  },
+  {
+    id: 'ph-125', title: '心脏超声造影的临床应用', sub: '2020.06.12 · 百家讲坛 · 1 小时 5 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%BF%83%E8%84%8F%E8%B6%85%E5%A3%B0%E9%80%A0%E5%BD%B1%E7%9A%84%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-126', title: '心脏急症超声应用价值', sub: '2020.04.24 · 百家讲坛 · 1 小时 3 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%BF%83%E8%84%8F%E6%80%A5%E7%97%87%E8%B6%85%E5%A3%B0%E5%BA%94%E7%94%A8%E4%BB%B7%E5%80%BC.mp4',
+  },
+  {
+    id: 'ph-127', title: 'TOMTEC智能心血管解决方案在临床科研中的应用与展望', sub: '2022.06.24 · 百家讲坛 · 58 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/Medvcom/2022.6.24%20TOMTEC%E6%99%BA%E8%83%BD%E5%BF%83%E8%A1%80%E7%AE%A1%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E5%9C%A8%E4%B8%B4%E5%BA%8A%E7%A7%91%E7%A0%94%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8%E4%B8%8E%E5%B1%95%E6%9C%9B.mp4',
+  },
+  {
+    id: 'ph-128', title: '超声在肥厚型心肌病诊治中的价值', sub: '2022.02.16 · 百家讲坛 · 57 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E8%B6%85%E5%A3%B0%E5%9C%A8%E8%82%A5%E5%8E%9A%E5%9E%8B%E5%BF%83%E8%82%8C%E7%97%85%E8%AF%8A%E6%B2%BB%E4%B8%AD%E7%9A%84%E4%BB%B7%E5%80%BC.mp4',
+  },
+  {
+    id: 'ph-129', title: '左心室辅助装置治疗终末期心力衰竭围术期超声心动图评价指南 (2025版)解读', sub: '2025.02.26 · 百家讲坛 · 56 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/2.26%E5%B7%A6%E5%BF%83%E5%AE%A4%E8%BE%85%E5%8A%A9%E8%A3%85%E7%BD%AE%E6%B2%BB%E7%96%97%E7%BB%88%E6%9C%AB%E6%9C%9F%E5%BF%83%E5%8A%9B%E8%A1%B0%E7%AB%AD%E5%9B%B4%E6%9C%AF%E6%9C%9F%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E8%AF%84%E4%BB%B7%E6%8C%87%E5%8D%97%EF%BC%882025%E7%89%88%EF%BC%89%E8%A7%A3%E8%AF%BB.mp4',
+  },
+  {
+    id: 'ph-130', title: '心脏超声造影在慢性冠脉综合征诊疗决策中的作用', sub: '2020.07.08 · 百家讲坛 · 55 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%BF%83%E8%84%8F%E8%B6%85%E5%A3%B0%E9%80%A0%E5%BD%B1%E5%9C%A8%E6%85%A2%E6%80%A7%E5%86%A0%E8%84%89%E7%BB%BC%E5%90%88%E5%BE%81%E8%AF%8A%E7%96%97%E5%86%B3%E7%AD%96%E4%B8%AD%E7%9A%84%E4%BD%9C%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-131', title: '超声人工智能在心脏功能评价中的应用及展望', sub: '2022.07.27 · 百家讲坛 · 54 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/Medvcom/2022.7.27%20%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B_%E8%B6%85%E5%A3%B0%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E5%9C%A8%E5%BF%83%E8%84%8F%E5%8A%9F%E8%83%BD%E8%AF%84%E4%BB%B7%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8%E5%8F%8A%E5%B1%95%E6%9C%9B.mp4',
+  },
+  {
+    id: 'ph-132', title: 'ASE心脏造影指南解读及发展', sub: '2019.03.27 · 百家讲坛 · 53 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/ASE%E5%BF%83%E8%84%8F%E9%80%A0%E5%BD%B1%E6%8C%87%E5%8D%97%E8%A7%A3%E8%AF%BB%E5%8F%8A%E5%8F%91%E5%B1%95.mp4',
+  },
+  {
+    id: 'ph-133', title: '心脏白塞病的超声诊断体会', sub: '2024.08.07 · 百家讲坛 · 51 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/2024.8.7-%E7%8E%8B%E7%BB%A7%E4%BC%9F-%E5%BF%83%E8%84%8F%E7%99%BD%E5%A1%9E%E7%97%85%E7%9A%84%E8%B6%85%E5%A3%B0%E8%AF%8A%E6%96%AD.mp4',
+  },
+  {
+    id: 'ph-134', title: 'LVAD围术期的超声心动图评估', sub: '2024.10.16 · 百家讲坛 · 50 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/2024.10.16-%E9%BB%84%E9%B9%A4-LVAD%E5%9B%B4%E6%9C%AF%E6%9C%9F%E7%9A%84%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E8%AF%84%E4%BC%B0.mp4',
+  },
+  {
+    id: 'ph-135', title: '肥厚型心肌病激发/负荷超声心动图临床应用指南(2024版)解读', sub: '2025.08.13 · 百家讲坛 · 49 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/2025.8.13-%E4%BB%BB%E5%BB%BA%E4%B8%BD-%E8%82%A5%E5%8E%9A%E5%9E%8B%E5%BF%83%E8%82%8C%E7%97%85%E6%BF%80%E5%8F%91%20%E8%B4%9F%E8%8D%B7%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8%E6%8C%87%E5%8D%97(2024%E7%89%88)%E8%A7%A3%E8%AF%BB.mp4',
+  },
+  {
+    id: 'ph-136', title: '超声北斗星，启航“心”征程', sub: '2022.09.15 · 百家讲坛 · 45 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/Medvcom/2022.9.15%20%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B-%E8%B6%85%E5%A3%B0%E5%8C%97%E6%96%97%E6%98%9F%EF%BC%8C%E5%90%AF%E8%88%AA%E2%80%9C%E5%BF%83%E2%80%9D%E5%BE%81%E7%A8%8B.mp4',
+  },
+  {
+    id: 'ph-137', title: '负荷超声心动图操作流程', sub: '2024.03.25 · 云教室 · 38 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E8%B4%9F%E8%8D%B7%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B.mp4',
+  },
+  {
+    id: 'ph-138', title: '心脏超声造影的操作流程参数调节及定量分析', sub: '2023.08.28 · 云教室 · 37 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E5%BF%83%E8%84%8F%E8%B6%85%E5%A3%B0%E9%80%A0%E5%BD%B1%E7%9A%84%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B%E5%8F%82%E6%95%B0%E8%B0%83%E8%8A%82%E5%8F%8A%E5%AE%9A%E9%87%8F%E5%88%86%E6%9E%90.mp4',
+  },
+  {
+    id: 'ph-139', title: '主动脉夹层的超声诊断技巧', sub: '2024.09.18 · 百家讲坛 · 33 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/2024.9.18-%E9%99%88%E6%B5%B7%E7%87%95-%E4%B8%BB%E5%8A%A8%E8%84%89%E5%A4%B9%E5%B1%82%E7%9A%84%E8%B6%85%E5%A3%B0%E8%AF%8A%E6%96%AD%E6%8A%80%E5%B7%A7.mp4',
+  },
+  {
+    id: 'ph-140', title: '飞利浦负荷超声临床应用', sub: '2019.07.22 · 云教室 · 32 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E9%A3%9E%E5%88%A9%E6%B5%A6%E8%B4%9F%E8%8D%B7%E8%B6%85%E5%A3%B0%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8.mp4',
+  },
+  {
+    id: 'ph-141', title: '主动脉根部病变的超声诊断思路', sub: '2020.12.23 · 百家讲坛',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E4%B8%BB%E5%8A%A8%E8%84%89%E6%A0%B9%E9%83%A8%E7%97%85%E5%8F%98%E7%9A%84%E8%B6%85%E5%A3%B0%E8%AF%8A%E6%96%AD%E6%80%9D%E8%B7%AF.mp4',
+  },
+  {
+    id: 'ph-142', title: '人工智能在超声心动图应用的发展与未来（马春燕）', sub: '2024.02.08 · 讲座 · HLS 分片，需浏览器打开',
+    url: 'https://app.ma.scrmtech.com/meetings/MeetingPc/Detail?pf_uid=37564_2395&pf_type=3&id=99333',
+  },
+  {
+    id: 'ph-143', title: '多模态超声在心脏占位性病变诊断中的应用', sub: '2020.05.13 · 百家讲坛',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%A4%9A%E6%A8%A1%E6%80%81%E8%B6%85%E5%A3%B0%E5%9C%A8%E5%BF%83%E8%84%8F%E5%8D%A0%E4%BD%8D%E6%80%A7%E7%97%85%E5%8F%98%E8%AF%8A%E6%96%AD%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8.mp4',
+  },
+  { g: '⑧ 先心 · 胎儿 · 妊娠 · 其他' },
+  {
+    id: 'ph-144', title: '心脏超声远程教学与远程会诊——自媒体的作用', sub: '2025.06.11 · 百家讲坛 · 1 小时 9 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/6.11-%E5%BF%83%E8%84%8F%E8%B6%85%E5%A3%B0%E8%BF%9C%E7%A8%8B%E6%95%99%E5%AD%A6%E4%B8%8E%E8%BF%9C%E7%A8%8B%E4%BC%9A%E8%AF%8A-%E6%9D%A8%E5%A5%BD%E6%84%8F.mp4',
+  },
+  {
+    id: 'ph-145', title: '胎儿心脏连接关系异常的产前诊断思路', sub: '2020.12.23 · 百家讲坛 · 1 小时 9 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E8%83%8E%E5%84%BF%E5%BF%83%E8%84%8F%E8%BF%9E%E6%8E%A5%E5%85%B3%E7%B3%BB%E5%BC%82%E5%B8%B8%E7%9A%84%E4%BA%A7%E5%89%8D%E8%AF%8A%E6%96%AD%E6%80%9D%E8%B7%AF.mp4',
+  },
+  {
+    id: 'ph-146', title: '室间隔缺损的分型诊断与术后评估', sub: '2024.10.30 · 百家讲坛 · 1 小时 7 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/10%E6%9C%8830%E6%97%A5-%E8%8B%9F%E4%B8%AD%E5%B1%B1-%E5%AE%A4%E9%97%B4%E9%9A%94%E7%BC%BA%E6%8D%9F%E7%9A%84%E5%88%86%E5%9E%8B%E8%AF%8A%E6%96%AD%E4%B8%8E%E6%9C%AF%E5%90%8E%E8%AF%84%E4%BC%B0.mp4',
+  },
+  {
+    id: 'ph-147', title: '心脏和大血管3D打印——超人读心', sub: '2020.06.27 · 百家讲坛 · 1 小时 2 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%BF%83%E8%84%8F%E5%92%8C%E5%A4%A7%E8%A1%80%E7%AE%A13D%E6%89%93%E5%8D%B0%E2%80%94%E2%80%94%E8%B6%85%E4%BA%BA%E8%AF%BB%E5%BF%83.mp4',
+  },
+  {
+    id: 'ph-148', title: '先心病诊断思路', sub: '2018.07.25 · 百家讲坛 · 1 小时 0 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%85%88%E5%BF%83%E7%97%85%E8%AF%8A%E6%96%AD%E6%80%9D%E8%B7%AF.mp4',
+  },
+  {
+    id: 'ph-149', title: '肺静脉异位引流分型及超声诊断技巧（小儿及胎儿）', sub: '2021.09.22 · 百家讲坛 · 54 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E8%82%BA%E9%9D%99%E8%84%89%E5%BC%82%E4%BD%8D%E5%BC%95%E6%B5%81%E5%88%86%E5%9E%8B%E5%8F%8A%E8%B6%85%E5%A3%B0%E8%AF%8A%E6%96%AD%E6%8A%80%E5%B7%A7%EF%BC%88%E5%B0%8F%E5%84%BF%E5%8F%8A%E8%83%8E%E5%84%BF%EF%BC%89.mp4',
+  },
+  {
+    id: 'ph-150', title: '血液透析自体动静脉内瘘的超声检测', sub: '2019.01.22 · 百家讲坛 · 50 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E8%A1%80%E6%B6%B2%E9%80%8F%E6%9E%90%E8%87%AA%E4%BD%93%E5%8A%A8%E9%9D%99%E8%84%89%E5%86%85%E7%98%98%E7%9A%84%E8%B6%85%E5%A3%B0%E6%A3%80%E6%B5%8B.mp4',
+  },
+  {
+    id: 'ph-151', title: '超声心动图在妊娠期心血管疾病中的应用思考', sub: '2023.02.22 · 百家讲坛 · 47 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%9C%A8%E5%A6%8A%E5%A8%A0%E6%9C%9F%E5%BF%83%E8%A1%80%E7%AE%A1%E7%96%BE%E7%97%85%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8%E6%80%9D%E8%80%83.mp4',
+  },
+  {
+    id: 'ph-152', title: '改良乏氏动作在cTTE规范检测PFO的应用', sub: '2022.10.26 · 百家讲坛 · 47 分钟',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E6%94%B9%E8%89%AF%E4%B9%8F%E6%B0%8F%E5%8A%A8%E4%BD%9C%E5%9C%A8cTTE%E8%A7%84%E8%8C%83%E6%A3%80%E6%B5%8BPFO%E7%9A%84%E5%BA%94%E7%94%A8.mp4',
+  },
+];
+
 
 /**
  * 第三章 25 段切面视频。作为「实用超声规范化检查与操作（视频）」专辑的子条目：
@@ -4975,6 +5609,22 @@ const LINK_SECTIONS = [
         children: KT_VIDEOS,
       },
       {
+        id: 'philips',
+        title: '飞利浦云课堂 · 心脏超声讲座（视频）',
+        sub: '152 段 / 66 小时 · 十个心脏类目 · 按 8 个专题分组',
+        album: true,
+        note: '飞利浦超声云课堂公开回放，按 8 个专题排列：探头维护 / 标准切面 / 定量操作 / 三维与多平面 / '
+          + '瓣膜病与结构性心脏病介入 / 心功能定量 / 心肌病与造影 / 先心与胎儿。地址是飞利浦 OSS 原片直链'
+          + '（1080p 热链，非转存）；标注「HLS 分片」的 3 条需在浏览器打开官方页。',
+        links: [
+          {
+            n: '飞利浦云课堂 · 心脏应用全部课程',
+            url: 'https://app.ma.scrmtech.com/meetings/MeetingPc/index?category_id=30021&pf_uid=37564_2395&pf_type=3',
+          },
+        ],
+        children: PHILIPS_CLASS,
+      },
+      {
         id: 'tee-sv',
         title: 'TEE 标准 20 视图（中文）',
         sub: 'ASE/SCA 标准切面 · 带过场视频',
@@ -5003,12 +5653,6 @@ const LINK_SECTIONS = [
         title: 'TEE 标准视图速查表',
         sub: '探头角度 · 平面 · 对应结构 · 可打印（360 极速浏览器打开）',
         url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/TEE-cheat-sheet/index.htm',
-      },
-      {
-        id: 'pisa-lect',
-        title: 'PISA 原理、误区及应用（35 分钟）',
-        sub: '飞利浦云课堂 2026.3.23 · 徐子特 · 1080p 原片',
-        url: PHILIPS_PISA,
       },
     ],
   },

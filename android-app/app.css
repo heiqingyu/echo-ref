@@ -1066,6 +1066,17 @@ html, body {
   line-height: 1.5;
 }
 
+/* ★ v1.8.8 专辑分组小节标题（飞利浦专辑 152 段按 8 个专题分） */
+.album__g {
+  padding: 14px 14px 6px;
+  background: #f7f9fc;
+  border-bottom: 1px solid #f0f1f3;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: 0.3px;
+}
+
 .fx-item__a {
   flex: none;
   font-size: 18px;
