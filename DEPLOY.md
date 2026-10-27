@@ -149,12 +149,13 @@ git commit -m "心脏超声参考值 · 网页版首次发布"
 
 创建后会看到一个空仓库页面，上面有一段 `git remote add origin ...` 的命令。
 
-> **提示**：APK 文件（`EchoRef-v<版本号>.apk`，当前约 340 KB）也在仓库里。
-> 版本号每次功能改动都会递增（`android-app/VERSION` 是唯一来源），
-> 同签名覆盖安装即可升级。
-> 这个不影响 Pages 发布（Pages 只读 `docs/` 目录），放着也没关系 ——
-> 好处是以后想分享 APK，可以直接把仓库里这个文件的链接发出去。
-> 若不想公开 APK，把它加进 `.gitignore` 再提交即可。
+> **关于 APK**：`EchoRef-v<版本号>.apk` **不进仓库**（已在 `.gitignore` 里）。
+> 每次跑 `android-app/build-apk.bat` 都会在仓库根生成一份供本机安装，
+> 版本号递增（`android-app/VERSION` 是唯一来源），同签名覆盖安装即可升级。
+> APK 仅自用、不对外分发，所以也**不挂 GitHub Releases** ——
+> 对外只发小程序，网页版是自用 / 测试。
+> 若哪天要分享，`git add -f` 可临时提交（每份约占 1.1 MB 历史体积），
+> 或直接单独把 APK 文件发给对方。
 
 ---
 

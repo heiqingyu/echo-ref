@@ -32,6 +32,11 @@ android-app/assets/index.html
 #   需要预览时跑 `node build-www.js` 即可重新生成，字节与源码一致。
 www/index.html
 
+# ★ APK 仅自用、不对外分发（对外只发小程序），也不挂 GitHub Releases。
+#   build-apk.bat 的 finalize 仍会照常在仓库根生成并删旧版，供本机安装；
+#   gitignore 只影响是否提交，不影响构建产出。每份约 1.1 MB，不再进历史。
+EchoRef-v*.apk
+
 # ══════════ 签名私钥！绝对不要上传 ══════════
 # 泄露后他人可用你的名义签发 APK
 *.jks
