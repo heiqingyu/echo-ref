@@ -187,7 +187,7 @@ const EX = require(exPath);
 if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（切面图像与质控 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rcoupling,rvfail,rv-strain,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,hcm-stress,dse,hcm,amyloid,rcm-strain,dcm,athlete,fabry,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,lf-lg,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,coa-echo,mustard,fontan,as-switch,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 75 条（5 个分组）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rvfun,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,dse,hcm,infiltr,dcm,athlete,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,bubble,coa-echo,mustard,fontan,as-switch,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 70 条（5 个分组）');
 else bad('评估条目异常: ' + briefIds.join(','));
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
@@ -219,7 +219,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 80) ok('参考文献 80 条（7 条本站托管指南 PDF + 4 条中文指南免费全文 + 中国指南与综述 7 条 + 儿童正常值 5 条；已合并 4 条重复/占位条目）');
+if (EX.REFS.length === 83) ok('参考文献 83 条（新增 R81 2025 ESC/EACTS 瓣膜病指南、R82 2025 中国 LVAD 围术期超声指南、R83 2025 中国儿童冠脉 TTE 共识）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -615,8 +615,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
       }
     });
   });
-  (bridged.length === 75) ? ok('75 个判读条目全部挂上「相关计算」桥接')
-    : bad('桥接条目数 ' + bridged.length + '（期望 75）');
+  (bridged.length === 70) ? ok('70 个判读条目全部挂上「相关计算」桥接')
+    : bad('桥接条目数 ' + bridged.length + '（期望 70）');
   bridged.every(function (b) { return b.text.indexOf('公式集 → ') !== -1; })
     ? ok('桥接文案统一指向「公式集 → 组 · 计算器」')
     : bad('桥接文案格式不一致');
@@ -923,7 +923,7 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     ? ok('瓣膜组 4 条计算器（TR / PPM / TAVR 瓣环与 oversizing / 人工瓣术后），与原评估页无重复：' + valveRest)
     : bad('瓣膜组条目异常：' + valveRest);
   // 并入评估页的输入键必须带前缀，否则网页端全局 calcVal 会串值
-  [['mitral', ['mit_', 'mr_', 'wk']], ['aortic', ['as_', 'ar_']]].forEach(function (pair) {
+  [['mitral', ['mit_', 'mr_', 'wk']], ['aortic', ['as_', 'ar_', 'lflg']]].forEach(function (pair) {
     const id = pair[0];
     const b = briefs160.filter(x => x.id === id)[0];
     if (!b) { bad('缺少评估条目：' + id); return; }

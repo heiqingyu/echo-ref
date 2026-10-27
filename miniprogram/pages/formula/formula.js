@@ -545,43 +545,72 @@ Page({
       if (valid(v.rvs)) {
         parts.push('RV S′ ' + calc.fmt(v.rvs, 1) + ' cm/s（正常 >9.5）');
       }
-      out = parts.join('；');
-    } else if (gid === 'rcoupling') {
-      // —— 右室-肺动脉耦联：TAPSE / PASP ——
-      if (valid(v.tapse, v.paspv)) {
-        const rc = calc.tapsePasp(v.tapse, v.paspv);
-        out = 'TAPSE/PASP = ' + calc.fmt(rc.ratio, 2) + ' mm/mmHg · ' + rc.text;
+      // ★ v1.8.4：耦联并入本条（原 rcoupling 条目已删除），PASP 直接用上面的 TR + RAP 结果
+      if (valid(v.tapse)) {
+        const paspVal = (valid(v.tr) && rap !== null) ? calc.pasp(v.tr, rap) : null;
+        if (paspVal) {
+          const rc = calc.tapsePasp(v.tapse, paspVal);
+          parts.push('TAPSE/PASP ' + calc.fmt(rc.ratio, 2) + ' mm/mmHg（PASP ' +
+            calc.fmt(paspVal, 0) + '）· ' + rc.text);
+        } else {
+          parts.push('TAPSE ' + calc.fmt(v.tapse, 1) + ' mm（再填 TR 峰速 + IVC 即可算 TAPSE/PASP 耦联）');
+        }
       }
-    } else if (gid === 'lf-lg') {
-      // —— 主动脉瓣狭窄 LF-LG 判读 ——
-      const r = calc.asLflg({
-        lvef: v.lflgef, svi: v.lflgsvi, mpg: v.lflgmpg, ava: v.lflgava,
-        dsvi: v.lflgdsvi, dava: v.lflgdava,
-      });
+      out = parts.join('；');
+    } else if (gid === 'rvfun') {
+      // —— 右室功能：六指标积分 + 分段应变 + 收缩储备（v1.8.4 合并原 rvfail 与 rv-strain）——
       const parts = [];
-      if (r.text) parts.push(r.text);
-      if (r.flowReserve !== undefined) {
-        parts.push('SV 增幅 ' + calc.fmt((r.flowReserve - 1) * 100, 1) + '%（' +
-          (r.hasReserve ? '有收缩储备' : '无收缩储备') + '）');
-      }
-      if (r.dse) parts.push(r.dse);
-      out = parts.join('；');
-    } else if (gid === 'rvfail') {
-      // —— 右室功能分级（ASE 六指标积分）+ 应变 ——
       const r = calc.rvFuncScore({
         rvbase: v.rvfbase, fac: v.rvffac, tapse: v.rvftapse,
         rvs: v.rvfs, rvef: v.rvfe,
       });
-      const parts = [];
       if (r.n) {
         const bad = r.items.filter(function (i) { return i.bad; })
           .map(function (i) { return i.name; });
         parts.push(r.score + '/' + r.n + ' 项异常 → ' + r.text);
         if (bad.length) parts.push('异常项：' + bad.join('、'));
       }
-      if (valid(v.rvfws)) {
-        parts.push('RVFWS ' + calc.fmt(v.rvfws, 1) + '% · ' +
-          (v.rvfws <= -20 ? '正常' : v.rvfws <= -15 ? '轻度减低' : '明显减低（预后不良）'));
+      // 应变：填了三段就用分段平均，否则用手填的 RVFWS，避免同一数值报两次
+      const rs = calc.rvStrain({
+        base: v.rvsb, mid: v.rvsm, apex: v.rvsa, sep: v.rvssep, pasp: v.rvfpasp,
+      });
+      const fws = (rs.avg !== undefined) ? rs.avg : v.rvfws;
+      if (valid(fws)) {
+        parts.push('RVFWS ' + calc.fmt(fws, 1) + '% · ' +
+          (fws <= -20 ? '正常' : fws <= -15 ? '轻度减低' : fws <= -10 ? '中度减低' : '重度减低（预后不良）'));
+      }
+      if (rs.rvgls !== undefined) {
+        parts.push('RVGLS ' + calc.fmt(rs.rvgls, 1) + '%' +
+          (rs.sepLower ? '（室间隔受累更重，提示双室受累）' : ''));
+      }
+      // 反向梯度 / 心尖保留（ARVC 与慢性右室压力负荷的典型形态，v1.8.4 合并时补回）
+      if (rs.gradText) parts.push(rs.gradText);
+      if (rs.ratio !== undefined) {
+        parts.push('RVFWS/PASP ' + calc.fmt(rs.ratio, 2) + ' · ' + rs.coupling);
+      }
+      // 右室收缩储备（低剂量多巴酚丁胺负荷）
+      if (valid(v.rvr0, v.rvr1)) {
+        const rr = calc.rvReserve({
+          rest: v.rvr0, peak: v.rvr1,
+          tapse0: v.rvt0, tapse1: v.rvt1,
+          pasp0: v.rvfpasp, pasp1: v.rvp1,
+        });
+        if (rr.text) {
+          parts.push('收缩储备：RVFWS ' + calc.fmt(rr.rest, 1) + '%→' + calc.fmt(rr.peak, 1) +
+            '%（Δ' + (rr.delta >= 0 ? '+' : '') + calc.fmt(rr.delta, 1) + '）· ' + rr.text);
+        }
+        if (rr.tapseDelta !== undefined) {
+          parts.push('TAPSE ' + (rr.tapseDelta >= 0 ? '+' : '') + calc.fmt(rr.tapseDelta, 1) + ' mm（' +
+            (rr.tapseChange >= 0 ? '+' : '') + calc.fmt(rr.tapseChange, 0) + '%）' +
+            (rr.tapseOk ? ' · 支持储备保留' : ' · 未见明显增加'));
+        }
+        if (rr.couplingDelta !== undefined) {
+          parts.push('负荷后耦联 ' + calc.fmt(rr.ratio0, 2) + '→' + calc.fmt(rr.ratio1, 2) +
+            (rr.couplingDelta > 0 ? '（改善）' : rr.couplingDelta < 0 ? '（恶化）' : '（不变）'));
+        }
+        if (rr.afterloadOnly) {
+          parts.push('注意：PASP 升 ' + calc.fmt(rr.dpasp, 0) + ' mmHg 而 RVFWS 未涨，更像后负荷效应而非储备耗竭');
+        }
       }
       out = parts.join('；');
     } else if (gid === 'cp-rm') {
@@ -640,49 +669,7 @@ Page({
         if (g.byEroa !== g.byRvol) parts.push('EROA 与 RVol 不一致，取较重档');
       }
       out = parts.join('；');
-    } else if (gid === 'rv-strain') {
-      // —— 右室应变与 RVFWS 细化 ——
-      const r = calc.rvStrain({
-        base: v.rvsb, mid: v.rvsm, apex: v.rvsa, sep: v.rvssep, pasp: v.rvspasp,
-      });
-      const parts = [];
-      if (r.avg !== undefined) {
-        parts.push('RVFWS ' + calc.fmt(r.avg, 1) + '% → ' + r.gradeText);
-        parts.push(r.gradText);
-      }
-      if (r.rvgls !== undefined) {
-        parts.push('RVGLS ' + calc.fmt(r.rvgls, 1) + '%' +
-          (r.sepLower ? '（室间隔受累更重，提示双室受累）' : ''));
-      }
-      if (r.ratio !== undefined) {
-        parts.push('RVFWS/PASP ' + calc.fmt(r.ratio, 2) + ' · ' + r.coupling);
-      }
-      // 右室收缩储备（低剂量多巴酚丁胺负荷）
-      if (valid(v.rvr0, v.rvr1)) {
-        const rs = calc.rvReserve({
-          rest: v.rvr0, peak: v.rvr1,
-          tapse0: v.rvt0, tapse1: v.rvt1,
-          pasp0: v.rvspasp, pasp1: v.rvp1,
-        });
-        if (rs.text) {
-          parts.push('收缩储备：RVFWS ' + calc.fmt(rs.rest, 1) + '%→' + calc.fmt(rs.peak, 1) +
-            '%（Δ' + (rs.delta >= 0 ? '+' : '') + calc.fmt(rs.delta, 1) + '）· ' + rs.text);
-        }
-        if (rs.tapseDelta !== undefined) {
-          parts.push('TAPSE ' + (rs.tapseDelta >= 0 ? '+' : '') + calc.fmt(rs.tapseDelta, 1) + ' mm（' +
-            (rs.tapseChange >= 0 ? '+' : '') + calc.fmt(rs.tapseChange, 0) + '%）' +
-            (rs.tapseOk ? ' · 支持储备保留' : ' · 未见明显增加'));
-        }
-        if (rs.couplingDelta !== undefined) {
-          parts.push('负荷后耦联 ' + calc.fmt(rs.ratio0, 2) + '→' + calc.fmt(rs.ratio1, 2) +
-            (rs.couplingDelta > 0 ? '（改善）' : rs.couplingDelta < 0 ? '（恶化）' : '（不变）'));
-        }
-        if (rs.afterloadOnly) {
-          parts.push('注意：PASP 升 ' + calc.fmt(rs.dpasp, 0) + ' mmHg 而 RVFWS 未涨，更像后负荷效应而非储备耗竭');
-        }
-      }
-      out = parts.join('；');
-    } else if (gid === 'rcm-strain') {
+    } else if (gid === 'infiltr') {
       // —— 限制型心肌病 vs 淀粉样变：心尖保留比值 ——
       const r = calc.rcmStrain({
         base: v.rcmb, mid: v.rcmm, apex: v.rcma,
@@ -1296,6 +1283,21 @@ Page({
       }
       if (valid(v.as_avVmax) && v.as_avVmax >= 5) {
         parts.push('⚠ Vmax ≥5 m/s，属极重度线索');
+      }
+      // ③ 低流量低压差（v1.8.4：原「主动脉瓣狭窄 LF-LG 判读」条目并入本页）
+      if (valid(v.lflgef) || valid(v.lflgsvi) || valid(v.lflgmpg) || valid(v.lflgava)) {
+        const lf = calc.asLflg({
+          lvef: v.lflgef, svi: v.lflgsvi, mpg: v.lflgmpg, ava: v.lflgava,
+          dsvi: v.lflgdsvi, dava: v.lflgdava,
+        });
+        const lp = [];
+        if (lf.text) lp.push(lf.text);
+        if (lf.flowReserve !== undefined) {
+          lp.push('SV 增幅 ' + calc.fmt((lf.flowReserve - 1) * 100, 1) + '%（' +
+            (lf.hasReserve ? '有收缩储备' : '无收缩储备') + '）');
+        }
+        if (lf.dse) lp.push(lf.dse);
+        if (lp.length) parts.push('LF-LG ' + lp.join('；'));
       }
       out = parts.join('\n');
     } else if (gid === 'vcw') {

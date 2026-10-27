@@ -418,7 +418,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 80 条（7 条本站托管中文指南 PDF + 4 条中文指南免费全文 + 5 条儿童正常值）', EXD.REFS.length, 80, 0);
+  check('参考文献 83 条（新增 R81 2025 ESC/EACTS 瓣膜病指南、R82 2025 中国 LVAD 围术期超声指南、R83 2025 中国儿童冠脉 TTE 共识）', EXD.REFS.length, 83, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
@@ -546,7 +546,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 114 条（计算 42 + 判读 72；v1.8.3 三组合并后 −6，切面速查 / 瓣膜解剖 / 外链组不进目录）', nItems, 114, 0);
+  check('目录共 109 条（计算 42 + 判读 67；v1.8.4 四组合并 −6 再新增发泡试验 +1，切面速查 / 瓣膜解剖 / 外链组不进目录）', nItems, 109, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -728,13 +728,13 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('器械与介入组已拆散：CRT / LAD 进心腔组、LVAD 进急症组',
     ['crt', 'la'].every(id => dirById('chamber').items.some(i => i.id === id)) &&
     dirById('vascular').items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
-  check('心腔、心肌与应变 28 条（心腔 15 + 心肌病变 9 + CRT / LAD + 左心耳封堵 / CFR；舒张功能已并入 dfun）', dirById('chamber').items.length, 28, 0);
-  ['lv', 'rv', 'rcoupling', 'rvfail', 'rv-strain', 'strain', 'la-strain', 'peri', 'cp-rm', 'ctrcd'].forEach(id => {
+  check('心腔、心肌与应变 23 条（v1.8.4 四组合并后 −5：rcoupling 并入 rv、rvfail + rv-strain 合成 rvfun、hcm-stress 并入 hcm）', dirById('chamber').items.length, 23, 0);
+  ['lv', 'rv', 'rvfun', 'strain', 'la-strain', 'peri', 'cp-rm', 'ctrcd'].forEach(id => {
     check('心腔、应变与负荷含 ' + id,
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
   // 瓣膜评估组 = 9 条通用/专用计算 + 8 条判读 + 1 个解剖示意图（v1.4.4 起 AS/AR/MS/MR 并入两个评估页）
-  check('瓣膜评估组 16 条（4 计算 + 12 判读含器械介入；解剖示意图已移至「切面学习」）', dirById('valve').items.length, 16, 0);
+  check('瓣膜评估组 15 条（4 计算 + 11 判读含器械介入；v1.8.4 把 lf-lg 并入 aortic）', dirById('valve').items.length, 15, 0);
   // v1.4.9：VCW/RF/PR/AS 负荷/DVI/TAPSE-PASP/RAP 这些纯查表或已被评估页覆盖的也删了，只剩 2 条
   check('瓣膜评估组 4 条计算（tr / ppm / tavrsz / pvfu）',
     ['tr', 'ppm', 'tavrsz', 'pvfu']
@@ -751,14 +751,14 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirById('valve').items.some(i => i.id === 'tr' && i.kind === 'calc') ? 1 : 0, 1, 0);
   check('AS/AR/MS/MR 不再单列（已并入两个评估页）',
     ['as', 'ar', 'ms', 'mr'].every(id => !dirById('valve').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
-  ['mitral', 'aortic', 'lf-lg', 'ie'].forEach(id => {
+  ['mitral', 'aortic', 'ie'].forEach(id => {
     check('瓣膜评估组含判读条目 ' + id,
       dirById('valve').items.some(i => i.id === id && i.kind === 'brief') ? 1 : 0, 1, 0);
   });
   check('不存在重复的「瓣膜疾病评估」分组',
     dirs.filter(s => s.title.indexOf('瓣膜疾病') !== -1).length === 0 ? 1 : 0, 1, 0);
-  check('心肌病变 9 条已并入心腔组、不再单独成组',
-    ['hcm', 'amyloid', 'rcm-strain', 'dcm', 'athlete', 'fabry', 'arvc', 'myocarditis', 'sarcoid']
+  check('心肌病变 7 条已并入心腔组、不再单独成组（v1.8.4：淀粉样变 + 法布雷并入 infiltr）',
+    ['hcm', 'infiltr', 'dcm', 'athlete', 'arvc', 'myocarditis', 'sarcoid']
       .every(id => dirById('chamber').items.some(i => i.id === id)) &&
     !dirs.some(g => g.id === 'myopathy') ? 1 : 0, 1, 0);
   check('急症与特殊场景 15 条（大血管与急症 + 特殊人群 + 肺超声 + LVAD；肺高压判读已并入 mpap）', dirById('vascular').items.length, 15, 0);
@@ -766,7 +766,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病（含术后）14 条（10 判读 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率）', dirById('chd').items.length, 14, 0);
+  check('先天性心脏病（含术后）15 条（11 判读含发泡试验 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率）', dirById('chd').items.length, 15, 0);
   ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
     check('先天性心脏病含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
@@ -777,7 +777,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('先心术后含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('负荷试验 3 条已并入心腔组（运动负荷 + HCM 激发 + DSE）', dirById('chamber').items.filter(i => ['stress-echo','hcm-stress','dse'].indexOf(i.id) !== -1).length, 3, 0);
+  check('负荷试验 2 条已并入心腔组（运动负荷 + DSE；HCM 激发已并入 hcm）', dirById('chamber').items.filter(i => ['stress-echo','dse'].indexOf(i.id) !== -1).length, 2, 0);
   check('负荷试验含 stress-echo',
     dirById('chamber').items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
   check('瓣膜介入三条已归入瓣膜组（tr-interv / mv-interv / tavr）',
@@ -863,7 +863,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // —— 右心评估详情（已合并右心压力 / PH 概率 / 右室功能）——
   pgF.onLoad({ id: 'rv' });
   check('右心评估为 brief 模式', pgF.data.mode === 'brief' ? 1 : 0, 1, 0);
-  check('右心评估输入项 7 个（tr/ivc/prend/rvti2/eda/esa/rvs）', pgF.data.inputs.length, 7, 0);
+  check('右心评估输入项 8 个（tr/ivc/prend/rvti2/eda/esa/rvs/tapse）', pgF.data.inputs.length, 8, 0);
   check('右心评估含 IVC 塌陷选项', pgF.data.collapse.length, 3, 0);
   check('右心评估含 PH 征象选项', pgF.data.signs.length, 3, 0);
   // 设 TR=3.0, IVC=22 不塌陷 → RAP 15, PASP≈51 中重度
@@ -1056,10 +1056,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     lastM && lastM.text.indexOf('相关计算（通用量）') !== -1 ? 1 : 0, 1, 0);
   check('桥接指向公式集的瓣膜评估组',
     lastM && lastM.text.indexOf('瓣膜评估') !== -1 ? 1 : 0, 1, 0);
-  pgF.onLoad({ id: 'amyloid' });
+  pgF.onLoad({ id: 'infiltr' });
   pgF.onShow();
   const lastA = pgF.data.blocks[pgF.data.blocks.length - 1];
-  check('淀粉样变判读页指向 RAS 与 MDS',
+  check('浸润性心肌病判读页指向 RAS 与 MDS',
     lastA && /RAS/.test(lastA.text) && /应变离散度/.test(lastA.text) ? 1 : 0, 1, 0);
   pgF.onLoad({ id: 'ie' });
   pgF.onShow();
@@ -1137,38 +1137,42 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('GLS -22% 判为正常', /正常/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
   // —— v1.1.0 新增：右室应变 / 心尖保留 / 分流 / 可手术性 / LVAD / 负荷 PASP ——
-  check('右室应变条目已注册',
+  check('右室功能条目已注册（v1.8.4：rvfail + rv-strain 合并为 rvfun）',
     !!require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'))
-      .BRIEF_SECTIONS.reduce((a, s) => a.concat(s.items.map(i => i.id)), []).includes('rv-strain') ? 1 : 0, 1, 0);
+      .BRIEF_SECTIONS.reduce((a, s) => a.concat(s.items.map(i => i.id)), []).includes('rvfun') ? 1 : 0, 1, 0);
 
-  pgF.onLoad({ id: 'rv-strain' });
+  pgF.onLoad({ id: 'rvfun' });
   pgF.onShow();
-  pgF.data.inputs[0].value = '-12';
-  pgF.data.inputs[1].value = '-14';
-  pgF.data.inputs[2].value = '-19';
+  // 合并后字段顺序变了（多了「① 六指标」段），必须按键取索引，不能按下标写死
+  const idxK = function (k) {
+    return pgF.data.inputs.findIndex(function (x) { return x.key === k; });
+  };
+  pgF.data.inputs[idxK('rvsb')].value = '-12';
+  pgF.data.inputs[idxK('rvsm')].value = '-14';
+  pgF.data.inputs[idxK('rvsa')].value = '-19';
   pgF.refresh();
   check('RVFWS 三段平均 -15% 判轻度减低',
     /RVFWS -15\.0%/.test(pgF.data.out) && /轻度减低/.test(pgF.data.out) ? 1 : 0, 1, 0);
   check('基底-心尖反向梯度被识别',
     /反向梯度/.test(pgF.data.out) ? 1 : 0, 1, 0);
-  pgF.data.inputs[4].value = '45';   // PASP
+  pgF.data.inputs[idxK('rvfpasp')].value = '45';   // PASP
   pgF.refresh();
   check('RVFWS/PASP 比值 0.33 判临界',
     /0\.33/.test(pgF.data.out) && /临界/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
   // —— v1.1.1 新增：右室收缩储备（多巴酚丁胺）/ TOF 术后 PR ——
-  check('右室应变条目含收缩储备输入项 10 个', pgF.data.inputs.length, 10, 0);
-  pgF.data.inputs[5].value = '-14';   // 负荷前 RVFWS
-  pgF.data.inputs[6].value = '-21';   // 峰值 RVFWS
+  check('右室功能条目共 19 个输入位（3 段标题 + 16 字段，含收缩储备 5 项）', pgF.data.inputs.length, 19, 0);
+  pgF.data.inputs[idxK('rvr0')].value = '-14';   // 负荷前 RVFWS
+  pgF.data.inputs[idxK('rvr1')].value = '-21';   // 峰值 RVFWS
   pgF.refresh();
   check('ΔRVFWS +7 → 收缩储备保留',
     /Δ\+7\.0/.test(pgF.data.out) && /储备保留/.test(pgF.data.out) ? 1 : 0, 1, 0);
-  pgF.data.inputs[6].value = '-13';
+  pgF.data.inputs[idxK('rvr1')].value = '-13';
   pgF.refresh();
   check('ΔRVFWS +1 → 收缩储备耗竭',
     /储备耗竭/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
-  pgF.onLoad({ id: 'rcm-strain' });
+  pgF.onLoad({ id: 'infiltr' });
   pgF.onShow();
   pgF.data.inputs[0].value = '-8';
   pgF.data.inputs[1].value = '-8';

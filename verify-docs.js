@@ -535,7 +535,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 114 条（计算 42 + 评估判读 72；v1.8.3 三组合并 −6，切面速查 / 瓣膜解剖 / 外链组不进目录）', d.items === 114, d.items);
+    check('条目 109 条（计算 42 + 评估判读 67；v1.8.4 四组合并 −6 再新增发泡试验 +1，切面速查 / 瓣膜解剖 / 外链组不进目录）', d.items === 109, d.items);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
       d.resistOuts + ' / ' + d.lvgeomOuts);
@@ -548,7 +548,7 @@ function check(name, ok, detail) {
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
-    check('参考文献 80 条', d.refs === 80, d.refs);
+    check('参考文献 83 条', d.refs === 83, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
 
@@ -1059,7 +1059,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 80 条', /80/.test(ri.cnt), refsInit);
+  check('折叠头显示 83 条', /83/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -1078,7 +1078,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 80 条', ro.hidden === false && ro.n === 80 && ro.h > 0, refsOpen);
+  check('点击后展开全部 83 条', ro.hidden === false && ro.n === 83 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 

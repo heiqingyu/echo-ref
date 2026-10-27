@@ -227,6 +227,23 @@
       </view>
 
       <view class="note">
+        <text style="font-weight:600">冠脉怎么测：2025 中国共识的六条硬口径</text>{{'\n'}}
+        2025 年《儿童冠状动脉经胸超声心动图规范化检查中国专家共识》（中华超声影像学杂志 2025;34(11):921-931，见 R83）
+        统一了测量规范。它和 Z 值同等重要 —— Z 值再准，测法不对也是白算：{{'\n'}}
+        ① <text style="font-weight:600">分段</text>：按 AHA 15 分段法，TTE 可稳定显示其中 9 段（LMCA、LAD 近/中/远段、LCx、
+        RCA 近/中/远段、后降支）；只报能看清的段，看不清的写「未显示」，不要外推。{{'\n'}}
+        ② <text style="font-weight:600">时相</text>：<text style="font-weight:600">舒张早期、T 波终点</text>测量。冠脉在舒张期充盈、
+        管径最大且稳定，收到收缩期测会系统性偏小。{{'\n'}}
+        ③ <text style="font-weight:600">边界</text>：<text style="font-weight:600">内膜到内膜</text>（inner edge to inner edge），
+        与成人 Z 值库口径一致，混用外膜-外膜会让 Z 值整体上移。{{'\n'}}
+        ④ <text style="font-weight:600">图像</text>：局部放大 2–4 倍，帧率 ≥30 fps；婴幼儿用高频探头（≥7.5 MHz）。{{'\n'}}
+        ⑤ <text style="font-weight:600">校正</text>：一律换算 Z 值（按 BSA），不用绝对值下结论 ——
+        绝对值 3 mm 在婴儿是巨大瘤、在青少年是正常。{{'\n'}}
+        ⑥ <text style="font-weight:600">分级</text>（川崎病，AHA 2017）：Z &lt;2 无扩张；2–&lt;2.5 仅扩张；
+        ≥2.5–&lt;5 小型瘤；≥5–&lt;10 且绝对值 &lt;8 mm 中型瘤；≥10 或绝对值 ≥8 mm 巨大瘤。
+      </view>
+
+      <view class="note">
         <text style="font-weight:600">同一房室出现两行，是测法不同</text>{{'\n'}}
         左房左右径（心尖四腔）与左房前后径（M 型）数值接近；右室流入道内径（心尖四腔，约 23 mm）
         比 M 型右室前后径（胸骨旁，约 11 mm）大一倍左右 —— 这是切面与径线不同造成的，
