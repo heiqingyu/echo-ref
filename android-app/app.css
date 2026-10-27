@@ -1103,12 +1103,33 @@ html, body {
   flex-shrink: 0;
 }
 
+/* ★ v1.8.3 合并页：小节名放上一行，结果独占下一行（横排会把长结果挤成窄条） */
+.calc-out--multi {
+  display: block;
+}
+
+.calc-out--multi .calc-out__lbl {
+  display: block;
+  margin: 0 0 2px;
+  font-size: 11px;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.calc-out--multi .calc-out__v {
+  display: block;
+  font-size: 12.5px;
+}
+
 .calc-out__v {
   font-size: 13px;
   color: #1d4ed8;
   font-weight: 600;
   line-height: 1.7;
-  word-break: break-all;
+  /* ★ v1.8.3：原先 break-all 会把「（>1200）」从数字中间劈开成「（>120 | 0）」，
+     换成只在整段放不下时才断词的 overflow-wrap；中文照常按字断行 */
+  overflow-wrap: break-word;
+  word-break: normal;
   /* 评估页（二尖瓣 / 主动脉瓣）结果按「形态 / 狭窄 / 反流」分段，用换行而不是一坨 */
   white-space: pre-line;
 }

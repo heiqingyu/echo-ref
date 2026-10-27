@@ -126,8 +126,10 @@ const cgPath = path.join(MP, 'utils', 'calc-groups.js');
 if (fs.existsSync(cgPath)) ok('calc-groups.js 定义文件存在');
 else bad('calc-groups.js 缺失');
 const CG = require(cgPath);
-if (CG.GROUPS.length === 48) ok('公式集定义 48 组（' + CG.GROUPS.map(g => g.id).join('/') + '）');
-else bad('公式集分组数异常: ' + CG.GROUPS.length);
+// ★ v1.8.3：partOnly 的条目只作为合并页里的小节存在，不进目录
+const VIS_GROUPS = CG.GROUPS.filter(g => !g.partOnly);
+if (VIS_GROUPS.length === 42) ok('公式集定义 42 组（' + VIS_GROUPS.map(g => g.id).join('/') + '）');
+else bad('公式集分组数异常: ' + VIS_GROUPS.length + '（含 partOnly 共 ' + CG.GROUPS.length + '）');
 // 计算条目按 6 个分组归类，每条必须有 sec 且落在 CALC_SECTIONS 内
 const calcSecIds = (CG.CALC_SECTIONS || []).map(s => s.id);
 if (calcSecIds.join('/') === 'hemo/right/recon')
@@ -138,27 +140,28 @@ const BRIEF_SEC_IDS = ['valve', 'chd', 'chamber'];
 const badSec = CG.GROUPS.filter(g => calcSecIds.indexOf(g.sec || 'hemo') === -1 && BRIEF_SEC_IDS.indexOf(g.sec) === -1);
 if (!badSec.length) ok('48 条公式的 sec 归属均合法（含并入评估组的 valve / chd / chamber）');
 else bad('sec 归属异常: ' + badSec.map(g => g.id).join(','));
-const nHemo = CG.GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
-const nRight = CG.GROUPS.filter(g => g.sec === 'right').length;
-const nValveCalc = CG.GROUPS.filter(g => g.sec === 'valve').length;
-const nRecon = CG.GROUPS.filter(g => g.sec === 'recon').length;
-const nChdCalc = CG.GROUPS.filter(g => g.sec === 'chd').length;
-const nChamCalc = CG.GROUPS.filter(g => g.sec === 'chamber').length;
-if (nHemo === 13 && nRight === 9 && nRecon === 16 && nValveCalc === 4 && nChdCalc === 4 && nChamCalc === 2)
-  ok('分组条目数 13 / 9 / 16 + 瓣膜 4 + 先心 4 + 心腔 2（合计 48）');
+const nHemo = VIS_GROUPS.filter(g => (g.sec || 'hemo') === 'hemo').length;
+const nRight = VIS_GROUPS.filter(g => g.sec === 'right').length;
+const nValveCalc = VIS_GROUPS.filter(g => g.sec === 'valve').length;
+const nRecon = VIS_GROUPS.filter(g => g.sec === 'recon').length;
+const nChdCalc = VIS_GROUPS.filter(g => g.sec === 'chd').length;
+const nChamCalc = VIS_GROUPS.filter(g => g.sec === 'chamber').length;
+if (nHemo === 13 && nRight === 6 && nRecon === 13 && nValveCalc === 4 && nChdCalc === 4 && nChamCalc === 2)
+  ok('分组条目数 13 / 6 / 13 + 瓣膜 4 + 先心 4 + 心腔 2（合计 42，v1.8.3 三组合并）');
 else bad('分组条目数异常: ' + [nHemo, nRight, nRecon, nValveCalc, nChdCalc, nChamCalc].join('/'));
 // 网页端 calcVal 是全局共享对象，字段键必须跨条目唯一；
 // 例外：ld / lvti 是「LVOT 直径 / VTI」的同义字段，flow 与 shunt 有意共用同一输入
 const SHARED_KEYS = { ld: 1, lvti: 1 };
 const dupField = [];
 const seen = {};
-CG.GROUPS.forEach(g => g.fields.forEach(f => {
+VIS_GROUPS.forEach(g => g.fields.forEach(f => {
+  if (!f.k) return;   // 合并页的分段标题 { g: '① …' }
   if (seen[f.k] && !SHARED_KEYS[f.k]) dupField.push(f.k);
   seen[f.k] = 1;
 }));
-if (!dupField.length) ok('29 条公式的输入键全局唯一（除有意共享的 ld / lvti）');
+if (!dupField.length) ok(VIS_GROUPS.length + ' 条公式的输入键全局唯一（除有意共享的 ld / lvti / tapse / paspv）');
 else bad('输入键冲突: ' + dupField.join(','));
-const badGroups = CG.GROUPS.filter(g => !g.id || !g.title || !g.fields.length || !g.note);
+const badGroups = VIS_GROUPS.filter(g => !g.id || !g.title || !g.fields.length || !g.note);
 if (badGroups.length === 0) ok('各组均含 id/标题/字段/备注');
 else bad('以下组定义不完整: ' + badGroups.map(g => g.id || '?').join(','));
 const dupIds = CG.GROUPS.map(g => g.id).filter((v, i, a) => a.indexOf(v) !== i);
@@ -327,6 +330,22 @@ else bad('公式集目录缺少搜索框');
 const calcWxml3 = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.wxml'), 'utf8');
 if (calcWxml3.indexOf('data-url="{{it.url}}"') !== -1) ok('目录条目透传 url（小程序内复制链接）');
 else bad('目录条目未透传 url');
+
+// ★ v1.8.3：网页的 CALC_GROUPS 是独立副本、条目上没有 sub 字段，
+//   目录副标题全靠 app.js 的 CALC_SUB 表；而小程序读 calc-groups.js 的 sub。
+//   两处一旦分叉，同一台计算器在网页与小程序会显示不同说明 —— 必须逐字比对。
+{
+  const subBlk = (appSrc4.match(/const CALC_SUB = \{([\s\S]*?)\n  \};/) || [])[1] || '';
+  const webSub = {};
+  subBlk.split('\n').forEach((l) => {
+    const m = l.match(/^\s{4}'?([a-zA-Z0-9-]+)'?:\s*'([^']*)'/);
+    if (m) webSub[m[1]] = m[2];
+  });
+  const visGroups = CG.GROUPS.filter((g) => !g.partOnly);
+  const drift = visGroups.filter((g) => webSub[g.id] !== (g.sub || '')).map((g) => g.id);
+  if (drift.length === 0) ok('副标题两端逐字一致（网页 CALC_SUB ↔ calc-groups.sub，' + visGroups.length + ' 条）');
+  else bad('副标题两端不一致: ' + drift.join(','));
+}
 
 const idxWxml2 = fs.readFileSync(path.join(MP, 'pages/index/index.wxml'), 'utf8');
 const idxWxss2 = fs.readFileSync(path.join(MP, 'pages/index/index.wxss'), 'utf8');

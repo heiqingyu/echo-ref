@@ -325,6 +325,7 @@ Page({
     const valid = (...xs) => xs.every((x) => x !== undefined && isFinite(x));
 
     let out = '';
+    const outsArr = [];   // ★ v1.8.3：合并页多行结果，每项 {l: 小节名, t: 结果文本}
     const gid = this.data.gid;
 
     if (gid === 'flow') {
@@ -1417,9 +1418,134 @@ Page({
           out = parts.join('；');
         }
       }
+    } else if (gid === 'resist') {
+      // —— ★ v1.8.3 合并页：血管阻力（PVR / SVR / 指数化）——
+      const row = function (l, t) { outsArr.push({ l: l, t: t || '等待输入' }); };
+      let pvrWu = null;
+      let svrDyn = null;
+
+      // ① 肺血管阻力
+      if (valid(v.hmmpap, v.hmpawp, v.hmco)) {
+        const r = calc.pvrResistance(v.hmmpap, v.hmpawp, v.hmco);
+        if (r.error) row('① 肺血管阻力 PVR', r.error);
+        else if (r.wu !== undefined) {
+          pvrWu = r.wu;
+          row('① 肺血管阻力 PVR', 'PVR ' + calc.fmt(r.wu) + ' WU（' +
+            calc.fmt(r.dyn, 0) + ' dyn·s·cm⁻⁵，跨瓣压差 ' +
+            calc.fmt(r.grad, 1) + ' mmHg）· ' + r.text);
+        }
+      } else row('① 肺血管阻力 PVR');
+
+      // ② 体循环阻力
+      if (valid(v.smap, v.srap, v.sco)) {
+        const r = calc.svrResistance(v.smap, v.srap, v.sco, bsa);
+        if (r.dyn !== undefined) {
+          svrDyn = r.dyn;
+          const parts = ['SVR ' + calc.fmt(r.dyn, 0) + ' dyn·s·cm⁻⁵'];
+          if (r.svri !== undefined) parts.push('SVRI ' + calc.fmt(r.svri, 0));
+          // '·' 是正文分隔符，不能当数组元素塞进 '；' 连接里（会出「；·」）
+          row('② 体循环血管阻力 SVR', parts.join('；') + ' · ' + r.text);
+        }
+      } else row('② 体循环血管阻力 SVR');
+
+      // ③ 指数化：优先用上面算出来的 PVR / SVR，没有再取手填值
+      const inPvr = (pvrWu !== null) ? pvrWu : v.ripvr;
+      const inSvr = (svrDyn !== null) ? svrDyn : v.risvr;
+      if (valid(inPvr) || valid(inSvr)) {
+        const r = calc.resistanceIndices(inPvr, inSvr, bsa);
+        if (r.error) row('③ 阻力指数 PVRI / SVRI', r.error);
+        else {
+          const parts = [];
+          if (r.pvri !== undefined) parts.push('PVRI ' + calc.fmt(r.pvri, 1) + ' WU·m² · ' + r.pvriText);
+          if (r.svri !== undefined) parts.push('SVRI ' + calc.fmt(r.svri, 0) + ' · ' + r.svriText);
+          row('③ 阻力指数 PVRI / SVRI', parts.join('；') ||
+            '需先填身高体重才能指数化');
+        }
+      } else {
+        row('③ 阻力指数 PVRI / SVRI',
+          (bsa > 0 && (valid(v.ripvr) || valid(v.risvr))) ? '' :
+            '填上面①②或直接填 PVR / SVR 后自动指数化（需身高体重）');
+      }
+
+    } else if (gid === 'rvsyst') {
+      // —— ★ v1.8.3 合并页：右室收缩功能（FAC / RVFWS / dP/dt）——
+      const row = function (l, t) { outsArr.push({ l: l, t: t || '等待输入' }); };
+
+      if (valid(v.feda, v.fesa)) {
+        if (v.fesa >= v.feda) row('① 面积变化分数 FAC', 'RVESA 不可大于或等于 RVEDA，请核对');
+        else {
+          const f = calc.fac(v.feda, v.fesa);
+          row('① 面积变化分数 FAC', 'FAC ' + calc.fmt(f, 1) + '% · ' +
+            (f >= 35 ? '正常（≥35%）' : f >= 25 ? '轻度减低（25–35%）' : '明显减低（<25%）'));
+        }
+      } else row('① 面积变化分数 FAC');
+
+      if (valid(v.rfb) || valid(v.rfm) || valid(v.rfa)) {
+        const r = calc.rvFreeWallStrain(v.rfb, v.rfm, v.rfa);
+        row('② 游离壁应变 RVFWS', r.error ? r.error
+          : 'RVFWS 均值 ' + calc.fmt(r.mean, 1) + '%（' + r.n + ' 段）· ' + r.text);
+      } else row('② 游离壁应变 RVFWS');
+
+      if (valid(v.rdt)) {
+        const r = calc.rvDpDt(v.rdt);
+        row('③ 右室 dP/dt', r.error ? r.error
+          : 'RV dP/dt ≈ ' + calc.fmt(r.dpdt, 0) + ' mmHg/s · ' + r.text);
+      } else row('③ 右室 dP/dt');
+
+    } else if (gid === 'lvgeom') {
+      // —— ★ v1.8.3 合并页：左室重构四联 ——
+      const row = function (l, t) { outsArr.push({ l: l, t: t || '等待输入' }); };
+
+      if (valid(v.lhmass, v.lhheight)) {
+        const r = calc.lvmHeightIndex(v.lhmass, v.lhheight, female);
+        row('① LVMI（身高^2.7）', r.error ? r.error
+          : 'LVMI ' + calc.fmt(r.index, 1) + ' g/m^2.7 · ' + r.text);
+      } else row('① LVMI（身高^2.7）');
+
+      if (valid(v.rsbp, v.rlvedd, v.rpwt)) {
+        const r = calc.relativeWallStress(v.rsbp, v.rlvedd, v.rpwt);
+        row('② 相对室壁应力', 'RWS ' + calc.fmt(r.rws, 0) + ' ×10³ dyn/cm² · ' + r.text);
+      } else row('② 相对室壁应力');
+
+      if (valid(v.sdd, v.sld)) {
+        const r = calc.sphericityIndex(v.sdd, v.sld);
+        row('③ 球形指数', r.error ? r.error : 'SI ' + calc.fmt(r.si, 2) +
+          '（' + calc.fmt(v.sdd, 2) + ' ÷ ' + calc.fmt(v.sld, 2) + '）· ' + r.text);
+      } else row('③ 球形指数');
+
+      if (valid(v.vedv, v.vesv)) {
+        const r = calc.volumeIndices(v.vedv, v.vesv, bsa, female);
+        if (r.error) row('④ 容积指数', r.error);
+        else if (r.sv !== undefined) {
+          const parts = ['EF ' + calc.fmt(r.ef, 1) + '%', 'SV ' + calc.fmt(r.sv, 1) + ' mL'];
+          if (r.edvi !== undefined) {
+            parts.push('EDVi ' + calc.fmt(r.edvi, 1) + '（' + r.edviText + '）');
+            parts.push('ESVi ' + calc.fmt(r.esvi, 1) + '（' + r.esviText + '）');
+          } else {
+            parts.push('填身高体重后给出 EDVi / ESVi（上限 ' +
+              (female ? '女 61 / 24' : '男 74 / 31') + '）');
+          }
+          row('④ 容积指数', parts.join('；'));
+        }
+      } else row('④ 容积指数');
+
+    } else if (gid === 'tapse') {
+      // —— ★ v1.8.3：TAPSE 与 RV-PA 耦联 ——
+      if (valid(v.tapse)) {
+        const parts = ['TAPSE ' + calc.fmt(v.tapse, 1) + ' mm'];
+        parts.push(v.tapse >= 17 ? '正常（≥17）'
+          : v.tapse >= 15 ? '轻度减低（15–17）' : '明显减低（<15）');
+        if (valid(v.paspv)) {
+          const rc = calc.tapsePasp(v.tapse, v.paspv);
+          if (rc.ratio !== undefined) {
+            parts.push('TAPSE/PASP ' + calc.fmt(rc.ratio, 2) + ' mm/mmHg · ' + rc.text);
+          }
+        }
+        out = parts.join('；');
+      }
     }
 
-    this.setData({ out: out, hasOut: !!out });
+    this.setData({ out: out, hasOut: !!out, outs: outsArr });
   },
 
   /* ────────── 转发给朋友 / 收藏（v1.5.8）──────────

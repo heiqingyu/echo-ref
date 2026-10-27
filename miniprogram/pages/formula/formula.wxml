@@ -105,14 +105,24 @@
             class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text></view>
 
     <block wx:if="{{!isReference}}">
-      <view wx:if="{{hasOut}}" class="calc-out">
-        <text class="calc-out__lbl">结果</text>
-        <text class="calc-out__v">{{out}}</text>
-      </view>
-      <view wx:else class="calc-out calc-out--idle">
-        <text class="calc-out__lbl">结果</text>
-        <text class="calc-out__v">等待输入</text>
-      </view>
+      <!-- ★ v1.8.3 合并页：一条卡里多个小节，各自出一行结果 -->
+      <block wx:if="{{outs.length}}">
+        <view wx:for="{{outs}}" wx:for-item="o" wx:key="l"
+              class="calc-out calc-out--multi {{o.t === '等待输入' ? 'calc-out--idle' : ''}}">
+          <text class="calc-out__lbl">{{o.l}}</text>
+          <text class="calc-out__v">{{o.t}}</text>
+        </view>
+      </block>
+      <block wx:else>
+        <view wx:if="{{hasOut}}" class="calc-out">
+          <text class="calc-out__lbl">结果</text>
+          <text class="calc-out__v">{{out}}</text>
+        </view>
+        <view wx:else class="calc-out calc-out--idle">
+          <text class="calc-out__lbl">结果</text>
+          <text class="calc-out__v">等待输入</text>
+        </view>
+      </block>
     </block>
   </view>
 

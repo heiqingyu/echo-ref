@@ -55,12 +55,13 @@ const html = fs.readFileSync(WWW, 'utf8');
 //   它的判读条目本来就在公式集的「瓣膜评估」组里；只有 5 个瓣膜计算器依赖该页。
 //   但「节段划分」（室壁划分）必须保留 —— 这是之前 app 内容比小程序少的原因。
 // ★ v1.8.1：新生儿体重法 17 项 + R80 使 www 增约 16 KB，上限由 1050 提到 1080；
-//   docs（对外发布版）仍守 1050。
-check('www 完整版体积 < 1080 KB', Buffer.byteLength(html, 'utf8') < 1080 * 1024, true);
+// ★ v1.8.3：42 个计算器各补 3–6 个细则块（189 块，分级表 + 测量要点 + 误判），
+//   体积再增约 38 KB —— 这是内容型增长，不再靠压注释凑，上限提到 1120 / 1100。
+check('www 完整版体积 < 1120 KB', Buffer.byteLength(html, 'utf8') < 1120 * 1024, true);
 check('docs 发布版存在（APK 打包源）', fs.existsSync(DOCS), true);
 if (fs.existsSync(DOCS)) {
   const dh = fs.readFileSync(DOCS, 'utf8');
-  check('docs 发布版体积 < 1050 KB（8 组 120 条目录 + 80 条文献 + 40 项儿童参数 + 新生儿 17 项，含五套来源说明）', Buffer.byteLength(dh, 'utf8') < 1050 * 1024, true);
+  check('docs 发布版体积 < 1100 KB（8 组 114 条目录 + 80 条文献 + 40 项儿童参数 + 新生儿 17 项 + 计算器细则 189 块）', Buffer.byteLength(dh, 'utf8') < 1100 * 1024, true);
   check('docs 发布版不含瓣膜单独页', dh.indexOf('id="page-valves"') === -1, true);
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
   // v1.5.0：瓣膜解剖不再是页签，改成公式集里的一条

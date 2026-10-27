@@ -606,13 +606,13 @@
       note: '正常 0.7–1.05；>1.2 提示左向右分流（可近似当 Qp/Qs），<0.6 提示肺血流减少。优点是不用测两处直径——直径平方的误差会被放大两次' },
 
     /* ── 右心与肺循环（sec: right） ── */
-    { id: 'rvfacv', sec: 'right', title: '右室面积变化分数 FAC',
+    { id: 'rvfacv', partOnly: true, sec: 'right', title: '右室面积变化分数 FAC',
       fields: [['feda', '舒张末面积 RVEDA', 'cm²'], ['fesa', '收缩末面积 RVESA', 'cm²']],
       note: 'FAC <35% 提示右室收缩功能减低；<25% 为明显减低。与 TAPSE、S′、RVFWS 合看更可靠' },
-    { id: 'pvrv', sec: 'right', title: '肺血管阻力 PVR',
+    { id: 'pvrv', partOnly: true, sec: 'right', title: '肺血管阻力 PVR',
       fields: [['hmmpap', '平均肺动脉压 mPAP', 'mmHg'], ['hmpawp', '肺动脉楔压 PAWP', 'mmHg'], ['hmco', '心输出量 CO', 'L/min']],
       note: 'PVR(WU) = (mPAP − PAWP) / CO；≤2 正常、2–3 轻、3–5 中、>5 重度。先心病可手术性常以 <3 WU 为界' },
-    { id: 'svrv', sec: 'right', title: '体循环血管阻力 SVR',
+    { id: 'svrv', partOnly: true, sec: 'right', title: '体循环血管阻力 SVR',
       fields: [['smap', '平均动脉压 MAP', 'mmHg'], ['srap', '右房压 RAP', 'mmHg'], ['sco', '心输出量 CO', 'L/min']],
       note: '正常 800–1200 dyn·s·cm⁻⁵；有 BSA 时同出 SVRI（1600–2400）' },
 
@@ -620,17 +620,17 @@
     { id: 'rvvol', sec: 'right', title: '右室容积指数 RVEDVi / RVESVi',
       fields: [['rvedv', 'RV 舒张末容积', 'mL'], ['rvesv', 'RV 收缩末容积（可选）', 'mL']],
       note: 'RVEDVi 上限男 87 / 女 75 mL/m²；RVESVi 上限男 44 / 女 35 mL/m²（ASE 右心指南）。右室扩大而左室正常时注意 ARVC、房间隔缺损、肺高压；随访必须同一方法' },
-    { id: 'rvfws', sec: 'right', title: '右室游离壁应变 RVFWS',
+    { id: 'rvfws', partOnly: true, sec: 'right', title: '右室游离壁应变 RVFWS',
       fields: [['rfb', '基底段', '%'], ['rfm', '中间段', '%'], ['rfa', '心尖段', '%']],
       note: 'RVFWS 正常 |均值| ≥20%（即 ≤ −20%）。右室纵向功能常先于 TAPSE、FAC 下降；填负数更符合习惯（如 −24）。仅填一到两段也能算，但三段齐全更可靠' },
     { id: 'papi', sec: 'right', title: 'PAPi 肺动脉搏动指数',
       fields: [['pispap', '肺动脉收缩压 sPAP', 'mmHg'], ['pidpap', '肺动脉舒张压 dPAP', 'mmHg'],
         ['pirap', '右房压 RAP', 'mmHg']],
       note: 'PAPi = (sPAP − dPAP) / RAP，反映右室与肺循环的耦联。<1.85 提示失耦联，肺高压与心衰患者预后差；>2.0 相对保留。RAP 需先由 IVC 估出' },
-    { id: 'residx', sec: 'right', title: '阻力指数 PVRI / SVRI',
+    { id: 'residx', partOnly: true, sec: 'right', title: '阻力指数 PVRI / SVRI',
       fields: [['ripvr', 'PVR（可选）', 'WU'], ['risvr', 'SVR（可选）', 'dyn·s·cm⁻⁵']],
       note: 'PVRI = PVR × BSA，正常 3–5 WU·m²，>5 提示肺血管阻力显著升高（先心手术决策关键）；SVRI = SVR × BSA，正常 1970–2390 dyn·s·cm⁻⁵·m²' },
-    { id: 'rvdvdt', sec: 'right', title: '右室 dP/dt',
+    { id: 'rvdvdt', partOnly: true, sec: 'right', title: '右室 dP/dt',
       fields: [['rdt', '1→2 m/s 时间差 Δt', 'ms']],
       note: '两点压差差为 4×2² − 4×1² = 12 mmHg，故 dP/dt = 12 ÷ Δt(s)，单位 mmHg/s。<400 提示右室收缩功能减低' },
 
@@ -652,7 +652,7 @@
       fields: [['qla', '左房内径 LA', 'mm'], ['qao', '主动脉根部 Ao', 'mm'],
         ['qrv', '右室舒张末内径 RV', 'mm'], ['qlv', '左室舒张末内径 LV', 'mm']],
       note: 'LA/Ao ≤1.1 正常；RV/LV >0.6 提示右室扩大（>1.0 高度提示右心负荷过重）。单位同组一致即可' },
-    { id: 'lvmih', sec: 'recon', title: 'LVMI 身高^2.7（肥胖适用）',
+    { id: 'lvmih', partOnly: true, sec: 'recon', title: 'LVMI 身高^2.7（肥胖适用）',
       fields: [['lhmass', '左室质量 LV Mass', 'g'], ['lhheight', '身高', 'cm']],
       note: 'LVMI = Mass / 身高(m)^2.7，男 >50、女 >47 g/m^2.7 提示左室肥厚。肥胖患者按 BSA 指数化会低估肥厚程度，此时应改用身高^2.7' },
 
@@ -695,13 +695,13 @@
       note: '阈值：SPWMD ≥130 ms、IVMD ≥40 ms、Ts-SD-12 ≥33 ms；室间隔闪动与心尖摇摆出现即记阳性。数值可只填测到的，≥2 项阳性才算证据较充分。PROSPECT 研究：没有单项超声指标能优于 ECG 预测 CRT 反应，本条目只作旁证，不能单独决定是否植入' },
 
     /* ── 重构与心肌功能（sec: recon） ── */
-    { id: 'volidx', sec: 'recon', title: '容积指数与重构分级',
+    { id: 'volidx', partOnly: true, sec: 'recon', title: '容积指数与重构分级',
       fields: [['vedv', '舒张末容积 EDV', 'mL'], ['vesv', '收缩末容积 ESV', 'mL']],
       note: 'EDVi 上限男 74 / 女 61，ESVi 上限男 31 / 女 24 mL/m²；ESVi >45 提示收缩功能显著减低' },
-    { id: 'rwsv', sec: 'recon', title: '相对室壁应力 RWS',
+    { id: 'rwsv', partOnly: true, sec: 'recon', title: '相对室壁应力 RWS',
       fields: [['rsbp', '收缩压 SBP', 'mmHg'], ['rlvedd', 'LVEDD', 'cm'], ['rpwt', '后壁厚度 PWT', 'cm']],
       note: 'RWS = 0.334 × SBP × LVEDD / [PWT × (1 + PWT/LVEDD)]；正常 60–160（10³ dyn/cm²）' },
-    { id: 'spher', sec: 'recon', title: '左室球形指数',
+    { id: 'spher', partOnly: true, sec: 'recon', title: '左室球形指数',
       fields: [['sdd', '左室短径', 'cm'], ['sld', '左室长径', 'cm']],
       note: 'SI ≤0.65 正常；0.66–0.75 球形化；>0.75 显著球形化（重构、预后差）' },
     { id: 'lastrain', sec: 'recon', title: '左房应变三值',
@@ -766,6 +766,40 @@
     { id: 'cfr', sec: 'chamber', title: '冠脉血流储备 CFR',
       fields: [['distal', '远端冠脉舒张期流速', 'cm/s'], ['proximal', '近端冠脉舒张期流速', 'cm/s']],
       note: 'CFR = 远端 ÷ 近端。>2.0 正常；1.6–2.0 可疑；<1.6 明显受限（缺血）。要求同一支冠脉、同一角度、同一心率与同一负荷状态下测量' },
+
+    /* ★ v1.8.3 合并页：partOnly 的条目只当小节，不进目录 */
+    { id: 'resist', sec: 'right', title: '血管阻力：PVR · SVR · 指数化',
+      outs: [['pvrv', '① 肺血管阻力 PVR'], ['svrv', '② 体循环血管阻力 SVR'], ['residx', '③ 阻力指数 PVRI / SVRI']],
+      fields: [{ g: '① 肺血管阻力 PVR' },
+        ['hmmpap', '平均肺动脉压 mPAP', 'mmHg'], ['hmpawp', '肺动脉楔压 PAWP', 'mmHg'], ['hmco', '心输出量 CO', 'L/min'],
+        { g: '② 体循环血管阻力 SVR' },
+        ['smap', '平均动脉压 MAP', 'mmHg'], ['srap', '右房压 RAP', 'mmHg'], ['sco', '心输出量 CO', 'L/min'],
+        { g: '③ 阻力指数 PVRI / SVRI' },
+        ['ripvr', 'PVR（可选）', 'WU'], ['risvr', 'SVR（可选）', 'dyn·s·cm⁻⁵']],
+      note: 'PVR = (mPAP − PAWP) ÷ CO，正常 ≤2 WU；SVR = (MAP − RAP) × 80 ÷ CO，正常 800–1200 dyn·s·cm⁻⁵。指数化后 PVRI 正常 3–5 WU·m²，先心手术决策常以 <5 为界' },
+    { id: 'rvsyst', sec: 'right', title: '右室收缩功能：FAC · RVFWS · dP/dt',
+      outs: [['rvfacv', '① 面积变化分数 FAC'], ['rvfws', '② 游离壁应变 RVFWS'], ['rvdvdt', '③ 右室 dP/dt']],
+      fields: [{ g: '① 面积变化分数 FAC' },
+        ['feda', '舒张末面积 RVEDA', 'cm²'], ['fesa', '收缩末面积 RVESA', 'cm²'],
+        { g: '② 游离壁应变 RVFWS' },
+        ['rfb', '基底段', '%'], ['rfm', '中间段', '%'], ['rfa', '心尖段', '%'],
+        { g: '③ 右室 dP/dt' },
+        ['rdt', '1→2 m/s 时间差 Δt', 'ms']],
+      note: 'FAC ≥35% 正常；RVFWS 绝对值 ≥20% 正常；右室 dP/dt <400 mmHg/s 提示收缩减低（左心同指标需 >1000）。三个数互相印证，任一正常都可能是负荷条件合适而非功能正常' },
+    { id: 'lvgeom', sec: 'recon', title: '左室重构四联：质量 · 应力 · 球形度 · 容积',
+      outs: [['lvmih', '① LVMI（身高^2.7）'], ['rwsv', '② 相对室壁应力'], ['spher', '③ 球形指数'], ['volidx', '④ 容积指数']],
+      fields: [{ g: '① 质量指数 LVMI（身高^2.7）' },
+        ['lhmass', '左室质量 LV Mass', 'g'], ['lhheight', '身高', 'cm'],
+        { g: '② 相对室壁应力 RWS' },
+        ['rsbp', '收缩压 SBP', 'mmHg'], ['rlvedd', 'LVEDD', 'cm'], ['rpwt', '后壁厚度 PWT', 'cm'],
+        { g: '③ 左室球形指数' },
+        ['sdd', '左室短径', 'cm'], ['sld', '左室长径', 'cm'],
+        { g: '④ 容积指数与重构分级' },
+        ['vedv', '舒张末容积 EDV', 'mL'], ['vesv', '收缩末容积 ESV', 'mL']],
+      note: '四项看的是同一件事的不同侧面：质量（肥厚的量）、应力（后负荷与厚度的匹配）、球形度（几何从椭球向球退化）、容积（重构的结局）。质量增高但应力正常多为代偿性肥厚，应力偏高则提示失代偿的方向' },
+    { id: 'tapse', sec: 'right', title: 'TAPSE 三尖瓣环收缩期位移',
+      fields: [['tapse', 'TAPSE', 'mm'], ['paspv', 'PASP（可选，算耦联）', 'mmHg']],
+      note: 'TAPSE ≥17 mm 正常；<17 提示右室纵向收缩功能减低。填 PASP 时同出 TAPSE/PASP：>0.55 耦联保留、0.36–0.55 临界、<0.36 显著失耦联' },
   ];
 
   /** 计算类条目的目录分组（与 calc-groups.js 的 CALC_SECTIONS 同源同序） */
@@ -818,6 +852,7 @@
     dfun: 'E/A', mtype: 'FS',
     mpap: 'sPAP', rvfacv: 'FAC', pvrv: 'PVR', svrv: 'SVR', rvvol: 'RV', rvfws: 'RVFWS',
     papi: 'PAPi', residx: 'PVRI', rvdvdt: 'dP/dt',
+    resist: 'RES', rvsyst: 'RVF', lvgeom: 'GEO', tapse: 'TAPSE',   // v1.8.3 合并页与 TAPSE
     laef: 'LAEF', lvmih: 'H2.7', ras: 'RAS', lastiff: 'LARS', lvnc: 'NC/C', sync: 'SYNC',
     volidx: 'EDVi', rwsv: 'RWS', spher: 'SI', lastrain: 'LASr', aortaidx: 'Ao', mdsv: 'MDS',
     swv: 'SW', wmsi: 'WMSI', h2fpef: 'H2F', hfapeff: 'HFA',
@@ -851,7 +886,6 @@
     mapse: '二尖瓣环收缩期位移',
     dvi: 'LVOT VTI ÷ 主动脉瓣 VTI',
     tei: '等容时间之和 ÷ 射血时间',
-    mpap: 'IVC 估 RAP · 三压 + ESC/ERS 可能性',
     shunt: '分流方向与分流量分级',
     bernoulli: 'ΔP = 4(V₂² − V₁²)',
     atrial: 'LAVI · RAVI',
@@ -861,10 +895,12 @@
     rcratiov: '右室收缩 ÷ 肺动脉负荷',
     pvrv: '(mPAP − PAWP) ÷ CO · WU',
     svrv: '(MAP − RAP) × 80 ÷ CO',
+    // ★ v1.8.3：resist / rvsyst / lvgeom / tapse 的副标题不再写在这里 ——
+    //   与 g.sub 重复维护会分叉（曾出现网页「三条一起出」、小程序长公式两套文案）。
+    //   现统一由 calc-groups.js 的 sub 提供，本表缺失时自动回退。
     pisav: 'EROA · RVol · 反流分级',
     avav: 'AVA · AVAi · DVI',
     ppm: '有效开口面积指数 · 患者-瓣膜不匹配',
-    dfun: 'E/A · E/e′ · LAVi · TR Vmax',
     volidx: 'EDVi · ESVi · SVi（按性别）',
     rwsv: '后负荷与室壁厚度的匹配',
     spher: '短径 ÷ 长径（舒张末）',
@@ -872,7 +908,6 @@
     aortaidx: '内径 ÷ BSA · 扩张分层',
     mdsv: '六壁峰值应变的均值与标准差',
     swv: 'SV × MAP × 0.0136',
-    mtype: '缩短分数 · 立方公式 EF · EPSS',
     wmsi: '按分值节段个数录入 · 1.0 正常 · ≥1.7 提示大面积缺血',
     h2fpef: 'BMI · 房颤 · 年龄 · 降压药 · E/e′ · PASP → 0–9 分',
     hfapeff: '形态学 / 功能学 / 生物标志物 三类取最高后相加',
@@ -899,10 +934,21 @@
     ras: '心尖段 ÷ 基底段 · ≥1 提示淀粉样变',
     ea: 'ESP ÷ SV · Ees/Ea ≈ SV ÷ ESV',
     coa: '峰值压差 · 舒张末期持续血流',
-    aortaz: '四段 Z 值 · 成人参考区间',
     aortagrow: '两次测量之差 ÷ 间隔年数',
-    pvfu: '人工瓣术后 EOA 与压差',
     cfr: '远端 ÷ 近端冠脉舒张期流速',
+
+    /* ★ v1.8.3：网页的 CALC_GROUPS 副本不带 sub 字段，这 10 条只能写在这里。
+       文案必须与 calc-groups.js 的 sub 逐字一致（verify-project 会比对，别再两边各写一套）。 */
+    'mpap': 'IVC 估 RAP · sPAP / dPAP / mPAP · ESC/ERS 可能性',
+    'aortaz': '瓣环 / 窦部 / 窦管交界 / 升主动脉 · 成人参考区间',
+    'dfun': '四步法分级 · 左房压估测 · 2022 更新',
+    'mtype': '缩短分数 · 立方公式 EF · 二尖瓣 EPSS',
+    'pvfu': 'TAVR / 换瓣后 EOA 与压差',
+    'sync': 'SPWMD · IVMD · Ts-SD · 闪动 / 摇摆 · CRT 术前旁证',
+    'resist': 'PVR · SVR · 按 BSA 指数化（三项同屏）',
+    'rvsyst': 'FAC · RVFWS · dP/dt（三项同屏）',
+    'lvgeom': 'LVMI 身高^2.7 · RWS · 球形指数 · EDVi/ESVi（四项同屏）',
+    'tapse': 'M 型 · ≥17 mm · 与 PASP 组成 RV-PA 耦联',
   };
 
   /** 评估类内容（切面与图像 / 心腔应变与负荷 / …）与参考文献：来自 extra-data.js，与小程序同源 */
@@ -1234,9 +1280,10 @@
         id: cs.id,
         title: cs.title,
         items: CALC_GROUPS.filter(function (g) {
+          if (g.partOnly) return false;   // v1.8.3 合并页里的小节，不进目录
           return (g.sec || 'hemo') === cs.id;
         }).map(function (g) {
-          return { kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || '' };
+          return { kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || g.sub || '' };
         }),
       });
     });
@@ -1248,9 +1295,9 @@
     // ★ 瓣膜通用计算（sec: 'valve'）并入瓣膜组，紧跟瓣膜专用计算器之后
     //   —— 与小程序 calculators.js 的顺序严格一致
     CALC_GROUPS.filter(function (g) {
-      return g.sec === 'valve';
+      return !g.partOnly && g.sec === 'valve';
     }).forEach(function (g) {
-      valveItems.push({ kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || '' });
+      valveItems.push({ kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || g.sub || '' });
     });
     (MERGED.valve || []).forEach(function (sec) {
       sec.items.forEach(function (it) {
@@ -1266,9 +1313,9 @@
       // ★ v1.5.3：sec 指向本组的计算器直接并进来，排在判读条目之前
       //   （原「介入尺寸、先心与随访」组已拆散，8 个计算器归到 valve / chd / chamber）
       const calcs = CALC_GROUPS.filter(function (g) {
-        return g.sec === sec.id;
+        return !g.partOnly && g.sec === sec.id;
       }).map(function (g) {
-        return { kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || '' };
+        return { kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || g.sub || '' };
       });
       secs.push({
         id: sec.id,
@@ -1811,6 +1858,8 @@
     // ── 详情：一次性渲染全部条目卡，按条目切换显示 ──
     let html = '';
     CALC_GROUPS.forEach(function (g) {
+      // ★ v1.8.3：partOnly 的条目只是合并页里的一个小节，不单独成卡
+      if (g.partOnly) return;
       // 说明块（临床意义 / 参考标准 / 判读要点）来自 calc-notes.js，与小程序同源
       const nb = calcNotesBlocks(g.id);
       const bl = blocksHtml(nb, g.id);
@@ -1818,16 +1867,27 @@
         '<div class="card__t">' + esc(g.title) + '</div>' +
         tocHtml(bl.toc) +
         bl.html +
-        fieldsHtml(g.fields.map(function (f) { return { k: f[0], n: f[1], u: f[2] }; }));
+        fieldsHtml(g.fields.map(function (f) {
+          // 分段标题（合并页的小节）原样透传
+          if (f.g) return { g: f.g };
+          return { k: f[0], n: f[1], u: f[2] };
+        }));
       if (g.opts) html += optsHtml(g.opts);
       // 肺高压条目需要 IVC 塌陷 + 支持征象两个选项（与右心评估共用同一条状态）
       if (g.id === 'mpap') {
         html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse) +
           segHtml('calcsigns', CALC_SIGNS, calcSigns);
       }
-      html += '<div class="note">' + mdInline(g.note) + '</div>' +
-        '<div class="calc-out" id="calcOut-' + g.id + '">' +
-        '<span class="calc-out__lbl">结果</span><span class="calc-out__v">等待输入</span></div></div>';
+      html += '<div class="note">' + mdInline(g.note) + '</div>';
+      // ★ v1.8.3：合并页一个条目出多行结果（outs），普通条目仍是一行「结果」
+      const outs = g.outs || [[g.id, '结果']];
+      outs.forEach(function (o) {
+        html += '<div class="calc-out' + (g.outs ? ' calc-out--multi' : '') +
+          '" id="calcOut-' + o[0] + '">' +
+          '<span class="calc-out__lbl">' + esc(o[1]) + '</span>' +
+          '<span class="calc-out__v">等待输入</span></div>';
+      });
+      html += '</div>';
     });
 
     BRIEF.forEach(function (sec) {
@@ -2131,10 +2191,15 @@
     } else put('rcratiov');
 
     // PVR
+    // ★ v1.8.3：合并页「血管阻力」的 ③ 要用 ①② 算出的值兜底指数化，
+    //   故先把结果拎出来，别只在 DOM 里转一圈。（此前只有小程序做了兜底，三端不一致）
+    let pvrWu = null;
+    let svrDyn = null;
     {
       const r = Calc.pvrResistance(v.hmmpap, v.hmpawp, v.hmco);
       if (r.error) put('pvrv', r.error);
       else if (r.wu !== undefined) {
+        pvrWu = r.wu;
         put('pvrv', 'PVR ' + Calc.fmt(r.wu) + ' WU（' + Calc.fmt(r.dyn, 0) +
           ' dyn·s·cm⁻⁵，跨瓣压差 ' + Calc.fmt(r.grad, 1) + ' mmHg）· ' + r.text);
       } else put('pvrv');
@@ -2144,10 +2209,11 @@
     {
       const r = Calc.svrResistance(v.smap, v.srap, v.sco, bsa);
       if (r.dyn !== undefined) {
+        svrDyn = r.dyn;
         const parts = ['SVR ' + Calc.fmt(r.dyn, 0) + ' dyn·s·cm⁻⁵'];
         if (r.svri !== undefined) parts.push('SVRI ' + Calc.fmt(r.svri, 0));
-        parts.push('· ' + r.text);
-        put('svrv', partsOf(parts));
+        // '·' 是正文分隔符，不能当成数组元素塞进 '；' 连接里（会出「；·」）
+        put('svrv', parts.join('；') + ' · ' + r.text);
       } else put('svrv');
     }
 
@@ -2513,17 +2579,35 @@
       put('papi', r.error ? r.error : 'PAPi = ' + Calc.fmt(r.papi, 2) + ' · ' + r.text);
     } else put('papi');
 
-    // 阻力指数
-    if (has('ripvr') || has('risvr')) {
-      const r = Calc.resistanceIndices(v.ripvr, v.risvr, bsa);
-      if (r.error) put('residx', r.error);
-      else {
-        const parts = [];
-        if (r.pvri !== undefined) parts.push('PVRI ' + Calc.fmt(r.pvri, 1) + ' WU·m² · ' + r.pvriText);
-        if (r.svri !== undefined) parts.push('SVRI ' + Calc.fmt(r.svri, 0) + ' · ' + r.svriText);
-        put('residx', partsOf(parts));
+    // TAPSE 与 RV-PA 耦联（v1.8.3）
+    if (has('tapse')) {
+      const parts = ['TAPSE ' + Calc.fmt(v.tapse, 1) + ' mm'];
+      parts.push(v.tapse >= 17 ? '正常（≥17）'
+        : (v.tapse >= 15 ? '轻度减低（15–17）' : '明显减低（<15）'));
+      if (has('paspv')) {
+        const rc = Calc.tapsePasp(v.tapse, v.paspv);
+        if (rc.ratio !== undefined) {
+          parts.push('TAPSE/PASP ' + Calc.fmt(rc.ratio, 2) + ' mm/mmHg · ' + rc.text);
+        }
       }
-    } else put('residx');
+      put('tapse', partsOf(parts));
+    } else put('tapse');
+
+    // 阻力指数（★ 优先用上面 ①② 现算的 PVR / SVR，没有再取手填值 —— 与小程序同序）
+    {
+      const inPvr = (pvrWu !== null) ? pvrWu : v.ripvr;
+      const inSvr = (svrDyn !== null) ? svrDyn : v.risvr;
+      if (has('ripvr') || has('risvr') || pvrWu !== null || svrDyn !== null) {
+        const r = Calc.resistanceIndices(inPvr, inSvr, bsa);
+        if (r.error) put('residx', r.error);
+        else {
+          const parts = [];
+          if (r.pvri !== undefined) parts.push('PVRI ' + Calc.fmt(r.pvri, 1) + ' WU·m² · ' + r.pvriText);
+          if (r.svri !== undefined) parts.push('SVRI ' + Calc.fmt(r.svri, 0) + ' · ' + r.svriText);
+          put('residx', partsOf(parts));
+        }
+      } else put('residx');
+    }
 
     // RV dP/dt
     if (has('rdt')) {
@@ -3264,14 +3348,31 @@
    * 渲染新生儿区块
    * @param {number} w 体重 kg（0 表示未填）
    */
-  function renderNeo(w) {
+  function renderNeo(w, age) {
     const card = $('pdNeoCard');
     const show = w > 0 && w <= 8;   // 超过 8 kg 基本不是 0–28 天，整块收起
     card.hidden = !show;
     if (!show) return;
 
-    const extrap = w < Peds.NEO_RANGE.wMin || w > Peds.NEO_RANGE.wMax;
+    // ★ v1.8.3 年龄闸：原文队列是 0–28 天，模型又只按体重，
+    //   所以「体重 4 kg 的 3 岁营养不良患儿」会被误套新生儿方程 —— 必须挡住。
+    const ageDays = (!isNaN(age) && age > 0) ? age * 365.25 : 0;
+    const tooOld = ageDays > 28;
     const warn = $('pdNeoWarn');
+    if (tooOld) {
+      card.hidden = false;
+      warn.hidden = false;
+      warn.textContent = '⚠ 年龄 ' + (ageDays >= 60 ? (ageDays / 365.25).toFixed(1) + ' 岁'
+          : Math.round(ageDays) + ' 天') +
+        '，已超出新生儿期（0–28 天）。本组方程只按体重建模、无年龄项，' +
+        '套用会把年龄大的小体重患儿算成正常，故整组停用。';
+      $('pdNeoBody').hidden = true;
+      $('pdNeoBtn').textContent = '已停用（年龄超出 0–28 天）';
+      return;
+    }
+    $('pdNeoBtn').disabled = false;
+
+    const extrap = w < Peds.NEO_RANGE.wMin || w > Peds.NEO_RANGE.wMax;
     warn.hidden = !extrap;
     warn.textContent = extrap
       ? '⚠ 当前体重 ' + w.toFixed(1) + ' kg 超出原文建模范围（1.5–5.0 kg），本组结果为外推，仅供参考。'
@@ -3319,7 +3420,7 @@
     const bsa = valid ? Peds.bsaHaycock(h, w) : 0;
 
     // ★ v1.8.1 新生儿体重法只依赖体重，故在 BSA 校验之前先渲染
-    renderNeo((w > 0 && w < 150) ? w : 0);
+    renderNeo((w > 0 && w < 150) ? w : 0, age);
 
     $('pdBsa').textContent = valid ? bsa.toFixed(2) : '—';
     $('pdBmi').textContent = valid ? Core.bmi(h, w).toFixed(1) : '—';

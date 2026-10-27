@@ -546,7 +546,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 120 条（计算 48 + 判读 72；外链两整组 + 切面速查 3 条 + 瓣膜解剖已移入「切面学习」页签）', nItems, 120, 0);
+  check('目录共 114 条（计算 42 + 判读 72；v1.8.3 三组合并后 −6，切面速查 / 瓣膜解剖 / 外链组不进目录）', nItems, 114, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -686,14 +686,13 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segSim.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
   check('血流动力学、舒张与心功能 13 条（M 型三合一 / 快速比值 / Ea / VTI 比 / 舒张功能 / CRT 前 25 条）', dirById('hemo').items.length, 13, 0);
-  check('右心与肺循环 9 条（肺动脉压·肺高压三合一 / FAC / PVR / SVR + 第二批 5 条）',
-    dirById('right').items.length, 9, 0);
-  check('右心第二批条目齐全（rvvol / rvfws / papi / residx / rvdvdt）',
-    ['rvvol', 'rvfws', 'papi', 'residx', 'rvdvdt']
-      .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('右心组条目齐全（肺动脉压三合一已并入 mpap，PASP / PADP 不再单列）',
-    ['mpap', 'rvfacv', 'pvrv', 'svrv']
-      .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('右心与肺循环 6 条（v1.8.3 合并后：mpap / rvvol / papi / resist / rvsyst / tapse）',
+    dirById('right').items.length, 6, 0);
+  check('右心组条目齐全，且被合并的旧条目不再单独出现',
+    ['mpap', 'rvvol', 'papi', 'resist', 'rvsyst', 'tapse']
+      .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) &&
+      !['pvrv', 'svrv', 'residx', 'rvfacv', 'rvfws', 'rvdvdt']
+        .some(id => dirById('right').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
   check('舒张功能合并为 1 条（dfun 收 E/A · E/e′ · E/Vp · 分级）',
     dirById('hemo').items.some(i => i.id === 'dfun' && i.kind === 'calc') &&
       !dirById('hemo').items.some(i => i.id === 'dias' || i.id === 'evp') ? 1 : 0, 1, 0);
@@ -701,13 +700,15 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirById('recon').items.some(i => i.id === 'sync' && i.kind === 'calc') ? 1 : 0, 1, 0);
   check('血流动力学、舒张与心功能 13 条（合并 dias / evp 之后）',
     dirById('hemo').items.length, 13, 0);
-  check('重构、室壁运动与心肌功能 16 条（原 15 + 心脏同步化）',
-    dirById('recon').items.length, 16, 0);
-  check('重构组条目齐全',
-    ['volidx', 'rwsv', 'spher', 'lastrain', 'aortaidx', 'mdsv', 'swv']
-      .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
-  check('计算类条目 3 个计算组合计 38 条（另 10 条并入瓣膜 4 / 先心 4 / 心腔 2，合计 48）',
-    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 38, 0);
+  check('重构、室壁运动与心肌功能 13 条（v1.8.3 左室重构四联合并后 −3）',
+    dirById('recon').items.length, 13, 0);
+  check('重构组条目齐全（四联已并为 lvgeom，旧的 lvmih / rwsv / spher / volidx 不再单列）',
+    ['lvgeom', 'lastrain', 'aortaidx', 'mdsv', 'swv']
+      .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) &&
+      !['lvmih', 'rwsv', 'spher', 'volidx'].some(id => dirById('recon').items.some(i => i.id === id))
+      ? 1 : 0, 1, 0);
+  check('计算类条目 3 个计算组合计 32 条（另 10 条并入瓣膜 4 / 先心 4 / 心腔 2，合计 42）',
+    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 32, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -721,7 +722,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('左心耳封堵 / CFR → 心腔组',
     ['laasz', 'cfr'].every(id => dirById('chamber').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('第三四批条目齐全',
-    ['laef', 'quickratio', 'lvmih', 'paidx', 'ras', 'ea', 'coa']
+    ['laef', 'quickratio', 'lvgeom', 'paidx', 'ras', 'ea', 'coa']
       .every(id => ['hemo', 'right', 'recon', 'valve', 'chd', 'chamber'].some(g => dirById(g).items.some(i => i.id === id)))
       ? 1 : 0, 1, 0);
   check('器械与介入组已拆散：CRT / LAD 进心腔组、LVAD 进急症组',

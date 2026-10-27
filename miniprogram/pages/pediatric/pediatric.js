@@ -47,6 +47,9 @@ Page({
     neoOpen: false,
     neoWeight: '',
     neoHasRows: false,
+    neoExtrap: false,
+    neoTooOld: false,
+    neoAgeText: '',
 
     showFormula: false,
   },
@@ -210,9 +213,14 @@ Page({
     });
     const neoMeasured = Object.assign({}, measured, neoOwn);
     const neoW = (w > 0 && w < 150) ? w : 0;
-    const neoGrouped = neoW ? peds.buildNeoGrouped(neoW, neoMeasured) : [];
+    // ★ v1.8.3 年龄闸：原文队列是 0–28 天，模型只按体重、无年龄项，
+    //   否则「体重 4 kg 的 3 岁营养不良患儿」会被误套新生儿方程。
+    const neoAge = parseFloat(this.data.age);
+    const neoAgeDays = (!isNaN(neoAge) && neoAge > 0) ? neoAge * 365.25 : 0;
+    const neoTooOld = neoAgeDays > 28;
+    const neoGrouped = (neoW && !neoTooOld) ? peds.buildNeoGrouped(neoW, neoMeasured) : [];
     // 体重落在 1.5–5.0 kg 时自动展开一次（用户手动收起后不再自动弹开）
-    if (neoW >= peds.NEO_RANGE.wMin && neoW <= peds.NEO_RANGE.wMax && !this._neoAuto) {
+    if (neoW >= peds.NEO_RANGE.wMin && neoW <= peds.NEO_RANGE.wMax && !neoTooOld && !this._neoAuto) {
       this._neoAuto = true;
       this.setData({ neoOpen: true });
     }
@@ -228,7 +236,9 @@ Page({
       neoGrouped: neoGrouped,
       neoWeight: neoW ? neoW.toFixed(1) : '',
       neoHasRows: neoGrouped.length > 0 && neoW > 0 && neoW <= 8,
-      neoExtrap: neoW > 0 && (neoW < peds.NEO_RANGE.wMin || neoW > peds.NEO_RANGE.wMax),
+      neoTooOld: neoTooOld && neoW > 0 && neoW <= 8,
+      neoAgeText: neoTooOld ? (neoAgeDays >= 60 ? neoAge.toFixed(1) + ' 岁' : Math.round(neoAgeDays) + ' 天') : '',
+      neoExtrap: !neoTooOld && neoW > 0 && (neoW < peds.NEO_RANGE.wMin || neoW > peds.NEO_RANGE.wMax),
       hasAnyValue: anyValue,
       summary: hasBsa ? this.buildSummary(grouped) : null,
       warnings: this.buildWarnings(valid, hasBsa ? bsa : 0),

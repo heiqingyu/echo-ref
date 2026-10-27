@@ -147,6 +147,7 @@ const GROUPS = [
      ══════════════════════════════════════════════════════════ */
   {
     id: 'rvfacv',
+    partOnly: true,
     ab: 'FAC',
     sec: 'right',
     title: '右室面积变化分数 FAC',
@@ -159,6 +160,7 @@ const GROUPS = [
   },
   {
     id: 'pvrv',
+    partOnly: true,
     ab: 'PVR',
     sec: 'right',
     title: '肺血管阻力 PVR',
@@ -172,6 +174,7 @@ const GROUPS = [
   },
   {
     id: 'svrv',
+    partOnly: true,
     ab: 'SVR',
     sec: 'right',
     title: '体循环血管阻力 SVR',
@@ -199,6 +202,7 @@ const GROUPS = [
   },
   {
     id: 'rvfws',
+    partOnly: true,
     ab: 'RVFWS',
     sec: 'right',
     title: '右室游离壁应变 RVFWS',
@@ -225,6 +229,7 @@ const GROUPS = [
   },
   {
     id: 'residx',
+    partOnly: true,
     ab: 'PVRI',
     sec: 'right',
     title: '阻力指数 PVRI / SVRI',
@@ -237,6 +242,7 @@ const GROUPS = [
   },
   {
     id: 'rvdvdt',
+    partOnly: true,
     ab: 'dP/dt',
     sec: 'right',
     title: '右室 dP/dt',
@@ -300,6 +306,7 @@ const GROUPS = [
   },
   {
     id: 'lvmih',
+    partOnly: true,
     ab: 'H2.7',
     sec: 'recon',
     title: 'LVMI 身高^2.7（肥胖适用）',
@@ -476,6 +483,7 @@ const GROUPS = [
   },
   {
     id: 'volidx',
+    partOnly: true,
     ab: 'EDVi',
     sec: 'recon',
     title: '容积指数与重构分级',
@@ -488,6 +496,7 @@ const GROUPS = [
   },
   {
     id: 'rwsv',
+    partOnly: true,
     ab: 'RWS',
     sec: 'recon',
     title: '相对室壁应力 RWS',
@@ -501,6 +510,7 @@ const GROUPS = [
   },
   {
     id: 'spher',
+    partOnly: true,
     ab: 'SI',
     sec: 'recon',
     title: '左室球形指数',
@@ -731,6 +741,72 @@ const SIGNS = [
   { v: 'yes', n: '有（≥2 类）' },
   { v: 'no', n: '无' },
 ];
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   ★ v1.8.3 合并页：把「同一次测量、同一个临床问题」的几条单指标准
+   收进一页，一条卡里分小节显示、各自出结果。
+   partOnly: true 的条目只在合并页里当小节，不进目录（与 segOnly 同理），
+   字段键与引擎调用原样复用，所以三端渲染逻辑不必重写。
+   ═══════════════════════════════════════════════════════════════════ */
+function mergedCard(id, ab, sec, title, sub, note, parts) {
+  const fields = [];
+  const outs = [];
+  parts.forEach(function (p) {
+    const g = groupOf(p.id);
+    if (!g) return;
+    fields.push({ g: p.g });
+    (g.fields || []).forEach(function (f) { fields.push(f); });
+    outs.push({ id: p.id, label: p.g });
+  });
+  return { id: id, ab: ab, sec: sec, title: title, sub: sub, note: note, fields: fields, outs: outs };
+}
+
+GROUPS.push(mergedCard('resist', 'RES', 'right',
+  '血管阻力：PVR · SVR · 指数化',
+  'PVR · SVR · 按 BSA 指数化（三项同屏）',
+  'PVR = (mPAP − PAWP) ÷ CO；SVR = (MAP − RAP) × 80 ÷ CO；指数化后 PVRI 正常 3–5 WU·m²',
+  [
+    { id: 'pvrv', g: '① 肺血管阻力 PVR' },
+    { id: 'svrv', g: '② 体循环血管阻力 SVR' },
+    { id: 'residx', g: '③ 阻力指数 PVRI / SVRI' },
+  ]));
+
+GROUPS.push(mergedCard('rvsyst', 'RVF', 'right',
+  '右室收缩功能：FAC · RVFWS · dP/dt',
+  'FAC · RVFWS · dP/dt（三项同屏）',
+  'FAC = (RVEDA − RVESA) ÷ RVEDA；RVFWS 取三节段均值（填负数）；右室 dP/dt = 12 ÷ Δt(s)',
+  [
+    { id: 'rvfacv', g: '① 面积变化分数 FAC' },
+    { id: 'rvfws', g: '② 游离壁应变 RVFWS' },
+    { id: 'rvdvdt', g: '③ 右室 dP/dt' },
+  ]));
+
+GROUPS.push(mergedCard('lvgeom', 'GEO', 'recon',
+  '左室重构四联：质量 · 应力 · 球形度 · 容积',
+  'LVMI 身高^2.7 · RWS · 球形指数 · EDVi/ESVi（四项同屏）',
+  'LVMI = Mass ÷ 身高(m)^2.7；RWS = 0.334 × SBP × LVEDD ÷ [PWT × (1 + PWT/LVEDD)]；SI = 短径 ÷ 长径',
+  [
+    { id: 'lvmih', g: '① 质量指数 LVMI（身高^2.7）' },
+    { id: 'rwsv', g: '② 相对室壁应力 RWS' },
+    { id: 'spher', g: '③ 左室球形指数' },
+    { id: 'volidx', g: '④ 容积指数与重构分级' },
+  ]));
+
+/* TAPSE（v1.8.3）：右室纵向收缩最常用的一个数，此前只有文字没有入口。
+   键 tapse / paspv 与「右心评估」共用，同一次测量两处同步。 */
+GROUPS.push({
+  id: 'tapse',
+  ab: 'TAPSE',
+  sec: 'right',
+  title: 'TAPSE 三尖瓣环收缩期位移',
+  sub: 'M 型 · ≥17 mm · 与 PASP 组成 RV-PA 耦联',
+  fields: [
+    { k: 'tapse', n: 'TAPSE', u: 'mm' },
+    { k: 'paspv', n: 'PASP（可选，算耦联）', u: 'mmHg' },
+  ],
+  note: 'TAPSE ≥17 mm 正常；<17 提示右室纵向收缩功能减低。填 PASP 时同出 TAPSE/PASP：>0.55 耦联保留、0.36–0.55 临界、<0.36 显著失耦联',
+});
 
 /** 按 id 取分组 */
 function groupOf(id) {

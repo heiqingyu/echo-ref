@@ -488,6 +488,9 @@ function check(name, ok, detail) {
       items: idx.querySelectorAll('.fx-item').length,
       links: idx.querySelectorAll('a.fx-item').length,
       valve: idx.querySelectorAll('.fx-item[data-kind="valve"]').length,
+      // ★ v1.8.3：详情卡是 buildCalcInputs() 运行时写进 #calcGroups 的，不在目录 #calcIndex 里
+      resistOuts: document.querySelectorAll('#calcGroups .card[data-g="resist"] .calc-out').length,
+      lvgeomOuts: document.querySelectorAll('#calcGroups .card[data-g="lvgeom"] .calc-out').length,
       valveCalc: (function () {
         // ★ v1.8.2：组头被包进 .fx-hd，列表与 .fx-hd 同级（同在 .fx-card 内），
         //   不再能从 .fx-group 直接 nextElementSibling 找到 —— 先上溯卡片再取列表。
@@ -532,7 +535,10 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 120 条（计算 48 + 评估判读 72；切面速查、瓣膜解剖与两外链组已移出）', d.items === 120, d.items);
+    check('条目 114 条（计算 42 + 评估判读 72；v1.8.3 三组合并 −6，切面速查 / 瓣膜解剖 / 外链组不进目录）', d.items === 114, d.items);
+    check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
+      d.resistOuts === 3 && d.lvgeomOuts === 4,
+      d.resistOuts + ' / ' + d.lvgeomOuts);
     check('目录不再含切面速查条目（tee-20 / tte-std / tte-measure）', d.segOnlyLeak === 0, d.segOnlyLeak);
     check('外链 <a> 条目 0 条（切面学习/TEE 演示已移出公式集目录）', d.links === 0, d.links);
     check('目录不再含操作规范专辑入口（已移入切面学习页签）', d.album === 0, d.album + ' / ' + d.albumTxt);
@@ -754,10 +760,11 @@ function check(name, ok, detail) {
   })()`);
   check('计算器详情含「临床意义 / 参考标准 / 判读要点」三节', notesOk, notesOk);
 
-  await openCalc('pvrv');
-  await fillCalc('pvrv', 'hmmpap', '45');
-  await fillCalc('pvrv', 'hmpawp', '12');
-  await fillCalc('pvrv', 'hmco', '5');
+  // ★ v1.8.3：pvrv 已是「血管阻力」合并页里的①小节，卡片入口换成 resist，结果槽 id 不变
+  await openCalc('resist');
+  await fillCalc('resist', 'hmmpap', '45');
+  await fillCalc('resist', 'hmpawp', '12');
+  await fillCalc('resist', 'hmco', '5');
   await new Promise((r) => setTimeout(r, 300));
   o = await outOf('pvrv');
   check('PVR 33/5 → 6.6 WU 重度', /6\.6/.test(o) && /重度/.test(o), o);
@@ -781,10 +788,10 @@ function check(name, ok, detail) {
   o = await outOf('dfun');
   check('舒张四步法 E/A 1.33 → 正常充盈', /1\.33/.test(o) && /正常充盈/.test(o), o);
 
-  await openCalc('rwsv');
-  await fillCalc('rwsv', 'rsbp', '140');
-  await fillCalc('rwsv', 'rlvedd', '5.5');
-  await fillCalc('rwsv', 'rpwt', '1.1');
+  await openCalc('lvgeom');
+  await fillCalc('lvgeom', 'rsbp', '140');
+  await fillCalc('lvgeom', 'rlvedd', '5.5');
+  await fillCalc('lvgeom', 'rpwt', '1.1');
   await new Promise((r) => setTimeout(r, 300));
   o = await outOf('rwsv');
   check('RWS 140/5.5/1.1 → 195', /195/.test(o), o);
@@ -879,14 +886,14 @@ function check(name, ok, detail) {
   o = await outOf('papi');
   check('PAPi (40−20)/15 → 1.33 失耦联', /1\.33/.test(o) && /失耦联/.test(o), o);
 
-  await openCalc('rvdvdt');
-  await fillCalc('rvdvdt', 'rdt', '25');
+  await openCalc('rvsyst');
+  await fillCalc('rvsyst', 'rdt', '25');
   await new Promise((r) => setTimeout(r, 300));
   o = await outOf('rvdvdt');
   check('RV dP/dt Δt25 → 480 mmHg/s', /480/.test(o), o);
 
-  await openCalc('residx');
-  await fillCalc('residx', 'ripvr', '6');
+  await openCalc('resist');
+  await fillCalc('resist', 'ripvr', '6');
   await new Promise((r) => setTimeout(r, 300));
   o = await outOf('residx');
   check('PVRI 6 WU × BSA → 指数化结果', /PVRI 1[0-9]\./.test(o), o);
@@ -930,9 +937,9 @@ function check(name, ok, detail) {
   check('LA/Ao 1.25 增大 / RV/LV 0.80 扩大',
     /1\.25/.test(o) && /0\.80/.test(o) && /扩大/.test(o), o);
 
-  await openCalc('lvmih');
-  await fillCalc('lvmih', 'lhmass', '200');
-  await fillCalc('lvmih', 'lhheight', '170');
+  await openCalc('lvgeom');
+  await fillCalc('lvgeom', 'lhmass', '200');
+  await fillCalc('lvgeom', 'lhheight', '170');
   await new Promise((r) => setTimeout(r, 300));
   o = await outOf('lvmih');
   check('LVMI 身高^2.7 200/170 → 47.7', /47\.7/.test(o), o);

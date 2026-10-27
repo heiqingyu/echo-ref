@@ -13,6 +13,24 @@
   background: #f3f4f6;
 }
 
+/* ★ v1.8.3 合并页：小节名放上一行，结果独占下一行（横排会把长结果挤成窄条） */
+.calc-out--multi {
+  display: block;
+}
+
+.calc-out--multi .calc-out__lbl {
+  display: block;
+  margin: 0 0 4rpx;
+  font-size: 21rpx;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.calc-out--multi .calc-out__v {
+  display: block;
+  font-size: 25rpx;
+}
+
 .calc-out__lbl {
   font-size: 22rpx;
   color: #6b7280;
@@ -26,7 +44,9 @@
   color: #1d4ed8;
   font-weight: 600;
   line-height: 1.7;
-  word-break: break-all;
+  /* ★ v1.8.3：break-all 会把「（>1200）」从数字中间劈开，改用放不下时才断词 */
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .calc-out--idle .calc-out__v {
