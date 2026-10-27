@@ -669,7 +669,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segViews.some(i => i.id === 'tte-sv' && /TTE-HTML5-SV\/index\.html$/.test(i.url)) ? 1 : 0, 1, 0);
   check('外链条目含 TEE 速查表',
     segViews.some(i => i.id === 'tee-cheat') ? 1 : 0, 1, 0);
-  // ★ v1.9.2：飞利浦专辑在专辑页展开成 8 个组标题 + 149 段（组标题不计入段数）
+  // ★ v1.9.2：飞利浦专辑在专辑页展开成 8 个组标题 + 150 段（组标题不计入段数）
   {
     let pgAlb = null;
     const _pPrev = global.Page;
@@ -681,8 +681,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       Object.keys(patch).forEach(function (k) { self.data[k] = patch[k]; });
     };
     pgAlb.onLoad({ sec: 'views', item: 'philips' });
-    check('飞利浦专辑页：段数 149（8 个组标题不计入）', pgAlb.data.count, 149, 0);
-    check('飞利浦专辑页：列表 157 行（149 段 + 8 个组标题）', pgAlb.data.items.length, 157, 0);
+    check('飞利浦专辑页：段数 150（8 个组标题不计入）', pgAlb.data.count, 150, 0);
+    check('飞利浦专辑页：列表 158 行（150 段 + 8 个组标题）', pgAlb.data.items.length, 158, 0);
     check('飞利浦专辑页：8 个组标题，id 前缀 g:，且排在首个视频之前',
       pgAlb.data.items.filter(function (i) { return i.g; }).length === 8 &&
       pgAlb.data.items.filter(function (i) { return i.g; }).every(function (i) { return i.id.indexOf('g:') === 0; }) &&
@@ -714,7 +714,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('搜无结果时列表为空（显示空态）', pgAlb.data.rows.length, 0, 0);
 
     pgAlb.onClear();
-    check('清除关键词后恢复全部 157 行', pgAlb.data.rows.length, 157, 0);
+    check('清除关键词后恢复全部 158 行', pgAlb.data.rows.length, 158, 0);
 
     // 播放页改为传 id（不再把中文 percent 地址塞进 query）
     {

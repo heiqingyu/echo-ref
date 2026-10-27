@@ -353,9 +353,9 @@ function check(name, ok, detail) {
   check('切面学习页 TEE 演示列表 3 条', se.sim === 3, segExtras);
   check('切面学习页切面速查与图谱 4 条', se.look === 4, segExtras);
   check('教学视频含 3 个专辑入口（操作规范 / 心课堂 / 飞利浦云课堂）', se.albumInViews === 3, se.albumInViews);
-  check('飞利浦专辑入口显示 149 段（组标题不计入）', /149/.test(se.philipsTxt), se.philipsTxt.replace(/\s+/g, ' ').slice(0, 80));
+  check('飞利浦专辑入口显示 150 段（组标题不计入）', /150/.test(se.philipsTxt), se.philipsTxt.replace(/\s+/g, ' ').slice(0, 80));
 
-  // ── v1.9.0：149 段的飞利浦专辑页要有搜索框与专题导航，否则只能死滚 ──
+  // ── v1.9.0：150 段的飞利浦专辑页要有搜索框与专题导航，否则只能死滚 ──
   await c.evalJs(`(function(){
     var el = document.querySelector('#segViewsList .fx-item[data-id="philips"]');
     if (el) el.dispatchEvent(new MouseEvent('click',{bubbles:true}));
@@ -378,8 +378,8 @@ function check(name, ok, detail) {
   check('飞利浦专辑页已打开', alb.open === true, albInfo);
   check('专辑页出现搜索框与导航条', alb.bar === true && alb.search === true, albInfo);
   check('专辑页导航 9 个 chip（全部 + 8 专题）', alb.chips === 9, alb.chips);
-  check('首位 chip 文案 = 全部 149', /^全部\s*149$/.test(alb.chip0.trim()), alb.chip0);
-  check('专辑页默认列出 149 段 + 8 个组标题', alb.rows === 149 && alb.groups === 8, albInfo);
+  check('首位 chip 文案 = 全部 150', /^全部\s*150$/.test(alb.chip0.trim()), alb.chip0);
+  check('专辑页默认列出 150 段 + 8 个组标题', alb.rows === 150 && alb.groups === 8, albInfo);
   check('组标题锚点 id = ag0…ag7', alb.gids === 'ag0,ag1,ag2,ag3,ag4,ag5,ag6,ag7', alb.gids);
 
   // 搜索：PISA 只剩 2 条（重复条目已删）
@@ -415,7 +415,7 @@ function check(name, ok, detail) {
   await c.evalJs(`document.getElementById('albumSearchClr').click()`);
   await new Promise((r) => setTimeout(r, 250));
   const albBack = await c.evalJs(`document.querySelectorAll('#albumList .fx-item').length`);
-  check('点清除后恢复全部 149 段', albBack === 149, albBack);
+  check('点清除后恢复全部 150 段', albBack === 150, albBack);
 
   // 点第 4 个专题 chip（k=3）→ 页面确实滚下去
   const beforeY = await c.evalJs('window.scrollY');

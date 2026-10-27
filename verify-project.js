@@ -321,23 +321,23 @@ if (ktAlb && ktAlb.children.every(function (it) {
 else bad('心课堂视频存在地址异常或缺字段的条目');
 if (views && views.items[0].id === 'bookvid' && views.items[1].id === 'ktvid') ok('心课堂专辑排在操作规范专辑之后（未抢占第一条）');
 else bad('切面学习视频专辑顺序异常: ' + (views ? views.items.slice(0, 3).map(function (x) { return x.id; }).join(',') : 'missing'));
-// v1.9.2：飞利浦云课堂心脏类目课程（149 段，按 8 个专题分组）。原 152 → 去重复 PISA → 151 →
-// 去「先心病诊断思路」「血液透析自体动静脉内瘘的超声检测」→ 149
+// v1.9.3：飞利浦云课堂心脏类目课程（150 段，按 8 个专题分组）。原 152 → 去重复 PISA → 151 →
+// 去「血液透析自体动静脉内瘘的超声检测」→ 150（其余先心条目保留）
 const phAlb = views ? views.items.filter(function (it) { return it.id === 'philips'; })[0] : null;
 const phKids = (phAlb && phAlb.children) || [];
 const phReal = phKids.filter(function (c) { return !c.g; });
 const phGroups = phKids.filter(function (c) { return !!c.g; });
-if (phAlb && phAlb.album && phReal.length === 149) ok('飞利浦云课堂专辑 149 段');
+if (phAlb && phAlb.album && phReal.length === 150) ok('飞利浦云课堂专辑 150 段');
 else bad('飞利浦专辑段数异常: ' + phReal.length);
 if (phGroups.length === 8) ok('飞利浦专辑按 8 个专题分组（组标题不计入段数）');
 else bad('飞利浦专辑分组数异常: ' + phGroups.length);
 if (phReal.every(function (c) { return c.id && c.title && c.sub && /^https:\/\//.test(c.url); }))
-  ok('149 段均含 id / 标题 / 说明 / https 地址');
+  ok('150 段均含 id / 标题 / 说明 / https 地址');
 else bad('飞利浦专辑存在缺字段的条目');
-if (new Set(phReal.map(function (c) { return c.id; })).size === 149) ok('飞利浦专辑 id 无重复');
+if (new Set(phReal.map(function (c) { return c.id; })).size === 150) ok('飞利浦专辑 id 无重复');
 else bad('飞利浦专辑 id 有重复');
 const phMp4 = phReal.filter(function (c) { return /\.mp4$/.test(c.url); }).length;
-if (phMp4 === 146) ok('146 段为 mp4 直链，3 段 HLS 指向官方详情页');
+if (phMp4 === 147) ok('147 段为 mp4 直链，3 段 HLS 指向官方详情页');
 else bad('飞利浦专辑可播条目数异常: ' + phMp4);
 // v1.9.0：平台把同一场讲座挂在两个类目下重复收录，曾出现两条 PISA（ph-108 / ph-112）
 const phSameTitle = {};

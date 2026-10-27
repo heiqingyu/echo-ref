@@ -5493,6 +5493,10 @@ const PHILIPS_CLASS = [
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%BF%83%E8%84%8F%E5%92%8C%E5%A4%A7%E8%A1%80%E7%AE%A13D%E6%89%93%E5%8D%B0%E2%80%94%E2%80%94%E8%B6%85%E4%BA%BA%E8%AF%BB%E5%BF%83.mp4',
   },
   {
+    id: 'ph-148', title: '先心病诊断思路', sub: '2018.07.25 · 百家讲坛 · 1 小时 0 分',
+    url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%85%88%E5%BF%83%E7%97%85%E8%AF%8A%E6%96%AD%E6%80%9D%E8%B7%AF.mp4',
+  },
+  {
     id: 'ph-149', title: '肺静脉异位引流分型及超声诊断技巧（小儿及胎儿）', sub: '2021.09.22 · 百家讲坛 · 54 分钟',
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E8%82%BA%E9%9D%99%E8%84%89%E5%BC%82%E4%BD%8D%E5%BC%95%E6%B5%81%E5%88%86%E5%9E%8B%E5%8F%8A%E8%B6%85%E5%A3%B0%E8%AF%8A%E6%96%AD%E6%8A%80%E5%B7%A7%EF%BC%88%E5%B0%8F%E5%84%BF%E5%8F%8A%E8%83%8E%E5%84%BF%EF%BC%89.mp4',
   },
@@ -5603,7 +5607,7 @@ const LINK_SECTIONS = [
       {
         id: 'philips',
         title: '飞利浦云课堂 · 心脏超声讲座（视频）',
-        sub: '149 段 / 64 小时 · 十个心脏类目 · 按 8 个专题分组 · 可搜索',
+        sub: '150 段 / 65 小时 · 十个心脏类目 · 按 8 个专题分组 · 可搜索',
         album: true,
         note: '飞利浦超声云课堂公开回放，按 8 个专题排列：探头维护 / 标准切面 / 定量操作 / 三维与多平面 / '
           + '瓣膜病与结构性心脏病介入 / 心功能定量 / 心肌病与造影 / 先心与胎儿。地址是飞利浦 OSS 原片直链'
