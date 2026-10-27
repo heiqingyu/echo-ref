@@ -10,6 +10,7 @@ Page({
     note: '',
     count: 0,
     items: [],
+    links: [],
     errText: '',
   },
 
@@ -43,6 +44,10 @@ Page({
       // 书籍出处优先取专辑条目自带的 note，其次取分组 note
       note: alb.note || sec.note || '',
       count: kids.length,
+      // ★ v1.8.5：专辑可带公众号原文等出处链接（视频是转存的，原文才是第一手）
+      links: (alb.links || []).map(function (l) {
+        return { n: l.n, url: l.url };
+      }),
       items: kids.map(function (c) {
         return {
           id: c.id,
@@ -56,6 +61,18 @@ Page({
     if (alb.title) {
       wx.setNavigationBarTitle({ title: alb.title });
     }
+  },
+
+  /** 点击出处链接：复制到剪贴板（小程序内不能直接开外链） */
+  onCopyLink(e) {
+    const url = e.currentTarget.dataset.url;
+    if (!url) return;
+    wx.setClipboardData({
+      data: url,
+      success() {
+        wx.showToast({ title: '已复制，请在浏览器打开', icon: 'none', duration: 2200 });
+      },
+    });
   },
 
   /** 点击某个切面：跳站内播放页 */

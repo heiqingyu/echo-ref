@@ -10,6 +10,11 @@
       <view class="card__title">{{title}}</view>
       <view class="card__desc">共 {{count}} 段 · 点击条目播放</view>
       <view wx:if="{{note}}" class="album__note">{{note}}</view>
+      <view wx:if="{{links.length}}" class="album__links">
+        <view wx:for="{{links}}" wx:key="url" wx:for-item="lk"
+              class="album__link" hover-class="album__link--tap"
+              data-url="{{lk.url}}" bindtap="onCopyLink">{{lk.n}} ↗</view>
+      </view>
     </view>
 
     <view class="fx-list">

@@ -1758,6 +1758,21 @@
       if (noteTxt) { nt.textContent = noteTxt; nt.hidden = false; }
       else { nt.textContent = ''; nt.hidden = true; }
     }
+    // ★ v1.8.5：专辑可带公众号原文等出处链接（视频是转存的，原文才是第一手）
+    const lk = $('albumLinks');
+    if (lk) {
+      const arr = alb.links || [];
+      if (arr.length) {
+        lk.innerHTML = arr.map(function (l) {
+          return '<a class="fx-linkrow__a" href="' + esc(l.url) +
+            '" target="_blank" rel="noopener noreferrer">' + esc(l.n) + ' ↗</a>';
+        }).join('');
+        lk.hidden = false;
+      } else {
+        lk.innerHTML = '';
+        lk.hidden = true;
+      }
+    }
 
     if ($('albumList')) {
       let h = '<div class="fx-list">';

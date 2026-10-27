@@ -4951,7 +4951,12 @@ const LINK_SECTIONS = [
         title: '心脏超声术语及标准切面（视频）',
         sub: 'GE 心课堂 上下篇 17 段 · 探头手法 + 逐个标准切面',
         album: true,
-        note: 'GE 心课堂「心脏超声基础规范学习班」学习笔记（上 / 下篇）· 微信公众号「GE超声」2021-07-25 · 720p 转存',
+        note: 'GE 心课堂「心脏超声基础规范学习班」学习笔记（上 / 下篇）· 微信公众号「GE超声」· 720p 转存',
+        // ★ v1.8.5：补公众号原文出处（视频为转存，原文才是第一手）
+        links: [
+          { n: '公众号原文 · 上篇', url: 'https://mp.weixin.qq.com/s/majT0NAFGIFEd1SAB5TGUw' },
+          { n: '公众号原文 · 下篇', url: 'https://mp.weixin.qq.com/s/DLmT3C8YW9Obb97KvVGmBg' },
+        ],
         children: KT_VIDEOS,
       },
       {

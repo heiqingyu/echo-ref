@@ -973,6 +973,30 @@ html, body {
   color: #5b6472;
 }
 
+/* ★ v1.8.5 专辑出处链接（公众号原文等）。display:flex 会压掉 hidden 属性，必须显式关掉 */
+.fx-linkrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 8px 13px;
+  border-bottom: 1px solid #f0f2f7;
+  background: #f7f9fd;
+}
+
+.fx-linkrow[hidden] { display: none; }
+
+.fx-linkrow__a {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 9px;
+  background: #e8eefb;
+  color: #2f5fb3;
+  font-size: 11px;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 .fx-list {
   background: transparent;
   border-radius: 0;
@@ -1827,7 +1851,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.8.5</div>
+    <div class="verline">心脏超声参考值 · v1.8.6</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -1869,7 +1893,7 @@ button.fx-nav__c {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.8.5</div>
+      <div class="verline">心脏超声参考值 · v1.8.6</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -1906,6 +1930,7 @@ button.fx-nav__c {
         <div class="card__t" id="albumTitle"></div>
         <div class="card__d" id="albumDesc"></div>
         <div class="fx-gnote" id="albumNote" hidden></div>
+        <div class="fx-linkrow" id="albumLinks" hidden></div>
       </div>
       <div id="albumList"></div>
     </div>
@@ -13795,7 +13820,12 @@ const LINK_SECTIONS = [
         title: '心脏超声术语及标准切面（视频）',
         sub: 'GE 心课堂 上下篇 17 段 · 探头手法 + 逐个标准切面',
         album: true,
-        note: 'GE 心课堂「心脏超声基础规范学习班」学习笔记（上 / 下篇）· 微信公众号「GE超声」2021-07-25 · 720p 转存',
+        note: 'GE 心课堂「心脏超声基础规范学习班」学习笔记（上 / 下篇）· 微信公众号「GE超声」· 720p 转存',
+        // ★ v1.8.5：补公众号原文出处（视频为转存，原文才是第一手）
+        links: [
+          { n: '公众号原文 · 上篇', url: 'https://mp.weixin.qq.com/s/majT0NAFGIFEd1SAB5TGUw' },
+          { n: '公众号原文 · 下篇', url: 'https://mp.weixin.qq.com/s/DLmT3C8YW9Obb97KvVGmBg' },
+        ],
         children: KT_VIDEOS,
       },
       {
@@ -17674,6 +17704,21 @@ const MATERIALS = [];
       const noteTxt = alb.note || (sec && sec.note) || '';
       if (noteTxt) { nt.textContent = noteTxt; nt.hidden = false; }
       else { nt.textContent = ''; nt.hidden = true; }
+    }
+    // ★ v1.8.5：专辑可带公众号原文等出处链接（视频是转存的，原文才是第一手）
+    const lk = $('albumLinks');
+    if (lk) {
+      const arr = alb.links || [];
+      if (arr.length) {
+        lk.innerHTML = arr.map(function (l) {
+          return '<a class="fx-linkrow__a" href="' + esc(l.url) +
+            '" target="_blank" rel="noopener noreferrer">' + esc(l.n) + ' ↗</a>';
+        }).join('');
+        lk.hidden = false;
+      } else {
+        lk.innerHTML = '';
+        lk.hidden = true;
+      }
     }
 
     if ($('albumList')) {

@@ -962,6 +962,30 @@ html, body {
   color: #5b6472;
 }
 
+/* ★ v1.8.5 专辑出处链接（公众号原文等）。display:flex 会压掉 hidden 属性，必须显式关掉 */
+.fx-linkrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 8px 13px;
+  border-bottom: 1px solid #f0f2f7;
+  background: #f7f9fd;
+}
+
+.fx-linkrow[hidden] { display: none; }
+
+.fx-linkrow__a {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 9px;
+  background: #e8eefb;
+  color: #2f5fb3;
+  font-size: 11px;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 .fx-list {
   background: transparent;
   border-radius: 0;

@@ -504,6 +504,7 @@ const html = `<!DOCTYPE html>
         <div class="card__t" id="albumTitle"></div>
         <div class="card__d" id="albumDesc"></div>
         <div class="fx-gnote" id="albumNote" hidden></div>
+        <div class="fx-linkrow" id="albumLinks" hidden></div>
       </div>
       <div id="albumList"></div>
     </div>

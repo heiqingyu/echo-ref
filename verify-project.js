@@ -313,6 +313,12 @@ if (ktAlb && ktAlb.children.every(function (it) {
 else bad('心课堂视频存在地址异常或缺字段的条目');
 if (views && views.items[0].id === 'bookvid' && views.items[1].id === 'ktvid') ok('心课堂专辑排在操作规范专辑之后（未抢占第一条）');
 else bad('切面学习视频专辑顺序异常: ' + (views ? views.items.slice(0, 3).map(function (x) { return x.id; }).join(',') : 'missing'));
+// v1.8.5：视频专辑必须给出公众号原文出处（视频是转存的，原文才是第一手）
+const ktLk = ktAlb && (ktAlb.links || []);
+if (ktLk && ktLk.length === 2 && ktLk.every(function (l) {
+  return l.n && /^https://////mp//.weixin//.qq//.com///s///[//w-]+$/.test(l.url);
+})) ok('心课堂专辑标注公众号原文出处（上 / 下篇）');
+else bad('心课堂专辑缺少公众号原文链接: ' + JSON.stringify(ktAlb ? (ktAlb.links || null) : null));
 const extSrc = fs.readFileSync(path.join(MP, 'pages/calculators/calculators.js'), 'utf8');
 if (extSrc.indexOf('EX.LINK_SECTIONS') !== -1) ok('目录页已接入 LINK_SECTIONS（搜索 / 专辑子条目仍复用）');
 else bad('目录页未接入 LINK_SECTIONS');
