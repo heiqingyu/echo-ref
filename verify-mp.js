@@ -585,7 +585,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const segViews = pgS.data.viewsList;
   const segSim = pgS.data.simList;
   const segLook = pgS.data.lookList;
-  check('切面学习页签：教学视频列表 7 条（2 专辑 + 5 外链）', segViews.length, 7, 0);
+  check('切面学习页签：教学视频列表 8 条（2 专辑 + 6 外链）', segViews.length, 8, 0);
   check('切面学习页签：TEE 演示列表 3 条', segSim.length, 3, 0);
   check('切面学习页签：切面速查与图谱 4 条（TEE 20 切面 / TTE 规范切面 / TTE 标准切面测量 / 瓣膜解剖）',
     segLook.length, 4, 0);
@@ -612,8 +612,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('切面学习搜不到时给空态文案', /没有匹配/.test(pgS.data.segEmpty) ? 1 : 0, 1, 0);
   check('两边都搜不到时不给跨页签提示', pgS.data.segCrossN, 0, 0);
   pgS.applySegKw('');
-  check('清空搜索后切面学习恢复完整列表（4 / 7 / 3）',
-    pgS.data.lookList.length === 4 && pgS.data.viewsList.length === 7 &&
+  check('清空搜索后切面学习恢复完整列表（4 / 8 / 3）',
+    pgS.data.lookList.length === 4 && pgS.data.viewsList.length === 8 &&
       pgS.data.simList.length === 3 ? 1 : 0, 1, 0);
   global.__lastSwitchTab = '';
   pgS.applySegKw('TAPSE');

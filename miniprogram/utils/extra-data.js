@@ -4869,6 +4869,21 @@ const BRIEF_SECTIONS = [
 const BV_BASE = 'https://image.medonhand.com/E03DACD18D37A094/';
 
 /**
+ * 飞利浦云课堂（poc.martech-global.com）的讲座视频。
+ *
+ * ★★ 该平台播放器 `player.html?url=<base64>` 只是把参数解码后赋给 `<video src>`，
+ *   **没有任何签名 / 防盗链 / 加密**，所以 base64 解出来的就是可直链播放的 OSS 地址。
+ *   实测不带 Referer、不带签名请求即 206 video/mp4，可直接 <video> 播放、可拖进度条。
+ * ★ 但地址属于对方（philips-idp.oss-cn-shanghai.aliyuncs.com，公开读、不可列举），
+ *   他们若改权限 / 删文件 / 加 Referer 白名单，链接会失效 —— 属**热链**，非转存。
+ *   原始备份在仓库外 `videos/_raw2/pisa.mp4`（692 MB，35:34，1080p）。
+ */
+const PHILIPS_PISA = 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/' +
+  '%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/' +
+  '2026.3.23%20PISA%E5%8E%9F%E7%90%86%EF%BC%8C%E8%AF%AF%E5%8C%BA%E5%8F%8A%E5%BA%94%E7%94%A8-' +
+  '%E5%BE%90%E5%AD%90%E7%89%B9.mp4';
+
+/**
  * 第三章 25 段切面视频。作为「实用超声规范化检查与操作（视频）」专辑的子条目：
  * 只在专辑页展开，不进目录 setData（体积大、目录页用不到）。
  */
@@ -4988,6 +5003,12 @@ const LINK_SECTIONS = [
         title: 'TEE 标准视图速查表',
         sub: '探头角度 · 平面 · 对应结构 · 可打印（360 极速浏览器打开）',
         url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/TEE-cheat-sheet/index.htm',
+      },
+      {
+        id: 'pisa-lect',
+        title: 'PISA 原理、误区及应用（35 分钟）',
+        sub: '飞利浦云课堂 2026.3.23 · 徐子特 · 1080p 原片',
+        url: PHILIPS_PISA,
       },
     ],
   },

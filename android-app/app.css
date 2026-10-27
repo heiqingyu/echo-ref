@@ -1031,6 +1031,9 @@ html, body {
   font-family: inherit;
   text-align: left;
   cursor: pointer;
+  /* ★ v1.8.7：外链条目渲染成 <a>，不写这行会继承 UA 默认下划线（专辑页同样受影响） */
+  text-decoration: none;
+  color: inherit;
 }
 
 .fx-item:last-child {

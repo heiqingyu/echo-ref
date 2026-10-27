@@ -348,7 +348,7 @@ function check(name, ok, detail) {
   check('切面学习页内导航 4 个（节段/速查/视频/演示）', se.nav === 4, se.nav);
   check('页内导航文案与顺序 = 节段划分|切面速查|教学视频|TEE 演示',
     se.navTxt === '节段划分|切面速查|教学视频|TEE 演示', se.navTxt);
-  check('切面学习页教学视频列表 7 条', se.views === 7, segExtras);
+  check('切面学习页教学视频列表 8 条', se.views === 8, segExtras);
   check('切面学习页 TEE 演示列表 3 条', se.sim === 3, segExtras);
   check('切面学习页切面速查与图谱 4 条', se.look === 4, segExtras);
   check('教学视频含 2 个专辑入口（操作规范 / 心课堂）', se.albumInViews === 2, se.albumInViews);
@@ -430,7 +430,7 @@ function check(name, ok, detail) {
   })()`);
   await new Promise((r) => setTimeout(r, 300));
   const srst = await segState();
-  check('清空搜索后切面学习恢复完整列表', srst.segpart === false && srst.look === 4 && srst.views === 7 && srst.sim === 3,
+  check('清空搜索后切面学习恢复完整列表', srst.segpart === false && srst.look === 4 && srst.views === 8 && srst.sim === 3,
     JSON.stringify(srst));
 
   // v1.6.4 回归：从切面学习点条目 → 进公式集详情 → 返回，页签必须回到「切面学习」

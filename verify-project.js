@@ -262,7 +262,7 @@ console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 
 if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 切面在线演示）');
 else bad('外链分组数异常: ' + (EX.LINK_SECTIONS || []).length);
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);
-if (linkIds.length === 10) ok('外链条目 10 条（8 条单条外链 + 操作规范专辑 + 心课堂视频专辑）');
+if (linkIds.length === 11) ok('外链条目 11 条（9 条单条外链 + 操作规范专辑 + 心课堂视频专辑）');
 else bad('外链条目数异常: ' + linkIds.length);
 const linkBad = EX.LINK_SECTIONS.some(sec => sec.items.some(it => {
   if (!it.id || !it.title || !it.sub) return true;
