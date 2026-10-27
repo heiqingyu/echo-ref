@@ -21,6 +21,11 @@ prototype-peds.html
 android-app/build/
 android-app/dist/
 android-app/*.log
+# ★ v1.8.3：APK 打包源是 docs/index.html 的**字节级副本**，由 build-apk.bat 第 0 步
+#   （copy docs\index.html → assets\index.html）自动生成，属于纯构建产物。
+#   曾在仓库里存了 86 个版本、共 61.5 MB（未压缩）—— 不再跟踪，只留 docs 一份。
+#   刚克隆的仓库需要先跑 android-app/build-apk.bat 才会出现该文件。
+android-app/assets/index.html
 
 # ══════════ 签名私钥！绝对不要上传 ══════════
 # 泄露后他人可用你的名义签发 APK
