@@ -1962,7 +1962,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.9.0</div>
+    <div class="verline">心脏超声参考值 · v1.9.1</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2004,7 +2004,7 @@ button.fx-nav__c {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.9.0</div>
+      <div class="verline">心脏超声参考值 · v1.9.1</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -13858,16 +13858,17 @@ const BRIEF_SECTIONS = [
 const BV_BASE = 'https://image.medonhand.com/E03DACD18D37A094/';
 
 /**
- * PISA 那一场讲座的**站内转存**地址（其余 151 段是热链，见 PHILIPS_CLASS）。
+ * PISA 那一场讲座的地址（v1.9.1 起改回**飞利浦 OSS 原片热链**）。
  *
- * ★★ 原片 `live_broadcast/超声/云教室/2026.3.23 PISA原理，误区及应用-徐子特.mp4`
- *   1080p / 692 MB，且 **moov 在文件末尾**（没做 faststart）—— 微信小程序 `<video>`
- *   组件点了只会转圈，用户只能复制链接去浏览器看。转 720p + `+faststart` 后 40 MB，
- *   站内直接可播（实测幻灯片文字与超声图仍清晰）。
- * ★ 转码命令记在 `_dump/pisa-720p.txt`（仓库外）；原片备份在仓库外 videos/_raw2/pisa.mp4。
- *   v1.9.0 起 echo-ref-media 仓库不再放 README（纯说明文档，与播放无关）。
+ * ★★ 历史：v1.8.8 曾把这场转成 720p + faststart 托管到 GitHub Pages（echo-ref-media），
+ *   理由是原片 `moov` 在文件末尾、担心小程序起播不了。**实测用户反馈自托管更卡**
+ *   （GitHub Pages 本机带宽抖动大，30 KB/s ↔ 3 MB/s），而飞利浦 OSS 是阿里云 CDN、
+ *   支持 Range，起播反而快 —— 所以 v1.9.1 改回原片直链，转存文件已从媒体仓库删除。
+ *   ★ 以后别再「为了能播就转存」：先确认是不是编码/传参问题（v1.9.0 的
+ *   「视频地址无效」就是 `?url=` 传中文地址失真，与 faststart 无关）。
+ * ★ 原片备份在仓库外 videos/_raw2/pisa.mp4（692 MB，只做备份，不参与发布）。
  */
-const PHILIPS_PISA = 'https://heiqingyu.github.io/echo-ref-media/videos/pisa-lect.mp4';
+const PHILIPS_PISA = 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/2026.3.23%20PISA%E5%8E%9F%E7%90%86%EF%BC%8C%E8%AF%AF%E5%8C%BA%E5%8F%8A%E5%BA%94%E7%94%A8-%E5%BE%90%E5%AD%90%E7%89%B9.mp4';
 
 /**
  * 飞利浦超声云课堂（poc.martech-global.com / app.ma.scrmtech.com）心脏类目全部课程。
@@ -13881,9 +13882,9 @@ const PHILIPS_PISA = 'https://heiqingyu.github.io/echo-ref-media/videos/pisa-lec
  *   去同题重复后 152 段 / 66 小时 / 原片 62 GB，按 8 个专题分组（`{ g: '…' }` 是组标题）。
  * ★ 地址是**热链**（philips-idp.oss-cn-shanghai.aliyuncs.com，公开读），不是转存：
  *   对方改权限 / 删文件即失效。别把它当成自有资源。
- * ★ 小程序能不能站内播取决于原片有没有 faststart（moov 在文件头）：
- *   实测 152 段里约 2/3 是 faststart，可直接播；其余 moov 在尾巴，小程序起播不了 ——
- *   所以 PISA 那一场（ph-108）单独转 720p + faststart 存到 echo-ref-media，见 PHILIPS_PISA。
+ * ★ 起播：原片 moov 在文件头（faststart）的小程序内可直接播，约 2/3 是；
+ *   其余 moov 在尾部，理论上要等索引，但实测 OSS 支持 Range，多数也能起播。
+ *   **不转存**——v1.8.8 转过一次，用户反馈自托管反而更卡，v1.9.1 全部改回热链。
  * ★ 3 条 HLS（.m3u8 分片）网页与小程序都播不了，url 直接指向飞利浦官方详情页。
  */
 const PHILIPS_CLASS = [
@@ -14323,7 +14324,7 @@ const PHILIPS_CLASS = [
   },
   {
     id: 'ph-108', title: 'PISA 原理、误区及应用（35 分钟）',
-    sub: '2026.03.23 · 云教室 · 36 分钟 · 720p 站内转存（原片 1080p 692 MB）',
+    sub: '2026.03.23 · 云教室 · 36 分钟 · 1080p 原片（692 MB，热链）',
     url: PHILIPS_PISA,
   },
   {

@@ -345,14 +345,17 @@ phReal.forEach(function (c) {
   phSameTitle[k] = (phSameTitle[k] || 0) + 1;
 });
 const phDup = Object.keys(phSameTitle).filter(function (k) { return phSameTitle[k] > 1; });
-if (!phDup.length) ok('飞利浦专辑无同题重复条目（PISA 只留站内转存那条）');
+if (!phDup.length) ok('飞利浦专辑无同题重复条目（PISA 只留讲座那条）');
 else bad('飞利浦专辑有重复条目: ' + phDup.join(' / '));
 if (!phReal.some(function (c) { return c.id === 'ph-112'; })) ok('重复的 ph-112 已删除');
 else bad('ph-112 仍在专辑里');
 
 const phPisa = phReal.filter(function (c) { return c.id === 'ph-108'; })[0];
-if (phPisa && phPisa.url === 'https://heiqingyu.github.io/echo-ref-media/videos/pisa-lect.mp4')
-  ok('PISA 讲座指向站内 720p 转存（原片 moov 在尾、小程序起播不了）');
+// v1.9.1：全平台不再转存，PISA 也回飞利浦 OSS 原片（自托管 GitHub Pages 实测更卡）
+if (phPisa && phPisa.url === 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/2026.3.23%20PISA%E5%8E%9F%E7%90%86%EF%BC%8C%E8%AF%AF%E5%8C%BA%E5%8F%8A%E5%BA%94%E7%94%A8-%E5%BE%90%E5%AD%90%E7%89%B9.mp4')
+  ok('PISA 讲座指向飞利浦 OSS 原片（不转存）');
+else if (phPisa && phPisa.url.indexOf('https://philips-idp.oss-cn-shanghai.aliyuncs.com/') === 0)
+  ok('PISA 讲座指向飞利浦 OSS 原片（不转存）');
 else bad('PISA 条目地址异常: ' + (phPisa ? phPisa.url : 'missing'));
 if (phAlb && (phAlb.links || []).length === 1 && /app\.ma\.scrmtech\.com/.test(phAlb.links[0].url))
   ok('飞利浦专辑标注云课堂全部课程入口');

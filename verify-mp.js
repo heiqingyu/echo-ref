@@ -736,8 +736,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
         Object.keys(patch).forEach(function (k) { self.data[k] = patch[k]; });
       };
       pgVid.onLoad({ sec: 'views', item: 'philips', kid: 'ph-108' });
-      check('播放页按 id 取到站内 720p 地址',
-        pgVid.data.url === 'https://heiqingyu.github.io/echo-ref-media/videos/pisa-lect.mp4' ? 1 : 0, 1, 0);
+      check('播放页按 id 取到 PISA 原片地址（飞利浦 OSS，不转存）',
+        pgVid.data.url.indexOf('https://philips-idp.oss-cn-shanghai.aliyuncs.com/') === 0 && pgVid.data.url.slice(-4) === '.mp4' ? 1 : 0, 1, 0);
       pgVid.onLoad({ sec: 'views', item: 'philips', kid: 'ph-037' });
       check('播放页按 id 取到中文 percent 编码的 OSS 地址（不报「地址无效」）',
         /\.mp4$/.test(pgVid.data.url) && !pgVid.data.errText ? 1 : 0, 1, 0);

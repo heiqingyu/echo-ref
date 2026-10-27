@@ -397,7 +397,7 @@ function check(name, ok, detail) {
       clr: !document.getElementById('albumSearchClr').hidden
     });
   })()`));
-  check('搜「PISA」命中 2 条（站内转存 + 操作流程，无重复）', albF.rows === 2, albF.txt);
+  check('搜「PISA」命中 2 条（讲座 + 操作流程，无重复）', albF.rows === 2, albF.txt);
   check('搜「PISA」只保留有命中的组标题', albF.groups === 2, albF.groups);
   check('搜索时右侧清除按钮出现', albF.clr === true, albF.clr);
 
