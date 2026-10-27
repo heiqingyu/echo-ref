@@ -27,6 +27,11 @@ android-app/*.log
 #   刚克隆的仓库需要先跑 android-app/build-apk.bat 才会出现该文件。
 android-app/assets/index.html
 
+# ★ v1.8.4：www/index.html 是 build-www.js 生成的**完整版**（供本地预览 / APK 内嵌），
+#   历史里存了 80 个版本、共 62.4 MB（未压缩）。同样移出版本库，只留 docs（发布版）一份。
+#   需要预览时跑 `node build-www.js` 即可重新生成，字节与源码一致。
+www/index.html
+
 # ══════════ 签名私钥！绝对不要上传 ══════════
 # 泄露后他人可用你的名义签发 APK
 *.jks

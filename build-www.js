@@ -25,6 +25,9 @@ const OUT = path.join(ROOT, 'www', 'index.html');
  *   直接 writeFileSync 会 EPERM。统一先删再写。
  */
 function writeFresh(p, data) {
+  // ★ v1.8.4：www/ 已移出版本库（纯生成物），新克隆的仓库里没有该目录，
+  //   只 mkdir docs 会在写 www 时 ENOENT —— 统一在这里兜底建目录。
+  fs.mkdirSync(path.dirname(p), { recursive: true });
   try { if (fs.existsSync(p)) fs.unlinkSync(p); } catch (e) { /* 锁定时再试一次 */ }
   fs.writeFileSync(p, data, 'utf8');
 }
