@@ -340,6 +340,22 @@ function check(name, ok, detail) {
   check('供血分区按钮 3 个', si.terrChips === 3, si.terrChips);
   check('节段数字按钮 ≥ 17', si.segChips >= 17, si.segChips);
 
+  // PSAX 环带直接标壁名（用户 2026-10-28：不点数字看不出哪块是哪面壁）
+  const psaxTxt = await c.evalJs(`(function(){
+    var t=function(id){
+      var b=document.getElementById(id);
+      return b ? b.textContent.replace(/\\s+/g,'') : '';
+    };
+    return JSON.stringify({ b: t('wd-PSAX-B'), m: t('wd-PSAX-M'), a: t('wd-PSAX-A') });
+  })()`);
+  const px = JSON.parse(psaxTxt);
+  check('PSAX 基底段环带标出壁名（前壁/前间隔/下壁/前外侧壁）',
+    ['前壁', '前间隔', '下壁', '前外侧壁'].every(function (w) { return px.b.indexOf(w) >= 0; }), px.b);
+  check('PSAX 中段环带标出壁名（下外侧壁/前外侧壁）',
+    px.m.indexOf('下外侧壁') >= 0 && px.m.indexOf('前外侧壁') >= 0, px.m);
+  check('PSAX 心尖段环带标出壁名（前壁/间隔/下壁/侧壁）',
+    ['前壁', '间隔', '下壁', '侧壁'].every(function (w) { return px.a.indexOf(w) >= 0; }), px.a);
+
   // A3C：按《超声诊断学》4 版图 5-73C 补上心尖 16 / 13（用户 2026-10-28 反馈「中间空了」）
   const a3cInfo = await c.evalJs(`(function(){
     var card=[].slice.call(document.querySelectorAll('#page-segments .wall-card')).filter(function(e){
