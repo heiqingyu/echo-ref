@@ -406,7 +406,7 @@ check('选中信息行 #segSelInfo', /id="segSelInfo"/.test(html), true);
 ['PLAX', 'PSAX-B', 'PSAX-M', 'PSAX-A', 'A4C', 'A2C', 'A3C'].forEach(function (v) {
   check('示意图容器 #wd-' + v, new RegExp('id="wd-' + v + '"').test(html), true);
 });
-check('节段数字按钮 data-selseg（36 个，跨切面重复计数）', (html.match(/data-selseg=/g) || []).length, 36);
+check('节段数字按钮 data-selseg（41 个，跨切面重复计数）', (html.match(/data-selseg=/g) || []).length, 41);
 check('页签 data-tab="segments" 存在', /data-tab="segments"/.test(html), true);
 const segSvgInline = html.match(/<svg[^>]*aria-label="左室17节段牛眼图"[^>]*>[\s\S]*?<\/svg>/);
 check('牛眼图 SVG 已内联', !!segSvgInline, true);

@@ -340,6 +340,48 @@ function check(name, ok, detail) {
   check('供血分区按钮 3 个', si.terrChips === 3, si.terrChips);
   check('节段数字按钮 ≥ 17', si.segChips >= 17, si.segChips);
 
+  // A3C：按《超声诊断学》4 版图 5-73C 补上心尖 16 / 13（用户 2026-10-28 反馈「中间空了」）
+  const a3cInfo = await c.evalJs(`(function(){
+    var card=[].slice.call(document.querySelectorAll('#page-segments .wall-card')).filter(function(e){
+      var t=e.querySelector('.wall-card__t');
+      return t && t.textContent.indexOf('A3C') === 0;
+    })[0];
+    if(!card) return JSON.stringify({err:'no A3C card'});
+    var note=card.querySelector('.wall-card__note');
+    return JSON.stringify({
+      rows: card.querySelectorAll('.wall-group').length,
+      chips: [].slice.call(card.querySelectorAll('.segchip')).map(function(e){return e.textContent.trim();}),
+      note: note ? note.textContent : ''
+    });
+  })()`);
+  const a3 = JSON.parse(a3cInfo);
+  check('A3C 卡片 3 组（下外侧壁 / 前间隔 / 心尖 17）', a3.rows === 3, a3cInfo);
+  check('A3C 含心尖侧壁 16 与心尖前壁 13',
+    (a3.chips || []).indexOf('16') >= 0 && (a3.chips || []).indexOf('13') >= 0, a3cInfo);
+  check('A3C 心尖 17 可点', (a3.chips || []).indexOf('17') >= 0, a3cInfo);
+  check('A3C 注明教材出处与为何有的表只列 4 段',
+    (a3.note || '').indexOf('5-73C') >= 0 && (a3.note || '').indexOf('没有独立心尖节段') >= 0, a3.note);
+
+  // 点 A3C 的「17」→ 三张心尖图（A4C / A2C / A3C）同步高亮
+  await c.evalJs(`(function(){
+    var card=[].slice.call(document.querySelectorAll('#page-segments .wall-card')).filter(function(e){
+      var t=e.querySelector('.wall-card__t');
+      return t && t.textContent.indexOf('A3C') === 0;
+    })[0];
+    var chip=[].slice.call(card.querySelectorAll('.segchip')).filter(function(e){
+      return e.textContent.trim() === '17';
+    })[0];
+    chip.click();
+  })()`);
+  await new Promise((r) => setTimeout(r, 400));
+  check('点 A3C 的「17」后心尖 17 在三张图上同步高亮',
+    (await c.evalJs('document.querySelectorAll("#page-segments .segchip--on").length')) >= 3);
+  await c.evalJs(`(function(){
+    var b=document.querySelector('#page-segments .btn--ghost');
+    if(b && /取消选中/.test(b.textContent)) b.click();
+  })()`);
+  await new Promise((r) => setTimeout(r, 300));
+
   // 点分区 → 高亮提示行出现
   await c.evalJs('document.querySelector(\'#page-segments .terr-chip\').click()');
   await new Promise((r) => setTimeout(r, 300));
