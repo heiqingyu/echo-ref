@@ -471,8 +471,11 @@ function computeLVFunction(lviddMm, lvidsMm) {
 /**
  * 由内径 + 室壁厚度估算左室质量（Devereux 公式，ASE 推荐）
  * LVM(g) = 0.8 × 1.04 × [(LVEDD+IVSd+LVPWd)³ − LVEDD³] + 0.6
+ * ★ 室壁厚度为选填：只测内径算 EF 时，缺任一项就不出 LVM（否则会算出 0.6 g 的假值）
  */
 function computeLVM(lveddMm, ivsdMm, lvpwdMm, bsa) {
+  if (!(ivsdMm > 0) || !(lvpwdMm > 0)) return { LVM: null, 'LVM/BSA': null };
+
   const d  = lveddMm / 10;
   const iv = ivsdMm  / 10;
   const pw = lvpwdMm / 10;
@@ -489,9 +492,10 @@ function computeLVM(lveddMm, ivsdMm, lvpwdMm, bsa) {
 
 /**
  * 左室相对室壁厚度 RWT = (2 × LVPWd) / LVEDD
+ * ★ LVPWd 为选填，未填返回 null（不显示 0.00）
  */
 function computeRWT(lveddMm, lvpwdMm) {
-  if (!lveddMm) return null;
+  if (!lveddMm || !(lvpwdMm > 0)) return null;
   return round((2 * lvpwdMm) / lveddMm, 2);
 }
 
@@ -741,6 +745,9 @@ function measurementsToRefDict(m) {
   if (!m) return {};
   const fn = computeLVFunction(m.lvedd, m.lvesd);
   const lvm = computeLVM(m.lvedd, m.ivsd, m.lvpwd, m.bsa);
+  // 室壁厚度为选填：没填就留空，让对照表显示「—」而不是把 0 判成「偏低」
+  const ivs = m.ivsd > 0 ? m.ivsd : null;
+  const lvpw = m.lvpwd > 0 ? m.lvpwd : null;
   return {
     LVEDD: m.lvedd,
     LVESD: m.lvesd,
@@ -751,8 +758,8 @@ function measurementsToRefDict(m) {
     FS: fn.FS,
     LVM: lvm.LVM,
     'LVM/BSA': lvm['LVM/BSA'],
-    IVSd: m.ivsd,
-    LVPWd: m.lvpwd,
+    IVSd: ivs,
+    LVPWd: lvpw,
     LVRWT: computeRWT(m.lvedd, m.lvpwd),
     'LVEDD/BSA': m.bsa ? round(m.lvedd / 10 / m.bsa, 2) : null,
     'LVEDD/H': m.height ? round(m.lvedd / 10 / (m.height / 100), 2) : null,

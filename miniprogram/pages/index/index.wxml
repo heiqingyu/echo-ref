@@ -4,7 +4,7 @@
   <view class="card">
     <view class="card__title">M 型 / 二维内径测量</view>
     <view class="card__desc">单位为 mm。舒张末内径应大于收缩末内径。</view>
-
+    <view class="card__desc">室间隔与后壁厚度为选填：只测内径即可算 EF / FS，填了才追加 RWT 与左室质量。</view>
     <view class="row">
       <view class="field">
         <text class="field__label">LVIDd 舒张末内径 / mm</text>
@@ -20,12 +20,12 @@
 
     <view class="row">
       <view class="field">
-        <text class="field__label">IVSd 室间隔厚度 / mm</text>
+        <text class="field__label">IVSd 室间隔厚度 / mm（选填）</text>
         <input class="field__input" type="digit" value="{{ivsd}}" placeholder="如 9"
                bindinput="onInput" data-k="ivsd" />
       </view>
       <view class="field">
-        <text class="field__label">LVPWd 后壁厚度 / mm</text>
+        <text class="field__label">LVPWd 后壁厚度 / mm（选填）</text>
         <input class="field__input" type="digit" value="{{lvpwd}}" placeholder="如 9"
                bindinput="onInput" data-k="lvpwd" />
       </view>
@@ -33,7 +33,7 @@
 
     <view wx:if="{{!efValid}}" class="hint">{{efHint}}</view>
 
-    <view class="btn" bindtap="doCalc" style="margin-top:22rpx">计算 EF / FS / 左室质量</view>
+    <view class="btn" bindtap="doCalc" style="margin-top:22rpx">计算 EF / FS{{hasWall ? ' / 左室质量' : ''}}</view>
   </view>
 
   <view wx:if="{{hasResult}}" class="card">
@@ -65,7 +65,7 @@
         <view class="kv__k">FS 缩短分数</view>
         <text class="kv__v">{{r.FS}}</text><text class="kv__u">%</text>
       </view>
-      <view class="kv__item">
+      <view wx:if="{{hasPwt}}" class="kv__item">
         <view class="kv__k">RWT 相对室壁厚度</view>
         <text class="kv__v">{{r.RWT}}</text>
       </view>
@@ -86,21 +86,23 @@
       <text style="color:#6b7280;margin-left:14rpx;font-size:24rpx">依据 ASE 2015 阈值</text>
     </view>
 
-    <view class="result-title">左室质量（Devereux 公式）</view>
-    <view class="kv">
-      <view class="kv__item">
-        <view class="kv__k">LVM 左室质量</view>
-        <text class="kv__v">{{r.LVM}}</text><text class="kv__u">g</text>
+    <block wx:if="{{hasWall}}">
+      <view class="result-title">左室质量（Devereux 公式）</view>
+      <view class="kv">
+        <view class="kv__item">
+          <view class="kv__k">LVM 左室质量</view>
+          <text class="kv__v">{{r.LVM}}</text><text class="kv__u">g</text>
+        </view>
+        <view class="kv__item">
+          <view class="kv__k">LVM/BSA 质量指数</view>
+          <text class="kv__v">{{lvmBsaText}}</text><text class="kv__u">g/m²</text>
+        </view>
+        <view class="kv__item">
+          <view class="kv__k">当前 BSA</view>
+          <text class="kv__v">{{bsaText}}</text><text class="kv__u">m²</text>
+        </view>
       </view>
-      <view class="kv__item">
-        <view class="kv__k">LVM/BSA 质量指数</view>
-        <text class="kv__v">{{lvmBsaText}}</text><text class="kv__u">g/m²</text>
-      </view>
-      <view class="kv__item">
-        <view class="kv__k">当前 BSA</view>
-        <text class="kv__v">{{bsaText}}</text><text class="kv__u">m²</text>
-      </view>
-    </view>
+    </block>
 
     <view class="btn btn--ghost" bindtap="goReference" style="margin-top:28rpx">
       ↓ 与下方参考值对照

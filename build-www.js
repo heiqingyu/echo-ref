@@ -307,7 +307,7 @@ const html = `<!DOCTYPE html>
     <!-- ══ EF 计算（合并自原「EF 计算」页，置于最上） ══ -->
     <div class="card">
       <div class="card__t">M 型 / 二维内径测量</div>
-      <div class="card__d">输入内径与室壁厚度，自动推算容积、收缩功能与左室质量</div>
+      <div class="card__d">输入内径即可推算容积与收缩功能；室壁厚度为选填，填了才追加 RWT 与左室质量</div>
       <div class="row">
         <div class="field">
           <label class="field__l">LVIDd 舒张末内径 / mm</label>
@@ -320,11 +320,11 @@ const html = `<!DOCTYPE html>
       </div>
       <div class="row">
         <div class="field">
-          <label class="field__l">IVSd 室间隔厚度 / mm</label>
+          <label class="field__l">IVSd 室间隔厚度 / mm（选填）</label>
           <input class="field__i" type="number" inputmode="decimal" id="efIvsd" placeholder="如 9" step="0.1">
         </div>
         <div class="field">
-          <label class="field__l">LVPWd 后壁厚度 / mm</label>
+          <label class="field__l">LVPWd 后壁厚度 / mm（选填）</label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvpwd" placeholder="如 9" step="0.1">
         </div>
       </div>

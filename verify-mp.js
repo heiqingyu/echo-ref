@@ -374,6 +374,29 @@ console.log('\n=== 21. 合并后首页（EF 计算 + 参考值同页）===');
   pg.doCalc();
   check('恢复有效输入后重新出结果', pg.data.hasResult ? 1 : 0, 1, 0);
   check('参考值列表恢复实测对照', pg.data.hasMeasurements ? 1 : 0, 1, 0);
+
+  // ★ v1.9.4：室壁厚度改选填 —— 留空只算 EF / FS，不报错、不出 RWT 与左室质量
+  pg.data.ivsd = ''; pg.data.lvpwd = '';
+  pg.doCalc();
+  check('厚度留空仍出结果', pg.data.hasResult ? 1 : 0, 1, 0);
+  check('厚度留空 EF 仍为 65.4%', parseFloat(pg.data.r.EF), 65.4, 0.05);
+  check('厚度留空无报错提示', (pg.data.efHint || '').length, 0, 0);
+  check('厚度留空隐藏 RWT / 左室质量',
+    (pg.data.hasPwt ? 0 : 1) * (pg.data.hasWall ? 0 : 1), 1, 0);
+  check('厚度留空实测对照仍成立', pg.data.hasMeasurements ? 1 : 0, 1, 0);
+  check('厚度留空 IVSd 对照显示 —',
+    (pg.data.rows.find(r => r.key === 'IVSd') || {}).status === 'none' ? 1 : 0, 1, 0);
+
+  // 只填后壁 → 有 RWT，无左室质量
+  pg.data.ivsd = ''; pg.data.lvpwd = '9';
+  pg.doCalc();
+  check('只填后壁：出 RWT 不出 LVM',
+    (pg.data.hasPwt && !pg.data.hasWall) ? 1 : 0, 1, 0);
+  check('只填后壁：RWT = 0.36', parseFloat(pg.data.r.RWT), 0.36, 0.005);
+
+  pg.data.ivsd = '9'; pg.data.lvpwd = '9';
+  pg.doCalc();
+  check('恢复厚度后左室质量重新出现', pg.data.hasWall ? 1 : 0, 1, 0);
 }
 
 console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部）===');

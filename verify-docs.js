@@ -178,6 +178,26 @@ function check(name, ok, detail) {
   check('结果卡片含跳转参考值按钮',
     (await c.evalJs('!!document.getElementById("jumpRef")')) === true);
 
+  // ── 室壁厚度选填（v1.9.4）：清空后仍出 EF/FS，但不出现 RWT 与左室质量 ──
+  await set('efIvsd', ''); await set('efLvpwd', '');
+  await new Promise((r) => setTimeout(r, 500));
+  const kvNoWall = await c.evalJs('document.getElementById("efKv").textContent');
+  const hintNoWall = await c.evalJs('document.getElementById("efHint").textContent');
+  check('清空室壁厚度后仍输出 EF / FS',
+    kvNoWall.indexOf('射血分数') !== -1 && kvNoWall.indexOf('缩短分数') !== -1,
+    kvNoWall.slice(0, 40));
+  check('清空室壁厚度后不出 RWT / 左室质量',
+    kvNoWall.indexOf('相对室壁厚度') === -1 && kvNoWall.indexOf('左室质量') === -1,
+    'RWT ' + (kvNoWall.indexOf('相对室壁厚度') !== -1) +
+    ' / LVM ' + (kvNoWall.indexOf('左室质量') !== -1));
+  check('清空室壁厚度不报错', (hintNoWall || '').trim() === '', '「' + hintNoWall + '」');
+  const efNoWall = parseFloat((kvNoWall.match(/射血分数\s*([\d.]+)/) || [])[1]);
+  check('只填空后 EF 数值不变', Math.abs(efNoWall - efNum) < 0.05,
+    efNoWall + ' vs ' + efNum);
+  // 恢复，避免影响后续参考值断言
+  await set('efIvsd', 9); await set('efLvpwd', 9);
+  await new Promise((r) => setTimeout(r, 400));
+
   // ── 参考值部分 ──
   const refRows = await c.evalJs('document.querySelectorAll("#refList > *").length');
   check('参考值列表已渲染', refRows > 20, refRows + ' 行');

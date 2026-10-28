@@ -514,9 +514,11 @@
     const rwt = Core.computeRWT(lvedd, lvpwd || 0);
     const grade = Core.gradeEF(fn.EF);
 
-    // 记录供参考值页使用
+    // 记录供参考值页使用（★ 室壁厚度选填，没填记 0 → 下游按「未测」处理）
     state.measurements = {
-      lvedd: lvedd, lvesd: lvesd, ivsd: ivsd, lvpwd: lvpwd,
+      lvedd: lvedd, lvesd: lvesd,
+      ivsd: ivsd > 0 ? ivsd : 0,
+      lvpwd: lvpwd > 0 ? lvpwd : 0,
     };
 
     // 指标网格

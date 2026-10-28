@@ -181,43 +181,43 @@ Page({
       this.rebuildRef();
       return;
     }
-    if (!(ivsd > 0) || !(lvpwd > 0)) {
-      app.globalData.measurements = null;
-      this.setData({
-        efValid: false, hasResult: false,
-        efHint: '请输入有效的室间隔与后壁厚度',
-      });
-      this.rebuildRef();
-      return;
-    }
+    // ★ 室壁厚度为选填：只测内径就能算 EF / FS，缺厚度时不出 RWT 与左室质量
+    const hasIvs = ivsd > 0;
+    const hasPwt = lvpwd > 0;
+    const hasWall = hasIvs && hasPwt;
 
     const bsa = app.globalData.profile.bsa || 0;
 
     // 计算
     const fn = core.computeLVFunction(lvedd, lvesd);
-    const lvm = core.computeLVM(lvedd, ivsd, lvpwd, bsa);
-    const rwt = core.computeRWT(lvedd, lvpwd);
+    const lvm = core.computeLVM(lvedd, hasIvs ? ivsd : 0, hasPwt ? lvpwd : 0, bsa);
+    const rwt = core.computeRWT(lvedd, hasPwt ? lvpwd : 0);
     const grade = core.gradeEF(fn.EF);
 
     // 写回全局，供参考值列表对照
     app.globalData.measurements = {
-      lvedd, lvesd, ivsd, lvpwd,
+      lvedd, lvesd,
+      ivsd: hasIvs ? ivsd : 0,
+      lvpwd: hasPwt ? lvpwd : 0,
       EF: fn.EF,
     };
 
     this.setData({
       efValid: true,
       hasResult: true,
+      efHint: '',
+      hasPwt,
+      hasWall,
       r: {
         EDV: fn.EDV.toFixed(1),
         ESV: fn.ESV.toFixed(1),
         SV: fn.SV.toFixed(1),
         EF: fn.EF.toFixed(1),
         FS: fn.FS.toFixed(1),
-        RWT: rwt !== null ? rwt.toFixed(2) : '—',
-        LVM: lvm.LVM.toFixed(1),
+        RWT: rwt !== null ? rwt.toFixed(2) : '',
+        LVM: lvm.LVM !== null ? lvm.LVM.toFixed(1) : '',
       },
-      lvmBsaText: lvm['LVM/BSA'] !== null ? lvm['LVM/BSA'].toFixed(1) : '—',
+      lvmBsaText: lvm['LVM/BSA'] !== null ? lvm['LVM/BSA'].toFixed(1) : '',
       efGrade: grade.text,
       efCls: 'tag--' + grade.level,
       efColor: EF_COLOR[grade.level] || '#1f2329',
