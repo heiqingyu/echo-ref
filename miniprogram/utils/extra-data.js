@@ -6540,6 +6540,39 @@ const REFS = [
     ],
     use: '儿童冠脉 AHA 15 分段法与可显示的 9 段、舒张早期（T 波终点）测量、内膜至内膜、图像放大 2–4 倍、BSA 校正 Z 值、AHA 2017 川崎病冠脉分级口径；用于「儿童 Z 值」页冠脉组说明与判读',
   },
+  {
+    id: 'R84',
+    zh: '左心室 17 节段标准化命名（AHA 科学声明 2002）',
+    en: 'Cerqueira MD, Weissman NJ, Dilsizian V, et al. Standardized myocardial segmentation and nomenclature for tomographic imaging of the heart: a statement for healthcare professionals from the Cardiac Imaging Committee of the Council on Clinical Cardiology of the American Heart Association.',
+    where: 'Circulation, 2002, 105(4): 539–542',
+    dl: [
+      { t: '免费页面', u: 'https://doi.org/10.1161/hc0402.102975' },
+      { t: '免费页面', u: 'https://pubmed.ncbi.nlm.nih.gov/11815441/' },
+    ],
+    use: '17 节段的编号、英文名称（anteroseptal / inferoseptal / anterolateral / inferolateral）与心尖帽 17 的定义。节段页的全部编号、命名与供血分区都以此为准；中文译名「前间隔 / 下间隔 / 前侧壁 / 下侧壁」即对应这 4 个英文词',
+  },
+  {
+    id: 'R85',
+    zh: '超声心动图评估心脏收缩和舒张功能临床应用指南',
+    en: '中华医学会超声医学分会超声心动图学组, 中国医师协会心血管分会超声心动图专业委员会.',
+    where: '中华超声影像学杂志, 2020, 29(6): 461–477',
+    dl: [
+      { t: '中文全文', u: 'https://rs.yiigle.com/cmaid/1206166' },
+      { t: '需订阅（DOI）', u: 'https://doi.org/10.3760/cma.j.cn131148-20200227-00115' },
+    ],
+    use: '国内采用 17 节段模式的依据：局部功能评估用 17 节段法，但室壁运动只观察 16 节段、不含心尖帽（该处正常无运动）；五级定性描述与 WMSI 记分。用于节段页「17 与 16 的关系」及室壁运动评分',
+  },
+  {
+    id: 'R86',
+    zh: '慢性冠状动脉综合征负荷超声心动图检查临床实践指南（2023 版）',
+    en: '中国超声心动图学会, 中华医学会超声医学分会浅表组织和血管学组, 中国医药教育学会超声医学专业委员会.',
+    where: '中华超声影像学杂志, 2023, 32(11): 921–945',
+    dl: [
+      { t: '中文 PDF', u: 'https://www.ddzxhospital.com/library/up_f/file/20240116/202401161456289637.pdf' },
+      { t: '需订阅（DOI）', u: 'https://doi.org/10.3760/cma.j.cn131148-20230511-00267' },
+    ],
+    use: '负荷超声采用 17 节段（含心尖帽）评估局部功能；缺血判读为 ≥2 个相邻节段新出现或加重的室壁运动异常；WMSI 与五级评分口径。用于「运动负荷超声缺血判读」与节段页说明',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════

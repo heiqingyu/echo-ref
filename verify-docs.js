@@ -421,7 +421,7 @@ function check(name, ok, detail) {
   check('坐标反算漏点率 < 3%（色块边缘的分隔缝可容忍）',
     hitInfoObj.miss / hitInfoObj.pts < 0.03, hitInfo);
 
-  // 壁名统一：教材（《超声诊断学》4 版图 5-73C）与 2023 版负荷超声指南都用「下侧壁 / 前侧壁」
+  // 壁名统一：ASE/AHA 2002 的 inferolateral / anterolateral（R84）在国内通行译作「下侧壁 / 前侧壁」
   // （用户 2026-10-28：前外侧壁/下外侧壁 是国内少用的直译，全站不再混用）
   const wallAll = await c.evalJs(`(function(){
     var ids=['wd-PLAX','wd-PSAX-B','wd-PSAX-M','wd-PSAX-A','wd-A4C','wd-A2C','wd-A3C'];
@@ -430,7 +430,7 @@ function check(name, ok, detail) {
   check('7 张图壁名统一：用下侧壁/前侧壁，不出现「外侧壁」',
     wallAll.indexOf('外侧壁') < 0 && wallAll.indexOf('下侧壁') >= 0 && wallAll.indexOf('前侧壁') >= 0, wallAll);
 
-  // A3C：按《超声诊断学》4 版图 5-73C 补上心尖 16 / 13（用户 2026-10-28 反馈「中间空了」）
+  // A3C：补上心尖 16 / 13（用户 2026-10-28 反馈「中间空了」）；依据写在 note 里（R84）
   const a3cInfo = await c.evalJs(`(function(){
     var card=[].slice.call(document.querySelectorAll('#page-segments .wall-card')).filter(function(e){
       var t=e.querySelector('.wall-card__t');
@@ -449,8 +449,8 @@ function check(name, ok, detail) {
   check('A3C 含心尖侧壁 16 与心尖前壁 13',
     (a3.chips || []).indexOf('16') >= 0 && (a3.chips || []).indexOf('13') >= 0, a3cInfo);
   check('A3C 心尖 17 可点', (a3.chips || []).indexOf('17') >= 0, a3cInfo);
-  check('A3C 注明教材出处与为何有的表只列 4 段',
-    (a3.note || '').indexOf('5-73C') >= 0 && (a3.note || '').indexOf('没有独立心尖节段') >= 0, a3.note);
+  check('A3C 注明 AHA/ASE 出处与为何有的表只列 4 段',
+    (a3.note || '').indexOf('R84') >= 0 && (a3.note || '').indexOf('没有独立的心尖节段') >= 0, a3.note);
 
   // 点 A3C 的「17」→ 三张心尖图（A4C / A2C / A3C）同步高亮
   await c.evalJs(`(function(){
@@ -804,7 +804,7 @@ function check(name, ok, detail) {
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
-    check('参考文献 83 条', d.refs === 83, d.refs);
+    check('参考文献 86 条', d.refs === 86, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
 
@@ -1325,7 +1325,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 83 条', /83/.test(ri.cnt), refsInit);
+  check('折叠头显示 86 条', /86/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -1344,7 +1344,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 83 条', ro.hidden === false && ro.n === 83 && ro.h > 0, refsOpen);
+  check('点击后展开全部 86 条', ro.hidden === false && ro.n === 86 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 

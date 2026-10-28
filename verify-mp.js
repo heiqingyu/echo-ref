@@ -447,7 +447,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 83 条（新增 R81 2025 ESC/EACTS 瓣膜病指南、R82 2025 中国 LVAD 围术期超声指南、R83 2025 中国儿童冠脉 TTE 共识）', EXD.REFS.length, 83, 0);
+  check('参考文献 86 条（新增 R84 AHA/ASE 2002 17 节段命名、R85 2020 中国心功能指南、R86 2023 中国 CCS 负荷超声指南）', EXD.REFS.length, 86, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
