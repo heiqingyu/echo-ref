@@ -373,13 +373,13 @@ function check(name, ok, detail) {
     ['前间隔基底段', '前间隔中间段', '下侧壁基底段', '下侧壁中间段']
       .every(function (w) { return co.plax.indexOf(w) >= 0; }), co.plax);
   check('A4C 图外标出下间隔三段 + 前侧壁三段 + 心尖帽',
-    ['下间隔基底段', '下间隔中间段', '心尖间隔', '前侧壁基底段', '前侧壁中间段', '心尖侧壁', '心尖帽']
+    ['下间隔基底段', '下间隔中间段', '间隔心尖段', '前侧壁基底段', '前侧壁中间段', '侧壁心尖段', '心尖帽']
       .every(function (w) { return co.a4c.indexOf(w) >= 0; }), co.a4c);
   check('A2C 图外标出下壁三段 + 前壁三段 + 心尖帽',
-    ['下壁基底段', '下壁中间段', '心尖下壁', '前壁基底段', '前壁中间段', '心尖前壁', '心尖帽']
+    ['下壁基底段', '下壁中间段', '下壁心尖段', '前壁基底段', '前壁中间段', '前壁心尖段', '心尖帽']
       .every(function (w) { return co.a2c.indexOf(w) >= 0; }), co.a2c);
   check('A3C 图外标出下侧壁三段 + 前间隔三段 + 心尖帽',
-    ['下侧壁基底段', '下侧壁中间段', '心尖侧壁', '前间隔基底段', '前间隔中间段', '心尖前壁', '心尖帽']
+    ['下侧壁基底段', '下侧壁中间段', '侧壁心尖段', '前间隔基底段', '前间隔中间段', '间隔心尖段', '心尖帽']
       .every(function (w) { return co.a3c.indexOf(w) >= 0; }), co.a3c);
 
   // 小程序端靠坐标反算点图（image 挂不了 SVG 事件）：
@@ -430,7 +430,8 @@ function check(name, ok, detail) {
   check('7 张图壁名统一：用下侧壁/前侧壁，不出现「外侧壁」',
     wallAll.indexOf('外侧壁') < 0 && wallAll.indexOf('下侧壁') >= 0 && wallAll.indexOf('前侧壁') >= 0, wallAll);
 
-  // A3C：补上心尖 16 / 13（用户 2026-10-28 反馈「中间空了」）；依据写在 note 里（R84）
+  // A3C：显示 5-11-16 与 2-8-14 + 心尖 17（依据 R86 的心尖长轴示意图）
+  // ★ 右侧心尖段必须是 14（间隔心尖段），不是 13（前壁心尖段）—— 前壁走两腔心
   const a3cInfo = await c.evalJs(`(function(){
     var card=[].slice.call(document.querySelectorAll('#page-segments .wall-card')).filter(function(e){
       var t=e.querySelector('.wall-card__t');
@@ -446,11 +447,12 @@ function check(name, ok, detail) {
   })()`);
   const a3 = JSON.parse(a3cInfo);
   check('A3C 卡片 3 组（下侧壁 / 前间隔 / 心尖 17）', a3.rows === 3, a3cInfo);
-  check('A3C 含心尖侧壁 16 与心尖前壁 13',
-    (a3.chips || []).indexOf('16') >= 0 && (a3.chips || []).indexOf('13') >= 0, a3cInfo);
+  check('A3C 含侧壁心尖段 16 与间隔心尖段 14、且不含前壁心尖段 13',
+    (a3.chips || []).indexOf('16') >= 0 && (a3.chips || []).indexOf('14') >= 0 &&
+      (a3.chips || []).indexOf('13') < 0, a3cInfo);
   check('A3C 心尖 17 可点', (a3.chips || []).indexOf('17') >= 0, a3cInfo);
-  check('A3C 注明 AHA/ASE 出处与为何有的表只列 4 段',
-    (a3.note || '').indexOf('R84') >= 0 && (a3.note || '').indexOf('没有独立的心尖节段') >= 0, a3.note);
+  check('A3C 注明 R86 名称表与 R84 编号出处',
+    (a3.note || '').indexOf('R86') >= 0 && (a3.note || '').indexOf('R84') >= 0, a3.note);
 
   // 点 A3C 的「17」→ 三张心尖图（A4C / A2C / A3C）同步高亮
   await c.evalJs(`(function(){
