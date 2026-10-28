@@ -60,10 +60,7 @@
       <view class="efbar__mark" style="left:{{efMarkLeft}}%"></view>
     </view>
     <view class="efbar-legend">
-      <text>&lt;30 重度</text>
-      <text>30–44 中度</text>
-      <text>45–54 轻度</text>
-      <text>≥55 正常</text>
+      <text wx:for="{{efLegend}}" wx:key="*this">{{item}}</text>
     </view>
     <view style="margin-top:26rpx;font-size:27rpx">
       EF 分级：

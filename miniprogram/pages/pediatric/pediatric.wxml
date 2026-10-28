@@ -223,7 +223,7 @@
         上行 PHN（北美多中心，幂律模型），下行深圳 SZ 法（中国儿童多中心，ln Y = a + b·ln BSA，n = 842，
         1 月龄–17 岁）。同一测值常差 0.7–1.1 个 Z（如 LAD 2.6 mm、BSA 1.0：PHN +2.06「轻度增大」/
         SZ +1.25「正常」），两行不可互比、不可混用，以报告采用的那一套判读。
-        SZ 队列不含 0–28 天新生儿，BSA &lt; 0.23 时该行标「外推」。
+        SZ 队列不含 0–28 天新生儿，BSA {{'<'}} 0.23 时该行标「外推」。
       </view>
 
       <view class="note">
@@ -239,8 +239,8 @@
         ④ <text style="font-weight:600">图像</text>：局部放大 2–4 倍，帧率 ≥30 fps；婴幼儿用高频探头（≥7.5 MHz）。{{'\n'}}
         ⑤ <text style="font-weight:600">校正</text>：一律换算 Z 值（按 BSA），不用绝对值下结论 ——
         绝对值 3 mm 在婴儿是巨大瘤、在青少年是正常。{{'\n'}}
-        ⑥ <text style="font-weight:600">分级</text>（川崎病，AHA 2017）：Z &lt;2 无扩张；2–&lt;2.5 仅扩张；
-        ≥2.5–&lt;5 小型瘤；≥5–&lt;10 且绝对值 &lt;8 mm 中型瘤；≥10 或绝对值 ≥8 mm 巨大瘤。
+        ⑥ <text style="font-weight:600">分级</text>（川崎病，AHA 2017）：Z {{'<'}}2 无扩张；2–{{'<'}}2.5 仅扩张；
+        ≥2.5–{{'<'}}5 小型瘤；≥5–{{'<'}}10 且绝对值 {{'<'}}8 mm 中型瘤；≥10 或绝对值 ≥8 mm 巨大瘤。
       </view>
 
       <view class="note">
@@ -309,8 +309,8 @@
 
       <view class="peds-key">
         <view class="peds-key__item peds-key__item--n">|Z| ≤ 2{{'\n'}}正常</view>
-        <view class="peds-key__item peds-key__item--m">2 &lt; |Z| ≤ 3{{'\n'}}轻度异常</view>
-        <view class="peds-key__item peds-key__item--s">|Z| &gt; 3{{'\n'}}显著异常</view>
+        <view class="peds-key__item peds-key__item--m">2 {{'<'}} |Z| ≤ 3{{'\n'}}轻度异常</view>
+        <view class="peds-key__item peds-key__item--s">|Z| > 3{{'\n'}}显著异常</view>
       </view>
     </view>
 

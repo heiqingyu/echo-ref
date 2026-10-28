@@ -1760,6 +1760,29 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('页面已移除教学资源点击处理', pgV.onLesson === undefined ? 1 : 0, 1, 0);
 }
 
+/* ===== WXML 不得出现 HTML 实体 =====
+   小程序 WXML 不解析 &lt; &gt; &amp; 这类实体，写死会在界面上露出字面量
+   （2026-10-29 用户报 EF 分级条显示「&lt;30 重度」）。想显示 < 用 {{'<'}}。 */
+{
+  const fsx = require('fs');
+  function walkWxml(dir, out) {
+    fsx.readdirSync(dir, { withFileTypes: true }).forEach(function (e) {
+      const f = dir + '/' + e.name;
+      if (e.isDirectory()) walkWxml(f, out);
+      else if (/\.wxml$/.test(e.name)) out.push(f);
+    });
+    return out;
+  }
+  const wxmlFiles = walkWxml(__dirname + '/miniprogram', []);
+  const badEnt = wxmlFiles.filter(function (f) {
+    return /&(lt|gt|amp|nbsp|quot);/.test(fsx.readFileSync(f, 'utf8'));
+  });
+  check('WXML 不含 HTML 实体（' + wxmlFiles.length + ' 个文件）', badEnt.length, 0, 0);
+  badEnt.forEach(function (f) { console.log('         ' + f); });
+  const iw = fsx.readFileSync(__dirname + '/miniprogram/pages/index/index.wxml', 'utf8');
+  check('EF 分级图例由 data 渲染（efLegend）', /wx:for="\{\{efLegend\}\}"/.test(iw) ? 1 : 0, 1, 0);
+}
+
 console.log(`\n${'='.repeat(46)}`);
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 console.log('='.repeat(46) + '\n');

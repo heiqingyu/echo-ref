@@ -971,6 +971,26 @@ function check(name, ok, detail) {
     ['血流动力学、舒张与心功能', '右心与肺循环', '重构、室壁运动与心肌功能'].every((t) => newGroupTitles.indexOf(t) !== -1),
     newGroupTitles);
 
+  // v1.10.5：左心补几何构型四分法与肥厚病因四联；右心补四种耦联写法与决策用法
+  const briefText = async (gid) => await c.evalJs(
+    `(function(){var b=document.querySelector('#calcGroups .card[data-g="${gid}"]');
+      return b ? b.textContent.replace(/\\s+/g,' ') : '';})()`);
+  await openBrief('lv');
+  const lvTxt = await briefText('lv');
+  check('左心评估含几何构型四分法',
+    ['向心性重构', '向心性肥厚', '离心性肥厚'].every((w) => lvTxt.indexOf(w) >= 0), lvTxt.slice(0, 40));
+  check('左心评估含肥厚病因四联（高血压 / HCM / 淀粉样变 / 运动心脏）',
+    ['高血压性肥厚', '肥厚型心肌病', '淀粉样变', '运动心脏'].every((w) => lvTxt.indexOf(w) >= 0), '');
+  check('左心评估含三对矛盾判读法', lvTxt.indexOf('三对矛盾') >= 0, '');
+  await openBrief('rv');
+  const rvTxt = await briefText('rv');
+  check('右心评估含 TAPSE/PASP 之外的三种写法',
+    ['RVFAC / PASP', 'RVESVi / PASP', 'TAPSE / TRV'].every((w) => rvTxt.indexOf(w) >= 0), '');
+  check('右心评估含耦联三期（适应 / 勉强适应 / 失适应）',
+    ['adaptation', '勉强适应', '失适应'].every((w) => rvTxt.indexOf(w) >= 0), '');
+  check('右心评估含决策用法（右心门槛 / 术后右心衰）',
+    rvTxt.indexOf('右心门槛') >= 0 && rvTxt.indexOf('术后右心衰') >= 0, '');
+
   await openCalc('mpap');
   await fillCalc('mpap', 'pp_tr', '3.0');
   await fillCalc('mpap', 'pp_pr', '1.5');

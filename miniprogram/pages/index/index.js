@@ -40,6 +40,8 @@ Page({
     efCls: '',
     efColor: '#1f2329',
     efMarkLeft: 0,
+    /* EF 分级图例：必须放 data（WXML 不解析 &lt; 这类实体，写死会露出字面量） */
+    efLegend: ['<30 重度', '30–44 中度', '45–54 轻度', '≥55 正常'],
     /* —— 参考值列表 —— */
     rows: [],
     hasMeasurements: false,
