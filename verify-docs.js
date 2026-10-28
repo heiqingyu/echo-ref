@@ -1014,6 +1014,41 @@ function check(name, ok, detail) {
   rvOut = await outOf('rvfun');
   check('右室储备：峰值 PASP 70 判耦联储备不足', /耦联储备不足/.test(rvOut), rvOut.slice(0, 90));
 
+  // v1.10.7：主动脉瓣条目扩充 —— AVA 四法 / DVI / 四象限 / 高流量陷阱 / 危险标志
+  await openBrief('aortic');
+  const aoTxt = await briefText('aortic');
+  const hasAll = (ws) => ws.every((w) => aoTxt.indexOf(w) >= 0);
+  check('主动脉瓣含 AVA 四种算法',
+    hasAll(['连续性方程', '峰速法', 'planimetry', '压力恢复']), '');
+  check('主动脉瓣含 DVI 独立小节与三档阈值',
+    hasAll(['DVI：低流量时最稳', '0.25–0.50', '≤0.20']), '');
+  check('主动脉瓣含流量 × 压差四象限',
+    hasAll(['正常流量低压差', '低流量高压差', '高压差重度']), '');
+  check('主动脉瓣含高流量状态与假性 AVA',
+    hasAll(['高流量状态', '假性 AVA', 'DVI 正常']), '');
+  check('主动脉瓣含无症状重度危险标志',
+    hasAll(['危险标志', 'BNP', 'GLS', '运动试验']), '');
+  check('主动脉瓣十二节编号连续',
+    ['一、AS 三联', '二、AVA 的四种算法', '三、DVI', '四、低流量低压差', '五、反向的坑',
+      '六、AS 分期', '七、无症状重度', '八、AR 定量', '九、重度 AR', '十、急性 AR',
+      '十一、TAVR', '十二、混合瓣膜病'].every((w) => aoTxt.indexOf(w) >= 0), '');
+
+  // 实填：三联 + LF-LG 四值 → 应判反常型，且不再重复出「⚠ AVA ≤1.0 而压差 <40」
+  await openBrief('aortic');
+  await fillCalc('aortic', 'as_lvotD', '1.8');
+  await fillCalc('aortic', 'as_lvotVti', '15');
+  await fillCalc('aortic', 'as_avVti', '40');
+  await fillCalc('aortic', 'as_mg', '32');
+  await fillCalc('aortic', 'lflgsvi', '22');
+  await fillCalc('aortic', 'lflgmpg', '32');
+  await fillCalc('aortic', 'lflgava', '0.95');
+  await fillCalc('aortic', 'lflgef', '60');
+  await new Promise((r) => setTimeout(r, 350));
+  const aoOut = await outOf('aortic');
+  check('主动脉瓣：AVA 连续方程 0.95（1.8 / 15 / 40）', /AVA 连续方程 0\.95/.test(aoOut), aoOut.slice(0, 120));
+  check('主动脉瓣：四值齐备判反常型 LF-LG', /低流量低压差.*反常/.test(aoOut), aoOut.slice(-120));
+  check('主动脉瓣：LF-LG 已判时不再重复 ⚠ 提示', /⚠ AVA ≤1\.0/.test(aoOut) ? 'dup' : 'ok', 'ok');
+
   await openCalc('mpap');
   await fillCalc('mpap', 'pp_tr', '3.0');
   await fillCalc('mpap', 'pp_pr', '1.5');

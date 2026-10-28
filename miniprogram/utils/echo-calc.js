@@ -436,10 +436,15 @@ function asLflg(o) {
   if (ava > 0) r.severeAva = ava <= 1.0;
 
   if (r.lowFlow && r.lowGrad && r.severeAva) {
-    r.type = (lvef > 0 && lvef < 50) ? 'classic' : 'paradoxical';
-    r.text = r.type === 'classic'
-      ? '经典低流量低压差重度 AS（LVEF<50%）'
-      : '反常低流量低压差重度 AS（LVEF≥50%）';
+    if (lvef > 0) {
+      r.type = lvef < 50 ? 'classic' : 'paradoxical';
+      r.text = r.type === 'classic'
+        ? '经典低流量低压差重度 AS（LVEF<50%）'
+        : '反常低流量低压差重度 AS（LVEF≥50%）';
+    } else {
+      r.type = 'unknown';
+      r.text = '低流量低压差重度 AS（未填 LVEF，无法分经典型 / 反常型）';
+    }
   } else if (r.severeAva) {
     r.text = r.lowGrad
       ? 'AVA 达重度但压差偏低：流量正常时先复核 SV 与 AVA 测量'

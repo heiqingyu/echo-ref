@@ -217,22 +217,44 @@ function summarize(rows) {
 function calcAs(v, bsa) {
   const rows = [];
   const notes = [];
+  // vals 供上层（formula / app.js）复用，避免在页面里重算同一条公式
+  const vals = {};
 
   const hasLvot = isNum(v.lvotD) && v.lvotD > 0 && isNum(v.lvotVti);
   const sv = hasLvot ? svOf(v.lvotD, v.lvotVti) : null;
-  if (sv !== null) rows.push(row('每搏量 SV（LVOT）', txt(sv, 1) + ' mL'));
+  if (sv !== null) {
+    rows.push(row('每搏量 SV（LVOT）', txt(sv, 1) + ' mL'));
+    vals.sv = sv;
+    if (bsa > 0) {
+      vals.svi = sv / bsa;
+      rows.push(row('每搏量指数 SVi',
+        txt(sv / bsa, 1) + ' mL/m²' + (sv / bsa <= 35 ? '（低流量）' : '')));
+    }
+  }
 
   if (sv !== null && isNum(v.avVti) && v.avVti > 0) {
     const ava = sv / v.avVti;
+    vals.ava = ava;
     rows.push(row('AVA 连续方程', txt(ava, 2) + ' cm²', gAva(ava)));
-    if (bsa > 0) rows.push(row('AVAi', txt(ava / bsa, 2) + ' cm²/m²', gAvai(ava / bsa)));
+    if (bsa > 0) {
+      vals.avai = ava / bsa;
+      rows.push(row('AVAi', txt(ava / bsa, 2) + ' cm²/m²', gAvai(ava / bsa)));
+    }
   }
   if (isNum(v.lvotVti) && isNum(v.avVti) && v.avVti > 0) {
     const dvi = v.lvotVti / v.avVti;
+    vals.dvi = dvi;
     rows.push(row('DVI（VTI 比值）', txt(dvi, 2), gDvi(dvi)));
   }
   if (isNum(v.lvotD) && isNum(v.lvotVmax) && isNum(v.avVmax) && v.avVmax > 0) {
-    rows.push(row('AVA 峰速法', txt(csaOf(v.lvotD) * v.lvotVmax / v.avVmax, 2) + ' cm²'));
+    const avaPeak = csaOf(v.lvotD) * v.lvotVmax / v.avVmax;
+    vals.avaPeak = avaPeak;
+    rows.push(row('AVA 峰速法', txt(avaPeak, 2) + ' cm²'));
+    // 峰速法只是互校：与连续方程差 >0.2 cm² 说明有一处测坏了（多为 LVOT 直径或包络）
+    if (isNum(vals.ava) && Math.abs(avaPeak - vals.ava) > 0.2) {
+      notes.push('峰速法 ' + txt(avaPeak, 2) + ' 与连续方程 ' + txt(vals.ava, 2) +
+        ' 相差 >0.2 cm²：先查 LVOT 直径与 Vmax 包络是否完整，别取平均。');
+    }
   }
   if (isNum(v.avVmax) && v.avVmax > 0) {
     rows.push(row('AV Vmax', txt(v.avVmax, 2) + ' m/s', gVmax(v.avVmax)));
@@ -244,13 +266,13 @@ function calcAs(v, bsa) {
     if (v.mg >= 60) notes.push('平均压差 ≥60 mmHg：提示极重度狭窄。');
   }
 
-  if (sv !== null && bsa > 0 && sv / bsa < 35) {
-    notes.push('低流量：SVi ' + txt(sv / bsa, 1) + ' mL/m²（<35）—— AVA 可能低估，考虑低剂量多巴酚丁胺负荷与 CT 钙化评分。');
+  if (sv !== null && bsa > 0 && sv / bsa <= 35) {
+    notes.push('低流量：SVi ' + txt(sv / bsa, 1) + ' mL/m²（≤35）—— AVA 可能低估，先按流量 / 压差四象限定档，再考虑低剂量多巴酚丁胺或 CT 钙化评分。');
   }
   if (rows.length && !isNum(v.mg)) {
     notes.push('未填平均跨瓣压差：分级仅依据 AVA / AVAi / DVI / Vmax，建议补录压差并注明心率。');
   }
-  return { rows: rows, notes: notes };
+  return { rows: rows, notes: notes, vals: vals };
 }
 
 function calcAr(v, bsa) {
@@ -426,6 +448,7 @@ function valveCalc(id, v, bsa) {
   return {
     rows: out.rows,
     notes: out.notes,
+    vals: out.vals || null,
     level: s.level,
     summary: out.rows.length ? s.summary : '等待输入',
   };

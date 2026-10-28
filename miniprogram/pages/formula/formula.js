@@ -1278,6 +1278,7 @@ Page({
         else if (k.indexOf('ar_') === 0) arv[k.slice(3)] = v[k];
       });
       const asr = VC.valveCalc('as', asv, bsa);
+      const asVals = asr.vals || {};
       if (asr.rows.length) {
         parts.push('狭窄 ' + rowsText(asr.rows) + ' → ' + asr.summary);
       }
@@ -1285,13 +1286,34 @@ Page({
       if (arr.rows.length) {
         parts.push('反流 ' + rowsText(arr.rows) + ' → ' + arr.summary);
       }
-      // 三联不一致时补一句低流量低压差的提示（引擎只在 AS 内部给分级，不给这条路径）
-      if (valid(v.as_mg) && valid(v.as_avVti, v.as_lvotD, v.as_lvotVti)) {
-        const ava = Math.PI * v.as_lvotD * v.as_lvotD / 4 * v.as_lvotVti / v.as_avVti;
-        if (ava <= 1.0 && v.as_mg < 40) {
-          parts.push('⚠ AVA ≤1.0 而平均压差 <40 mmHg：属低流量低压差档，先查 SVi 是否 ≤35 mL/m²，' +
-            '再决定低剂量多巴酚丁胺或 CT 钙化评分');
+      // ③ 低流量低压差（v1.8.4 并入本页；v1.10.7 起手填优先，缺项用 ① 段的 SVi / AVA / 压差兜底）
+      const lfFilled = valid(v.lflgef) || valid(v.lflgsvi) || valid(v.lflgmpg) || valid(v.lflgava);
+      const lfAuto = valid(v.as_mg) && valid(asVals.ava);
+      let lfDone = false;
+      if (lfFilled || lfAuto) {
+        const lf = calc.asLflg({
+          lvef: valid(v.lflgef) ? v.lflgef : null,
+          svi: valid(v.lflgsvi) ? v.lflgsvi : asVals.svi,
+          mpg: valid(v.lflgmpg) ? v.lflgmpg : (valid(v.as_mg) ? v.as_mg : null),
+          ava: valid(v.lflgava) ? v.lflgava : asVals.ava,
+          dsvi: v.lflgdsvi, dava: v.lflgdava,
+        });
+        const lp = [];
+        if (lf.text) lp.push(lf.text);
+        if (lf.flowReserve !== undefined) {
+          lp.push('SV 增幅 ' + calc.fmt((lf.flowReserve - 1) * 100, 1) + '%（' +
+            (lf.hasReserve ? '有收缩储备' : '无收缩储备') + '）');
         }
+        if (lf.dse) lp.push(lf.dse);
+        if (lp.length) {
+          parts.push('低流量低压差 ' + lp.join('；'));
+          lfDone = true;
+        }
+      }
+      // 没走到上面的判定、但三联已经矛盾时，仍给一条提醒
+      if (!lfDone && valid(v.as_mg) && valid(asVals.ava) && asVals.ava <= 1.0 && v.as_mg < 40) {
+        parts.push('⚠ AVA ≤1.0 而平均压差 <40 mmHg：属低流量低压差档，先查 SVi 是否 ≤35 mL/m²，' +
+          '再决定低剂量多巴酚丁胺或 CT 钙化评分');
       }
       if (valid(v.as_avVmax) && v.as_avVmax >= 5) {
         parts.push('⚠ Vmax ≥5 m/s，属极重度线索');

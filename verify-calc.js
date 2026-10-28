@@ -584,5 +584,34 @@ check('CFR = 1.8 → 可疑',
 check('缺近端流速 → 报错',
   C.coronaryFlowReserve(60, 0).error ? 'ok' : 'bad', 'ok');
 
+console.log('=== AS 引擎（v1.10.7：SVi / vals / 峰速法互校 / LF-LG 分型）===');
+const V = require('./miniprogram/utils/valve-calc.js');
+const asA = V.valveCalc('as', { lvotD: 2.0, lvotVti: 20, avVti: 30 }, 1.7);
+check('AS vals.sv = 62.83', Math.round(asA.vals.sv * 100) / 100, 62.83, 0.01);
+check('AS vals.svi = 36.96', Math.round(asA.vals.svi * 100) / 100, 36.96, 0.01);
+check('AS vals.ava = 2.09', Math.round(asA.vals.ava * 100) / 100, 2.09, 0.01);
+check('AS vals.dvi = 0.67', Math.round(asA.vals.dvi * 100) / 100, 0.67, 0.01);
+check('SVi 行不参与狭窄定级（无 tag）',
+  asA.rows.filter(function (r) { return r.k.indexOf('SVi') === 0 && r.tag; }).length, 0, 0);
+
+const asB = V.valveCalc('as', { lvotD: 1.8, lvotVti: 15, avVti: 40 }, 1.7);
+// SV = π×0.81×15 = 38.17；SVi = 22.45（低流量）；AVA = 38.17/40 = 0.954
+check('低流量 SVi = 22.5 且行内标注低流量',
+  Math.round(asB.vals.svi * 10) / 10, 22.5, 0.05);
+check('低流量 note 提到四象限',
+  asB.notes.join(' ').indexOf('四象限') >= 0 ? 'ok' : 'bad', 'ok');
+
+const asC = V.valveCalc('as', { lvotD: 2.0, lvotVti: 20, avVti: 30, lvotVmax: 1.0, avVmax: 4.0 }, 0);
+check('峰速法 0.79 与连续方程差 >0.2 → 提示互校',
+  asC.notes.join(' ').indexOf('相差') >= 0 ? 'ok' : 'bad', 'ok');
+
+const lf1 = C.asLflg({ svi: 30, mpg: 32, ava: 0.95 });
+check('LF-LG 未填 LVEF → 不默认判反常型',
+  lf1.text.indexOf('未填 LVEF') >= 0 ? 'ok' : 'bad', 'ok');
+const lf2 = C.asLflg({ lvef: 60, svi: 30, mpg: 32, ava: 0.95 });
+check('LF-LG EF 60 → 反常型', lf2.type, 'paradoxical');
+const lf3 = C.asLflg({ lvef: 35, svi: 30, mpg: 32, ava: 0.95 });
+check('LF-LG EF 35 → 经典型', lf3.type, 'classic');
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);
