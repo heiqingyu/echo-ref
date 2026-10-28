@@ -655,7 +655,7 @@ function check(name, ok, detail) {
     // v1.6.5：回到公式集目录后「重置」重新出现（详情页与切面学习页会隐藏）
     check('公式集目录恢复显示「重置」按钮', d.resetShown === true, 'shown=' + d.resetShown);
     check('公式集分组 = 4 个计算组 + 瓣膜 + 4 组评估（v1.6.3 起外链组移出目录）',
-      d.groups.join('|') === '瓣膜评估|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景',
+      d.groups.join('|') === '瓣膜评估|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景',
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
@@ -1015,6 +1015,16 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 300));
   o = await outOf('rvdvdt');
   check('RV dP/dt Δt25 → 480 mmHg/s', /480/.test(o), o);
+
+  // ★ v1.9.6：合并页要给三段小标题（网页端一直正常，加断言防回归）
+  const fgrpN = await c.evalJs(
+    'document.querySelectorAll(\'#calcGroups .card[data-g="rvsyst"] .fx-fgrp\').length');
+  check('合并页 rvsyst 渲染 3 段小标题', fgrpN === 3, fgrpN);
+  const rvsTxt = await c.evalJs(
+    '(function(){var c=document.querySelector(\'#calcGroups .card[data-g="rvsyst"]\');return c?c.textContent:"";})()');
+  check('rvsyst 正文不再重复界值表（折叠区已有参考标准）',
+    rvsTxt.indexOf('三个指标的正常界值') === -1 && rvsTxt.indexOf('怎么测') !== -1,
+    rvsTxt.slice(0, 30));
 
   await openCalc('resist');
   await fillCalc('resist', 'ripvr', '6');

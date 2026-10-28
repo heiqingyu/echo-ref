@@ -481,8 +481,8 @@ check('页签顺序 = EF·参考值|儿童 Z 值|切面学习|公式集（v1.6.3
   }).join('|') === 'EF·参考值|儿童 Z 值|切面学习|公式集', true);
 check('含评估内容数据 ExtraData', html.indexOf('window.ExtraData') !== -1, true);
 check('完整版也移除了页尾「继续看其他页面」', html.indexOf('pagefoot') === -1, true);
-check('含评估分组（切面、图像与质控 / 心腔、心肌与应变 / 先心含术后 / 急症与特殊场景）',
-  ['切面、图像与质控', '心腔、心肌与应变', '先天性心脏病（含术后）', '急症与特殊场景'].every(function (t) {
+check('含评估分组（图像质控与规范 / 心腔、心肌与应变 / 先心含术后 / 急症与特殊场景）',
+  ['图像质控与规范', '心腔、心肌与应变', '先天性心脏病（含术后）', '急症与特殊场景'].every(function (t) {
     return html.indexOf("title: '" + t + "'") !== -1;
   }), true);
 check('含 5 个评估条目（crt/la/lv/rv/strain）',

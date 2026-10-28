@@ -158,8 +158,16 @@ Page({
     } else {
       const g = CG.groupOf(id) || CG.GROUPS[0];
       const cache = (app.globalData.calcCache || {})[g.id] || {};
-      const inputs = g.fields.map(function (f) {
-        return { key: f.k, name: f.n, unit: f.u, value: cache[f.k] || '' };
+      // ★ v1.9.6：合并页（resist / rvsyst / lvgeom）的 fields 里混有 { g: '① …' } 分段标题。
+      //   brief 分支早就转了 head，calc 分支漏转 → {g} 被当成普通字段，标签渲染成「 / 」，
+      //   小节标题全丢（v1.8.3 起就存在）。
+      const inputs = [];
+      (g.fields || []).forEach(function (f, i) {
+        if (f.g) {
+          inputs.push({ key: '__g' + i, head: f.g });
+          return;
+        }
+        inputs.push({ key: f.k, name: f.n, unit: f.u, value: cache[f.k] || '' });
       });
       // 选项组（性别 / 心律 / 节段总数 …）：缺省取第一项，选择结果另存 optsV
       // ★ 性别类按「EF·参考值」页录入的性别预填，避免每次都要手点

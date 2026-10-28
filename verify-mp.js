@@ -571,7 +571,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('公式集分 8 个大组（3 计算 + 1 瓣膜 + 4 评估；v1.6.3 起「切面学习 / TEE 演示」移出目录）', dirs.length, 8, 0);
   check('组标题顺序',
     dirs.map(d => d.title).join('|') ===
-      '瓣膜评估|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|切面、图像与质控|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景' ? 1 : 0, 1, 0);
+      '瓣膜评估|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
@@ -898,7 +898,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirById('views-atlas').items.some(i => i.id === 'echo-interv') ? 1 : 0, 1, 0);
   check('造影、伪影与图像优化含 contrast-echo',
     dirById('views-atlas').items.some(i => i.id === 'contrast-echo' && i.kind === 'brief') ? 1 : 0, 1, 0);
-  check('切面、图像与质控 9 条（3 切面速查已移入「切面学习」页签：造影 + 伪影 + 假病变 + 3D TEE + 多普勒 + 报告 + 危急值 + 有创操作 + TEE 安全）', dirById('views-atlas').items.length, 9, 0);
+  check('图像质控与规范 9 条（3 切面速查已移入「切面学习」页签：造影 + 伪影 + 假病变 + 3D TEE + 多普勒 + 报告 + 危急值 + 有创操作 + TEE 安全）', dirById('views-atlas').items.length, 9, 0);
   check('造影、伪影与图像优化含 artifact-guide',
     dirById('views-atlas').items.some(i => i.id === 'artifact-guide' && i.kind === 'brief') ? 1 : 0, 1, 0);
   check('特殊场景已并入急症组（妊娠 2 条 / 脓毒症 / 术后 ICU 仍在）', dirById('vascular').items.filter(i => ['pregnancy-echo','ppcm','sepsis','postop-icu'].indexOf(i.id) !== -1).length, 4, 0);
@@ -986,6 +986,19 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('右心结果含 RAP 与 PASP',
     /RAP/.test(pgF.data.out) && /PASP/.test(pgF.data.out) ? 1 : 0, 1, 0);
   check('右心结果含 PH 超声概率', /PH 超声概率/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  // ★ v1.9.6：合并页（resist / rvsyst / lvgeom）的 { g: '① …' } 必须转成小标题；
+  //   calc 分支曾漏转，被当普通字段渲染成「 / 」空标签（v1.8.3–v1.9.5 一直存在）
+  const mergedHeads = { resist: 3, rvsyst: 3, lvgeom: 4 };
+  Object.keys(mergedHeads).forEach(function (gid) {
+    pgF.onLoad({ id: gid });
+    const heads = pgF.data.inputs.filter(function (r) { return !!r.head; });
+    const blank = pgF.data.inputs.filter(function (r) {
+      return !r.head && !r.name;
+    });
+    check('合并页 ' + gid + ' 小标题 ' + mergedHeads[gid] + ' 段', heads.length, mergedHeads[gid], 0);
+    check('合并页 ' + gid + ' 无空标签字段', blank.length, 0, 0);
+  });
 
   // —— v1.2.4 新增的 18 个计算器（小程序端分支逐个跑）——
   const mpCalc = function (gid, vals, re, label, collapse) {

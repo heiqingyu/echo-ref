@@ -192,7 +192,7 @@ const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');
 else bad('extra-data.js 缺失');
 const EX = require(exPath);
-if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（切面图像与质控 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
+if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（图像质控与规范 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
 if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rvfun,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,dse,hcm,infiltr,dcm,athlete,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,shd,pht-rev,tof-pr,ebstein,dorv,asd-close,bubble,coa-echo,mustard,fontan,as-switch,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 70 条（5 个分组）');
