@@ -382,6 +382,45 @@ function check(name, ok, detail) {
     ['下侧壁基底段', '下侧壁中间段', '心尖侧壁', '前间隔基底段', '前间隔中间段', '心尖前壁', '心尖帽']
       .every(function (w) { return co.a3c.indexOf(w) >= 0; }), co.a3c);
 
+  // 小程序端靠坐标反算点图（image 挂不了 SVG 事件）：
+  // 在真实色块内部撒点（Canvas Path2D 判定是否落在路径里），再让 hitSeg 反算，必须回到该段
+  const hitInfo = await c.evalJs(`(function(){
+    var cv=document.createElement('canvas'); cv.width=1; cv.height=1;
+    var ctx=cv.getContext('2d');
+    var bad=[], tested=0, empty=[], pts=0, missAll=0, wrongAll=0;
+    ['PLAX','PSAX-B','PSAX-M','PSAX-A','A4C','A2C','A3C'].forEach(function(k){
+      var box=document.getElementById('wd-'+k);
+      if(!box){ bad.push(k+':no box'); return; }
+      box.querySelectorAll('svg g[data-seg]').forEach(function(g){
+        var ps=[].slice.call(g.querySelectorAll('path')).filter(function(q){ return (q.getAttribute('fill')||'none')!=='none'; });
+        if(!ps.length) return;
+        var p=ps[0], i=Number(g.getAttribute('data-seg'));
+        var bb=p.getBBox(), path2d=new Path2D(p.getAttribute('d')), inside=0, wrong=0, miss=0;
+        for(var u=0.05;u<1;u+=0.1){
+          for(var v=0.05;v<1;v+=0.1){
+            var x=bb.x+bb.width*u, y=bb.y+bb.height*v;
+            if(!ctx.isPointInPath(path2d, x, y)) continue;
+            inside++; pts++;
+            var got=window.SegSvg.hitSeg(k, x, y);
+            if(got!==i){ if(!got) miss++; else wrong++; }
+          }
+        }
+        if(!inside){ empty.push(k+'#'+i); return; }
+        tested++; missAll+=miss; wrongAll+=wrong;
+        if(wrong) bad.push(k+'#'+i+':'+wrong+'/'+inside);
+      });
+    });
+    var b=document.getElementById('bullseyeBox');
+    if(b){ tested++; if(window.SegSvg.hitSeg('bull',200,200)!==17) bad.push('bull#17:1/1'); }
+    return JSON.stringify({bad:bad, tested:tested, empty:empty, pts:pts, miss:missAll, wrong:wrongAll});
+  })()`);
+  const hitInfoObj = JSON.parse(hitInfo);
+  // 落在两段分界线上的采样点有 ±1px 归属歧义，容许极少数（≤0.15%）
+  check('坐标反算（小程序点图用）：色块内几乎不会被算成别的节段',
+    hitInfoObj.tested >= 30 && hitInfoObj.wrong / hitInfoObj.pts <= 0.0015, hitInfo);
+  check('坐标反算漏点率 < 3%（色块边缘的分隔缝可容忍）',
+    hitInfoObj.miss / hitInfoObj.pts < 0.03, hitInfo);
+
   // 壁名统一：教材（《超声诊断学》4 版图 5-73C）与 2023 版负荷超声指南都用「下侧壁 / 前侧壁」
   // （用户 2026-10-28：前外侧壁/下外侧壁 是国内少用的直译，全站不再混用）
   const wallAll = await c.evalJs(`(function(){

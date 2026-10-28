@@ -175,7 +175,7 @@ function buildSegPage() {
     <div id="segpart">
     <div class="card">
       <div class="card__t">17 节段模型与冠脉供血</div>
-      <div class="card__d">ASE 17 节段模型 · 供血分区为典型分布，存在个体差异。点击下方分区可高亮对应节段；点击节段色块或数字可在所有切面中同步定位。</div>
+      <div class="card__d">ASE 17 节段模型 · 供血分区为典型分布，存在个体差异。点击图上任一节段或下方分区即可高亮；选中后会在所有切面中同步定位，再点一次取消。</div>
       <div class="bull-wrap" id="bullseyeBox">${svg}</div>
       <div class="terr-key">${chips}</div>
       <div class="hi-line" id="segHiLine" hidden></div>
@@ -196,6 +196,7 @@ function buildSegPage() {
       <div class="card__t">切面与室壁对应</div>
       <div class="card__d">按标准屏幕方位示意 · 实际以解剖标志确认。点击任一彩色节段（示意图中的色块或数字按钮），它会在所有对应切面及牛眼图中同步高亮；再次点击取消。</div>
       ${wallCards}
+      <div class="note">名称对照（同一节段的不同叫法）：前间隔 = 前室间隔 = 前间壁（anteroseptal）；下间隔 = 下室间隔 = 下间壁 = 旧称后间隔（inferoseptal）；下侧壁 = 旧称后壁（inferolateral）；前侧壁 = 旧称侧壁（anterolateral）。</div>
       <div class="note">记忆：四腔心看下间隔和前侧壁；长轴看前间隔和下侧壁；两腔心看下壁和前壁。传统“后壁”名称在标准节段模型中对应下侧壁（inferolateral）。</div>
       <div class="note">PSAX 钟面：12 点前壁，2 点前侧壁，4 点下侧壁，6 点下壁，8 点下间隔，10 点前间隔。探头方向与显示习惯不同，需用右室和瓣膜等标志核实。</div>
       <div class="note">常见旋转顺序：A4C → 约 60° 逆时针 → A2C → 再约 60° → A3C；角度只作操作参考。</div>

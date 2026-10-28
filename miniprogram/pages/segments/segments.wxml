@@ -26,9 +26,9 @@
   <view id="segpart" wx:if="{{!segSearching}}">
     <view class="card">
       <view class="card__title">17 节段模型与冠脉供血</view>
-      <view class="card__desc">ASE 17 节段模型 · 供血分区为典型分布，存在个体差异。点击下方分区可高亮对应节段；点击节段数字可在所有切面中同步定位。</view>
+      <view class="card__desc">ASE 17 节段模型 · 供血分区为典型分布，存在个体差异。点击图上任一节段或下方分区即可高亮；选中后会在所有切面中同步定位，再点一次取消。</view>
 
-      <image class="bull-img" src="{{bsaSvgSrc}}" mode="aspectFit" />
+      <image class="bull-img" id="bullimg" src="{{bsaSvgSrc}}" mode="aspectFit" bindtap="onBullTap" />
 
       <view class="terr-key">
         <view class="terr-chip {{hi === 'LAD' ? 'terr-chip--on' : ''}}" style="--c:#2563eb" bindtap="onTerritory" data-k="LAD">LAD · 前降支</view>
@@ -67,7 +67,7 @@
       <view class="wall-card" wx:for="{{wallViews}}" wx:key="id" wx:for-item="w">
         <view class="wall-card__t">{{w.title}}</view>
         <view class="wall-card__s">{{w.sub}}</view>
-        <image class="wall-img" src="{{w.src}}" mode="aspectFit" />
+        <image class="wall-img" id="wallimg-{{w.id}}" data-v="{{w.id}}" src="{{w.src}}" mode="aspectFit" bindtap="onWallTap" />
         <view class="wall-group" wx:for="{{w.groups}}" wx:for-item="g" wx:key="index">
           <text class="wall-group__l">{{g.label}}</text>
           <view class="wall-chips">
@@ -79,6 +79,7 @@
 
       <view wx:if="{{sel}}" class="btn btn--ghost" bindtap="onClearSeg" style="margin-top:20rpx">取消选中（{{sel}}）</view>
 
+      <view class="note">名称对照（同一节段的不同叫法）：前间隔 = 前室间隔 = 前间壁（anteroseptal）；下间隔 = 下室间隔 = 下间壁 = 旧称后间隔（inferoseptal）；下侧壁 = 旧称后壁（inferolateral）；前侧壁 = 旧称侧壁（anterolateral）。</view>
       <view class="note">记忆：四腔心看下间隔和前侧壁；长轴看前间隔和下侧壁；两腔心看下壁和前壁。传统“后壁”名称在标准节段模型中对应下侧壁（inferolateral）。</view>
       <view class="note">PSAX 钟面：12 点前壁，2 点前侧壁，4 点下侧壁，6 点下壁，8 点下间隔，10 点前间隔。探头方向与显示习惯不同，需用右室和瓣膜等标志核实。</view>
       <view class="note">常见旋转顺序：A4C → 约 60° 逆时针 → A2C → 再约 60° → A3C；角度只作操作参考。</view>

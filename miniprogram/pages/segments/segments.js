@@ -230,6 +230,40 @@ Page({
     this.rebuild();
   },
 
+  /**
+   * 点示意图直接选中节段
+   *
+   * ★ 小程序的 image 组件承载的是 base64 SVG，SVG 内部的 <g data-seg> 收不到点击，
+   *   只能拿触点换算回 viewBox 坐标再反算落在哪个节段（segment-svg.js hitSeg）。
+   */
+  onBullTap(e) {
+    this.hitSegAt(e, 'bull', 'bullimg');
+  },
+
+  onWallTap(e) {
+    const v = e.currentTarget.dataset.v;
+    if (v) this.hitSegAt(e, v, 'wallimg-' + v);
+  },
+
+  hitSegAt(e, kind, id) {
+    const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
+    if (!t || typeof t.clientX !== 'number') return;
+    const px = t.clientX, py = t.clientY;
+    const self = this;
+    wx.createSelectorQuery().select('#' + id).boundingClientRect(function (rect) {
+      if (!rect || !rect.width || !rect.height) return;
+      const box = segSvg.viewBoxOf(kind);
+      // mode=aspectFit：等比缩放后居中，两侧/上下留白要扣掉
+      const sc = Math.min(rect.width / box[0], rect.height / box[1]);
+      const ox = rect.left + (rect.width - box[0] * sc) / 2;
+      const oy = rect.top + (rect.height - box[1] * sc) / 2;
+      const i = segSvg.hitSeg(kind, (px - ox) / sc, (py - oy) / sc);
+      if (!i) return;
+      self.setData({ sel: self.data.sel === i ? null : i });
+      self.rebuild();
+    }).exec();
+  },
+
   /** 点击节段（数字按钮）→ 全页同步选中/取消 */
   onSeg(e) {
     const i = Number(e.currentTarget.dataset.s);

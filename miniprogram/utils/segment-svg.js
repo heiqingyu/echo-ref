@@ -81,13 +81,35 @@ function viewsOf(i) {
 }
 
 /** 点击节段后的说明文字 */
+/** ASE/AHA 2002 英文标准名（报告与文献对照用） */
+const SEG_EN = [
+  'basal anterior', 'basal anteroseptal', 'basal inferoseptal', 'basal inferior',
+  'basal inferolateral', 'basal anterolateral',
+  'mid anterior', 'mid anteroseptal', 'mid inferoseptal', 'mid inferior',
+  'mid inferolateral', 'mid anterolateral',
+  'apical anterior', 'apical septal', 'apical inferior', 'apical lateral', 'apical cap',
+];
+
+/**
+ * 常见同义中文
+ * ★ 中文超声里「前间隔 / 前间壁 / 前室间隔」是同一处；「下侧壁」旧称「后壁」，
+ *   「前侧壁」旧称「侧壁」，「下间隔」旧称「后间隔」。报告里都会遇到，一并给出。
+ */
+const SEG_ALIAS = [
+  '', '亦称前室间隔 / 前间壁', '亦称下室间隔 / 下间壁 / 后间隔', '', '旧称后壁', '旧称侧壁',
+  '', '亦称前室间隔 / 前间壁', '亦称下室间隔 / 下间壁 / 后间隔', '', '旧称后壁', '旧称侧壁',
+  '', '亦称室间隔心尖部', '', '', '',
+];
+
 function segInfoText(i) {
   if (!i) return '';
   const terr = territoryOf(i);
   const views = viewsOf(i).map(function (v) {
     return { PLAX: 'PLAX', 'PSAX-B': 'PSAX 基底', 'PSAX-M': 'PSAX 中段', 'PSAX-A': 'PSAX 心尖', A4C: 'A4C', A2C: 'A2C', A3C: 'A3C' }[v] || v;
   });
-  return i + ' · ' + SEG_NAMES[i - 1] + ' ｜ ' + terr + ' ｜ 见于：' + views.join('、');
+  const en = SEG_EN[i - 1] || '';
+  const alias = SEG_ALIAS[i - 1] ? '，' + SEG_ALIAS[i - 1] : '';
+  return i + ' · ' + SEG_NAMES[i - 1] + '（' + en + alias + '）｜ ' + terr + ' ｜ 见于：' + views.join('、');
 }
 
 const RAD = Math.PI / 180;
@@ -365,6 +387,80 @@ function wallDiagramSvg(view, opts) {
   return svgWrap(n, '0 0 620 580', view + ' 解剖与室壁节段示意图');
 }
 
+/* ══════════ 点击命中（小程序 image 不能挂 SVG 事件，只能按坐标反算）══════════ */
+
+/** 各图 viewBox 尺寸（与 bullseyeSvg / wallDiagramSvg 里写死的值一致，改图必须同步） */
+const HIT_BOX = {
+  bull: [400, 400],
+  PLAX: [620, 460], 'PSAX-B': [480, 470], 'PSAX-M': [480, 470], 'PSAX-A': [480, 470],
+  A4C: [620, 580], A2C: [620, 580], A3C: [620, 580],
+};
+
+function viewBoxOf(kind) { return HIT_BOX[kind] || [620, 580]; }
+
+/** 两个角度之差（度，取 -180…180） */
+function angGap(a, b) { return Math.abs(((a - b) % 360 + 540) % 360 - 180); }
+
+/**
+ * 椭圆环带图的命中参数
+ *   arcs = [节段号, 中心角, 半宽]，角度按 SVG 习惯（0° 向右、顺时针为正）
+ *   rLo / rHi = 归一化半径范围（把椭圆拉成圆后的半径，1 = 外缘）
+ */
+const HIT_ELL = {
+  PLAX: { cx: 310, cy: 262, rx: 198, ry: 72, irx: 170, iry: 44, rLo: 0.50, rHi: 1.15,
+    arcs: [[8, -135, 37], [2, -53, 39], [5, 51, 37], [11, 132, 38]] },
+  'PSAX-B': { cx: 240, cy: 235, rx: 150, ry: 150, irx: 92, iry: 92, rLo: 0.52, rHi: 1.12,
+    arcs: [[1, -90, 30], [2, -150, 30], [3, 150, 30], [4, 90, 30], [5, 30, 30], [6, -30, 30]] },
+  'PSAX-M': { cx: 240, cy: 235, rx: 150, ry: 150, irx: 92, iry: 92, rLo: 0.52, rHi: 1.12,
+    arcs: [[7, -90, 30], [8, -150, 30], [9, 150, 30], [10, 90, 30], [11, 30, 30], [12, -30, 30]] },
+  'PSAX-A': { cx: 240, cy: 235, rx: 136, ry: 136, irx: 78, iry: 78, rLo: 0.48, rHi: 1.12,
+    arcs: [[13, -90, 45], [14, -180, 45], [15, 90, 45], [16, 0, 45]] },
+  A4C: { cx: 382, cy: 280, rx: 78, ry: 168, irx: 52, iry: 142, rLo: 0.55, rHi: 1.12,
+    arcs: [[3, -220, 20], [9, -168, 28], [14, -123, 13], [16, -57, 13], [12, -12, 28], [6, 40, 20], [17, -90, 18]] },
+  A2C: { cx: 308, cy: 280, rx: 84, ry: 168, irx: 58, iry: 142, rLo: 0.55, rHi: 1.12,
+    arcs: [[4, -220, 20], [10, -168, 28], [15, -123, 13], [13, -57, 13], [7, -12, 28], [1, 40, 20], [17, -90, 18]] },
+  A3C: { cx: 308, cy: 280, rx: 84, ry: 168, irx: 58, iry: 142, rLo: 0.55, rHi: 1.12,
+    arcs: [[5, -220, 20], [11, -168, 28], [16, -123, 13], [13, -57, 13], [8, -12, 28], [2, 40, 20], [17, -90, 18]] },
+};
+
+/**
+ * 坐标 → 节段号（0 = 没点中）
+ * @param {string} kind 'bull' 或 WALL_VIEWS 里的 id
+ * @param {number} x viewBox 坐标
+ * @param {number} y viewBox 坐标
+ */
+function hitSeg(kind, x, y) {
+  if (kind === 'bull') {
+    const dx = x - 200, dy = y - 200;
+    const r = Math.sqrt(dx * dx + dy * dy);
+    if (r > 190) return 0;
+    if (r <= 40) return 17;
+    const deg = Math.atan2(dy, dx) * 180 / Math.PI;
+    const al = ((-deg - 90) % 360 + 360) % 360;   // 正上方 0°，逆时针增大（与编号顺序一致）
+    if (r <= 84) return 13 + Math.floor(((al + 45) % 360) / 90);
+    if (r <= 132) return 7 + Math.floor(((al + 30) % 360) / 60);
+    return 1 + Math.floor(((al + 30) % 360) / 60);
+  }
+  const c = HIT_ELL[kind];
+  if (!c) return 0;
+  const dx = x - c.cx, dy = y - c.cy;
+  const nx = dx / c.rx, ny = dy / c.ry;
+  const rr = Math.sqrt(nx * nx + ny * ny);
+  if (rr < c.rLo || rr > c.rHi) return 0;
+  // ★ 扁椭圆的内外两条弧「参数角」不同（A4C 内缘与外缘最多差 5°），
+  //   所以内外各算一次角度，取落在区间更深的那个段，别只按外缘归一化。
+  const tOut = Math.atan2(dy / c.ry, dx / c.rx) * 180 / Math.PI;
+  const tIn = Math.atan2(dy / c.iry, dx / c.irx) * 180 / Math.PI;
+  let best = 0, bestOver = 999;
+  for (let k = 0; k < c.arcs.length; k++) {
+    const mid = c.arcs[k][1], half = c.arcs[k][2];
+    const over = Math.min(angGap(tOut, mid), angGap(tIn, mid)) - half;
+    if (over < bestOver) { bestOver = over; best = c.arcs[k][0]; }
+  }
+  // 相邻色块之间是 2–4° 的白色分隔缝，放 8° 容差让缝也归最近的一段
+  return bestOver <= 8 ? best : 0;
+}
+
 /** 简易 UTF-8 base64（小程序端 image 组件用 data URI） */
 function utf8ToBase64(str) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -393,6 +489,8 @@ function utf8ToBase64(str) {
 module.exports = {
   TERRITORY,
   SEG_NAMES,
+  SEG_EN,
+  SEG_ALIAS,
   VIEW_SEGS,
   WALL_VIEWS,
   territoryOf,
@@ -401,4 +499,6 @@ module.exports = {
   bullseyeSvg,
   wallDiagramSvg,
   utf8ToBase64,
+  hitSeg,
+  viewBoxOf,
 };

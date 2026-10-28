@@ -3942,6 +3942,26 @@
         }
         return;
       }
+      // 兜底：点在示意图内、但正好落在色块之间的白色分隔缝上（没命中 g[data-seg]），
+      // 按坐标反算一次，免得「点图上没反应，只能点下面数字」（与小程序同一套 hitSeg）
+      const wbox = e.target.closest('#bullseyeBox, .wallsvg-box');
+      if (wbox) {
+        const sv = wbox.querySelector('svg');
+        const kind = wbox.id === 'bullseyeBox' ? 'bull' : wbox.id.replace('wd-', '');
+        if (sv && window.SegSvg && SegSvg.viewBoxOf) {
+          const r = sv.getBoundingClientRect();
+          const vb = SegSvg.viewBoxOf(kind);
+          const sc = Math.min(r.width / vb[0], r.height / vb[1]);
+          const ox = r.left + (r.width - vb[0] * sc) / 2;
+          const oy = r.top + (r.height - vb[1] * sc) / 2;
+          const i = SegSvg.hitSeg(kind, (e.clientX - ox) / sc, (e.clientY - oy) / sc);
+          if (i >= 1 && i <= 17) {
+            selSeg = selSeg === i ? null : i;
+            renderSegAll();
+          }
+        }
+        return;
+      }
       const chip = e.target.closest('#page-segments [data-selseg]');
       if (chip) {
         const i = Number(chip.dataset.selseg);

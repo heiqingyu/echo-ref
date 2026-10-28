@@ -604,6 +604,27 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   let pgS = null;
   const _prevPage = global.Page;
   global.Page = function (c) { pgS = c; };
+  // 小程序端点图选节段：image 挂不了 SVG 事件，靠坐标反算（v1.10.1）
+  {
+    const wxml = require('fs').readFileSync(pathW.join(__dirname, 'miniprogram', 'pages', 'segments', 'segments.wxml'), 'utf8');
+    const pjs = require('fs').readFileSync(pathW.join(__dirname, 'miniprogram', 'pages', 'segments', 'segments.js'), 'utf8');
+    const SV = require(pathW.join(__dirname, 'miniprogram', 'utils', 'segment-svg.js'));
+    check('牛眼图 image 绑了点击', /class="bull-img"[^>]*bindtap="onBullTap"/.test(wxml) ? 1 : 0, 1, 0);
+    check('切面图 image 绑了点击（带 data-v）', /class="wall-img"[^>]*data-v="/.test(wxml) && /bindtap="onWallTap"/.test(wxml) ? 1 : 0, 1, 0);
+    check('页面有坐标反算处理函数', /hitSegAt\(/.test(pjs) && /viewBoxOf\(/.test(pjs) ? 1 : 0, 1, 0);
+    check('hitSeg 导出', typeof SV.hitSeg === 'function' ? 1 : 0, 1, 0);
+    check('牛眼图 1 号在最上方', SV.hitSeg('bull', 200, 65), 1);
+    check('牛眼图 17 号在圆心', SV.hitSeg('bull', 200, 200), 17);
+    check('牛眼图 4 号在正下方（基底环）', SV.hitSeg('bull', 200, 360), 4);
+    check('牛眼图 16 号在正右方（心尖环）', SV.hitSeg('bull', 270, 200), 16);
+    check('PSAX 基底 1 号在正上方', SV.hitSeg('PSAX-B', 240, 100), 1);
+    check('A4C 9 号（屏幕左侧中段）', SV.hitSeg('A4C', 300, 280), 9);
+    check('PLAX 8 号（左上）', SV.hitSeg('PLAX', 250, 210), 8);
+    check('PLAX 5 号（右下）', SV.hitSeg('PLAX', 380, 310), 5);
+    check('PLAX 11 号（左下）', SV.hitSeg('PLAX', 250, 320), 11);
+    check('点到图外空白返回 0', SV.hitSeg('A4C', 5, 5), 0);
+  }
+
   require(pathW.join(__dirname, 'miniprogram', 'pages', 'segments', 'segments.js'));
   global.Page = _prevPage;
   pgS.setData = function (patch) {
