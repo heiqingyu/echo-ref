@@ -990,6 +990,29 @@ function check(name, ok, detail) {
     ['adaptation', '勉强适应', '失适应'].every((w) => rvTxt.indexOf(w) >= 0), '');
   check('右心评估含决策用法（右心门槛 / 术后右心衰）',
     rvTxt.indexOf('右心门槛') >= 0 && rvTxt.indexOf('术后右心衰') >= 0, '');
+  await openBrief('rvfun');
+  const rfTxt = await briefText('rvfun');
+  check('右室功能含两种负荷方式（多巴酚丁胺 / 仰卧踏车）',
+    ['低剂量多巴酚丁胺', '仰卧踏车运动'].every((w) => rfTxt.indexOf(w) >= 0), '');
+  check('右室功能含运动负荷正常与异常反应',
+    rfTxt.indexOf('EIPH') >= 0 && rfTxt.indexOf('耦联储备不足') >= 0, '');
+  check('右室功能含耦联储备公式',
+    rfTxt.indexOf('耦联储备 =（峰值 TAPSE') >= 0, '');
+  // 实填：TAPSE 16→23、PASP 30→45，比值 0.53→0.51，判「保留」；峰值 PASP 70 时判「不足」
+  await fillCalc('rvfun', 'rvr0', '-14');
+  await fillCalc('rvfun', 'rvr1', '-21');
+  await fillCalc('rvfun', 'rvt0', '16');
+  await fillCalc('rvfun', 'rvt1', '23');
+  await fillCalc('rvfun', 'rvfpasp', '30');
+  await fillCalc('rvfun', 'rvp1', '45');
+  await new Promise((r) => setTimeout(r, 300));
+  let rvOut = await outOf('rvfun');
+  check('右室储备：0.53→0.51 判耦联储备保留',
+    /0\.53→0\.51/.test(rvOut) && /耦联储备保留/.test(rvOut), rvOut.slice(0, 90));
+  await fillCalc('rvfun', 'rvp1', '70');
+  await new Promise((r) => setTimeout(r, 300));
+  rvOut = await outOf('rvfun');
+  check('右室储备：峰值 PASP 70 判耦联储备不足', /耦联储备不足/.test(rvOut), rvOut.slice(0, 90));
 
   await openCalc('mpap');
   await fillCalc('mpap', 'pp_tr', '3.0');

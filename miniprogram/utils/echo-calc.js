@@ -1075,6 +1075,20 @@ function rvReserve(o) {
     // 后负荷上升明显而应变不涨 → 提示「纯后负荷效应」而非储备不足
     if (r.dpasp > 20 && r.delta < 5) r.afterloadOnly = true;
   }
+
+  // TAPSE/PASP 的负荷耦联储备（2026-10-29 新增）
+  // 正常运动时右室收缩增强、比值大致维持（略降）；明显下降说明右室没跟上后负荷。
+  // 切点来自心衰与肺高压的运动负荷研究，只能作提示，不替代右心导管。
+  if (o.pasp0 > 0 && o.pasp1 > 0 && o.tapse0 > 0 && o.tapse1 > 0) {
+    r.tRatio0 = o.tapse0 / o.pasp0;
+    r.tRatio1 = o.tapse1 / o.pasp1;
+    r.tRatioChange = ((r.tRatio1 - r.tRatio0) / r.tRatio0) * 100;
+    if (r.tRatioChange >= -10) r.tRatioText = '耦联储备保留';
+    else if (r.tRatioChange >= -20) r.tRatioText = '耦联储备边缘';
+    else r.tRatioText = '耦联储备不足';
+    // 峰值比值已跌到静息失耦联阈值以下，即使降幅不到 20% 也算储备不足
+    if (r.tRatio1 < 0.36) { r.tRatioText = '耦联储备不足'; r.tRatioLow = true; }
+  }
   return r;
 }
 

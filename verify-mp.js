@@ -1318,6 +1318,20 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('ΔRVFWS +1 → 收缩储备耗竭',
     /储备耗竭/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
+  // —— v1.10.6：TAPSE/PASP 的负荷耦联储备 ——
+  pgF.data.inputs[idxK('rvr1')].value = '-21';
+  pgF.data.inputs[idxK('rvt0')].value = '16';
+  pgF.data.inputs[idxK('rvt1')].value = '23';
+  pgF.data.inputs[idxK('rvfpasp')].value = '30';
+  pgF.data.inputs[idxK('rvp1')].value = '45';
+  pgF.refresh();
+  check('负荷 TAPSE/PASP 0.53→0.51 → 耦联储备保留',
+    /耦联储备保留/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  pgF.data.inputs[idxK('rvp1')].value = '70';
+  pgF.refresh();
+  check('峰值 PASP 70 → 耦联储备不足',
+    /耦联储备不足/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
   pgF.onLoad({ id: 'infiltr' });
   pgF.onShow();
   pgF.data.inputs[0].value = '-8';

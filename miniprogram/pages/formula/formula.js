@@ -616,6 +616,10 @@ Page({
           parts.push('负荷后耦联 ' + calc.fmt(rr.ratio0, 2) + '→' + calc.fmt(rr.ratio1, 2) +
             (rr.couplingDelta > 0 ? '（改善）' : rr.couplingDelta < 0 ? '（恶化）' : '（不变）'));
         }
+        if (rr.tRatioChange !== undefined) {
+          parts.push('TAPSE/PASP ' + calc.fmt(rr.tRatio0, 2) + '→' + calc.fmt(rr.tRatio1, 2) +
+            '（' + (rr.tRatioChange >= 0 ? '+' : '') + calc.fmt(rr.tRatioChange, 0) + '%）· ' + rr.tRatioText);
+        }
         if (rr.afterloadOnly) {
           parts.push('注意：PASP 升 ' + calc.fmt(rr.dpasp, 0) + ' mmHg 而 RVFWS 未涨，更像后负荷效应而非储备耗竭');
         }
