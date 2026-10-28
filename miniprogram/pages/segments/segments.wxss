@@ -110,7 +110,7 @@
 
 .wall-img {
   width: 100%;
-  height: 480rpx;
+  height: 640rpx;
   margin-top: 12rpx;
 }
 

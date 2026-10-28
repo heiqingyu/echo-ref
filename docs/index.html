@@ -1962,7 +1962,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.9.8</div>
+    <div class="verline">心脏超声参考值 · v1.9.9</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2004,7 +2004,7 @@ button.fx-nav__c {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.9.8</div>
+      <div class="verline">心脏超声参考值 · v1.9.9</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -7268,30 +7268,68 @@ function wallDiagramSvg(view, opts) {
   let n = '';
   const ids = VIEW_SEGS[view];
 
+  /* ── 外侧引线标注：色带外缘 → 数字胶囊 + 壁名 ── */
+  const NAME_FS = 15;
+  const cwOf = function (i) { return i >= 10 ? 28 : 24; };
+  function capTag(i, x, y) {
+    const w = cwOf(i);
+    return '<rect x="' + f1(x - w / 2) + '" y="' + f1(y - 11) + '" width="' + w + '" height="22" rx="11" fill="' +
+      TERRITORY[territoryOf(i)].color + '"' + (sel === i ? ' stroke="#1e293b" stroke-width="1.8"' : '') + '/>' +
+      '<text x="' + f1(x) + '" y="' + f1(y + 5.2) + '" text-anchor="middle" font-size="14.5" font-weight="700"' +
+      ' fill="#ffffff" pointer-events="none">' + i + '</text>';
+  }
+  function nameTag(i, x, y, anchor) {
+    const on = sel === i;
+    return '<text x="' + f1(x) + '" y="' + f1(y) + '" text-anchor="' + anchor + '" font-size="' + NAME_FS +
+      '" font-weight="' + (on ? 700 : 500) + '" fill="' + (on ? '#0f172a' : '#3d4859') +
+      '" pointer-events="none">' + SEG_NAMES[i - 1] + '</text>';
+  }
+  /**
+   * 一条引线 + 一行标注
+   * @param {Array} p0 色带外缘上的连接点
+   * @param {number} ax 引线终点 x
+   * @param {number} ay 引线终点 y（也是文字行的垂直中心）
+   * @param {string} side 'L' 名称向左展开 / 'R' 向右 / 'C' 胶囊居中、名称向右
+   */
+  function callout(i, p0, ax, ay, side) {
+    const on = sel === i, st = on ? '#1e293b' : '#98a6b8', w = cwOf(i);
+    let g = '<g data-seg="' + i + '" data-terr="' + territoryOf(i) + '">' +
+      '<path class="seg-lead" d="M' + f1(p0[0]) + ' ' + f1(p0[1]) + ' L' + f1(ax) + ' ' + f1(ay) + '" fill="none" stroke="' + st +
+      '" stroke-width="' + (on ? 1.9 : 1.3) + '"/>' +
+      '<circle cx="' + f1(p0[0]) + '" cy="' + f1(p0[1]) + '" r="' + (on ? 3.4 : 2.6) + '" fill="' + st + '"/>';
+    if (side === 'L') g += capTag(i, ax - w / 2, ay) + nameTag(i, ax - w - 7, ay + 6, 'end');
+    else if (side === 'R') g += capTag(i, ax + w / 2, ay) + nameTag(i, ax + w + 7, ay + 6, 'start');
+    else g += capTag(i, ax, ay) + nameTag(i, ax + w / 2 + 7, ay + 6, 'start');
+    return g + '</g>';
+  }
+
   if (view === 'PLAX') {
     // 左室长轴水平放置：主动脉瓣在右、心尖在左；上壁前间隔、下壁下外侧壁
-    const cx = 265, cy = 210;
-    // 上壁：8 中段(靠心尖)、2 基底段(靠瓣膜)；下壁：5 基底、11 中段
-    n += segNode(8, eband(cx, cy, 212, 96, 176, 66, -172, -98),
-      ept(cx, cy, 194, 81, -135)[0], ept(cx, cy, 194, 81, -135)[1] + 6, sel);
-    n += segNode(2, eband(cx, cy, 212, 96, 176, 66, -92, -14),
-      ept(cx, cy, 194, 81, -53)[0], ept(cx, cy, 194, 81, -53)[1] + 6, sel);
-    n += segNode(5, eband(cx, cy, 212, 96, 176, 66, 14, 88),
-      ept(cx, cy, 194, 81, 51)[0], ept(cx, cy, 194, 81, 51)[1] + 6, sel);
-    n += segNode(11, eband(cx, cy, 212, 96, 176, 66, 94, 170),
-      ept(cx, cy, 194, 81, 132)[0], ept(cx, cy, 194, 81, 132)[1] + 6, sel);
+    const cx = 310, cy = 262, rx = 198, ry = 72;
+    const irx = rx - 28, iry = ry - 28;
+    const ringX = (rx + irx) / 2, ringY = (ry + iry) / 2;
+    // 上壁：8 中段（靠心尖）、2 基底段（靠瓣膜）；下壁：5 基底、11 中段
+    [[8, -172, -98, 160], [2, -92, -14, 160], [5, 14, 88, 376], [11, 94, 170, 376]]
+      .forEach(function (b) {
+        const i = b[0], a = b[1], e = b[2], ly = b[3];
+        const mid = (a + e) / 2;
+        const pin = ept(cx, cy, ringX, ringY, mid);
+        n += segNode(i, eband(cx, cy, rx, ry, irx, iry, a, e), pin[0], pin[1] + 6, sel, 18);
+        // 连接点取色带外缘中点，引线向上（上壁）或向下（下壁）
+        n += callout(i, ept(cx, cy, rx, ry, mid), pin[0], ly, 'C');
+      });
     // 心尖汇合部斜线
     for (let a = 172; a <= 188; a += 5) {
-      const p = ept(cx, cy, 212, 96, a), q = ept(cx, cy, 176, 66, a);
+      const p = ept(cx, cy, rx, ry, a), q = ept(cx, cy, irx, iry, a);
       n += '<path d="M' + f1(p[0]) + ' ' + f1(p[1]) + ' L' + f1(q[0]) + ' ' + f1(q[1]) +
         '" stroke="#94a3b8" stroke-width="4" opacity=".55"/>';
     }
     // 右室（上方弧带）、主动脉、左房
-    n += chamber('M118 84 Q272 18 452 82 L448 122 Q270 66 126 120 Z') + lab(278, 74, 'RV');
-    n += chamber('M448 152 L556 142 L556 198 L448 194 Z') + lab(502, 180, 'Ao');
-    n += ell(496, 274, 54, 44) + lab(496, 280, 'LA');
-    n += lab(cx, 216, 'LV', 20) + lab(30, 216, '心尖', 15);
-    return svgWrap(n, '0 0 570 355', 'PLAX 解剖与室壁节段示意图');
+    n += chamber('M150 96 Q310 30 470 94 L466 126 Q310 76 158 124 Z') + lab(310, 100, 'RV', 16);
+    n += chamber('M512 218 L604 208 L604 262 L512 258 Z') + lab(558, 244, 'Ao', 17);
+    n += ell(566, 326, 40, 31) + lab(566, 332, 'LA', 17);
+    n += lab(cx, 268, 'LV', 20) + lab(40, 268, '心尖', 15);
+    return svgWrap(n, '0 0 620 460', 'PLAX 解剖与室壁节段示意图');
   }
 
   if (view.indexOf('PSAX') === 0) {
@@ -7301,12 +7339,12 @@ function wallDiagramSvg(view, opts) {
     // 右室（左侧弧带）
     n += chamber(eband(cx, cy, outer + 62, outer + 62, outer + 12, outer + 12, 108, 252));
     n += lab(cx - outer - 32, cy + 6, 'RV');
-    const mid = (outer + inner) / 2;
+    const ring = (outer + inner) / 2;
     for (let j = 0; j < count; j++) {
       const i = ids[j];
       const a = -90 - j * (360 / count);
       // 两行都按「色带径向中线 + 垂直叠放」定位：侧面（3/9 点）也不会横向顶出色带
-      const p = ept(cx, cy, mid, mid, a);
+      const p = ept(cx, cy, ring, ring, a);
       n += segNode2(i, eband(cx, cy, outer, outer, inner, inner, a - 180 / count, a + 180 / count),
         [p[0], p[1] - 3], [p[0], p[1] + 14], sel);
     }
@@ -7324,11 +7362,20 @@ function wallDiagramSvg(view, opts) {
   }
 
   // 心尖切面：左室竖放、心尖朝上；φ 角以心尖为 0°，负值在屏幕左侧
-  const cx = view === 'A4C' ? 300 : 240, cy = 262, rx = 100, ry = 194;
+  const GEO = {
+    A4C: { cx: 382, lx: 296, rx2: 468, rx: 78 },
+    A2C: { cx: 308, lx: 216, rx2: 400, rx: 84 },
+    A3C: { cx: 308, lx: 216, rx2: 400, rx: 84 },
+  }[view];
+  const cx = GEO.cx, cy = 280, rx = GEO.rx, ry = 168, RI = 26;
   const put = function (i, a, b) {
     const mid = (a + b) / 2 - 90;
-    const pos = ept(cx, cy, rx - 12, ry - 12, mid);
-    n += segNode(i, eband(cx, cy, rx, ry, rx - 24, ry - 24, a - 90, b - 90), pos[0], pos[1] + 6, sel);
+    const rad = mid * RAD;
+    const pin = ept(cx, cy, rx - RI / 2, ry - RI / 2, mid);
+    n += segNode(i, eband(cx, cy, rx, ry, rx - RI, ry - RI, a - 90, b - 90), pin[0], pin[1] + 6, sel, 18);
+    const p0 = ept(cx, cy, rx, ry, mid);
+    const isLeft = Math.cos(rad) < 0;
+    n += callout(i, p0, isLeft ? GEO.lx : GEO.rx2, p0[1], isLeft ? 'L' : 'R');
   };
   const PAIRS = {
     'A4C': [[3, -150, -110], [9, -106, -50], [14, -46, -20], [16, 20, 46], [12, 50, 106], [6, 110, 150]],
@@ -7339,25 +7386,31 @@ function wallDiagramSvg(view, opts) {
     'A3C': [[5, -150, -110], [11, -106, -50], [16, -46, -20], [13, 20, 46], [8, 50, 106], [2, 110, 150]],
   }[view];
   PAIRS.forEach(function (p) { put(p[0], p[1], p[2]); });
-  put(17, -18, 18);
+
+  // 心尖帽 17：单独放在心尖正上方，引线竖直向上
+  const pApex = ept(cx, cy, rx, ry, -90);
+  n += segNode(17, eband(cx, cy, rx, ry, rx - RI, ry - RI, -108, -72), cx, cy - ry + RI / 2 + 6, sel, 18);
+  n += callout(17, pApex, cx, pApex[1] - 30, 'C');
 
   if (view === 'A4C') {
-    n += chamber('M105 418 C55 359 60 203 100 161 C148 105 207 189 207 294 C207 349 197 393 183 418 Z') +
-      lab(140, 302, 'RV', 20);
-    n += ell(137, 482, 73, 45) + lab(137, 488, 'RA', 20);
-    n += ell(cx, 482, 84, 45) + lab(cx, 488, 'LA', 20);
-    n += lab(197, 432, 'TV', 15) + lab(cx, 432, 'MV', 15);
+    // 右心在屏幕左侧：右室腔（原型等比缩放）+ 右房
+    n += '<g transform="translate(-41,67.3) scale(0.93)">' +
+      '<path d="M105 418 C55 359 60 203 100 161 C148 105 207 189 207 294 C207 349 197 393 183 418 Z"' +
+      ' fill="#eef1f5" stroke="#94a3b8" stroke-width="2.2"/></g>' + lab(80, 306, 'RV', 16);
+    n += ell(82, 500, 70, 42) + lab(82, 506, 'RA', 17);
+    n += ell(cx, 496, 74, 40) + lab(cx, 502, 'LA', 18);
+    n += lab(150, 462, 'TV', 13) + lab(cx, 448, 'MV', 13);
   } else if (view === 'A2C') {
-    n += ell(cx, 482, 88, 44) + lab(cx, 488, 'LA', 20);
-    n += ell(362, 438, 26, 17) + lab(405, 444, 'LAA', 15);
-    n += lab(cx, 432, 'MV', 15);
+    n += ell(cx, 496, 78, 40) + lab(cx, 502, 'LA', 18);
+    n += ell(416, 450, 21, 13) + lab(452, 456, 'LAA', 13);
+    n += lab(cx, 448, 'MV', 13);
   } else {
-    n += ell(200, 482, 72, 42) + lab(200, 488, 'LA', 20);
-    n += chamber('M288 414 L414 478 L392 516 L266 450 Z') + lab(348, 482, 'Ao', 17);
-    n += lab(316, 438, 'LVOT', 13) + lab(236, 432, 'MV', 15);
+    n += ell(252, 496, 66, 38) + lab(252, 502, 'LA', 18);
+    n += chamber('M362 436 L488 480 L472 518 L346 474 Z') + lab(418, 482, 'Ao', 16);
+    n += lab(330, 458, 'LVOT', 12) + lab(268, 448, 'MV', 13);
   }
-  n += lab(cx, 306, 'LV', 20);
-  return svgWrap(n, '0 0 480 550', view + ' 解剖与室壁节段示意图');
+  n += lab(cx, 318, 'LV', 19);
+  return svgWrap(n, '0 0 620 580', view + ' 解剖与室壁节段示意图');
 }
 
 /** 简易 UTF-8 base64（小程序端 image 组件用 data URI） */

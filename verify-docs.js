@@ -356,6 +356,32 @@ function check(name, ok, detail) {
   check('PSAX 心尖段环带标出壁名（前壁/间隔/下壁/侧壁）',
     ['前壁', '间隔', '下壁', '侧壁'].every(function (w) { return px.a.indexOf(w) >= 0; }), px.a);
 
+  // 四张图改成「带外引线标注」：编号胶囊 + 壁名画在图外侧，引线连回色带
+  // （用户 2026-10-28：A4C/A2C/A3C/PLAX 也要直接看到壁名，不靠下面圆点对照）
+  const calloutInfo = await c.evalJs(`(function(){
+    var t=function(id){var b=document.getElementById(id);return b?b.textContent.replace(/\s+/g,''):'';};
+    var l=function(id){var b=document.getElementById(id);return b?b.querySelectorAll('svg .seg-lead').length:0;};
+    return JSON.stringify({
+      plax:t('wd-PLAX'), a4c:t('wd-A4C'), a2c:t('wd-A2C'), a3c:t('wd-A3C'),
+      lead:[l('wd-PLAX'), l('wd-A4C'), l('wd-A2C'), l('wd-A3C')]
+    });
+  })()`);
+  const co = JSON.parse(calloutInfo);
+  check('四张图每条可见节段都带外引线（PLAX 4 / A4C 7 / A2C 7 / A3C 7）',
+    co.lead[0] === 4 && co.lead[1] === 7 && co.lead[2] === 7 && co.lead[3] === 7, calloutInfo);
+  check('PLAX 图外标出前间隔与下外侧壁的基底/中段名',
+    ['前间隔基底段', '前间隔中间段', '下外侧壁基底段', '下外侧壁中间段']
+      .every(function (w) { return co.plax.indexOf(w) >= 0; }), co.plax);
+  check('A4C 图外标出下间隔三段 + 前外侧壁三段 + 心尖帽',
+    ['下间隔基底段', '下间隔中间段', '心尖间隔', '前外侧壁基底段', '前外侧壁中间段', '心尖侧壁', '心尖帽']
+      .every(function (w) { return co.a4c.indexOf(w) >= 0; }), co.a4c);
+  check('A2C 图外标出下壁三段 + 前壁三段 + 心尖帽',
+    ['下壁基底段', '下壁中间段', '心尖下壁', '前壁基底段', '前壁中间段', '心尖前壁', '心尖帽']
+      .every(function (w) { return co.a2c.indexOf(w) >= 0; }), co.a2c);
+  check('A3C 图外标出下外侧壁三段 + 前间隔三段 + 心尖帽',
+    ['下外侧壁基底段', '下外侧壁中间段', '心尖侧壁', '前间隔基底段', '前间隔中间段', '心尖前壁', '心尖帽']
+      .every(function (w) { return co.a3c.indexOf(w) >= 0; }), co.a3c);
+
   // A3C：按《超声诊断学》4 版图 5-73C 补上心尖 16 / 13（用户 2026-10-28 反馈「中间空了」）
   const a3cInfo = await c.evalJs(`(function(){
     var card=[].slice.call(document.querySelectorAll('#page-segments .wall-card')).filter(function(e){
