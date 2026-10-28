@@ -1786,6 +1786,73 @@ button.fx-nav__c {
   color: #8b96a5;
 }
 
+/* ── App 内视频浮层（v1.10.4）：只在 APK 壳里创建，网页版不出现 ── */
+.vply {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+.vply__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  color: #fff;
+}
+.vply__t {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.vply__x {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .18);
+  color: #fff;
+  font-size: 20px;
+  line-height: 32px;
+  text-align: center;
+}
+.vply video {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  background: #000;
+  object-fit: contain;
+}
+.vply__foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.vply__s { flex: 1; min-width: 0; }
+.vply__copy {
+  flex: none;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 999px;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 12px;
+}
+
 /* ★ 以上公式集样式（.fx-nav / .fx-group / .ref-dl / .chip 等）必须留在
    下面「已裁掉的瓣膜专页」注释块之前：build-www.js 的 stripCssBlock 会把
    那个标记到 style 闭标签之间整段删掉（发布版不带瓣膜页 CSS）。

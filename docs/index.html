@@ -1797,6 +1797,73 @@ button.fx-nav__c {
   color: #8b96a5;
 }
 
+/* ── App 内视频浮层（v1.10.4）：只在 APK 壳里创建，网页版不出现 ── */
+.vply {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+.vply__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  color: #fff;
+}
+.vply__t {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.vply__x {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .18);
+  color: #fff;
+  font-size: 20px;
+  line-height: 32px;
+  text-align: center;
+}
+.vply video {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  background: #000;
+  object-fit: contain;
+}
+.vply__foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.vply__s { flex: 1; min-width: 0; }
+.vply__copy {
+  flex: none;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 999px;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 12px;
+}
+
 /* ★ 以上公式集样式（.fx-nav / .fx-group / .ref-dl / .chip 等）必须留在
    下面「已裁掉的瓣膜专页」注释块之前：build-www.js 的 stripCssBlock 会把
    那个标记到 style 闭标签之间整段删掉（发布版不带瓣膜页 CSS）。
@@ -1962,7 +2029,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.10.3</div>
+    <div class="verline">心脏超声参考值 · v1.10.4</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2004,7 +2071,7 @@ button.fx-nav__c {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.10.3</div>
+      <div class="verline">心脏超声参考值 · v1.10.4</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -2888,7 +2955,11 @@ function judgePartition(value, p) {
   return 'severe';
 }
 
-/** EF 分级（ASE 2015 通用阈值，不区分性别） */
+/**
+ * EF 分级（ASE 2015 通用阈值，不区分性别）
+ * ★ 只管「减低」方向：≥55 → 正常。正常上限按性别 男 72 / 女 74，>75 属高动力状态或测量误差，
+ *   不另立「增高」分级（年轻瘦小者 EF 78 也可以是生理性），只在页面说明与条目里提示复核。
+ */
 function gradeEF(ef) {
   if (ef >= 55) return { level: 'normal',   text: '正常' };
   if (ef >= 45) return { level: 'mild',     text: '轻度减低' };
@@ -10123,7 +10194,7 @@ const BRIEF_SECTIONS = [
             kind: 'table',
             heads: ['LVEF', '分级', '提示'],
             rows: [
-              ['≥55%', '正常', '中国成人参考下限男 52.6% / 女 52.8%'],
+              ['≥55%', '正常', '中国成人下限 男 52.6% / 女 52.8%；正常上限 男 72% / 女 74%'],
               ['50–54%', '轻度降低', '（原发或继发）'],
               ['40–49%', '中度降低', '射血分数降低性心衰区间'],
               ['≤39%', '重度降低', 'HFrEF 区间，评估 CRT / ICD / GDMT 指征'],
@@ -10167,8 +10238,10 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '② **缩窄性心包炎**：会出现「限制性充盈」，但 E/e′ 通常不高（室间隔反常在吸气时右移），需结合呼吸变异与室间隔抖动鉴别（见「缩窄性心包炎 vs 限制型心肌病」）。' },
           { kind: 'text', text: '③ **重度二尖瓣反流 / 狭窄**：跨瓣血流本身异常，充盈压判读可靠性下降，应以右心、PASP 与临床为主。' },
           { kind: 'note', text: '充盈压计算器为简化版（未纳入 E 波减速时间、肺静脉 A 波时限、L 波），仅用于快速分级；灰区与临床不符时以完整评估为准。上述分级来自欧美指南的体型校正式阈值，中国成人原始参考区间见「EF·参考值」页；体型差异大时建议同时看按身高（H^2.7）与体表面积（BSA）校准的指标。', warn: true },
-          { kind: 'h', text: '附：EF 正常下限的版本差异' },
-          { kind: 'text', text: 'ASE/EACVI 2015 定量指南按性别给出 EF 正常范围：**男性 52–72%、女性 54–74%**，下限低于旧习惯的「≥55% 不分性别」。按旧标准，女性 EF 54% 会被误判为「减低」、男性 53% 反而算正常。报告引用 EF 正常范围时写成区间并注明性别与依据版本（如 ASE 2015）。' },
+          { kind: 'h', text: '附：EF 的上下限与版本差异' },
+          { kind: 'text', text: 'ASE/EACVI 2015 定量指南按性别给出 EF 正常范围：**男性 52–72%、女性 54–74%**，两端都要看。下限低于旧习惯的「≥55% 不分性别」—— 按旧标准，女性 EF 54% 会被误判为「减低」、男性 53% 反而算正常。报告引用 EF 正常范围时写成区间并注明性别与依据版本（如 ASE 2015）。' },
+          { kind: 'text', text: '**上限**：男性 >72%、女性 >74% 即超出正常范围，临床习惯以 **>75%** 为界。EF 偏高先分两种：① 真高动力 —— 贫血、甲亢、脓毒症、动静脉瘘、容量负荷过重、β 受体激动剂、肝硬化等高排低阻状态；② 测量误差 —— Teichholz / Quinones 法在扩大的左室容易高估、心尖缩短（apical foreshortening）漏掉真正心尖、左室过长或切线位切面。超过 75% 时建议改用 Simpson 双平面复核，并同时看 ESVi、GLS 与左室大小：**左室扩大 + EF 偏高**提示高排低阻或显著反流，而不是「心功能特别好」。' },
+          { kind: 'text', text: '反过来，**EF 正常不等于收缩功能正常**：HFpEF 的 EF 常在 60% 以上却已有舒张功能障碍；ESVi 增大、GLS 减低（绝对值 <16%）、MAPSE <10 mm 都比 EF 更早暴露收缩功能受损。大量利尿、血压骤降或后负荷急剧下降后，EF 也会假性升高。报告 EF 正常时，把 ESVi / GLS / 左室大小一起给出，比单写一个百分数可靠得多。' },
         ],
         fields: [
           { k: 'lvmi', n: '左室质量指数', u: 'g/m²' },
@@ -17511,7 +17584,8 @@ const MATERIALS = [];
     // 分级说明
     $('efGrade').innerHTML = '射血分数 <b>' + fn.EF + '%</b> —— ' +
       '<span class="tag ' + gradeCls(grade.level) + '">' + esc(grade.text) + '</span>' +
-      '　（ASE 2015 阈值：≥55% 正常，45–54% 轻度减低，30–44% 中度减低，&lt;30% 重度减低）';
+      '　（ASE 2015 阈值：≥55% 正常，45–54% 轻度减低，30–44% 中度减低，&lt;30% 重度减低；' +
+      '正常上限 男 72%、女 74%，&gt;75% 提示高动力状态或测量误差）';
 
     $('efFormula').innerHTML =
       'Teichholz：EDV = 7 × (' + (lvedd / 10).toFixed(2) + ')<sup>3</sup> ÷ (2.4 + ' +
@@ -21018,6 +21092,108 @@ const MATERIALS = [];
   } else {
     initGuard();
   }
+
+  /* ══════════ App 内视频浮层（v1.10.4） ══════════
+   * 网页版保持 <a target="_blank">：目录里 150+ 段视频，若每条内嵌 <video> 会同时拉流把页面拖死。
+   * App 壳里点开就跳走、还得按返回键切回来，所以只在 UA 带 EchoRefApp 时拦下 .mp4，
+   * 改成全屏浮层播放；关闭时 pause + 清 src + load()，不残留缓冲。一份代码两种行为，网页端零改动。
+   */
+  const IS_APP_SHELL = /EchoRefApp/.test(navigator.userAgent || '');
+  let vEl = null;
+  let vBox = null;
+  let vPushed = false;
+
+  function vStatus(msg) {
+    const s = vBox && vBox.querySelector('.vply__s');
+    if (s) s.textContent = msg || '';
+  }
+
+  function copyLink(txt) {
+    if (!txt) return;
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = txt;
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      vStatus('直链已复制，可粘到浏览器打开');
+    } catch (e) {
+      vStatus('复制失败，可长按视频另存或在浏览器打开本页');
+    }
+  }
+
+  /** fromHistory：由 popstate 触发时不要再 back()，否则会把返回键吃掉 */
+  function closeVideo(fromHistory) {
+    if (!vBox) return;
+    const v = vEl;
+    try { v.pause(); } catch (e) { /* 还没起播 */ }
+    try { v.removeAttribute('src'); v.load(); } catch (e) { /* 老 WebView */ }
+    if (vBox.parentNode) vBox.parentNode.removeChild(vBox);
+    vBox = null;
+    vEl = null;
+    document.documentElement.style.overflow = '';
+    const back = !fromHistory && vPushed;
+    vPushed = false;
+    if (back) { try { history.back(); } catch (e) { /* ignore */ } }
+  }
+
+  function openVideo(url, title) {
+    if (!IS_APP_SHELL || !url) return false;
+    closeVideo(true);
+    if (!vBox) {
+      vBox = document.createElement('div');
+      vBox.className = 'vply';
+      vBox.innerHTML =
+        '<div class="vply__bar"><span class="vply__t">' + esc(title || '视频') + '</span>' +
+        '<button class="vply__x" type="button" aria-label="关闭">×</button></div>' +
+        '<video controls playsinline autoplay preload="metadata"></video>' +
+        '<div class="vply__foot"><span class="vply__s">加载中…</span>' +
+        '<button class="vply__copy" type="button">复制直链</button></div>';
+      document.body.appendChild(vBox);
+      vEl = vBox.querySelector('video');
+      vBox.querySelector('.vply__x').addEventListener('click', function () { closeVideo(false); });
+      vBox.querySelector('.vply__copy').addEventListener('click', function () {
+        copyLink(vEl.getAttribute('src') || '');
+      });
+      vEl.addEventListener('playing', function () { vStatus(''); });
+      vEl.addEventListener('error', function () {
+        vStatus('这段播不动（可能是 .m3u8 或热链失效），复制直链用浏览器打开');
+      });
+      // 5 秒还没起播就给提示，别让人对着黑屏干等
+      setTimeout(function () {
+        if (vEl && !vEl.currentTime && vEl.readyState < 2) vStatus('仍在缓冲，网速慢可再等等，或复制直链');
+      }, 5000);
+    }
+    vEl.setAttribute('src', url);
+    document.documentElement.style.overflow = 'hidden';
+    if (!vPushed) {
+      try { history.pushState({ echorefVideo: 1 }, ''); vPushed = true; } catch (e) { vPushed = false; }
+    }
+    return true;
+  }
+
+  // 返回键 / 手势返回：pushState 加了一条历史，goBack 会触发 popstate → 顺势关浮层
+  window.addEventListener('popstate', function () { if (vBox) closeVideo(true); }, false);
+
+  if (IS_APP_SHELL) {
+    // 捕获阶段，先于浏览器导航；网页版没有 UA 后缀，完全不进这个分支
+    document.addEventListener('click', function (e) {
+      let el = e.target;
+      while (el && el.tagName !== 'A' && el !== document.body) el = el.parentNode;
+      if (!el || el.tagName !== 'A') return;
+      const href = el.getAttribute('href') || '';
+      if (!/\.mp4(\?|$)/i.test(href)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const t = el.querySelector('.fx-item__n') || el.querySelector('.fx-linkrow__a');
+      openVideo(href, t ? t.textContent : '');
+    }, true);
+  }
+
+  window.__openVideo = openVideo;
+  window.__closeVideo = closeVideo;
 
   // 暴露给自检脚本
   window.__app = { state: state, switchTab: switchTab, renderIndex: renderIndex };

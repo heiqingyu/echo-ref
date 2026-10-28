@@ -1,4 +1,5 @@
 <view class="page-wrap">
+  <view class="topfade"></view>
 
   <!-- ══════ EF 计算（合并自原「EF 计算」页，置于最上） ══════ -->
   <view class="card">
@@ -67,7 +68,7 @@
     <view style="margin-top:26rpx;font-size:27rpx">
       EF 分级：
       <text class="tag {{efCls}}">{{efGrade}}</text>
-      <text style="color:#6b7280;margin-left:14rpx;font-size:24rpx">依据 ASE 2015 阈值</text>
+      <text style="color:#6b7280;margin-left:14rpx;font-size:24rpx">依据 ASE 2015 阈值 · 正常上限 男 72% / 女 74%，>75% 提示高动力状态或测量误差</text>
     </view>
 
     <view class="result-title">容积指标（Teichholz 法）</view>

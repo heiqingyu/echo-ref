@@ -23,6 +23,20 @@ page {
   padding: 24rpx 28rpx 60rpx;
 }
 
+/* 页面顶部渐隐：内容滚到页顶时淡出。
+   否则「计算 EF / FS」这类按钮会被页顶裁掉上半截，只剩半个字（用户 2026-10-28 报了「乱码」，
+   实际是滚动裁切：蓝底白字的「计」被切掉上半，看着像「H」）。 */
+.topfade {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 30rpx;
+  background: linear-gradient(rgba(245, 246, 248, 0.97), rgba(245, 246, 248, 0));
+  pointer-events: none;
+  z-index: 30;
+}
+
 /* 卡片 */
 .card {
   background: var(--card);

@@ -547,7 +547,8 @@
     // 分级说明
     $('efGrade').innerHTML = '射血分数 <b>' + fn.EF + '%</b> —— ' +
       '<span class="tag ' + gradeCls(grade.level) + '">' + esc(grade.text) + '</span>' +
-      '　（ASE 2015 阈值：≥55% 正常，45–54% 轻度减低，30–44% 中度减低，&lt;30% 重度减低）';
+      '　（ASE 2015 阈值：≥55% 正常，45–54% 轻度减低，30–44% 中度减低，&lt;30% 重度减低；' +
+      '正常上限 男 72%、女 74%，&gt;75% 提示高动力状态或测量误差）';
 
     $('efFormula').innerHTML =
       'Teichholz：EDV = 7 × (' + (lvedd / 10).toFixed(2) + ')<sup>3</sup> ÷ (2.4 + ' +
@@ -4063,6 +4064,108 @@
   } else {
     initGuard();
   }
+
+  /* ══════════ App 内视频浮层（v1.10.4） ══════════
+   * 网页版保持 <a target="_blank">：目录里 150+ 段视频，若每条内嵌 <video> 会同时拉流把页面拖死。
+   * App 壳里点开就跳走、还得按返回键切回来，所以只在 UA 带 EchoRefApp 时拦下 .mp4，
+   * 改成全屏浮层播放；关闭时 pause + 清 src + load()，不残留缓冲。一份代码两种行为，网页端零改动。
+   */
+  const IS_APP_SHELL = /EchoRefApp/.test(navigator.userAgent || '');
+  let vEl = null;
+  let vBox = null;
+  let vPushed = false;
+
+  function vStatus(msg) {
+    const s = vBox && vBox.querySelector('.vply__s');
+    if (s) s.textContent = msg || '';
+  }
+
+  function copyLink(txt) {
+    if (!txt) return;
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = txt;
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      vStatus('直链已复制，可粘到浏览器打开');
+    } catch (e) {
+      vStatus('复制失败，可长按视频另存或在浏览器打开本页');
+    }
+  }
+
+  /** fromHistory：由 popstate 触发时不要再 back()，否则会把返回键吃掉 */
+  function closeVideo(fromHistory) {
+    if (!vBox) return;
+    const v = vEl;
+    try { v.pause(); } catch (e) { /* 还没起播 */ }
+    try { v.removeAttribute('src'); v.load(); } catch (e) { /* 老 WebView */ }
+    if (vBox.parentNode) vBox.parentNode.removeChild(vBox);
+    vBox = null;
+    vEl = null;
+    document.documentElement.style.overflow = '';
+    const back = !fromHistory && vPushed;
+    vPushed = false;
+    if (back) { try { history.back(); } catch (e) { /* ignore */ } }
+  }
+
+  function openVideo(url, title) {
+    if (!IS_APP_SHELL || !url) return false;
+    closeVideo(true);
+    if (!vBox) {
+      vBox = document.createElement('div');
+      vBox.className = 'vply';
+      vBox.innerHTML =
+        '<div class="vply__bar"><span class="vply__t">' + esc(title || '视频') + '</span>' +
+        '<button class="vply__x" type="button" aria-label="关闭">×</button></div>' +
+        '<video controls playsinline autoplay preload="metadata"></video>' +
+        '<div class="vply__foot"><span class="vply__s">加载中…</span>' +
+        '<button class="vply__copy" type="button">复制直链</button></div>';
+      document.body.appendChild(vBox);
+      vEl = vBox.querySelector('video');
+      vBox.querySelector('.vply__x').addEventListener('click', function () { closeVideo(false); });
+      vBox.querySelector('.vply__copy').addEventListener('click', function () {
+        copyLink(vEl.getAttribute('src') || '');
+      });
+      vEl.addEventListener('playing', function () { vStatus(''); });
+      vEl.addEventListener('error', function () {
+        vStatus('这段播不动（可能是 .m3u8 或热链失效），复制直链用浏览器打开');
+      });
+      // 5 秒还没起播就给提示，别让人对着黑屏干等
+      setTimeout(function () {
+        if (vEl && !vEl.currentTime && vEl.readyState < 2) vStatus('仍在缓冲，网速慢可再等等，或复制直链');
+      }, 5000);
+    }
+    vEl.setAttribute('src', url);
+    document.documentElement.style.overflow = 'hidden';
+    if (!vPushed) {
+      try { history.pushState({ echorefVideo: 1 }, ''); vPushed = true; } catch (e) { vPushed = false; }
+    }
+    return true;
+  }
+
+  // 返回键 / 手势返回：pushState 加了一条历史，goBack 会触发 popstate → 顺势关浮层
+  window.addEventListener('popstate', function () { if (vBox) closeVideo(true); }, false);
+
+  if (IS_APP_SHELL) {
+    // 捕获阶段，先于浏览器导航；网页版没有 UA 后缀，完全不进这个分支
+    document.addEventListener('click', function (e) {
+      let el = e.target;
+      while (el && el.tagName !== 'A' && el !== document.body) el = el.parentNode;
+      if (!el || el.tagName !== 'A') return;
+      const href = el.getAttribute('href') || '';
+      if (!/\.mp4(\?|$)/i.test(href)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const t = el.querySelector('.fx-item__n') || el.querySelector('.fx-linkrow__a');
+      openVideo(href, t ? t.textContent : '');
+    }, true);
+  }
+
+  window.__openVideo = openVideo;
+  window.__closeVideo = closeVideo;
 
   // 暴露给自检脚本
   window.__app = { state: state, switchTab: switchTab, renderIndex: renderIndex };

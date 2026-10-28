@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -31,6 +32,7 @@ import android.widget.FrameLayout;
 public class MainActivity extends Activity {
 
     private WebView web;
+    private FrameLayout root;
 
     /** 应用内页面地址 */
     private static final String HOME_URL = "file:///android_asset/index.html";
@@ -57,6 +59,7 @@ public class MainActivity extends Activity {
 
         // ── 用代码建 WebView，避免依赖 layout XML 资源 ──
         FrameLayout root = new FrameLayout(this);
+        this.root = root;
         root.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         root.setFitsSystemWindows(false);
@@ -82,6 +85,9 @@ public class MainActivity extends Activity {
         s.setSaveFormData(false);
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
+        // ★ v1.10.4：UA 加后缀，网页据此把 .mp4 改成 App 内浮层播放（网页版仍是 target=_blank 外链）
+        s.setUserAgentString(s.getUserAgentString() + " EchoRefApp");
+
         // 禁用文件跨域访问（安全），但允许 file:// 读取同目录资源
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             s.setAllowFileAccessFromFileURLs(true);
@@ -99,6 +105,31 @@ public class MainActivity extends Activity {
                 }
             });
         }
+
+        // ★ v1.10.4：页内播放浮层的全屏按钮靠 WebChromeClient 接管，否则点了没反应
+        web.setWebChromeClient(new WebChromeClient() {
+            private View fullView;
+            private WebChromeClient.CustomViewCallback fullCb;
+
+            @Override
+            public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+                if (fullView != null) { callback.onCustomViewHidden(); return; }
+                fullView = view;
+                fullCb = callback;
+                MainActivity.this.root.addView(view, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                web.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onHideCustomView() {
+                if (fullView == null) return;
+                MainActivity.this.root.removeView(fullView);
+                fullView = null;
+                web.setVisibility(View.VISIBLE);
+                if (fullCb != null) { fullCb.onCustomViewHidden(); fullCb = null; }
+            }
+        });
 
         web.setWebViewClient(new WebViewClient() {
             @Override
@@ -129,6 +160,16 @@ public class MainActivity extends Activity {
     private boolean handleUrl(String url) {
         if (url == null) return false;
         if (url.startsWith("file://") || url.startsWith("about:")) return false;
+
+        // ★ v1.10.4：视频不再甩给系统播放器（跳出去要按返回键切回来），改成 App 内浮层播放。
+        //   JS 的捕获阶段监听已经拦住常规点击，这里只是兜底（比如中键打开、JS 未就绪）。
+        if (url.matches("(?i).*\\.mp4(\\?.*)?$")) {
+            String js = "window.__openVideo && window.__openVideo('" +
+                    url.replace("\\", "\\\\").replace("'", "\\'") + "')";
+            web.evaluateJavascript(js, null);
+            return true;
+        }
+
         try {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
         } catch (Exception ignored) {

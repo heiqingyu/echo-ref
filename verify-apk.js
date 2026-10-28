@@ -634,6 +634,32 @@ check('APK 页面已无外链卡片',
 check('APK 页面不再出现第三方工具站',
   html.indexOf('zs-echo.com') === -1 && html.indexOf('tte-quickref') === -1 ? 1 : 0, 1, 0);
 
+/* ── App 内视频浮层（v1.10.4）：网页版仍是 target=_blank 外链，只有 UA 带 EchoRefApp 才拦 ── */
+check('视频浮层脚本已内联（UA 判据 EchoRefApp）',
+  html.indexOf('EchoRefApp') !== -1, true);
+check('视频浮层样式已内联（.vply / .vply__x）',
+  html.indexOf('.vply') !== -1 && html.indexOf('.vply__x') !== -1, true);
+check('视频浮层受 IS_APP_SHELL 门控（网页版不生效）',
+  html.indexOf('IS_APP_SHELL') !== -1, true);
+check('暴露 window.__openVideo 供 Java 兜底调用',
+  html.indexOf('window.__openVideo') !== -1, true);
+check('关闭时释放 video（removeAttribute(src) + load）',
+  html.indexOf("removeAttribute('src')") !== -1, true);
+check('视频条目仍是外链形态（未被改成静态内嵌 video）',
+  html.indexOf('target="_blank" rel="noopener noreferrer"') !== -1, true);
+
+var javaSrc = '';
+try {
+  javaSrc = fs.readFileSync(
+    path.join(ROOT, 'android-app', 'src', 'com', 'echoref', 'app', 'MainActivity.java'), 'utf8');
+} catch (e) { javaSrc = ''; }
+check('MainActivity 已接管全屏回调（onShowCustomView / onHideCustomView）',
+  javaSrc.indexOf('onShowCustomView') !== -1 && javaSrc.indexOf('onHideCustomView') !== -1, true);
+check('MainActivity 对 .mp4 改走页内浮层而不是 ACTION_VIEW',
+  javaSrc.indexOf('__openVideo') !== -1 && /\.mp4/.test(javaSrc), true);
+check('MainActivity 的 UA 带 EchoRefApp 后缀',
+  javaSrc.indexOf('" EchoRefApp"') !== -1, true);
+
 /* ══════════════════════════════════════════════════════════ */
 
 console.log('\n' + '═'.repeat(60));

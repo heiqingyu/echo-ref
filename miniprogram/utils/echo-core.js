@@ -522,7 +522,11 @@ function judgePartition(value, p) {
   return 'severe';
 }
 
-/** EF 分级（ASE 2015 通用阈值，不区分性别） */
+/**
+ * EF 分级（ASE 2015 通用阈值，不区分性别）
+ * ★ 只管「减低」方向：≥55 → 正常。正常上限按性别 男 72 / 女 74，>75 属高动力状态或测量误差，
+ *   不另立「增高」分级（年轻瘦小者 EF 78 也可以是生理性），只在页面说明与条目里提示复核。
+ */
 function gradeEF(ef) {
   if (ef >= 55) return { level: 'normal',   text: '正常' };
   if (ef >= 45) return { level: 'mild',     text: '轻度减低' };
