@@ -191,6 +191,11 @@ function check(name, ok, detail) {
     'RWT ' + (kvNoWall.indexOf('相对室壁厚度') !== -1) +
     ' / LVM ' + (kvNoWall.indexOf('左室质量') !== -1));
   check('清空室壁厚度不报错', (hintNoWall || '').trim() === '', '「' + hintNoWall + '」');
+  // ★ v1.9.5：收缩功能提到容积指标之前
+  check('EF 指标排在容积指标之前',
+    kvNoWall.indexOf('射血分数') !== -1 &&
+    kvNoWall.indexOf('射血分数') < kvNoWall.indexOf('舒张末容积'),
+    'EF@' + kvNoWall.indexOf('射血分数') + ' / EDV@' + kvNoWall.indexOf('舒张末容积'));
   const efNoWall = parseFloat((kvNoWall.match(/射血分数\s*([\d.]+)/) || [])[1]);
   check('只填空后 EF 数值不变', Math.abs(efNoWall - efNum) < 0.05,
     efNoWall + ' vs ' + efNum);

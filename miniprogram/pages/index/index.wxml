@@ -39,22 +39,6 @@
   <view wx:if="{{hasResult}}" class="card">
     <view class="card__title">计算结果</view>
 
-    <view class="result-title">容积指标（Teichholz 法）</view>
-    <view class="kv">
-      <view class="kv__item">
-        <view class="kv__k">EDV 舒张末容积</view>
-        <text class="kv__v">{{r.EDV}}</text><text class="kv__u">mL</text>
-      </view>
-      <view class="kv__item">
-        <view class="kv__k">ESV 收缩末容积</view>
-        <text class="kv__v">{{r.ESV}}</text><text class="kv__u">mL</text>
-      </view>
-      <view class="kv__item">
-        <view class="kv__k">SV 每搏量</view>
-        <text class="kv__v">{{r.SV}}</text><text class="kv__u">mL</text>
-      </view>
-    </view>
-
     <view class="result-title">收缩功能</view>
     <view class="kv">
       <view class="kv__item">
@@ -84,6 +68,22 @@
       EF 分级：
       <text class="tag {{efCls}}">{{efGrade}}</text>
       <text style="color:#6b7280;margin-left:14rpx;font-size:24rpx">依据 ASE 2015 阈值</text>
+    </view>
+
+    <view class="result-title">容积指标（Teichholz 法）</view>
+    <view class="kv">
+      <view class="kv__item">
+        <view class="kv__k">EDV 舒张末容积</view>
+        <text class="kv__v">{{r.EDV}}</text><text class="kv__u">mL</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">ESV 收缩末容积</view>
+        <text class="kv__v">{{r.ESV}}</text><text class="kv__u">mL</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">SV 每搏量</view>
+        <text class="kv__v">{{r.SV}}</text><text class="kv__u">mL</text>
+      </view>
     </view>
 
     <block wx:if="{{hasWall}}">

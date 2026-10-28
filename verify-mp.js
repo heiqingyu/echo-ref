@@ -397,6 +397,12 @@ console.log('\n=== 21. 合并后首页（EF 计算 + 参考值同页）===');
   pg.data.ivsd = '9'; pg.data.lvpwd = '9';
   pg.doCalc();
   check('恢复厚度后左室质量重新出现', pg.data.hasWall ? 1 : 0, 1, 0);
+
+  // ★ v1.9.5：收缩功能提到容积指标之前，输入内径后第一眼看到 EF
+  const iEfBlock = wxmlIndex.indexOf('<view class="result-title">收缩功能</view>');
+  const iVolBlock = wxmlIndex.indexOf('<view class="result-title">容积指标');
+  check('结果卡收缩功能排在容积之前',
+    (iEfBlock > 0 && iVolBlock > 0 && iEfBlock < iVolBlock) ? 1 : 0, 1, 0);
 }
 
 console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部）===');

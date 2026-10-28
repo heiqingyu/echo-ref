@@ -521,13 +521,13 @@
       lvpwd: lvpwd > 0 ? lvpwd : 0,
     };
 
-    // 指标网格
+    // 指标网格（★ 收缩功能放最前：输入内径后第一眼就要看到 EF）
     const items = [
+      { k: 'EF', v: fn.EF, u: '%', t: '射血分数' },
+      { k: 'FS', v: fn.FS, u: '%', t: '缩短分数' },
       { k: 'EDV', v: fn.EDV, u: 'mL', t: '舒张末容积' },
       { k: 'ESV', v: fn.ESV, u: 'mL', t: '收缩末容积' },
       { k: 'SV', v: fn.SV, u: 'mL', t: '每搏量' },
-      { k: 'EF', v: fn.EF, u: '%', t: '射血分数' },
-      { k: 'FS', v: fn.FS, u: '%', t: '缩短分数' },
     ];
     if (rwt !== null) items.push({ k: 'RWT', v: rwt, u: '', t: '相对室壁厚度' });
     if (lvm.LVM !== null) items.push({ k: 'LVM', v: lvm.LVM, u: 'g', t: '左室质量' });

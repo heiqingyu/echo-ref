@@ -375,6 +375,12 @@ REQUIRED_IDS.forEach(function (id) {
   check('元素 #' + id + ' 存在', new RegExp('id="' + id + '"').test(html), true);
 });
 
+// ★ v1.9.5：结果卡里 EF / FS 排在容积之前（输入内径后第一眼看到 EF）
+var iEf = html.indexOf("k: 'EF'");
+var iEdv = html.indexOf("k: 'EDV'");
+check('包内 EF 指标排在 EDV 之前',
+  (iEf !== -1 && iEdv !== -1 && iEf < iEdv) ? 1 : 0, 1, 0);
+
 // ── 瓣膜评估：v1.5.0 起并入 aortic / mitral / tr-interv 三个判读条目，不再有独立页 ──
 check('不再有瓣膜切换按钮 .vchip', html.indexOf('class="vchip') === -1, true);
 check('不再有瓣膜页输入字段 data-vk', (html.match(/data-vk="/g) || []).length, 0);
