@@ -414,7 +414,7 @@ check('牛眼图含 17 个节段', segSvgInline ? (segSvgInline[0].match(/data-s
 ['LAD · 前降支', 'RCA · 右冠', 'LCx · 回旋支'].forEach(function (t) {
   check('分区色块「' + t + '」', html.includes(t), true);
 });
-['胸骨旁长轴', '心尖四腔心', '剑突下', '胸骨上窝', 'PSAX 钟面', 'WMSI', '下外侧壁'].forEach(function (t) {
+['胸骨旁长轴', '心尖四腔心', '剑突下', '胸骨上窝', 'PSAX 钟面', 'WMSI', '下侧壁'].forEach(function (t) {
   check('节段页内容「' + t + '」', html.includes(t), true);
 });
 
