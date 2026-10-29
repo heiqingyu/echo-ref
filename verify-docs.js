@@ -1028,10 +1028,22 @@ function check(name, ok, detail) {
     hasAll(['高流量状态', '假性 AVA', 'DVI 正常']), '');
   check('主动脉瓣含无症状重度危险标志',
     hasAll(['危险标志', 'BNP', 'GLS', '运动试验']), '');
-  check('主动脉瓣十二节编号连续',
+  check('主动脉瓣十三节编号连续（v1.11.9 新增第八节脱垂与连枷）',
     ['一、AS 三联', '二、AVA 的四种算法', '三、DVI', '四、低流量低压差', '五、反向的坑',
-      '六、AS 分期', '七、无症状重度', '八、AR 定量', '九、重度 AR', '十、急性 AR',
-      '十一、TAVR', '十二、混合瓣膜病'].every((w) => aoTxt.indexOf(w) >= 0), '');
+      '六、AS 分期', '七、无症状重度', '八、脱垂与连枷', '九、AR 定量', '十、重度 AR',
+      '十一、急性 AR', '十二、TAVR', '十三、混合瓣膜病'].every((w) => aoTxt.indexOf(w) >= 0), '');
+  check('主动脉瓣脱垂：与二尖瓣方向相反（舒张期 / 收缩期）',
+    /舒张期（瓣叶脱入左室流出道）/.test(aoTxt), '');
+  check('主动脉瓣脱垂：脱垂与连枷的分界是「还在不在对合」',
+    ['仍有对合', '失去对合'].every((w) => aoTxt.indexOf(w) >= 0), '');
+  check('主动脉瓣脱垂：量化三件事（深度 / 反流 / 瓣环与根部）',
+    ['① 脱垂深度', '② 主动脉瓣反流', '③ 瓣环与根部'].every((w) => aoTxt.indexOf(w) >= 0), '');
+  check('主动脉瓣脱垂：AR 的 VC 重度门槛 >6 mm 与 MR 的 ≥7 mm 不同',
+    /AR 的缩流颈重度门槛是 >6 mm/.test(aoTxt) && /≥7 mm/.test(aoTxt), '');
+  check('主动脉瓣脱垂：病因谱含二叶瓣 / VSD / 夹层 / 心内膜炎',
+    ['主动脉瓣二叶式', 'VSD（流出道型）', '主动脉夹层', '感染性心内膜炎'].every((w) => aoTxt.indexOf(w) >= 0), '');
+  check('主动脉瓣脱垂：只处理瓣叶不处理瓣环会复发',
+    /只处理瓣叶不处理瓣环/.test(aoTxt), '');
 
   // 实填：三联 + LF-LG 四值 → 应判反常型，且不再重复出「⚠ AVA ≤1.0 而压差 <40」
   await openBrief('aortic');
@@ -1169,16 +1181,16 @@ function check(name, ok, detail) {
       '九、三条通路', '十二、成人先心病'].every((w) => shdTxt.indexOf(w) >= 0), '');
 
   /* v1.11.8：VSD 合并主动脉瓣脱垂（量化）+ PDA 封堵后左肺动脉狭窄 */
-  check('VSD 脱垂：量化三件事（脱垂深度 / 反流 / 缺损-瓣环距离）',
-    ['脱垂程度', '主动脉瓣反流', '缺损-瓣环距离'].every((w) => shdTxt.indexOf(w) >= 0), '');
-  check('VSD 脱垂：点明脱垂与反流不同步，决定手术的是反流',
-    /并不同步/.test(shdTxt) && /决定手术的是/.test(shdTxt), '');
-  check('VSD 脱垂：偏心束三条指标都会低估',
-    /三者都会失真|都会低估/.test(shdTxt) && /PISA/.test(shdTxt), '');
+  check('VSD 脱垂：量化指路主条（不再重复一遍）',
+    /写在主条《主动脉瓣疾病评估》第八节/.test(shdTxt), '');
+  check('VSD 脱垂：只留 VSD 才有的三条（瓣环距离 / 哪个瓣叶 / 分流掩盖反流）',
+    ['缺损上缘到瓣环的距离', '右冠瓣还是无冠瓣', '掩盖'].every((w) => shdTxt.indexOf(w) >= 0), '');
+  check('VSD 脱垂：点明大分流会低估反流、关掉 VSD 反而显出来',
+    /AR 被低估/.test(shdTxt) && /关掉 VSD 反而显出来/.test(shdTxt), '');
   check('VSD 脱垂：封堵而不处理脱垂，反流不减反增',
     /封堵 VSD 而不处理脱垂/.test(shdTxt), '');
-  check('VSD 脱垂：四条误判含「反流束当残余分流」「术后新发反流」',
-    ['瓣下、舒张期', '新发反流'].every((w) => shdTxt.indexOf(w) >= 0), '');
+  check('VSD 脱垂：术后两个专属问题（新发反流 / 与残余分流鉴别）',
+    ['瓣下、舒张期', '新发或加重的反流'].every((w) => shdTxt.indexOf(w) >= 0), '');
   check('PDA 术后：必须单测左肺动脉起始部（只测主肺动脉会漏）',
     /只测主肺动脉会漏/.test(shdTxt), '');
   check('PDA 术后：禁止术后即刻下狭窄结论（1–3 个月复查）',
@@ -1477,11 +1489,21 @@ function check(name, ok, detail) {
     hasMr(['LVESDi ≥20 mm/m²', 'LAVI ≥60 mL/m²', '≥3 条']), '');
   check('二尖瓣含 TEER 解剖门槛数值',
     hasMr(['8–10 mm', '4.0 cm²', 'tenting height / area']), '');
-  check('二尖瓣十三节编号连续',
+  check('二尖瓣十四节编号连续（v1.11.9 新增第八节脱垂与连枷）',
     ['一、狭窄 MS', '二、平均压差', '三、Wilkins', '四、PMBV', '五、MS 的后果',
-      '六、反流 MR', '七、Carpentier', '八、继发 MR 的两条机制', '九、成比例',
-      '十、继发 MR 该不该干预', '十一、原发 MR 的干预时机',
-      '十二、TEER', '十三、把两个瓣'].every((w) => mrTxt.indexOf(w) >= 0), '');
+      '六、反流 MR', '七、Carpentier', '八、二尖瓣脱垂与连枷', '九、继发 MR 的两条机制', '十、成比例',
+      '十一、继发 MR 该不该干预', '十二、原发 MR 的干预时机',
+      '十三、TEER', '十四、把两个瓣'].every((w) => mrTxt.indexOf(w) >= 0), '');
+  check('二尖瓣脱垂：诊断标准 ≥2 mm 且方向朝心房（收缩期）',
+    /越过瓣环平面 ≥2 mm/.test(mrTxt) && /收缩期/.test(mrTxt), '');
+  check('二尖瓣脱垂：连枷是瓣尖翻转、对合丧失',
+    ['瓣尖仍指向左室', '对合完全丧失'].every((w) => mrTxt.indexOf(w) >= 0), '');
+  check('二尖瓣脱垂：Barlow 与 FED 的修复难度差别',
+    ['Barlow 病', '纤维弹性缺陷（FED）', '多段脱垂', '局限单段'].every((w) => mrTxt.indexOf(w) >= 0), '');
+  check('二尖瓣脱垂：P2 最常见、报告要写段与瓣叶长度',
+    /P2 段最常见/.test(mrTxt) && /后叶长 18 mm/.test(mrTxt), '');
+  check('二尖瓣脱垂：两个混点（SAM 与 MAC）',
+    ['SAM（收缩期前向运动）', '二尖瓣环钙化（MAC）'].every((w) => mrTxt.indexOf(w) >= 0), '');
 
   // 实填：PISA + 容积法 + LVEDV 同时给，两条路应互相印证
   await openBrief('mitral');
