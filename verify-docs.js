@@ -1028,10 +1028,10 @@ function check(name, ok, detail) {
     hasAll(['高流量状态', '假性 AVA', 'DVI 正常']), '');
   check('主动脉瓣含无症状重度危险标志',
     hasAll(['危险标志', 'BNP', 'GLS', '运动试验']), '');
-  check('主动脉瓣十三节编号连续（v1.11.9 新增第八节脱垂与连枷）',
+  check('主动脉瓣十四节编号连续（v1.12.0 新增第十三节修复术后）',
     ['一、AS 三联', '二、AVA 的四种算法', '三、DVI', '四、低流量低压差', '五、反向的坑',
       '六、AS 分期', '七、无症状重度', '八、脱垂与连枷', '九、AR 定量', '十、重度 AR',
-      '十一、急性 AR', '十二、TAVR', '十三、混合瓣膜病'].every((w) => aoTxt.indexOf(w) >= 0), '');
+      '十一、急性 AR', '十二、TAVR', '十三、修复术后', '十四、混合瓣膜病'].every((w) => aoTxt.indexOf(w) >= 0), '');
   check('主动脉瓣脱垂：与二尖瓣方向相反（舒张期 / 收缩期）',
     /舒张期（瓣叶脱入左室流出道）/.test(aoTxt), '');
   check('主动脉瓣脱垂：脱垂与连枷的分界是「还在不在对合」',
@@ -1044,6 +1044,19 @@ function check(name, ok, detail) {
     ['主动脉瓣二叶式', 'VSD（流出道型）', '主动脉夹层', '感染性心内膜炎'].every((w) => aoTxt.indexOf(w) >= 0), '');
   check('主动脉瓣脱垂：只处理瓣叶不处理瓣环会复发',
     /只处理瓣叶不处理瓣环/.test(aoTxt), '');
+  /* v1.12.0：修复术后一节 —— 三类术式 + 几何指标 + 五个术后线索 */
+  check('主动脉瓣修复术后：三类术式都在（折叠 / David-Yacoub / 交界切开）',
+    ['瓣叶折叠 / 游离缘悬吊', '保留瓣膜的根部替换', '交界切开 / 融合嵴切开'].every((w) => aoTxt.indexOf(w) >= 0), '');
+  check('主动脉瓣修复术后：三个几何数（eH / 对合高度 / gH）',
+    ['有效高度 eH', '对合高度', '几何高度 gH'].every((w) => aoTxt.indexOf(w) >= 0), '');
+  check('主动脉瓣修复术后：eH 不足 8 mm 与再干预相关',
+    /eH 不足 8 mm/.test(aoTxt) && /至少 4–5 mm/.test(aoTxt), '');
+  check('主动脉瓣修复术后：别用术后第一天的反流下结论（血压低洗白）',
+    /别用术后第一天的反流程度下结论/.test(aoTxt) && /洗白/.test(aoTxt), '');
+  check('主动脉瓣修复术后：轻度压差升高别写成 AS 进展',
+    /别写成「AS 进展」/.test(aoTxt), '');
+  check('主动脉瓣修复术后：不替外科写「无需抗凝」',
+    /修复术不等于「不用抗凝」/.test(aoTxt), '');
 
   // 实填：三联 + LF-LG 四值 → 应判反常型，且不再重复出「⚠ AVA ≤1.0 而压差 <40」
   await openBrief('aortic');
@@ -1489,11 +1502,11 @@ function check(name, ok, detail) {
     hasMr(['LVESDi ≥20 mm/m²', 'LAVI ≥60 mL/m²', '≥3 条']), '');
   check('二尖瓣含 TEER 解剖门槛数值',
     hasMr(['8–10 mm', '4.0 cm²', 'tenting height / area']), '');
-  check('二尖瓣十四节编号连续（v1.11.9 新增第八节脱垂与连枷）',
+  check('二尖瓣十五节编号连续（v1.12.0 新增第九节 MAD 与室早）',
     ['一、狭窄 MS', '二、平均压差', '三、Wilkins', '四、PMBV', '五、MS 的后果',
-      '六、反流 MR', '七、Carpentier', '八、二尖瓣脱垂与连枷', '九、继发 MR 的两条机制', '十、成比例',
-      '十一、继发 MR 该不该干预', '十二、原发 MR 的干预时机',
-      '十三、TEER', '十四、把两个瓣'].every((w) => mrTxt.indexOf(w) >= 0), '');
+      '六、反流 MR', '七、Carpentier', '八、二尖瓣脱垂与连枷', '九、脱垂的预后不只看反流', '十、继发 MR 的两条机制',
+      '十一、成比例', '十二、继发 MR 该不该干预', '十三、原发 MR 的干预时机',
+      '十四、TEER', '十五、把两个瓣'].every((w) => mrTxt.indexOf(w) >= 0), '');
   check('二尖瓣脱垂：诊断标准 ≥2 mm 且方向朝心房（收缩期）',
     /越过瓣环平面 ≥2 mm/.test(mrTxt) && /收缩期/.test(mrTxt), '');
   check('二尖瓣脱垂：连枷是瓣尖翻转、对合丧失',
@@ -1504,6 +1517,19 @@ function check(name, ok, detail) {
     /P2 段最常见/.test(mrTxt) && /后叶长 18 mm/.test(mrTxt), '');
   check('二尖瓣脱垂：两个混点（SAM 与 MAC）',
     ['SAM（收缩期前向运动）', '二尖瓣环钙化（MAC）'].every((w) => mrTxt.indexOf(w) >= 0), '');
+  /* v1.12.0：MAD 与室性心律失常 */
+  check('MVP 心律失常：MAD 要在胸骨旁长轴收缩末期测、≥5 mm 为明显',
+    ['二尖瓣环分离（MAD）', '胸骨旁长轴、收缩末期', '≥5 mm 为明显'].every((w) => mrTxt.indexOf(w) >= 0), '');
+  check('MVP 心律失常：五个危险标志都在（MAD / 瓣叶长 / 下壁 T / 室早 / LGE）',
+    ['瓣叶长度与冗长', '下壁导联 T 波倒置', '室早形态与负荷', 'CMR 晚期钆增强'].every((w) => mrTxt.indexOf(w) >= 0), '');
+  check('MVP 心律失常：猝死绝对风险写清（不足 1%）',
+    /年发生率不足 1%/.test(mrTxt), '');
+  check('MVP 心律失常：说清「反流轻也不能省这一步」',
+    /反流轻不能省掉这一步/.test(mrTxt), '');
+  check('MVP 心律失常：四个坑（MAD≠瓣环扩张 / 四腔测不到 / 反流轻 / 舒张期）',
+    /把 MAD 写成「瓣环扩张」/.test(mrTxt) && /只在心尖四腔量/.test(mrTxt), '');
+  check('MVP 心律失常：报告要写后瓣环分离与瓣叶长度',
+    /后瓣环分离 X mm/.test(mrTxt), '');
 
   // 实填：PISA + 容积法 + LVEDV 同时给，两条路应互相印证
   await openBrief('mitral');
