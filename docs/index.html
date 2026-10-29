@@ -794,6 +794,42 @@ html, body {
   border-top: none;
 }
 
+/* 条目内引用 → 参考文献总表（v1.11.3）：整行可点，到位后闪两秒 */
+.ref-item--jump {
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background .18s;
+}
+
+.ref-item--jump:hover {
+  background: #f5f8ff;
+}
+
+.ref-item--jump::after {
+  content: '跳转 ↗';
+  flex: none;
+  align-self: center;
+  font-size: 10.5px;
+  color: var(--brand);
+  opacity: .75;
+  white-space: nowrap;
+}
+
+.ref-item--hit {
+  animation: refHit 2.6s ease;
+}
+
+@keyframes refHit {
+  0%, 55% {
+    background: #fff4d6;
+    box-shadow: inset 0 0 0 2px #f3b73e;
+  }
+  100% {
+    background: transparent;
+    box-shadow: inset 0 0 0 2px transparent;
+  }
+}
+
 .ref-item__id {
   flex: none;
   width: 34px;
@@ -1601,13 +1637,24 @@ button.fx-nav__c {
   scroll-margin-top: 56px;
 }
 
-/* 条目内小节导航（长条目定位用） */
+/* 条目内小节导航（长条目定位用）
+   ★ v1.11.3：改为单行横向滚动。节数多的条目（如 Fontan 11 节）平铺会占 6 行，
+   把首屏正文全压下去；横向滚动保持一眼看到「这条有多少节」，又不吃版面高度。 */
 .fx-nav--sec {
   margin: 0 0 10px;
   padding: 8px 10px;
   background: #f8fafc;
   border: 1px solid #e8ecf2;
   border-radius: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.fx-nav--sec::-webkit-scrollbar {
+  display: none;
 }
 
 .fx-nav--sec .fx-nav__c {
@@ -2061,7 +2108,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.11.2</div>
+    <div class="verline">心脏超声参考值 · v1.11.3</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2103,7 +2150,7 @@ button.fx-nav__c {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.11.2</div>
+      <div class="verline">心脏超声参考值 · v1.11.3</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -13586,6 +13633,70 @@ const BRIEF_SECTIONS = [
         note: '冠状动脉瘘的超声价值在「定位」——起源、走行、引流口三件事说清了，临床就能决定封堵还是手术；说不清，等于只做了一次筛查。',
       },
       {
+        id: 'aca',
+        ab: 'ALCAPA',
+        title: '冠状动脉异常起源',
+        sub: 'ALCAPA · AAOCA · 壁内段与猝死风险',
+        source: ['R32', 'R33', 'R83', 'R79'],
+        rel: ['caf', 'dcm', 'tof-pr'],
+        blocks: [
+          { kind: 'h', text: '一、三种「起源异常」，处理完全不同' },
+          { kind: 'text', text: '冠状动脉异常起源不是一种病，而是一组连接错误。超声能直接提示的有两类，第三类要靠影像确认——但三者的血流动力学与处理方向完全不同，不能混在一个诊断里。' },
+          {
+            kind: 'table',
+            heads: ['类型', '一句话记住'],
+            rows: [
+              ['ALCAPA', '左冠接在肺动脉上；出生后肺压下降 → 左冠血流反向 → 前壁缺血'],
+              ['AAOCA', '开口在对侧窦；走壁内段时受压 → 运动时缺血，可猝死'],
+              ['单支冠脉 / 冠脉缺如', '少见，多数无症状；合并其他先心时留意'],
+            ],
+          },
+
+          { kind: 'h', text: '二、ALCAPA 的两副面孔' },
+          { kind: 'text', text: '**婴儿型**（占 85–90%）：出生后肺血管阻力下降，左冠灌注压塌陷，侧支来不及长，于是表现为婴儿期心衰——喂养困难、多汗、体重不增；超声见左室扩大、EF 降低、前壁与前间隔运动减弱、二尖瓣反流。**成人型**：侧支充分，左冠靠右冠经侧支逆供，表现为劳力性心绞痛、心律失常甚至猝死；静息 EF 可以正常，**只在负荷下露馅**。' },
+          { kind: 'note', text: '婴儿型 ALCAPA 与扩张型心肌病在超声上几乎是同一张图：左室扩大 + EF 低 + 二尖瓣反流，区别只在冠脉开口。**任何婴儿期「DCM」都必须看左冠开口**——漏诊 ALCAPA 会按心衰治几个月，把手术时机拖掉。', warn: true },
+
+          { kind: 'h', text: '三、ALCAPA 的七步诊断' },
+          {
+            kind: 'table',
+            heads: ['步骤', '看什么'],
+            rows: [
+              ['① 左冠开口', '主动脉左冠窦处找不到正常左主干开口（诊断起点）'],
+              ['② 右冠内径', '右冠明显扩张——它要供全部冠脉血流'],
+              ['③ 侧支', '室间隔内出现穿行的侧支血流，彩色多普勒最清楚'],
+              ['④ 肺动脉内血流', '肺动脉内出现连续性、以舒张期为主的反向血流'],
+              ['⑤ 心肌', '前壁、前间隔、心尖段运动减弱；心内膜回声增强（弹力纤维增生）'],
+              ['⑥ 二尖瓣', '反流程度（缺血性乳头肌功能不全）'],
+              ['⑦ 左室', '舒张末径、EF、球形化程度'],
+            ],
+          },
+          { kind: 'note', text: '第 ③ 与第 ④ 步是同一件事的两端：侧支把血从右冠送到左冠，再经左冠**逆流**进肺动脉。所以「肺动脉里有一股舒张期为主的血流」在 ALCAPA 里是**特征性**的，不要当成肺动脉反流。' },
+
+          { kind: 'h', text: '四、ALCAPA 术后看三件事' },
+          { kind: 'text', text: '再植入（左冠直接接入主动脉）或 Takeuchi（肺动脉内建挡板）术后：① **吻合口是否通畅**——吻合口流速 >2 m/s、或舒张期前向血流消失提示狭窄；② **左室功能是否恢复**——多数在 6–12 个月内 EF 回升，持续低 EF 提示心肌已不可逆；③ **二尖瓣反流**——术后早期常见，重度且不改善需考虑成形。随访节点为术后 1、3、6、12 个月，之后每年。' },
+
+          { kind: 'h', text: '五、AAOCA：超声只能「怀疑」，确认靠 CT' },
+          { kind: 'text', text: '异常冠脉起自对侧窦，经主动脉与肺动脉之间走行、或近段走在主动脉壁内时，运动中心外膜受压、裂隙样开口进一步塌陷，是年轻人运动猝死的原因之一。超声能做的只有三件：看开口位置（正常应在窦管交界以下、窦的中部）、看近段有无「壁内走行」（主动脉壁回声内出现管腔）、看有无局限性扩张或血流加速。' },
+          {
+            kind: 'table',
+            heads: ['危险特征', '为什么危险'],
+            rows: [
+              ['壁内段 >5 mm', '收缩期被主动脉壁压扁，管腔进一步塌陷'],
+              ['开口呈裂隙样', '同等压差下有效面积更小，血流储备差'],
+              ['走行于主肺动脉之间', '两大血管之间受压，运动时最明显'],
+              ['开口偏高 / 锐角发出', '开口形态扭曲，易在瓣环上方受压'],
+            ],
+          },
+          { kind: 'note', text: '**阴性不能排除 AAOCA。** 静息超声多数正常，成人疑诊（运动性晕厥、年轻猝死家族史、竞技运动员筛查异常）要做 CTA 或 MRA。有症状 + 高危解剖多需去顶（unroofing）；无症状 + 高危解剖个体化，多数倾向手术或严格限制竞技运动。', warn: true },
+
+          { kind: 'h', text: '六、报告要写清四件事' },
+          { kind: 'text', text: '① **起源**：哪个窦、有无壁内段、走行与主肺动脉的关系；② **近段形态与内径**（儿童对照冠脉 Z 值）；③ **供血区域的心肌运动**（必要时负荷或心肌声学造影）；④ **合并畸形**（二尖瓣、主动脉瓣、其他先心）。只写「冠脉显示不清」等于没写——要写明「左冠开口未探及，建议 CTA」。' },
+
+          { kind: 'h', text: '七、五个坑' },
+          { kind: 'text', text: '① **把侧支血流当「室间隔异常血流」**而不追根，ALCAPA 就此漏掉；② **婴幼儿心衰只报 EF 不报冠脉开口**——这是漏诊 ALCAPA 最常见的路径；③ **用静息超声排除 AAOCA**：静息多半正常；④ **把右冠扩张当冠脉瘤**：单侧扩张 + 左冠找不到，更像代偿；⑤ **术后只看 EF 不看吻合口流速**：吻合口狭窄可以在 EF 尚正常时就存在。' },
+        ],
+      },
+      {
         id: 'pht-rev',
         ab: 'PVR',
         title: '分流性肺高压的可手术性',
@@ -13899,6 +14010,61 @@ const BRIEF_SECTIONS = [
         note: '封堵能不能做，90% 取决于五项边缘测量而不是缺损大小；结论要写成"可以封堵（拟 X mm 伞）/ 不宜封堵（原因）"，不要只给一串数字。',
       },
       {
+        id: 'pvai',
+        ab: 'TAPVC',
+        title: '肺静脉异位引流',
+        sub: '四型定位 · 梗阻判定 · 术后吻合口',
+        source: ['R32', 'R33'],
+        rel: ['shd', 'asd-close', 'pht-rev'],
+        blocks: [
+          { kind: 'h', text: '一、先按「引流到哪」分四型' },
+          {
+            kind: 'table',
+            heads: ['类型 · 接到哪里', '关键点'],
+            rows: [
+              ['心上型 45%：垂直静脉 → 左无名静脉 / 上腔静脉', '垂直静脉可压迫左支气管'],
+              ['心内型 25%：冠状静脉窦或直接入右房', '冠状静脉窦扩张是线索'],
+              ['心下型 25%：垂直静脉 → 门静脉 / 下腔静脉', '几乎都梗阻，新生儿急症'],
+              ['混合型 5%：两种以上并存', '术前逐支描清，术后最易漏'],
+            ],
+          },
+          { kind: 'note', text: '四型的比例是「完全型」的分布。部分型（PAPVC）不在这张表里，它只有一两支走错，临床上更隐蔽——见第五节。' },
+
+          { kind: 'h', text: '二、梗阻与否，比分型更急' },
+          { kind: 'text', text: 'TAPVC 的生死线不是「哪一型」，而是**肺静脉有没有梗阻**。梗阻 → 肺静脉压升高 → 肺动脉压升高 → 右心衰与低氧，新生儿期即可休克。判定四条：① 肺静脉流速 >1.5–2.0 m/s 且呈**连续血流**（失去心房收缩带来的时相变化）；② 肺静脉与左房之间看不到连接；③ 狭窄处（垂直静脉、门静脉入口）出现湍流；④ 肺动脉高压征象（TR 速度增高、室间隔平直、肺动脉增宽）。' },
+          { kind: 'note', text: '心下型 TAPVC 的新生儿可能只表现为「呼吸窘迫」——胸片像肺水肿，常按肺炎治几天才想到先心。**新生儿不明原因持续低氧 + 右心大 + 左心小，必须逐支扫肺静脉。**', warn: true },
+
+          { kind: 'h', text: '三、七步扫查' },
+          {
+            kind: 'table',
+            heads: ['步骤', '做法'],
+            rows: [
+              ['① 左房后壁', '四支肺静脉是否都汇入左房（正常 2 上 2 下）'],
+              ['② 左房大小', 'TAPVC 左房常偏小——这是与 PPHN 的重要区别'],
+              ['③ 冠状静脉窦', '胸骨旁长轴 / 心尖四腔看是否扩张（心内型线索）'],
+              ['④ 垂直静脉', '胸骨上窝、剑下扫查；左侧垂直静脉最常压迫左支气管'],
+              ['⑤ 右心', '右房右室扩大、室间隔平直（容量 + 压力双重负荷）'],
+              ['⑥ 房间隔', '卵圆孔 / ASD 的分流方向（TAPVC 多为右向左）'],
+              ['⑦ 肺动脉压', 'TR 速度估 PASP；重度提示梗阻'],
+            ],
+          },
+
+          { kind: 'h', text: '四、TAPVC 与新生儿持续性肺高压（PPHN）怎么分' },
+          { kind: 'text', text: '两者都是新生儿低氧 + 右心大 + 肺动脉高压。区别只有一条：**PPHN 的肺静脉引流正常、左房不小**；TAPVC 的肺静脉不进左房、左房小、常能找到垂直静脉。所以关键动作是同一件事——把四支肺静脉逐一扫到并看到它们进入左房。**扫不到，就不要写 PPHN。**' },
+
+          { kind: 'h', text: '五、部分型：最常被漏的三种' },
+          { kind: 'text', text: '① **右上肺静脉接入上腔静脉**，常与静脉窦型 ASD 并存；② **左上腔静脉残留**（LSVC）→ 左上肺静脉经 LSVC 入无名静脉；③ **右中 / 下肺静脉接入下腔静脉**（弯刀综合征），常伴右肺发育不良。' },
+          { kind: 'note', text: '**冠状静脉窦扩张是「必查链」的起点**：CS 扩张 → 找 LSVC → 找左上肺静脉异位引流 → 找静脉窦型 ASD，三者常同时存在。另：PAPVC 时 Qp/Qs 会**高估**左向右分流量——回流入右房的那部分肺静脉血被算了两次。' },
+
+          { kind: 'h', text: '六、术后：吻合口与肺静脉再狭窄' },
+          { kind: 'text', text: '术后最麻烦的是**肺静脉吻合口狭窄**，发生率 5–15%，心下型更高。看三处：① 吻合口流速 >1.5 m/s 提示狭窄，>2 m/s 多需干预；② 肺静脉分支形态（上游扩张、下游湍流）；③ 吻合口与左房的连接是否呈「喇叭口」——狭窄多发生在缝线处。再狭窄多在术后 3–6 个月内出现，所以术后 1、3、6、12 个月各查一次，之后每年。' },
+
+          { kind: 'h', text: '七、五个坑' },
+          { kind: 'text', text: '① **只报「右心大 + 肺高压」不扫肺静脉**——这是 TAPVC 被当成 PPHN 的唯一原因；② **把垂直静脉当永存左上腔**：LSVC 引流入冠状静脉窦，垂直静脉引流入无名静脉，去向不同；③ **术后只看流速不看吻合口形态**；④ **混合型只报一支**；⑤ **用「肺静脉流速正常」排除梗阻**——梗阻段可能落在视野之外。' },
+        ],
+        note: '本条目为判读参考，不设输入项；Qp/Qs 与肺动脉压请走相关计算。',
+      },
+      {
         id: 'bubble',
         ab: '发泡',
         title: '右心造影发泡试验：PFO 与肺内分流',
@@ -14052,9 +14218,9 @@ const BRIEF_SECTIONS = [
       {
         id: 'fontan',
         ab: 'Fontan',
-        title: 'Fontan 术后（腔肺连接）',
-        sub: '管道通畅 · 开窗分流 · 肝静脉反向血流',
-        source: ['R33'],
+        title: '单心室与 Fontan 循环：术后评估与衰竭识别',
+        sub: '被动血流 · 肝静脉与 FALD · 五步分衰竭',
+        source: ['R32', 'R33'],
         rel: ['mustard', 'as-switch'],
         blocks: [
           { kind: 'h', text: '一、血流是「被动」的，评估逻辑要换' },
@@ -14063,11 +14229,11 @@ const BRIEF_SECTIONS = [
           { kind: 'h', text: '二、三个必查结构' },
           {
             kind: 'table',
-            heads: ['结构', '看什么', '异常提示'],
+            heads: ['结构 · 看什么', '异常提示'],
             rows: [
-              ['管道 / 挡板', '是否通畅、有无血栓、压差', '压差 >2–3 mmHg 提示梗阻；血栓可致命'],
-              ['开窗（fenestration）', '宽度通常 3–6 mm、分流方向', '右向左分流（低氧），闭合后需重新评估压力'],
-              ['腔静脉-肺动脉吻合口', '吻合口狭窄、扭曲', '上腔/下腔静脉扩张、肝静脉淤血'],
+              ['管道 / 挡板：是否通畅、有无血栓、压差', '压差 >2–3 mmHg 提示梗阻；血栓可致命'],
+              ['开窗：宽度通常 3–6 mm、分流方向', '右向左分流（低氧），闭合后需重新评估压力'],
+              ['腔静脉-肺动脉吻合口：狭窄、扭曲', '上腔/下腔静脉扩张、肝静脉淤血'],
             ],
           },
 
@@ -14076,13 +14242,59 @@ const BRIEF_SECTIONS = [
           { kind: 'note', text: '测肝静脉血流要用脉冲多普勒、取样容积放在肝静脉汇入下腔静脉前 1–2 cm，并要求患者平静呼吸——屏气会人为抹掉呼吸周期变化。', warn: true },
 
           { kind: 'h', text: '四、单心室功能与房室瓣反流' },
-          { kind: 'text', text: '单心室 EF 是预后最强 predictor 之一。房室瓣反流加重 → 前向血流减少 → 心排量下降 → 体静脉压升高，形成恶性循环。所以「反流 + 心室功能 + 体静脉压」要放在一起看，单独一项正常不能说明循环稳定。' },
+          { kind: 'text', text: '系统性心室 EF 是预后最强的单一指标，但**单心室的 EF 不能照搬双心室的公式**：形态右室常用面积长度法，形态左室可用 Simpson，几何严重变形时以目测 + 三径为准。房室瓣反流加重 → 前向血流减少 → 心排量下降 → 体静脉压升高，形成恶性循环。所以「反流 + 心室功能 + 体静脉压」必须一起看，单独一项正常不能说明循环稳定。' },
 
-          { kind: 'h', text: '五、Fontan 相关并发症的超声线索' },
-          { kind: 'text', text: '① **Fontan 相关肝病**：肝大、实质回声增粗、尾叶增大、门静脉血流变钝；② **蛋白丢失性肠病**：肠壁增厚、腹水、胸腔积液；③ **塑型性支气管炎**：超声不能确诊，但反复胸腔积液 + 低氧要想到；④ **心包 / 胸腔积液**：提示体静脉压升高。' },
+          { kind: 'h', text: '五、循环衰竭：先分「泵」还是「路」' },
+          { kind: 'text', text: 'Fontan 循环衰竭不是一个诊断，而是一条鉴别链。按「路 → 泵 → 瓣 → 节律 → 内脏」顺序排，前四项都可能可逆：① **路**：管道 / 挡板梗阻、吻合口狭窄、肺血管阻力升高；② **泵**：系统性心室 EF 下降、舒张末压升高；③ **瓣**：房室瓣反流加重；④ **节律**：窦房结功能不良、房扑房颤——心房失去「泵」的作用后 Fontan 输出会骤降；⑤ **内脏**：FALD、PLE、塑型性支气管炎。' },
+          { kind: 'note', text: '顺序很重要：发现体静脉淤血**先排「路」**，不要直接归因于「心室不行」。管道狭窄与房室瓣反流都是可干预的；把可逆项当成心室衰竭，患者会被过早列入移植名单。', warn: true },
 
-          { kind: 'h', text: '六、四个坑' },
-          { kind: 'text', text: '① **用 TAPSE 评单心室**：几何形态不适用，参考值也不成立；② **忽略肝静脉反向血流**：这是最灵敏的征象，却常被跳过；③ **测管道压差角度过大**：Fontan 管道内是低速血流，角度误差对结果影响极大，必须 ≤20°；④ **单帧判断开窗分流方向**：分流随呼吸时相变化，需连续观察多个周期。' },
+          { kind: 'h', text: '六、超声能替代导管的三组数' },
+          {
+            kind: 'table',
+            heads: ['指标 · 无导管时怎么估', '判读'],
+            rows: [
+              ['跨肺压差 TPG：肺动脉前向流速形态 + 肝静脉反向深度', 'TPG >8 mmHg 提示阻力升高'],
+              ['心室舒张末压：房室瓣 A 波、组织多普勒 e′、E/e′', 'e′ 低 + E/e′ 高提示高压'],
+              ['体静脉压：下腔静脉内径与吸气塌陷率', 'IVC 扩张固定、塌陷 <50% 提示升高'],
+            ],
+          },
+
+          { kind: 'h', text: '七、Fontan 相关肝病：分三步看，别只看转氨酶' },
+          { kind: 'text', text: 'FALD 是 Fontan 循环的慢性代价，术后 10 年以上几乎都有不同程度的肝纤维化。超声分三步：① **形态**：肝大、尾叶 / 左叶增大，表面由光滑转结节；② **实质与血管**：回声增粗不均、门静脉主干增宽、流速降低、出现双向或反向血流；③ **并发症**：脾大、腹水、侧支（胃左静脉扩张提示门脉高压）。' },
+          {
+            kind: 'table',
+            heads: ['阶段', '超声要点'],
+            rows: [
+              ['早期', '肝大、回声稍增粗，门静脉血流仍前向'],
+              ['中期', '表面不平、门静脉流速 <10 cm/s、脾大'],
+              ['晚期', '结节样表面、门静脉双向/反向、腹水、侧支形成'],
+            ],
+          },
+          { kind: 'note', text: '**转氨酶正常不能排除 FALD。** 建议术后 10 年起每 1–2 年做一次肝脏超声 + 弹性成像；门静脉流速 <10 cm/s 应请消化科评估。' },
+
+          { kind: 'h', text: '八、PLE 与塑型性支气管炎' },
+          { kind: 'text', text: '两者都是体静脉压长期升高的下游后果，也都是 Fontan 失败的标志。**蛋白丢失性肠病（PLE）**：大量蛋白从肠道丢失 → 低蛋白血症、水肿、腹水、胸腔积液、免疫球蛋白下降；超声见肠壁增厚（>3 mm）、肠管扩张、腹水、心包积液。**塑型性支气管炎**：淋巴液反流进气道形成管型，突发呼吸困难、可咳出树枝状管型；超声不能确诊，但「反复胸腔积液 + 低氧 + 体静脉压高」三联要想到。' },
+          { kind: 'note', text: 'PLE 的超声表现**非特异**（肠壁增厚也见于低蛋白与炎症）。报告应写成「结合临床与实验室（血清白蛋白、α1 抗胰蛋白酶清除率）」，不要单凭超声下诊断。', warn: true },
+
+          { kind: 'h', text: '九、随访节奏：术后 1 年与 10 年查的不是一回事' },
+          {
+            kind: 'table',
+            heads: ['时点', '重点'],
+            rows: [
+              ['术后 3–6 个月', '管道/挡板通畅、开窗、心包积液、心室功能'],
+              ['1–5 年', '生长、房室瓣反流、心律失常、运动耐量'],
+              ['5–10 年', '肝功能起点、门静脉血流、脾大、侧支'],
+              ['10 年以上', 'FALD 筛查（超声 + 弹性成像）、PLE、塑型性支气管炎、移植评估'],
+            ],
+          },
+
+          { kind: 'h', text: '十、一份能复现的报告' },
+          { kind: 'text', text: '**描述**：单心室（形态左室 / 右室），TCPC 术后，管道通畅，压差 X mmHg；开窗 Y mm，呈右向左分流；系统性心室 EF Z%；房室瓣反流 轻 / 中 / 重；下腔静脉内径 X mm、吸气塌陷 <50%；肝静脉 S 波前向减弱、a 波反向加深；肝实质回声增粗，门静脉流速 X cm/s，脾大。' },
+          { kind: 'text', text: '**结论**：Fontan 循环，管道通畅 / 梗阻；体静脉压升高征象（肝静脉 + IVC）；FALD 早 / 中期表现。' },
+          { kind: 'text', text: '**建议**：每 6–12 个月复查；门静脉流速 <10 cm/s，建议消化科评估；房室瓣反流加重需与外科 / 介入讨论。' },
+
+          { kind: 'h', text: '十一、七个坑' },
+          { kind: 'text', text: '① **用 TAPSE 评单心室**：几何形态不适用，参考值也不成立；② **跳过肝静脉**：这是最灵敏的征象；③ **测管道压差角度 >20°**：管腔内是低速血流，角度误差影响极大；④ **单帧判断开窗方向**：分流随呼吸时相变化；⑤ **把体静脉淤血直接归因于心室衰竭**：漏掉可逆的管道与瓣膜问题；⑥ **用转氨酶正常排除 FALD**；⑦ **报告不写单心室形态**：形态左室与形态右室的预后和手术策略不同。' },
         ],
         fields: [
           { k: 'fnpg', n: '管道 / 挡板压差', u: 'mmHg' },
@@ -14458,7 +14670,7 @@ const BRIEF_SECTIONS = [
         blocks: [
           { kind: 'h', text: '为什么超声能看见 OSA' },
           { kind: 'text', text: 'OSA 造成**夜间间歇性胸腔负压与缺氧**，导致肺血管收缩、右心后负荷升高与慢性容量负荷增加；其超声表现往往被误读为「原发性肺高压」或「不明原因右心扩大」。识别这一层，能让很多「查不出原因」的病例找到方向。' },
-          { kind: 'h', text: '一、超声上的三组线索' },
+          { kind: 'h', text: '超声上的三组线索' },
           {
             kind: 'table',
             heads: ['线索', '表现', '提示'],
@@ -14468,11 +14680,11 @@ const BRIEF_SECTIONS = [
               ['左心结构', '左房扩大（常与房颤并存）、EF 多为正常或降低', '提示长期房负荷与心房重构'],
             ],
           },
-          { kind: 'h', text: '二、两个容易踩的坑' },
+          { kind: 'h', text: '两个容易踩的坑' },
           { kind: 'text', text: '**坑一：把 OSA 相关的右心负荷当成原发性肺动脉高血压。** 两者在超声上很像（PASP 升高 + 右心扩大），但处理方向完全不同：前者先治睡眠（CPAP 往往能显著降压），后者需要靶向肺血管药物。先做睡眠筛查（STOP-BANG + 睡眠监测）再谈 PAH。' },
           { kind: 'text', text: '**坑二：把容量过重当成心衰加重而加利尿。** OSA 合并心衰者夜间回心血量增加、利尿过度会导致夜间低灌注与心律失常。容量状态评估（IVC、下腔静脉血流、每搏量变异）比单看 NT-proBNP 更能指导利尿强度。' },
           { kind: 'note', text: '★ 超声**不能诊断 OSA**——诊断靠睡眠监测（PSG 或家庭便携监测）。超声的价值是：**在超声常规随访中识别出「右心负荷 + 容量过重 + 左房扩大」这一组合，并提示临床加做睡眠筛查**。这个提示对中重度 OSA（常未被识别）有实际意义。', warn: true },
-          { kind: 'h', text: '三、合并重度 OSA 的心衰患者随访要点' },
+          { kind: 'h', text: '合并重度 OSA 的心衰患者随访要点' },
           {
             kind: 'table',
             heads: ['环节', '要点'],
@@ -16801,6 +17013,8 @@ var CALC_HINTS = {
   bubble: '血流动力学与心功能 · Qp/Qs 肺体循环血流比；介入尺寸与先心 · McGoon 比值与 Nakata 指数；右心与肺循环 · 血管阻力三合一',
   mustard: '右心与肺循环 · 右室容积指数 RVEDVi / RVESVi；右室收缩功能三合一；肺动脉压（sPAP·dPAP·mPAP）',
   fontan: '右心与肺循环 · PAPi 肺动脉搏动指数；血管阻力三合一',
+  aca: '重构与心肌功能 · 左室重构四联；右心与肺循环 · 血管阻力三合一',
+  pvai: '血流动力学与心功能 · Qp/Qs 肺体循环血流比；介入尺寸与先心 · McGoon 比值与 Nakata 指数',
   'as-switch': '瓣膜评估 · 主动脉瓣疾病评估；TR 三尖瓣反流定量；血流动力学与心功能 · 左室容积与射血分数',
   'echo-interv': '右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP）；右房压（IVC 法）；血流动力学与心功能 · 左室容积与射血分数',
   crt: '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · 右室收缩功能三合一',
@@ -16892,6 +17106,8 @@ var CALC_LINKS = {
   bubble: ['shunt', 'paidx', 'resist'],
   mustard: ['rvvol', 'rvsyst', 'mpap'],
   fontan: ['papi', 'resist'],
+  aca: ['wmsi', 'ef', 'lvgeom'],
+  pvai: ['shunt', 'paidx', 'mpap'],
   'as-switch': ['aortic', 'tr', 'ef'],
   'echo-interv': ['mpap', 'ef'],
   crt: ['ef', 'rvsyst'],
@@ -16947,6 +17163,15 @@ var ABBR = [
   ['ASD', '房间隔缺损', 'd'],
   ['VSD', '室间隔缺损', 'd'],
   ['PDA', '动脉导管未闭', 'd'],
+  ['ALCAPA', '左冠状动脉异常起源于肺动脉', 'd'],
+  ['AAOCA', '冠状动脉异常主动脉起源', 'd'],
+  ['TAPVC', '完全性肺静脉异位引流', 'd'],
+  ['PAPVC', '部分性肺静脉异位引流', 'd'],
+  ['TCPC', '全腔静脉-肺动脉连接', 'd'],
+  ['FALD', 'Fontan 相关肝病', 'd'],
+  ['PLE', '蛋白丢失性肠病', 'd'],
+  ['LSVC', '永存左上腔静脉', 'd'],
+  ['PPHN', '新生儿持续性肺动脉高压', 'd'],
   ['CoA', '主动脉缩窄', 'd'],
   ['CAF', '冠状动脉瘘', 'd'],
   ['PFO', '卵圆孔未闭', 'd'],
@@ -17889,7 +18114,7 @@ laef: [
   ],
 
   tr: [
-    { kind: 'h', text: '一、TR 严重度分级（ASE 2017）' },
+    { kind: 'h', text: 'TR 严重度分级（ASE 2017）' },
     { kind: 'table', heads: ['指标', '轻度', '中度', '重度'], rows: [
       ['VC（mm）', '< 3', '3–6.9', '≥ 7'],
       ['EROA（cm²）', '< 0.20', '0.20–0.39', '≥ 0.40'],
@@ -19186,20 +19411,54 @@ const MATERIALS = [];
     return '<div class="fx-h">相关内容</div><div class="chiprow">' + chips + '</div>';
   }
 
-  /** 详情页底部的本条目引用 */
+  /** 详情页底部的本条目引用
+   *  ★ v1.11.3：每一项可点，跳到目录底部的参考文献总表并高亮对应条（data-refjump 交给 jumpToRef） */
   function briefRefsHtml(ids) {
     if (!ids || !ids.length || !REFS.length) return '';
     let h = '<div class="fx-h">本条目引用</div>';
     ids.forEach(function (rid) {
       const r = REFS.filter(function (x) { return x.id === rid; })[0];
       if (!r) return;
-      h += '<div class="ref-item"><div class="ref-item__id">' + esc(r.id) + '</div>' +
+      h += '<div class="ref-item ref-item--jump" data-refjump="' + esc(r.id) + '">' +
+        '<div class="ref-item__id">' + esc(r.id) + '</div>' +
         '<div class="ref-item__body">' +
         '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
         '<div class="ref-item__where">' + esc(r.where) + '</div>' +
         '</div></div>';
     });
     return h;
+  }
+
+  /**
+   * 从条目里的引用跳到参考文献总表的那一条
+   *
+   * 走「返回目录」同一条路径（popView），不然目录还藏在详情卡后面，滚过去也看不见；
+   * 文献默认折叠，所以先展开再定位。滚动放在 popstate 之后（history.back 是异步的），
+   * 否则会被 leaveView 的「还原进入前位置」冲掉。
+   */
+  function jumpToRef(rid) {
+    if (!rid) return;
+    // 文献总表在公式集页签里：把「从哪个页签进来的」记忆清掉，
+    // 否则从「切面学习」进的详情，leaveView 会把页签切回去、跳过去什么都看不到
+    viewOriginTab = 'calc';
+    viewOriginY = 0;
+    if (curCalcGroup) popView(); else restoreCalcIndex();
+    switchTab('calc');
+    curCalcGroup = null;
+    toggleRefs(true);
+    setTimeout(function () {
+      const t = document.getElementById('ref-' + rid) || $('calcRefs');
+      if (!t) return;
+      const top = t.getBoundingClientRect().top + window.pageYOffset - 56;
+      // 跨页跳转用即时滚动：goToY 的 smooth 在长页面上要 1s 以上，
+      // 高亮都闪完了人还没到，反而像没跳
+      window.scrollTo(0, Math.max(0, Math.round(top)));
+      t.classList.remove('ref-item--hit');
+      // 强制重排后才能重放动画（连点同一条时也能再闪一次）
+      void t.offsetWidth;
+      t.classList.add('ref-item--hit');
+      setTimeout(function () { t.classList.remove('ref-item--hit'); }, 2600);
+    }, 300);
   }
 
   /**
@@ -19214,7 +19473,7 @@ const MATERIALS = [];
     if (!box) return;
     let h = '';
     REFS.forEach(function (r) {
-      h += '<div class="ref-item"><div class="ref-item__id">' + esc(r.id) + '</div>' +
+      h += '<div class="ref-item" id="ref-' + esc(r.id) + '"><div class="ref-item__id">' + esc(r.id) + '</div>' +
         '<div class="ref-item__body">' +
         '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
         '<div class="ref-item__en">' + esc(r.en) + '</div>' +
@@ -20100,6 +20359,15 @@ const MATERIALS = [];
         renderCalc();
       });
     });
+    // 本条目引用 → 跳到参考文献总表那一条并高亮（容器节点不变，只绑一次）
+    if (!$('calcGroups').dataset.refBound) {
+      $('calcGroups').dataset.refBound = '1';
+      $('calcGroups').addEventListener('click', function (ev) {
+        const el = ev.target.closest ? ev.target.closest('[data-refjump]') : null;
+        if (!el) return;
+        jumpToRef(el.dataset.refjump);
+      });
+    }
     // 「相关计算」胶囊：点了直接进对应计算器
     $('calcGroups').querySelectorAll('.chip[data-jump]').forEach(function (c) {
       c.addEventListener('click', function () { openCalcGroup(c.dataset.jump); });

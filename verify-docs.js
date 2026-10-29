@@ -793,7 +793,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 110 条（计算 42 + 评估判读 68；v1.10.10 新增 LVNC 条目）', d.items === 110, d.items);
+    check('条目 112 条（计算 41 + 评估判读 71；v1.11.3 新增冠脉异常起源与肺静脉异位引流）', d.items === 112, d.items);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
       d.resistOuts + ' / ' + d.lvgeomOuts);
@@ -1147,6 +1147,72 @@ function check(name, ok, detail) {
     ['连续性', '主动脉窦瘤破裂', '川崎病'].every((w) => cafTxt.indexOf(w) >= 0), '');
   check('冠状动脉瘘含关闭指征（Qp/Qs >1.5）',
     /Qp\/Qs/.test(cafTxt) && /1\.5/.test(cafTxt), '');
+
+  /* ★ v1.11.3：一个病一条、术前到术后 —— 冠脉异常起源 / 肺静脉异位引流 / Fontan 扩写 */
+  await openBrief('aca');
+  const acaTxt = await briefText('aca');
+  check('冠脉异常起源：ALCAPA 七步含左冠开口 / 侧支 / 肺动脉内反向血流',
+    ['左冠开口', '侧支', '肺动脉内'].every((w) => acaTxt.indexOf(w) >= 0), '');
+  check('冠脉异常起源：点明婴儿型 DCM 陷阱（必须看左冠开口）',
+    /DCM/.test(acaTxt) && /婴儿/.test(acaTxt), '');
+  check('冠脉异常起源：AAOCA 四条危险特征齐全',
+    ['壁内段 >5 mm', '裂隙样', '主肺动脉之间'].every((w) => acaTxt.indexOf(w) >= 0), '');
+  check('冠脉异常起源：术后看吻合口流速 >2 m/s',
+    /2 m\/s/.test(acaTxt), acaTxt.slice(0, 80));
+
+  await openBrief('pvai');
+  const pvTxt = await briefText('pvai');
+  check('肺静脉异位引流：四型齐全（心上 / 心内 / 心下 / 混合）',
+    ['心上型', '心内型', '心下型', '混合型'].every((w) => pvTxt.indexOf(w) >= 0), '');
+  check('肺静脉异位引流：梗阻判定写清连续血流与左房小',
+    /连续血流/.test(pvTxt) && /左房小|左房常偏小/.test(pvTxt), '');
+  check('肺静脉异位引流：冠状静脉窦扩张的必查链（LSVC / 左上肺静脉 / 静脉窦型 ASD）',
+    ['LSVC', '左上肺静脉', '静脉窦型'].every((w) => pvTxt.indexOf(w) >= 0), '');
+  check('肺静脉异位引流：术后吻合口 >1.5 m/s 提示狭窄',
+    /1\.5 m\/s/.test(pvTxt), '');
+
+  await openBrief('fontan');
+  const fnTxt = await briefText('fontan');
+  check('Fontan：标题已扩为单心室与循环衰竭',
+    /单心室与 Fontan 循环/.test(fnTxt) && /衰竭/.test(fnTxt), '');
+  check('Fontan：衰竭五步鉴别指向具体可逆项（管道 / EF / 房室瓣 / 窦房结 / FALD）',
+    ['管道', '系统性心室 EF', '房室瓣反流加重', '窦房结', 'FALD'].every((w) => fnTxt.indexOf(w) >= 0), '');
+  check('Fontan：FALD 写清门静脉 <10 cm/s 且转氨酶正常不能排除',
+    /10 cm\/s/.test(fnTxt) && /转氨酶正常不能排除/.test(fnTxt), '');
+  check('Fontan：仍保留开窗与肝静脉反向血流两条要点',
+    ['开窗', '肝静脉'].every((w) => fnTxt.indexOf(w) >= 0), '');
+
+  /* v1.11.3：条目内引用 → 参考文献总表，展开 + 定位 + 高亮 */
+  await openBrief('pvai');
+  const jumpId = await c.evalJs(`(function(){
+    var card=document.querySelector('#calcGroups .card[data-g="pvai"]');
+    var a=card && card.querySelector('[data-refjump]');
+    if(!a) return 'none';
+    a.click();
+    return a.dataset.refjump;
+  })()`);
+  await new Promise((r) => setTimeout(r, 700));
+  const jumpSt = await c.evalJs(`(function(){
+    var list=document.getElementById('calcRefList');
+    var t=document.getElementById('ref-R32');
+    var d=document.getElementById('calcDetail');
+    return JSON.stringify({
+      open: !!(list && !list.hidden),
+      hit: !!(t && t.className.indexOf('ref-item--hit')>=0),
+      backToIndex: !!(d && d.hidden),
+      inView: !!(t && t.getBoundingClientRect().top > 20 && t.getBoundingClientRect().top < 900)
+    });
+  })()`);
+  check('条目内引用可跳参考文献（R32：回目录 + 展开 + 高亮 + 到位）',
+    jumpId === 'R32' && /"open":true/.test(jumpSt) && /"hit":true/.test(jumpSt) &&
+    /"backToIndex":true/.test(jumpSt) && /"inView":true/.test(jumpSt), jumpSt);
+  // 还原成默认折叠，后面的文献折叠断言依赖初始状态
+  await c.evalJs(`(function(){
+    var l=document.getElementById('calcRefList'); if(l) l.hidden=true;
+    var t=document.getElementById('ref-R32'); if(t) t.classList.remove('ref-item--hit');
+    var hd=document.getElementById('refsToggle'); if(hd){hd.classList.remove('refs-hd--open');hd.setAttribute('aria-expanded','false');}
+    return 1;
+  })()`);
 
   await openCalc('mpap');
   await fillCalc('mpap', 'pp_tr', '3.0');

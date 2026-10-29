@@ -251,6 +251,8 @@ Page({
       return (r.dl || []).some(function (d) { return d.t !== '需订阅'; });
     }).length,
     refsOpen: false,
+    // 从条目详情跳过来时，被定位的那条文献闪一下（v1.11.3）
+    hitRef: '',
     appVersion: V.APP_VERSION,
     // 组名跳转条：目录很长，点一下定位到该组；末尾挂「参考文献」直达页底文献卡（v1.6.6）
     navGroups: buildSections().map(function (s) {
@@ -275,6 +277,36 @@ Page({
       app.globalData.pendingCalcKw = '';
       this.applySearch(pend);
     }
+    // 从条目详情点「本条目引用」过来：展开文献并定位到该条（v1.11.3）
+    const pr = app.globalData.pendingRef;
+    if (pr) {
+      app.globalData.pendingRef = '';
+      const self = this;
+      setTimeout(function () { self.jumpToRef(pr); }, 60);
+    }
+  },
+
+  /** 展开参考文献并滚到某一条，到位后闪一下高亮 */
+  jumpToRef(rid) {
+    if (!rid) return;
+    const self = this;
+    const scroll = function () {
+      const q = wx.createSelectorQuery().in(self);
+      q.select('#ref-' + rid).boundingClientRect();
+      q.selectViewport().scrollOffset();
+      q.exec(function (res) {
+        const rect = res && res[0];
+        if (!rect) return;
+        const cur = (res[1] && res[1].scrollTop) || 0;
+        wx.pageScrollTo({ scrollTop: Math.max(0, cur + rect.top - 60), duration: 260 });
+      });
+    };
+    // wx:if 的文献列表要等一帧才渲染出来，否则量不到位置
+    this.setData({ refsOpen: true, hitRef: rid }, function () {
+      setTimeout(scroll, 160);
+    });
+    if (this._hitTimer) clearTimeout(this._hitTimer);
+    this._hitTimer = setTimeout(function () { self.setData({ hitRef: '' }); }, 2800);
   },
 
   /** 参考文献默认折叠（40 条会把页面拉得很长），点标题才展开全部 */

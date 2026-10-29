@@ -256,6 +256,17 @@ Page({
     wx.navigateTo({ url: '/pages/formula/formula?id=' + id });
   },
 
+  /**
+   * 「本条目引用」→ 跳到公式集底部的参考文献总表并定位
+   * switchTab 不能带参数，所以把目标编号放 globalData，由目录页 onShow 取走。
+   */
+  onJumpRef(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    app.globalData.pendingRef = id;
+    wx.switchTab({ url: '/pages/calculators/calculators' });
+  },
+
   /** 页尾「其他页面」：tabBar 页用 switchTab，其余用 navigateTo */
   onGo(e) {
     const p = e.currentTarget.dataset.go;

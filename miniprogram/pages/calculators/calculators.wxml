@@ -81,7 +81,8 @@
     </view>
 
     <view wx:if="{{refsOpen}}">
-      <view wx:for="{{refs}}" wx:key="id" class="ref-item">
+      <view wx:for="{{refs}}" wx:key="id" id="ref-{{item.id}}"
+            class="ref-item {{hitRef === item.id ? 'ref-item--hit' : ''}}">
         <view class="ref-item__id">{{item.id}}</view>
         <view class="ref-item__body">
           <view class="ref-item__zh">{{item.zh}}</view>

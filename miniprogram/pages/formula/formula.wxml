@@ -16,11 +16,13 @@
     </view>
 
     <!-- 条目内小节导航：长条目滚到中间容易迷路，点胶囊直接定位到该节 -->
-    <view wx:if="{{toc.length}}" class="fx-nav">
+    <!-- 条目内小节导航：长条目（如 Fontan 11 节）平铺会占 6 行、把首屏正文压没，
+         v1.11.3 起改单行横向滚动，节数多也不吃版面高度 -->
+    <scroll-view wx:if="{{toc.length}}" class="fx-nav fx-nav--scroll" scroll-x="{{true}}" enable-flex="{{true}}">
       <view wx:for="{{toc}}" wx:key="id" wx:for-item="sec"
             class="fx-nav__c {{curSec === sec.id ? 'fx-nav__c--on' : ''}}"
             data-id="{{sec.id}}" hover-class="fx-nav__c--tap" bindtap="onJumpSec">{{sec.t}}</view>
-    </view>
+    </scroll-view>
 
     <!-- 评估类内容（extra-data）或计算条目的评分细则表（calc-groups 的 blocks） -->
     <block wx:if="{{blocks.length > 0}}">
@@ -148,12 +150,15 @@
 
   <view class="card" wx:if="{{refs.length}}">
     <view class="card__title">本条目引用</view>
-    <view wx:for="{{refs}}" wx:key="id" class="ref-item">
+    <view class="card__desc">点任一条可跳到「公式集」底部的参考文献总表，并定位到该条。</view>
+    <view wx:for="{{refs}}" wx:key="id" class="ref-item ref-item--jump"
+          data-id="{{item.id}}" hover-class="ref-item--tap" bindtap="onJumpRef">
       <view class="ref-item__id">{{item.id}}</view>
       <view class="ref-item__body">
         <view class="ref-item__zh">{{item.zh}}</view>
         <view class="ref-item__where">{{item.where}}</view>
       </view>
+      <view class="ref-item__go">跳转 ›</view>
     </view>
   </view>
 

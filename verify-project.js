@@ -195,8 +195,29 @@ const EX = require(exPath);
 if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（图像质控与规范 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rvfun,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,dse,hcm,infiltr,dcm,nc-lv,athlete,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,shd,caf,pht-rev,tof-pr,ebstein,dorv,asd-close,bubble,coa-echo,mustard,fontan,as-switch,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 72 条（5 个分组）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rvfun,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,dse,hcm,infiltr,dcm,nc-lv,athlete,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,shd,caf,aca,pht-rev,tof-pr,ebstein,dorv,asd-close,pvai,bubble,coa-echo,mustard,fontan,as-switch,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 74 条（5 个分组）');
+
 else bad('评估条目异常: ' + briefIds.join(','));
+
+/* 小标题编号要么全有、要么全无
+ *   v1.11.3：TR 条目的「一、TR 严重度分级」与 OSA 的三节，是首个标题不带序号、
+ *   后面却从「一、」开始 —— 条目内导航胶囊就变成一半带编号一半不带。 */
+{
+  const CG = require(path.join(MP, 'utils', 'calc-groups.js'));
+  const NUM = /^[一二三四五六七八九十]+、/;
+  const hsOf = (bs) => (bs || []).filter((x) => x.kind === 'h').map((x) => String(x.text || '').trim());
+  const offend = [];
+  (CG.GROUPS || []).forEach((g) => {
+    const hs = hsOf(g.blocks);
+    if (hs.length >= 2 && !NUM.test(hs[0]) && hs.some((h) => NUM.test(h))) offend.push(g.id);
+  });
+  EX.BRIEF_SECTIONS.forEach((s) => s.items.forEach((it) => {
+    const hs = hsOf(it.blocks);
+    if (hs.length >= 2 && !NUM.test(hs[0]) && hs.some((h) => NUM.test(h))) offend.push(it.id);
+  }));
+  if (!offend.length) ok('条目小标题编号统一（不会半截「一、」混进导航胶囊）');
+  else bad('标题编号不一致（首个标题无序号却中途出现序号）: ' + offend.join(','));
+}
 // 瓣膜评估组必须合并，不能再单独出现「瓣膜疾病评估」组
 const valveSec = EX.BRIEF_SECTIONS.filter(i => i.id === 'valve')[0];
 if (valveSec && valveSec.mergeInto === 'valve') ok('瓣膜评估组已合并（mergeInto=valve），无重复分组');
@@ -679,8 +700,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
       }
     });
   });
-  (bridged.length === 72) ? ok('72 个判读条目全部挂上「相关计算」桥接')
-    : bad('桥接条目数 ' + bridged.length + '（期望 72）');
+  (bridged.length === 74) ? ok('74 个判读条目全部挂上「相关计算」桥接')
+    : bad('桥接条目数 ' + bridged.length + '（期望 74）');
   bridged.every(function (b) { return b.text.indexOf('公式集 → ') !== -1; })
     ? ok('桥接文案统一指向「公式集 → 组 · 计算器」')
     : bad('桥接文案格式不一致');

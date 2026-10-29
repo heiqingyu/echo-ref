@@ -27,6 +27,11 @@ App({
      */
     pendingCalcKw: '',
     pendingSegKw: '',
+    /**
+     * 条目详情页点「本条目引用」的文献 → 切到公式集并定位该条（v1.11.3）
+     * 同样是因为 wx.switchTab 不能带参数；目标页取走即清空。
+     */
+    pendingRef: '',
   },
 
   onLaunch() {

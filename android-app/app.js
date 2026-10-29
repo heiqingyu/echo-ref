@@ -1148,20 +1148,54 @@
     return '<div class="fx-h">相关内容</div><div class="chiprow">' + chips + '</div>';
   }
 
-  /** 详情页底部的本条目引用 */
+  /** 详情页底部的本条目引用
+   *  ★ v1.11.3：每一项可点，跳到目录底部的参考文献总表并高亮对应条（data-refjump 交给 jumpToRef） */
   function briefRefsHtml(ids) {
     if (!ids || !ids.length || !REFS.length) return '';
     let h = '<div class="fx-h">本条目引用</div>';
     ids.forEach(function (rid) {
       const r = REFS.filter(function (x) { return x.id === rid; })[0];
       if (!r) return;
-      h += '<div class="ref-item"><div class="ref-item__id">' + esc(r.id) + '</div>' +
+      h += '<div class="ref-item ref-item--jump" data-refjump="' + esc(r.id) + '">' +
+        '<div class="ref-item__id">' + esc(r.id) + '</div>' +
         '<div class="ref-item__body">' +
         '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
         '<div class="ref-item__where">' + esc(r.where) + '</div>' +
         '</div></div>';
     });
     return h;
+  }
+
+  /**
+   * 从条目里的引用跳到参考文献总表的那一条
+   *
+   * 走「返回目录」同一条路径（popView），不然目录还藏在详情卡后面，滚过去也看不见；
+   * 文献默认折叠，所以先展开再定位。滚动放在 popstate 之后（history.back 是异步的），
+   * 否则会被 leaveView 的「还原进入前位置」冲掉。
+   */
+  function jumpToRef(rid) {
+    if (!rid) return;
+    // 文献总表在公式集页签里：把「从哪个页签进来的」记忆清掉，
+    // 否则从「切面学习」进的详情，leaveView 会把页签切回去、跳过去什么都看不到
+    viewOriginTab = 'calc';
+    viewOriginY = 0;
+    if (curCalcGroup) popView(); else restoreCalcIndex();
+    switchTab('calc');
+    curCalcGroup = null;
+    toggleRefs(true);
+    setTimeout(function () {
+      const t = document.getElementById('ref-' + rid) || $('calcRefs');
+      if (!t) return;
+      const top = t.getBoundingClientRect().top + window.pageYOffset - 56;
+      // 跨页跳转用即时滚动：goToY 的 smooth 在长页面上要 1s 以上，
+      // 高亮都闪完了人还没到，反而像没跳
+      window.scrollTo(0, Math.max(0, Math.round(top)));
+      t.classList.remove('ref-item--hit');
+      // 强制重排后才能重放动画（连点同一条时也能再闪一次）
+      void t.offsetWidth;
+      t.classList.add('ref-item--hit');
+      setTimeout(function () { t.classList.remove('ref-item--hit'); }, 2600);
+    }, 300);
   }
 
   /**
@@ -1176,7 +1210,7 @@
     if (!box) return;
     let h = '';
     REFS.forEach(function (r) {
-      h += '<div class="ref-item"><div class="ref-item__id">' + esc(r.id) + '</div>' +
+      h += '<div class="ref-item" id="ref-' + esc(r.id) + '"><div class="ref-item__id">' + esc(r.id) + '</div>' +
         '<div class="ref-item__body">' +
         '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
         '<div class="ref-item__en">' + esc(r.en) + '</div>' +
@@ -2062,6 +2096,15 @@
         renderCalc();
       });
     });
+    // 本条目引用 → 跳到参考文献总表那一条并高亮（容器节点不变，只绑一次）
+    if (!$('calcGroups').dataset.refBound) {
+      $('calcGroups').dataset.refBound = '1';
+      $('calcGroups').addEventListener('click', function (ev) {
+        const el = ev.target.closest ? ev.target.closest('[data-refjump]') : null;
+        if (!el) return;
+        jumpToRef(el.dataset.refjump);
+      });
+    }
     // 「相关计算」胶囊：点了直接进对应计算器
     $('calcGroups').querySelectorAll('.chip[data-jump]').forEach(function (c) {
       c.addEventListener('click', function () { openCalcGroup(c.dataset.jump); });

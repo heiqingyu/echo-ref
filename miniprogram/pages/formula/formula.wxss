@@ -77,6 +77,18 @@
   line-height: 1.4;
 }
 
+/* 小节导航横向滚动（v1.11.3）：节数多的条目不换行、靠左右滑，省下首屏高度 */
+.fx-nav--scroll {
+  width: 100%;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.fx-nav--scroll .fx-nav__c {
+  display: inline-block;
+  vertical-align: top;
+}
+
 /* 行内加粗（正文里的 **重点**） */
 .fx-b {
   font-weight: 700;
@@ -225,6 +237,25 @@
 
 .ref-item:first-of-type {
   border-top: none;
+}
+
+/* 本条目引用：整行可点，跳到公式集底部文献总表（v1.11.3） */
+.ref-item--jump {
+  align-items: flex-start;
+}
+
+.ref-item--tap {
+  background: #f5f8ff;
+}
+
+.ref-item__go {
+  flex: none;
+  align-self: center;
+  padding-left: 8rpx;
+  font-size: 22rpx;
+  color: #2563eb;
+  opacity: .8;
+  white-space: nowrap;
 }
 
 .ref-item__id {
