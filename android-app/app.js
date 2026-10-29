@@ -4100,10 +4100,23 @@
   let vEl = null;
   let vBox = null;
   let vPushed = false;
+  let vTimer = null;
+  let vErrored = false;
 
   function vStatus(msg) {
     const s = vBox && vBox.querySelector('.vply__s');
     if (s) s.textContent = msg || '';
+  }
+
+  function vBufText() {
+    try {
+      const b = vEl.buffered;
+      return b && b.length ? '已缓冲 ' + Math.round(b.end(0)) + ' 秒' : '';
+    } catch (e) { return ''; }
+  }
+
+  function vStopTimer() {
+    if (vTimer) { clearInterval(vTimer); vTimer = null; }
   }
 
   function copyLink(txt) {
@@ -4126,6 +4139,8 @@
   function closeVideo(fromHistory) {
     if (!vBox) return;
     const v = vEl;
+    vStopTimer();
+    vErrored = false;
     try { v.pause(); } catch (e) { /* 还没起播 */ }
     try { v.removeAttribute('src'); v.load(); } catch (e) { /* 老 WebView */ }
     if (vBox.parentNode) vBox.parentNode.removeChild(vBox);
@@ -4146,7 +4161,7 @@
       vBox.innerHTML =
         '<div class="vply__bar"><span class="vply__t">' + esc(title || '视频') + '</span>' +
         '<button class="vply__x" type="button" aria-label="关闭">×</button></div>' +
-        '<video controls playsinline autoplay preload="metadata"></video>' +
+        '<video controls playsinline autoplay preload="auto"></video>' +
         '<div class="vply__foot"><span class="vply__s">加载中…</span>' +
         '<button class="vply__copy" type="button">复制直链</button></div>';
       document.body.appendChild(vBox);
@@ -4155,16 +4170,50 @@
       vBox.querySelector('.vply__copy').addEventListener('click', function () {
         copyLink(vEl.getAttribute('src') || '');
       });
-      vEl.addEventListener('playing', function () { vStatus(''); });
+      vEl.addEventListener('playing', function () { vStatus(''); vStopTimer(); });
       vEl.addEventListener('error', function () {
-        vStatus('这段播不动（可能是 .m3u8 或热链失效），复制直链用浏览器打开');
+        vErrored = true;
+        vStopTimer();
+        const c = vEl.error ? vEl.error.code : 0;
+        const why = { 1: '播放被中止', 2: '网络错误', 3: '解码失败', 4: '格式不支持或地址失效' }[c] || '未知原因';
+        vStatus('播不动：' + why + '（' + c + '）· 可复制直链到浏览器打开');
       });
-      // 5 秒还没起播就给提示，别让人对着黑屏干等
-      setTimeout(function () {
-        if (vEl && !vEl.currentTime && vEl.readyState < 2) vStatus('仍在缓冲，网速慢可再等等，或复制直链');
-      }, 5000);
     }
     vEl.setAttribute('src', url);
+    vStatus('正在连接视频服务器…');
+    vErrored = false;
+
+    // ★ v1.11.1：不能只靠 <video autoplay>。Android WebView 会按
+    //   MediaPlaybackRequiresUserGesture 静默拒绝属性式自动播放，结果是画面在那儿、
+    //   时间停 0:00、一直「缓冲」。必须在点击手势的同一调用栈里显式 play()。
+    //   （Java 侧已 setMediaPlaybackRequiresUserGesture(false)，这里是第二道保险）
+    try {
+      const pr = vEl.play();
+      if (pr && typeof pr.then === 'function') {
+        pr.catch(function () { if (!vErrored) vStatus('已就绪，点视频中间的 ▶ 开始播放'); });
+      }
+    } catch (e) { /* 老内核的 play() 不返回 Promise */ }
+
+    // 轮询代替原来的一次性 5 秒提示：区分「连不上」和「已就绪没自动播」，
+    // 而且 error 一旦触发就不再覆盖文案（旧版会把真正的错误原因盖成「仍在缓冲」）
+    vStopTimer();
+    const t0 = Date.now();
+    vTimer = setInterval(function () {
+      if (!vEl || vErrored) { vStopTimer(); return; }
+      if (vEl.currentTime > 0) { vStatus(''); vStopTimer(); return; }
+      const sec = Math.round((Date.now() - t0) / 1000);
+      const rs = vEl.readyState;
+      if (rs >= 2) {
+        const b = vBufText();
+        vStatus(b ? b + '，点 ▶ 开始播放' : '已就绪，点视频中间的 ▶ 开始播放');
+      } else if (sec >= 8) {
+        vStatus('连不上视频服务器（请确认已联网；个别域名可能被屏蔽）· 可复制直链');
+        vStopTimer();
+      } else if (sec >= 4) {
+        vStatus('还在等数据…（' + sec + ' 秒）');
+      }
+    }, 1000);
+
     document.documentElement.style.overflow = 'hidden';
     if (!vPushed) {
       try { history.pushState({ echorefVideo: 1 }, ''); vPushed = true; } catch (e) { vPushed = false; }

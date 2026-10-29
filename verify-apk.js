@@ -660,6 +660,43 @@ check('MainActivity 对 .mp4 改走页内浮层而不是 ACTION_VIEW',
 check('MainActivity 的 UA 带 EchoRefApp 后缀',
   javaSrc.indexOf('" EchoRefApp"') !== -1, true);
 
+/* ★ v1.11.1：视频页内播放失败的两个真因，加断言防回退
+ *   ① 清单没有 INTERNET 权限 → WebView 建不了 socket，任何 https 直链都拉不到
+ *   ② 没关 setMediaPlaybackRequiresUserGesture → <video autoplay> 被静默拒绝，停在 0:00 */
+var manifestSrc = '';
+try {
+  manifestSrc = fs.readFileSync(path.join(ROOT, 'android-app', 'AndroidManifest.xml'), 'utf8');
+} catch (e) { manifestSrc = ''; }
+check('清单已申请 INTERNET 权限（视频直链需要联网）',
+  /uses-permission[^>]*android\.permission\.INTERNET/.test(manifestSrc), true);
+check('MainActivity 已关闭 MediaPlaybackRequiresUserGesture',
+  javaSrc.indexOf('setMediaPlaybackRequiresUserGesture(false)') !== -1, true);
+check('浮层在点击栈里显式调用 video.play()',
+  /vEl\.play\(\)/.test(html), true);
+check('浮层 video 用 preload="auto"',
+  html.indexOf('preload="auto"') !== -1, true);
+check('超时提示不会再覆盖已报的错误（vErrored 守卫）',
+  /vErrored/.test(html) && html.indexOf("if (!vEl || vErrored)") !== -1, true);
+
+/* 若本机有 aapt2，再验一遍打包后的 APK 二进制里确实带这条权限 */
+(function () {
+  var aapt = 'D:/android-sdk/build-tools/34.0.0/aapt2.exe';
+  var apk = path.join(ROOT, 'EchoRef-v' + (function () {
+    try { return fs.readFileSync(path.join(ROOT, 'android-app', 'VERSION'), 'utf8').split('\n')[0].trim(); }
+    catch (e) { return ''; }
+  })() + '.apk');
+  if (!fs.existsSync(aapt) || !fs.existsSync(apk)) {
+    console.log('  · 跳过 APK 二进制权限复核（缺 aapt2 或 APK）');
+    return;
+  }
+  try {
+    var out = require('child_process').execSync('"' + aapt + '" dump badging "' + apk + '"', { encoding: 'utf8' });
+    check('打包后的 APK 确实带 INTERNET 权限', out.indexOf('android.permission.INTERNET') !== -1, true);
+  } catch (e) {
+    console.log('  · APK 权限复核执行失败：' + e.message);
+  }
+})();
+
 /* ══════════════════════════════════════════════════════════ */
 
 console.log('\n' + '═'.repeat(60));

@@ -5,12 +5,14 @@
     android:versionName="1.0.0">
 
     <!--
-      ★ 刻意不申请任何权限：
-        - 不联网（页面全离线）
-        - 不读存储（数据只在内存）
-        - 不定位 / 不相机 / 不通讯录
-      这让安装时权限列表为空，是最干净的形态。
+      ★ 只申请一个权限：INTERNET
+        页面本体是 assets 里的 index.html，完全离线；但「视频库」里 189 段演示短片
+        是飞利浦 / 公开图库的 https 直链，必须在页内流式播放（v1.10.4 起不再甩给系统播放器）。
+        v1.11.0 之前没这条权限，WebView 建不了 socket，点开视频只能报「仍在缓冲」——
+        这是 v1.11.1 修掉的真实 bug。
+        仍然不申请：存储 / 定位 / 相机 / 通讯录 / 通知。安装时只显示「网络访问」一项。
     -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-sdk
         android:minSdkVersion="21"

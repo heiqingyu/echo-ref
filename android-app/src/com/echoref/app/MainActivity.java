@@ -23,7 +23,7 @@ import android.widget.FrameLayout;
  * 心脏超声参考值 —— WebView 外壳
  *
  * 设计要点：
- *   1. 页面来自 assets/index.html，**完全离线**，不联网也不申请网络权限
+ *   1. 页面来自 assets/index.html，**页面本体离线**；视频库是 https 直链，需要 INTERNET 权限
  *   2. 适配刘海屏 / 手势导航（edge-to-edge + 系统栏透明）
  *   3. 禁用缩放与长按选择，让网页更接近原生 App 手感
  *   4. 拦截非本地链接，交给系统浏览器打开（本工程目前用不到，留作扩展）
@@ -84,6 +84,18 @@ public class MainActivity extends Activity {
         s.setGeolocationEnabled(false);
         s.setSaveFormData(false);
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+
+        // ★ v1.11.1：页内播放浮层靠 <video autoplay> 起播。Android 5.0 起 WebView 默认
+        //   MediaPlaybackRequiresUserGesture=true，autoplay 会被静默拒绝 —— 表现就是
+        //   画面渲染出来、时间停在 0:00、一直显示「仍在缓冲」。这里必须关掉。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            s.setMediaPlaybackRequiresUserGesture(false);
+        }
+        // 视频直链都是 https，页面是 file://，不涉及混合内容；设成允许只是为了以后
+        // 万一有 http 素材不至于静默失败
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            s.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        }
 
         // ★ v1.10.4：UA 加后缀，网页据此把 .mp4 改成 App 内浮层播放（网页版仍是 target=_blank 外链）
         s.setUserAgentString(s.getUserAgentString() + " EchoRefApp");
