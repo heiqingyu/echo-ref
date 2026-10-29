@@ -1148,6 +1148,23 @@ function check(name, ok, detail) {
   check('冠状动脉瘘含关闭指征（Qp/Qs >1.5）',
     /Qp\/Qs/.test(cafTxt) && /1\.5/.test(cafTxt), '');
 
+  /* v1.11.7：分流下的肺动脉压（ASD / VSD / PDA 三条通路） */
+  await openBrief('shd');
+  const shdTxt = await briefText('shd');
+  check('分流估压：三条通路各有一把尺子，且点明 ASD 不能用分流速度',
+    ['VSD 室水平', 'PDA 大血管'].every((w) => shdTxt.indexOf(w) >= 0)
+      && /ASD 是三条通路里唯一的例外/.test(shdTxt), '');
+  check('分流估压：VSD 用「肱动脉收缩压 − 4V²」反推右室压',
+    /肱动脉收缩压 − 4/.test(shdTxt), '');
+  check('分流估压：PDA 能同时估收缩压与舒张压（PADP）',
+    /PADP/.test(shdTxt) && /舒张末速/.test(shdTxt), '');
+  check('分流估压：TR 估 PASP 的三个前提',
+    ['肺动脉瓣狭窄', 'RVOT 梗阻'].every((w) => shdTxt.indexOf(w) >= 0) && /20°/.test(shdTxt), '');
+  check('分流估压：D 形室间隔按时相区分容量 / 压力负荷',
+    /舒张期平坦/.test(shdTxt) && /收缩期也平坦/.test(shdTxt), '');
+  check('分流估压：PVR 的分母是 Qp 不是 Qs',
+    /PVR 的分母是肺血流/.test(shdTxt), '');
+
   /* ★ v1.11.3：一个病一条、术前到术后 —— 冠脉异常起源 / 肺静脉异位引流 / Fontan 扩写 */
   await openBrief('aca');
   const acaTxt = await briefText('aca');
@@ -1170,6 +1187,12 @@ function check(name, ok, detail) {
     ['LSVC', '左上肺静脉', '静脉窦型'].every((w) => pvTxt.indexOf(w) >= 0), '');
   check('肺静脉异位引流：术后吻合口 >1.5 m/s 提示狭窄',
     /1\.5 m\/s/.test(pvTxt), '');
+  check('肺静脉异位引流：标题点明完全型与部分型',
+    /完全型与部分型/.test(pvTxt), '');
+  check('肺静脉异位引流：TAPVC 是外科急症，补术后肺高压危象',
+    ['外科急症', '肺高压危象', '6–48 小时'].every((w) => pvTxt.indexOf(w) >= 0), '');
+  check('肺静脉异位引流：吻合口流速正常不等于无单支狭窄（要逐支看）',
+    /不等于没有肺静脉狭窄/.test(pvTxt), '');
 
   await openBrief('fontan');
   const fnTxt = await briefText('fontan');
@@ -1249,6 +1272,10 @@ function check(name, ok, detail) {
     /开口位于肌束近端/.test(dbvTxt) && /哪一侧/.test(dbvTxt), '');
   check('右室双腔：报告模板含肌束位置与两端压力',
     ['距三尖瓣环', '峰值压差'].every((w) => dbvTxt.indexOf(w) >= 0), '');
+  check('右室双腔：新增成人漏诊路径（VSD 已修补仍杂音最常被漏）',
+    ['成人的漏诊路径', 'VSD 已修补'].every((w) => dbvTxt.indexOf(w) >= 0), '');
+  check('右室双腔：杂音位置比肺动脉瓣狭窄更低',
+    /比肺动脉瓣狭窄更低/.test(dbvTxt), '');
 
   /* v1.11.6：冠状动脉瘘术后残余分流 */
   await openBrief('caf');
@@ -1261,6 +1288,8 @@ function check(name, ok, detail) {
     /少量但高速/.test(cafTxt2) && /结合珠蛋白/.test(cafTxt2), '');
   check('冠状动脉瘘：术后时间点（即刻 / 24–48 小时 / 1 个月 / 3–6 个月）',
     ['24–48 小时', '3–6 个月'].every((w) => cafTxt2.indexOf(w) >= 0), '');
+  check('冠状动脉瘘：封堵后冠脉痉挛与急性血栓的鉴别',
+    ['封堵后冠脉痉挛', '急性冠脉血栓', '可逆'].every((w) => cafTxt2.indexOf(w) >= 0), '');
 
   /* v1.11.4：ALCAPA 术后负荷超声（并入冠脉异常起源条目，不另开入口） */
   await openBrief('aca');
