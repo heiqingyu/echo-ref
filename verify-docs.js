@@ -793,7 +793,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 109 条（计算 42 + 评估判读 67；v1.8.4 四组合并 −6 再新增发泡试验 +1，切面速查 / 瓣膜解剖 / 外链组不进目录）', d.items === 109, d.items);
+    check('条目 110 条（计算 42 + 评估判读 68；v1.10.10 新增 LVNC 条目）', d.items === 110, d.items);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
       d.resistOuts + ' / ' + d.lvgeomOuts);
@@ -806,7 +806,7 @@ function check(name, ok, detail) {
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
-    check('参考文献 87 条', d.refs === 87, d.refs);
+    check('参考文献 90 条', d.refs === 90, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
 
@@ -1069,6 +1069,35 @@ function check(name, ok, detail) {
     ['一、第一原则', '二、正常流速与压差', '三、压差升高', '四、PPM', '五、机械瓣与生物瓣',
       '六、瓣膜血栓', '七、血管翳', '八、SVD', '九、低流量', '十、瓣周漏',
       '十一、随访节奏', '十二、八个高频误判'].every((w) => prTxt.indexOf(w) >= 0), '');
+
+  // v1.10.10：新增「左室心肌致密化不全」判读条目
+  await openBrief('nc-lv');
+  const ncTxt = await briefText('nc-lv');
+  const hasNc = (ws) => ws.every((w) => ncTxt.indexOf(w) >= 0);
+  check('LVNC 条目说明它是表型而非独立疾病',
+    hasNc(['左室小梁化表型', '不是一个独立的疾病', 'NDLVC']), '');
+  check('LVNC 条目含三套影像标准与阈值',
+    hasNc(['Jenni', 'Petersen', 'Jacquier', 'Captur', 'NC/C > 2.0', 'NC/C > 2.3', 'NC/C > 3.0']), '');
+  check('LVNC 条目含五步判读顺序',
+    hasNc(['① 比值', '② 两层', '③ 隐窝', '④ 功能', '⑤ 病因']), '');
+  check('LVNC 条目含六类过度诊断人群',
+    hasNc(['运动员', '妊娠与围产期', '镰状细胞病', '淀粉样变', 'Danon / Pompe']), '');
+  check('LVNC 条目明确不因小梁化抗凝',
+    hasNc(['本身不是指征', 'LVEF ≥ 40%、窦性心律、无栓塞史']), '');
+  check('LVNC 条目含报告三段写法',
+    hasNc(['描述段', '结论段', '建议段', '不要写「心肌致密化不全（确诊）」']), '');
+  check('LVNC 九节编号连续',
+    ['一、它现在不是一个独立的疾病', '二、三套影像标准', '三、判读顺序', '四、最容易被过度诊断',
+      '五、血栓与抗凝', '六、功能、心律与器械', '七、家族筛查', '八、一份能复现的报告',
+      '九、七个坑'].every((w) => ncTxt.indexOf(w) >= 0), '');
+  // 桥接：LVNC 条目末尾应挂「相关计算」并指向 NC/C 计算器
+  check('LVNC 条目挂上相关计算桥接',
+    /相关计算（通用量）/.test(ncTxt) && /致密化不全 NC\/C 比/.test(ncTxt), '');
+  // DCM 条目的鉴别小节应指向新条目
+  await openBrief('dcm');
+  const dcmTxt = await briefText('dcm');
+  check('DCM 条目指向 LVNC 新条目',
+    /完整判读（三套标准、过度诊断、抗凝与报告写法）/.test(dcmTxt), '');
 
   await openCalc('mpap');
   await fillCalc('mpap', 'pp_tr', '3.0');
@@ -1472,7 +1501,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 87 条', /87/.test(ri.cnt), refsInit);
+  check('折叠头显示 90 条', /90/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -1491,7 +1520,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 87 条', ro.hidden === false && ro.n === 87 && ro.h > 0, refsOpen);
+  check('点击后展开全部 90 条', ro.hidden === false && ro.n === 90 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 
