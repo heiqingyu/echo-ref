@@ -6,6 +6,15 @@
       BSA {{bsaText}} m²（来自「EF·参考值」页）· 按{{sexLabel}}参考区间判读 · 留空跳过
     </view>
 
+    <!-- ★ v1.11.2 本文缩写：从搜索或交叉链接直接进来时，也能在第一屏看到缩写的中文全称 -->
+    <view wx:if="{{abbrs.length}}" class="abbr">
+      <text class="abbr__t">本文缩写</text>
+      <view class="abbr__i" wx:for="{{abbrs}}" wx:for-item="a" wx:key="ab">
+        <text class="abbr__b">{{a.ab}}</text>
+        <text class="abbr__z">{{a.zh}}</text>
+      </view>
+    </view>
+
     <!-- 条目内小节导航：长条目滚到中间容易迷路，点胶囊直接定位到该节 -->
     <view wx:if="{{toc.length}}" class="fx-nav">
       <view wx:for="{{toc}}" wx:key="id" wx:for-item="sec"

@@ -575,7 +575,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 110 条（计算 42 + 判读 68；v1.10.10 新增 LVNC 条目）', nItems, 110, 0);
+  check('目录共 110 条（计算 41 + 判读 69；v1.11.2 lvnc 藏进 LVNC 条目、新增冠状动脉瘘）', nItems, 110, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -833,15 +833,15 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirById('recon').items.some(i => i.id === 'sync' && i.kind === 'calc') ? 1 : 0, 1, 0);
   check('血流动力学、舒张与心功能 13 条（合并 dias / evp 之后）',
     dirById('hemo').items.length, 13, 0);
-  check('重构、室壁运动与心肌功能 13 条（v1.8.3 左室重构四联合并后 −3）',
-    dirById('recon').items.length, 13, 0);
+  check('重构、室壁运动与心肌功能 12 条（v1.11.2 起 lvnc 内嵌进 LVNC 判读条目、目录不再单列）',
+    dirById('recon').items.length, 12, 0);
   check('重构组条目齐全（四联已并为 lvgeom，旧的 lvmih / rwsv / spher / volidx 不再单列）',
     ['lvgeom', 'lastrain', 'aortaidx', 'mdsv', 'swv']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) &&
       !['lvmih', 'rwsv', 'spher', 'volidx'].some(id => dirById('recon').items.some(i => i.id === id))
       ? 1 : 0, 1, 0);
-  check('计算类条目 3 个计算组合计 32 条（另 10 条并入瓣膜 4 / 先心 4 / 心腔 2，合计 42）',
-    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 32, 0);
+  check('计算类条目 3 个计算组合计 31 条（另 10 条并入瓣膜 4 / 先心 4 / 心腔 2，合计 41；lvnc 已内嵌 LVNC 条目）',
+    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 31, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -899,7 +899,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病（含术后）15 条（11 判读含发泡试验 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率）', dirById('chd').items.length, 15, 0);
+  check('先天性心脏病（含术后）16 条（12 判读含发泡试验与冠状动脉瘘 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率）', dirById('chd').items.length, 16, 0);
   ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
     check('先天性心脏病含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
@@ -1428,6 +1428,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   pgF.onLoad({ id: 'tof-pr' });
   pgF.onShow();
+  // ★ v1.11.2：详情页顶部自动列出本条出现的疾病缩写（跨页面阅读时不给读者留「只认识字母」的坑）
+  check('TOF 条目顶部带缩写表（TOF → 法洛四联症）',
+    pgF.data.abbrs && pgF.data.abbrs.some(a => a.ab === 'TOF' && a.zh === '法洛四联症') ? 1 : 0, 1, 0);
   pgF.data.inputs[0].value = '0.75';  // PR 指数
   pgF.data.inputs[1].value = '55';    // 反流束 / RVOT
   pgF.data.inputs[2].value = '172';   // RVEDVi

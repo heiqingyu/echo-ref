@@ -84,6 +84,7 @@ function buildSections() {
       title: cs.title,
       items: CG.GROUPS.filter(function (g) {
         if (g.partOnly) return false;   // v1.8.3 合并页里的小节，不进目录
+        if (g.dirHide) return false;    // v1.11.2 已内嵌进判读条目，目录不再单列
         return (g.sec || 'hemo') === cs.id;
       }).map(function (g) {
         return { kind: 'calc', id: g.id, ab: g.ab || '', title: g.title, sub: g.sub || '' };
@@ -103,7 +104,7 @@ function buildSections() {
     // ★ v1.5.3：sec 指向本组的计算器直接并进来，排在判读条目之前
     //   （原「介入尺寸、先心与随访」组已拆散，8 个计算器归到 valve / chd / chamber）
     const calcs = CG.GROUPS.filter(function (g) {
-      return !g.partOnly && g.sec === s.id;
+      return !g.partOnly && !g.dirHide && g.sec === s.id;
     }).map(function (g) {
       return { kind: 'calc', id: g.id, ab: g.ab || '', title: g.title, sub: g.sub || '' };
     });

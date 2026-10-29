@@ -83,6 +83,35 @@
   color: #111827;
 }
 
+/* ── 本文缩写（v1.11.2） ── */
+.abbr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8rpx 18rpx;
+  margin: 14rpx 0 4rpx;
+  padding: 14rpx 18rpx;
+  border-radius: 12rpx;
+  background: #f3f5f8;
+  font-size: 24rpx;
+  line-height: 1.55;
+  color: #55606e;
+}
+.abbr__t {
+  font-size: 22rpx;
+  letter-spacing: 1rpx;
+  color: #8a94a2;
+}
+.abbr__i {
+  display: inline-flex;
+  align-items: baseline;
+}
+.abbr__b {
+  font-weight: 700;
+  color: #1f2a37;
+  margin-right: 6rpx;
+}
+
 /* ── 条目内小节导航（长条目定位用） ── */
 .fx-nav {
   display: flex;

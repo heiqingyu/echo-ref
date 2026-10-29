@@ -125,6 +125,38 @@ html, body {
   line-height: 1.2;
 }
 
+/* 条目顶部的「本文缩写」行（v1.11.2）：解决跨页面不认识缩写的問題 */
+.abbr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin: -4px 0 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--soft, #f3f5f8);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--sub);
+}
+.abbr__t {
+  flex: none;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--muted, #7b8794);
+}
+.abbr__i {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+.abbr__i b {
+  font-weight: 600;
+  color: var(--text, #1f2a37);
+  font-size: 12px;
+}
+
 .card__d {
   font-size: 13px;
   color: var(--sub);

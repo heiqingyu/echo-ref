@@ -418,7 +418,11 @@ const GROUPS = [
     id: 'lvnc',
     ab: 'NC/C',
     sec: 'recon',
-    title: '致密化不全 NC/C 比',
+    // ★ v1.11.2：目录里不再单列 —— 同一个病已经在「左室心肌致密化不全（LVNC）」
+    //   判读条目里内嵌了同款计算（字段键共用 lnvnc / lnvc），避免一条病出现两次。
+    //   本条仍留在 GROUPS 里，供 calc-links 与旧链接回跳。
+    dirHide: true,
+    title: 'NC/C 比值',
     sub: '非致密层 ÷ 致密层',
     fields: [
       { k: 'lnvnc', n: '非致密层厚度', u: 'mm' },

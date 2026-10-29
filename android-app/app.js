@@ -724,7 +724,8 @@
     { id: 'lastiff', sec: 'recon', title: '左房僵硬度',
       fields: [['lsee', 'E/e′', ''], ['lslars', 'LARS（填正数）', '%']],
       note: 'LA stiffness = E/e′ ÷ LARS，LARS 填正数百分值（如 25 表示 25%）。≤0.47 正常，>0.47 支持 HFpEF，>0.60 明显僵硬' },
-    { id: 'lvnc', sec: 'recon', title: '致密化不全 NC/C 比',
+    // ★ v1.11.2：目录隐藏（同 calc-groups.js）—— 计算已内嵌进 LVNC 判读条目
+    { id: 'lvnc', sec: 'recon', dirHide: true, title: 'NC/C 比值',
       fields: [['lnvnc', '非致密层厚度', 'mm'], ['lnvc', '致密层厚度', 'mm']],
       note: 'Jenni（超声，收缩末期短轴）>2.0；Petersen（CMR，舒张末期）>2.3。比值只是三条标准之一，还必须有：两层结构分明、深陷隐窝与左室腔血流相通' },
 
@@ -1095,6 +1096,28 @@
    * 条目内小节导航（长条目定位用）
    * 只在 2 个以上小节时才出，避免短条目多一行无用胶囊。
    */
+  /**
+   * 条目顶部的「本文缩写」一行（v1.11.2）
+   *
+   * 起因：从搜索或交叉链接直接进详情页时，看不到别处解释过的缩写。
+   * 只列**本条正文里真正出现过**的缩写，全表在 extra-data.js 的 ABBR。
+   * 条目的 ab 字段（目录里那个前缀）也要算进来，否则 LVNC 这类正文里不写缩写的条目会漏。
+   */
+  function abbrHtml(it) {
+    const ED = window.ExtraData;
+    if (!ED || !ED.abbrHits || !it) return '';
+    let hits = [];
+    try {
+      hits = ED.abbrHits((it.ab ? it.ab + ' ' : '') + (ED.blockText ? ED.blockText(it.blocks) : ''));
+    } catch (e) { return ''; }
+    if (!hits.length) return '';
+    let h = '<div class="abbr"><span class="abbr__t">本文缩写</span>';
+    hits.forEach(function (x) {
+      h += '<span class="abbr__i"><b>' + esc(x.ab) + '</b>' + esc(x.zh) + '</span>';
+    });
+    return h + '</div>';
+  }
+
   function tocHtml(toc) {
     if (!toc || toc.length < 2) return '';
     let h = '<div class="fx-nav fx-nav--sec">';
@@ -1284,6 +1307,7 @@
         title: cs.title,
         items: CALC_GROUPS.filter(function (g) {
           if (g.partOnly) return false;   // v1.8.3 合并页里的小节，不进目录
+          if (g.dirHide) return false;    // v1.11.2 已内嵌进判读条目，目录不再单列
           return (g.sec || 'hemo') === cs.id;
         }).map(function (g) {
           return { kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || g.sub || '' };
@@ -1298,7 +1322,7 @@
     // ★ 瓣膜通用计算（sec: 'valve'）并入瓣膜组，紧跟瓣膜专用计算器之后
     //   —— 与小程序 calculators.js 的顺序严格一致
     CALC_GROUPS.filter(function (g) {
-      return !g.partOnly && g.sec === 'valve';
+      return !g.partOnly && !g.dirHide && g.sec === 'valve';
     }).forEach(function (g) {
       valveItems.push({ kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || g.sub || '' });
     });
@@ -1316,7 +1340,7 @@
       // ★ v1.5.3：sec 指向本组的计算器直接并进来，排在判读条目之前
       //   （原「介入尺寸、先心与随访」组已拆散，8 个计算器归到 valve / chd / chamber）
       const calcs = CALC_GROUPS.filter(function (g) {
-        return !g.partOnly && g.sec === sec.id;
+        return !g.partOnly && !g.dirHide && g.sec === sec.id;
       }).map(function (g) {
         return { kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || g.sub || '' };
       });
@@ -2002,6 +2026,7 @@
         const bl = blocksHtml(it.blocks, it.id);
         html += '<div class="card" data-g="' + it.id + '" hidden>' +
           '<div class="card__t">' + esc(it.title) + '</div>' +
+          abbrHtml(it) +
           tocHtml(bl.toc) +
           bl.html;
         if (it.fields && it.fields.length) {
@@ -2951,6 +2976,18 @@
       if (f.text) parts.push('→ ' + f.text);
       put('lv', partsOf(parts));
     }
+
+    // 左室心肌致密化不全（v1.11.2：NC/C 由独立计算器并入本判读条目）
+    if (has('lnvnc', 'lnvc')) {
+      if (v.lnvc <= 0) put('nc-lv', '致密层厚度必须大于 0');
+      else {
+        const r = v.lnvnc / v.lnvc;
+        put('nc-lv', 'NC/C = ' + Calc.fmt(r, 2) + ' · ' +
+          (r > 2.3 ? '已超过 Petersen 2.3 切点'
+            : r > 2.0 ? '超过 Jenni 2.0 切点，未达 Petersen 2.3'
+              : '未达 Jenni 2.0 切点'));
+      }
+    } else put('nc-lv');
 
     // 右心：RAP + PASP（含分级）+ PVR + PADP + PH 概率 + 右室功能
     {

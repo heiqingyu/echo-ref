@@ -115,6 +115,8 @@ Page({
     isReference: false,
     toc: [],
     curSec: '',
+    // ★ v1.11.2：本条正文里出现过的缩写 → 中文全称（跨页面阅读时不给读者留「只认识字母」的坑）
+    abbrs: [],
   },
 
   onLoad(query) {
@@ -152,6 +154,9 @@ Page({
         }).filter(Boolean),
         inputs: inputs,
         isReference: !(brief.fields && brief.fields.length),
+        abbrs: EX.abbrHits
+          ? EX.abbrHits((brief.ab || '') + ' ' + (EX.blockText ? EX.blockText(brief.blocks) : ''))
+          : [],
         collapseV: cache.__collapse || '',
         signsV: cache.__signs || '',
       });
@@ -1445,8 +1450,8 @@ Page({
         const r = calc.vtiRatio(v.vtrvo, v.vtrlo);
         out = r.error ? r.error : 'VTI 比 ' + calc.fmt(r.ratio, 2) + '；' + r.text;
       }
-    } else if (gid === 'lvnc') {
-      // —— 致密化不全 NC/C 比 ——
+    } else if (gid === 'lvnc' || gid === 'nc-lv') {
+      // —— 致密化不全 NC/C 比（v1.11.2：nc-lv 判读条目内嵌同款计算，共用 lnvnc/lnvc 键）——
       if (valid(v.lnvnc) && valid(v.lnvc)) {
         const r = calc.lvncRatio(v.lnvnc, v.lnvc);
         if (r.error) out = r.error;

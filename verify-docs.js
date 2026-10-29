@@ -1090,14 +1090,63 @@ function check(name, ok, detail) {
     ['一、它现在不是一个独立的疾病', '二、三套影像标准', '三、判读顺序', '四、最容易被过度诊断',
       '五、血栓与抗凝', '六、功能、心律与器械', '七、家族筛查', '八、一份能复现的报告',
       '九、七个坑'].every((w) => ncTxt.indexOf(w) >= 0), '');
-  // 桥接：LVNC 条目末尾应挂「相关计算」并指向 NC/C 计算器
+  // 桥接：LVNC 条目末尾应挂「相关计算」；v1.11.2 起 NC/C 已内嵌进本条，桥接改指重构四联与 EF
   check('LVNC 条目挂上相关计算桥接',
-    /相关计算（通用量）/.test(ncTxt) && /致密化不全 NC\/C 比/.test(ncTxt), '');
+    /相关计算（通用量）/.test(ncTxt) && /左室重构四联/.test(ncTxt), '');
   // DCM 条目的鉴别小节应指向新条目
   await openBrief('dcm');
   const dcmTxt = await briefText('dcm');
   check('DCM 条目指向 LVNC 新条目',
     /完整判读（三套标准、过度诊断、抗凝与报告写法）/.test(dcmTxt), '');
+
+  /* ★ v1.11.2
+   *   ① NC/C 从独立计算器并进 LVNC 判读条目 —— 目录里不再出现两条「致密化不全」
+   *   ② 法洛四联症补术前（四联征确认 / 骑跨率与 DORV / 可根治性 / 术式）
+   *   ③ 新增冠状动脉瘘 */
+
+  await openBrief('nc-lv');
+  check('LVNC 条目自带 NC/C 两个输入框',
+    await c.evalJs(`(function(){var b=document.querySelector('#calcGroups .card[data-g="nc-lv"]');
+      return !!(b && b.querySelector('input[data-ck="lnvnc"]') && b.querySelector('input[data-ck="lnvc"]'));})()`),
+    true);
+  await fillCalc('nc-lv', 'lnvnc', '7');
+  await fillCalc('nc-lv', 'lnvc', '3');
+  await new Promise((r) => setTimeout(r, 200));
+  const ncOut = await outOf('nc-lv');
+  check('NC/C 7÷3 → 2.33 且提示超过 Petersen 2.3',
+    /2\.33/.test(ncOut) && /Petersen/.test(ncOut), ncOut);
+  await fillCalc('nc-lv', 'lnvnc', '4');
+  await fillCalc('nc-lv', 'lnvc', '4');
+  await new Promise((r) => setTimeout(r, 200));
+  const ncOut2 = await outOf('nc-lv');
+  check('NC/C 4÷4 → 1.00 且判未达 Jenni 2.0', /1\.00/.test(ncOut2) && /Jenni/.test(ncOut2), ncOut2);
+
+  await openBrief('tof-pr');
+  const tofTxt = await briefText('tof-pr');
+  check('TOF 补上术前四联征确认与骑跨率',
+    ['四联征是四件事', '骑跨率', 'DORV'].every((w) => tofTxt.indexOf(w) >= 0), '');
+  check('TOF 补上可根治性判断（McGoon / Nakata / MAPCA）',
+    ['McGoon', 'Nakata', 'MAPCA'].every((w) => tofTxt.indexOf(w) >= 0), '');
+  check('TOF 补上术式与术后基线五件事',
+    ['跨瓣环补片', '术后三个月内', '残余 VSD'].every((w) => tofTxt.indexOf(w) >= 0), '');
+  check('TOF 保留原有 PR / PVR 内容',
+    ['PR 指数', 'RVESVi', 'PVR'].every((w) => tofTxt.indexOf(w) >= 0), '');
+  check('TOF 补上长期随访三件事（AR / 心律失常 / 左室功能）',
+    ['主动脉根部扩张', 'QRS', '左室功能'].every((w) => tofTxt.indexOf(w) >= 0), '');
+  check('TOF 条目顶部渲染「本文缩写」并给出 TOF 中文全称',
+    await c.evalJs(`(function(){
+      var b=document.querySelector('#calcGroups .card[data-g="tof-pr"] .abbr');
+      return !!(b && b.textContent.indexOf('本文缩写')>=0 && b.textContent.indexOf('法洛四联症')>=0);})()`),
+    true);
+
+  await openBrief('caf');
+  const cafTxt = await briefText('caf');
+  check('冠状动脉瘘含三步定位（起源 / 走行 / 引流口）',
+    ['起源', '走行', '引流口'].every((w) => cafTxt.indexOf(w) >= 0), '');
+  check('冠状动脉瘘强调连续性血流与鉴别',
+    ['连续性', '主动脉窦瘤破裂', '川崎病'].every((w) => cafTxt.indexOf(w) >= 0), '');
+  check('冠状动脉瘘含关闭指征（Qp/Qs >1.5）',
+    /Qp\/Qs/.test(cafTxt) && /1\.5/.test(cafTxt), '');
 
   await openCalc('mpap');
   await fillCalc('mpap', 'pp_tr', '3.0');
