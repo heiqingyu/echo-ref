@@ -3,6 +3,7 @@ package com.echoref.app;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -33,6 +34,11 @@ public class MainActivity extends Activity {
 
     private WebView web;
     private FrameLayout root;
+
+    /** ★ v1.11.1：系统级全屏的宿主 View（视频点全屏按钮时由 WebChromeClient 交过来）。
+     *  提到 Activity 层是为了让返回键能先退全屏、而不是直接退页面历史。 */
+    private View fullView;
+    private WebChromeClient.CustomViewCallback fullCb;
 
     /** 应用内页面地址 */
     private static final String HOME_URL = "file:///android_asset/index.html";
@@ -119,10 +125,9 @@ public class MainActivity extends Activity {
         }
 
         // ★ v1.10.4：页内播放浮层的全屏按钮靠 WebChromeClient 接管，否则点了没反应
+        // ★ v1.11.1：接管时顺便转横屏 —— Activity 本身锁 portrait，16:9 短片在竖屏里
+        //   只有约 240px 高，不转屏等于全屏无效。退出全屏再转回来。
         web.setWebChromeClient(new WebChromeClient() {
-            private View fullView;
-            private WebChromeClient.CustomViewCallback fullCb;
-
             @Override
             public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
                 if (fullView != null) { callback.onCustomViewHidden(); return; }
@@ -131,15 +136,12 @@ public class MainActivity extends Activity {
                 MainActivity.this.root.addView(view, new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 web.setVisibility(View.GONE);
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
             }
 
             @Override
             public void onHideCustomView() {
-                if (fullView == null) return;
-                MainActivity.this.root.removeView(fullView);
-                fullView = null;
-                web.setVisibility(View.VISIBLE);
-                if (fullCb != null) { fullCb.onCustomViewHidden(); fullCb = null; }
+                exitFullscreen();
             }
         });
 
@@ -166,6 +168,16 @@ public class MainActivity extends Activity {
         } else {
             web.restoreState(savedInstanceState);
         }
+    }
+
+    /** 退出视频系统级全屏：移除宿主 View、恢复 WebView、转回竖屏 */
+    private void exitFullscreen() {
+        if (fullView == null) return;
+        root.removeView(fullView);
+        fullView = null;
+        web.setVisibility(View.VISIBLE);
+        if (fullCb != null) { fullCb.onCustomViewHidden(); fullCb = null; }
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
     /** 本地 http(s) 之外的链接交给系统处理 */
@@ -197,9 +209,10 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && web != null && web.canGoBack()) {
-            web.goBack();
-            return true;
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // 视频全屏时返回键先退全屏，别把页面历史一起吃掉
+            if (fullView != null) { exitFullscreen(); return true; }
+            if (web != null && web.canGoBack()) { web.goBack(); return true; }
         }
         return super.onKeyDown(keyCode, event);
     }

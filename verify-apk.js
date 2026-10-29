@@ -677,6 +677,10 @@ check('浮层 video 用 preload="auto"',
   html.indexOf('preload="auto"') !== -1, true);
 check('超时提示不会再覆盖已报的错误（vErrored 守卫）',
   /vErrored/.test(html) && html.indexOf("if (!vEl || vErrored)") !== -1, true);
+check('全屏播放时转横屏（否则 16:9 短片在竖屏里全屏等于没全屏）',
+  javaSrc.indexOf('SCREEN_ORIENTATION_SENSOR_LANDSCAPE') !== -1, true);
+check('返回键先退视频全屏再退页面历史',
+  javaSrc.indexOf('exitFullscreen()') !== -1, true);
 
 /* 若本机有 aapt2，再验一遍打包后的 APK 二进制里确实带这条权限 */
 (function () {
