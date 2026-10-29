@@ -1115,6 +1115,52 @@ function check(name, ok, detail) {
   o = await outOf('mitral');
   check('二尖瓣页 PISA r=0.8 → EROA 0.32 / RVol 48', /0\.32/.test(o) && /48/.test(o), o);
 
+  // v1.10.8：二尖瓣条目补齐 MR 定量方法学与继发 MR 分层
+  await openBrief('mitral');
+  const mrTxt = await briefText('mitral');
+  const hasMr = (ws) => ws.every((w) => mrTxt.indexOf(w) >= 0);
+  check('二尖瓣含 MR 四条定量路线',
+    hasMr(['3D VCA', '容积法', '肺静脉', '四条独立路线']), '');
+  check('二尖瓣含四法不一致的处理',
+    hasMr(['相差 >25%', '不要取平均', '3D VCA > 容积法']), '');
+  check('二尖瓣含心房性 / 心室性 SMR 分层',
+    hasMr(['心房性（A-SMR）', '心室性（V-SMR）', 'tenting', 'LVEDVi']), '');
+  check('二尖瓣含成比例 / 不成比例（界值 0.14）',
+    hasMr(['0.14', 'COAPT', 'MITRA-FR', '不成比例']), '');
+  check('二尖瓣含继发 MR 五道门与 COAPT-like 边界',
+    hasMr(['五道门', 'GDMT', 'LVEF 20–50%', 'LVESD ≤70 mm', 'Ⅰ A']), '');
+  check('二尖瓣含合并冠心病走 CABG / PCI 分支',
+    hasMr(['CABG', 'PCI', 'Ⅱb C']), '');
+  check('二尖瓣含原发 MR 两层推荐（LVESDi ≥20、四条合并症）',
+    hasMr(['LVESDi ≥20 mm/m²', 'LAVI ≥60 mL/m²', '≥3 条']), '');
+  check('二尖瓣含 TEER 解剖门槛数值',
+    hasMr(['8–10 mm', '4.0 cm²', 'tenting height / area']), '');
+  check('二尖瓣十三节编号连续',
+    ['一、狭窄 MS', '二、平均压差', '三、Wilkins', '四、PMBV', '五、MS 的后果',
+      '六、反流 MR', '七、Carpentier', '八、继发 MR 的两条机制', '九、成比例',
+      '十、继发 MR 该不该干预', '十一、原发 MR 的干预时机',
+      '十二、TEER', '十三、把两个瓣'].every((w) => mrTxt.indexOf(w) >= 0), '');
+
+  // 实填：PISA + 容积法 + LVEDV 同时给，两条路应互相印证
+  await openBrief('mitral');
+  await fillCalc('mitral', 'mr_radius', '0.8');
+  await fillCalc('mitral', 'mr_aliasVa', '40');
+  await fillCalc('mitral', 'mr_regV', '5.0');
+  await fillCalc('mitral', 'mr_regVti', '150');
+  await fillCalc('mitral', 'mr_mvD', '3.4');
+  await fillCalc('mitral', 'mr_lvedv', '200');
+  await fillCalc('mitral', 'mit_mvVti', '12');
+  await fillCalc('mitral', 'mit_lvotD', '2.0');
+  await fillCalc('mitral', 'mit_lvotVti', '20');
+  await new Promise((r) => setTimeout(r, 350));
+  const mrOut = await outOf('mitral');
+  check('二尖瓣页容积法 RVol 46.1 / RF 42.3',
+    /容积法 RVol 46\.1 mL/.test(mrOut) && /容积法 RF 42\.3%/.test(mrOut), mrOut.slice(0, 140));
+  check('二尖瓣页 PISA 路径 RF 43.4%（分母含反流量）',
+    /反流分数 RF 43\.4%/.test(mrOut), mrOut.slice(-160));
+  check('二尖瓣页 EROA ÷ LVEDV 判不成比例',
+    /EROA ÷ LVEDV 0\.161.*不成比例/.test(mrOut), mrOut.slice(-160));
+
   await openCalc('dfun');
   await fillCalc('dfun', 'dfe', '80');
   await fillCalc('dfun', 'dfa', '60');

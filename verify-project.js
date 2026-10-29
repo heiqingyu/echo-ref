@@ -795,8 +795,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
   (['wk1', 'wk2', 'wk3', 'wk4'].every(k => mitKeys.indexOf(k) !== -1))
     ? ok('二尖瓣页内嵌 Wilkins 评分输入')
     : bad('二尖瓣页缺 Wilkins 输入');
-  (mitKeys.length === 17) ? ok('二尖瓣页 17 个输入（Wilkins 4 + MS 7 + MR 6）')
-    : bad('二尖瓣页输入 ' + mitKeys.length + ' 个（期望 17）');
+  (mitKeys.length === 19) ? ok('二尖瓣页 19 个输入（Wilkins 4 + MS 7 + MR 6 + 容积法 2）')
+    : bad('二尖瓣页输入 ' + mitKeys.length + ' 个（期望 19）');
   // 11.7 PMBV 适合度流程：三个指标必须都在输入里，且页面有串流程的小节
   const pmbvFields = ['mit_pht', 'mit_lvotD', 'mit_lvotVti', 'mit_mvVti',
     'mit_mgrad', 'mit_pasp', 'wk1', 'wk2', 'wk3', 'wk4'];

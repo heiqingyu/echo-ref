@@ -191,6 +191,11 @@ function row(k, v, g) {
   return { k: k, v: v, tag: g ? g.text : '', level: g ? g.level : 'none' };
 }
 
+/** 同 row，但可标 noSum：同一严重度的另一种算法，只列数不参与「综合提示」计数 */
+function rowEx(k, v, g, noSum) {
+  return { k: k, v: v, tag: g ? g.text : '', level: g ? g.level : 'none', noSum: !!noSum };
+}
+
 /** 汇总：最重等级 + 各级计数 */
 function summarize(rows) {
   let worst = 'none';
@@ -374,7 +379,10 @@ function calcMr(v) {
   }
   if (eroa !== null && rvol !== null && isNum(v.lvotD) && isNum(v.lvotVti)) {
     const sv = svOf(v.lvotD, v.lvotVti);
-    if (sv > 0) rows.push(row('反流分数 RF', txt(rvol / sv * 100, 1) + '%', gRf(rvol / sv * 100)));
+    // ★ MR 的 LVOT 每搏量是「前向」量，不含反流；总每搏量 = 前向 + 反流。
+    //   分母若只用前向 SV，RF 会被系统性高估（0.32 cm² 的中重度会被报成重度）。
+    const total = sv + rvol;
+    if (total > 0) rows.push(row('反流分数 RF', txt(rvol / total * 100, 1) + '%', gRf(rvol / total * 100)));
   }
   if (isNum(v.vc)) rows.push(row('缩流颈 VC', txt(v.vc, 2) + ' cm', gMrVc(v.vc)));
   if (isNum(v.dt) && v.dt > 0) {
@@ -382,6 +390,47 @@ function calcMr(v) {
     rows.push(row('dP/dt（1→3 m/s）', txt(d, 0) + ' mmHg/s', gDpdt(d)));
     notes.push('dP/dt >1000 提示左室收缩功能尚可，<800 mmHg/s 提示收缩功能受损；受负荷与频谱质量影响。');
   }
+  // —— 容积法（每搏量差）：RVol = SV二尖瓣 − SV左室流出道 ——
+  if (isNum(v.mvD) && v.mvD > 0 && isNum(v.mvVti) && v.mvVti > 0 &&
+      isNum(v.lvotD) && v.lvotD > 0 && isNum(v.lvotVti)) {
+    const svMv = svOf(v.mvD, v.mvVti);
+    const svOt = svOf(v.lvotD, v.lvotVti);
+    rows.push(row('容积法 SV 二尖瓣 / 左室流出道', txt(svMv, 1) + ' / ' + txt(svOt, 1) + ' mL'));
+    const rvVol = svMv - svOt;
+    if (rvVol > 0) {
+      const hasPisa = eroa !== null;
+      rows.push(rowEx('容积法 RVol', txt(rvVol, 1) + ' mL', gMrRvol(rvVol), hasPisa));
+      const rfVol = rvVol / svMv * 100;
+      rows.push(rowEx('容积法 RF', txt(rfVol, 1) + '%', gRf(rfVol), hasPisa));
+      if (isNum(v.regVti) && v.regVti > 0) {
+        const eVol = rvVol / v.regVti;
+        rows.push(rowEx('容积法 EROA', txt(eVol, 2) + ' cm²', gMrEroa(eVol), hasPisa));
+        if (hasPisa && eroa > 0) {
+          const diff = Math.abs(eVol - eroa) / Math.max(eVol, eroa);
+          if (diff > 0.25) {
+            notes.push('PISA 与容积法的 EROA 相差 ' + txt(diff * 100, 0) + '%（' +
+              txt(eroa, 2) + ' vs ' + txt(eVol, 2) + ' cm²）：至少一法的前提破了，回头查 PISA 半径、LVOT 直径与取样位置，不要取平均。');
+          }
+        }
+        if (eroa === null) eroa = eVol;
+      }
+    } else {
+      notes.push('容积法算出 SV二尖瓣 ≤ SV左室流出道（没有净反流）：二尖瓣环直径或 VTI 取样位置有误——瓣环取瓣叶铰链中点，PW 取样线放在瓣尖水平的瓣环处。');
+    }
+  }
+
+  // —— 成比例 / 不成比例：EROA(mm²) ÷ LVEDV(mL)，界值 0.14 ——
+  if (eroa !== null && eroa > 0 && isNum(v.lvedv) && v.lvedv > 0) {
+    const ratio = eroa * 100 / v.lvedv;
+    const dispro = ratio >= 0.14;
+    rows.push({ k: 'EROA ÷ LVEDV', v: txt(ratio, 3) + ' mm²/mL',
+      tag: dispro ? '不成比例（瓣膜因素为主）' : '成比例（心室因素为主）',
+      level: 'none', noSum: true });
+    notes.push(dispro
+      ? 'EROA/LVEDV ≥0.14：反流程度超出左室扩大能解释的范围，瓣膜因素占主导——这类（COAPT 型）患者夹瓣获益更明确。'
+      : 'EROA/LVEDV <0.14：反流与左室扩大成比例，先优化 GDMT 与 CRT 让左室逆转，别急着夹瓣（MITRA-FR 的教训）。');
+  }
+
   if (eroa !== null && (eroa >= 0.30 || (rvol !== null && rvol >= 45))) {
     notes.push('EROA / RVol 已进入继发 MR 也具有预后意义的区间（EROA ≥0.30 cm² 和/或 RVol ≥45 mL），需与心衰治疗、CRT 评估及团队决策结合。');
   }

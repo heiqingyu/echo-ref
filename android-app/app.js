@@ -3295,6 +3295,7 @@
       });
       if (mrv.lvotD === undefined && v.mit_lvotD !== undefined) mrv.lvotD = v.mit_lvotD;
       if (mrv.lvotVti === undefined && v.mit_lvotVti !== undefined) mrv.lvotVti = v.mit_lvotVti;
+      if (mrv.mvVti === undefined && v.mit_mvVti !== undefined) mrv.mvVti = v.mit_mvVti;
       const mrr = ValveCalc ? ValveCalc.valveCalc('mr', mrv, bsa) : { rows: [] };
       if (mrr.rows && mrr.rows.length) {
         parts.push('反流 ' + rowsText(mrr.rows) + ' → ' + mrr.summary);

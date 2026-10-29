@@ -1229,6 +1229,8 @@ Page({
       });
       if (!valid(mrv.lvotD) && valid(v.mit_lvotD)) mrv.lvotD = v.mit_lvotD;
       if (!valid(mrv.lvotVti) && valid(v.mit_lvotVti)) mrv.lvotVti = v.mit_lvotVti;
+      // 容积法复用 ② 段的「二尖瓣流入 VTI」——同一处取样，不必填两遍
+      if (!valid(mrv.mvVti) && valid(v.mit_mvVti)) mrv.mvVti = v.mit_mvVti;
       const mrr = VC.valveCalc('mr', mrv, bsa);
       if (mrr.rows.length) {
         parts.push('反流 ' + rowsText(mrr.rows) + ' → ' + mrr.summary);

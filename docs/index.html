@@ -2029,7 +2029,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.10.7</div>
+    <div class="verline">心脏超声参考值 · v1.10.8</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2071,7 +2071,7 @@ button.fx-nav__c {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.10.7</div>
+      <div class="verline">心脏超声参考值 · v1.10.8</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -8937,6 +8937,11 @@ function row(k, v, g) {
   return { k: k, v: v, tag: g ? g.text : '', level: g ? g.level : 'none' };
 }
 
+/** 同 row，但可标 noSum：同一严重度的另一种算法，只列数不参与「综合提示」计数 */
+function rowEx(k, v, g, noSum) {
+  return { k: k, v: v, tag: g ? g.text : '', level: g ? g.level : 'none', noSum: !!noSum };
+}
+
 /** 汇总：最重等级 + 各级计数 */
 function summarize(rows) {
   let worst = 'none';
@@ -9120,7 +9125,10 @@ function calcMr(v) {
   }
   if (eroa !== null && rvol !== null && isNum(v.lvotD) && isNum(v.lvotVti)) {
     const sv = svOf(v.lvotD, v.lvotVti);
-    if (sv > 0) rows.push(row('反流分数 RF', txt(rvol / sv * 100, 1) + '%', gRf(rvol / sv * 100)));
+    // ★ MR 的 LVOT 每搏量是「前向」量，不含反流；总每搏量 = 前向 + 反流。
+    //   分母若只用前向 SV，RF 会被系统性高估（0.32 cm² 的中重度会被报成重度）。
+    const total = sv + rvol;
+    if (total > 0) rows.push(row('反流分数 RF', txt(rvol / total * 100, 1) + '%', gRf(rvol / total * 100)));
   }
   if (isNum(v.vc)) rows.push(row('缩流颈 VC', txt(v.vc, 2) + ' cm', gMrVc(v.vc)));
   if (isNum(v.dt) && v.dt > 0) {
@@ -9128,6 +9136,47 @@ function calcMr(v) {
     rows.push(row('dP/dt（1→3 m/s）', txt(d, 0) + ' mmHg/s', gDpdt(d)));
     notes.push('dP/dt >1000 提示左室收缩功能尚可，<800 mmHg/s 提示收缩功能受损；受负荷与频谱质量影响。');
   }
+  // —— 容积法（每搏量差）：RVol = SV二尖瓣 − SV左室流出道 ——
+  if (isNum(v.mvD) && v.mvD > 0 && isNum(v.mvVti) && v.mvVti > 0 &&
+      isNum(v.lvotD) && v.lvotD > 0 && isNum(v.lvotVti)) {
+    const svMv = svOf(v.mvD, v.mvVti);
+    const svOt = svOf(v.lvotD, v.lvotVti);
+    rows.push(row('容积法 SV 二尖瓣 / 左室流出道', txt(svMv, 1) + ' / ' + txt(svOt, 1) + ' mL'));
+    const rvVol = svMv - svOt;
+    if (rvVol > 0) {
+      const hasPisa = eroa !== null;
+      rows.push(rowEx('容积法 RVol', txt(rvVol, 1) + ' mL', gMrRvol(rvVol), hasPisa));
+      const rfVol = rvVol / svMv * 100;
+      rows.push(rowEx('容积法 RF', txt(rfVol, 1) + '%', gRf(rfVol), hasPisa));
+      if (isNum(v.regVti) && v.regVti > 0) {
+        const eVol = rvVol / v.regVti;
+        rows.push(rowEx('容积法 EROA', txt(eVol, 2) + ' cm²', gMrEroa(eVol), hasPisa));
+        if (hasPisa && eroa > 0) {
+          const diff = Math.abs(eVol - eroa) / Math.max(eVol, eroa);
+          if (diff > 0.25) {
+            notes.push('PISA 与容积法的 EROA 相差 ' + txt(diff * 100, 0) + '%（' +
+              txt(eroa, 2) + ' vs ' + txt(eVol, 2) + ' cm²）：至少一法的前提破了，回头查 PISA 半径、LVOT 直径与取样位置，不要取平均。');
+          }
+        }
+        if (eroa === null) eroa = eVol;
+      }
+    } else {
+      notes.push('容积法算出 SV二尖瓣 ≤ SV左室流出道（没有净反流）：二尖瓣环直径或 VTI 取样位置有误——瓣环取瓣叶铰链中点，PW 取样线放在瓣尖水平的瓣环处。');
+    }
+  }
+
+  // —— 成比例 / 不成比例：EROA(mm²) ÷ LVEDV(mL)，界值 0.14 ——
+  if (eroa !== null && eroa > 0 && isNum(v.lvedv) && v.lvedv > 0) {
+    const ratio = eroa * 100 / v.lvedv;
+    const dispro = ratio >= 0.14;
+    rows.push({ k: 'EROA ÷ LVEDV', v: txt(ratio, 3) + ' mm²/mL',
+      tag: dispro ? '不成比例（瓣膜因素为主）' : '成比例（心室因素为主）',
+      level: 'none', noSum: true });
+    notes.push(dispro
+      ? 'EROA/LVEDV ≥0.14：反流程度超出左室扩大能解释的范围，瓣膜因素占主导——这类（COAPT 型）患者夹瓣获益更明确。'
+      : 'EROA/LVEDV <0.14：反流与左室扩大成比例，先优化 GDMT 与 CRT 让左室逆转，别急着夹瓣（MITRA-FR 的教训）。');
+  }
+
   if (eroa !== null && (eroa >= 0.30 || (rvol !== null && rvol >= 45))) {
     notes.push('EROA / RVol 已进入继发 MR 也具有预后意义的区间（EROA ≥0.30 cm² 和/或 RVol ≥45 mL），需与心衰治疗、CRT 评估及团队决策结合。');
   }
@@ -9238,6 +9287,7 @@ function valveCalc(id, v, bsa) {
     gTrRvol: gTrRvol,
     gDpdt: gDpdt,
     row: row,
+    rowEx: rowEx,
     summarize: summarize,
     calcAs: calcAs,
     calcAr: calcAr,
@@ -11859,7 +11909,7 @@ const BRIEF_SECTIONS = [
         id: 'mitral',
         ab: 'MS/MR',
         title: '二尖瓣疾病评估',
-        sub: '狭窄 MS：MVA 三法 · 压差 · PASP · Wilkins → PMBV 适合度｜反流 MR：PISA · VC · dP/dt · RF',
+        sub: '狭窄 MS：MVA 三法 · 压差 · PASP · Wilkins → PMBV 适合度｜反流 MR：PISA · 容积法 · VC｜继发 MR：心房性 / 心室性 · 成比例判断',
         source: ['R42', 'R43', 'R20', 'R23', 'R75'],
         rel: ['mv-interv', 'rheumatic', 'prosthetic', 'ie'],
         // ★ v1.4.4 合并：原公式集里独立的「MS 二尖瓣狭窄定量」「MR 二尖瓣反流定量」
@@ -11886,6 +11936,9 @@ const BRIEF_SECTIONS = [
           { k: 'mr_regVti', n: '反流 VTI', u: 'cm' },
           { k: 'mr_vc', n: '缩流颈 VC', u: 'cm' },
           { k: 'mr_dt', n: 'dP/dt：1→3 m/s 时间', u: 'ms' },
+          { g: '④ 反流 MR · 容积法与成比例（可选）' },
+          { k: 'mr_mvD', n: '二尖瓣环直径（容积法）', u: 'cm' },
+          { k: 'mr_lvedv', n: 'LVEDV（算成比例 / 不成比例）', u: 'mL' },
         ],
         blocks: [
           { kind: 'h', text: '一、狭窄 MS：先定面积，再看后果' },
@@ -11962,40 +12015,7 @@ const BRIEF_SECTIONS = [
           },
           { kind: 'text', text: '满足 ①+② 后，Wilkins ≤8、瓣叶活动好、交界薄、无明显钙化与瓣下融合 → **理想 PMBV 候选**；9–11 分结合年龄、合并症与外科风险个体化；≥12 分优先外科换瓣。' },
           { kind: 'note', text: '**超声报告必须写明的三项排除**：TEE 排除左房血栓（窦性也不能省，血栓者禁忌）、反流 ≤轻度（中重度 MR 做 PMBV 会加重反流）、无重度主动脉瓣病变（否则先处理主动脉瓣）。交界已融合成致密瘢痕、瓣叶重度钙化者，即使总分不高也要谨慎。', warn: true },
-          { kind: 'h', text: '五、反流 MR：定量表（原发与继发的阈值不同）' },
-          {
-            kind: 'table',
-            heads: ['指标', '轻度', '中度', '重度（原发 MR）'],
-            rows: [
-              ['缩流颈 VC', '<3', '3–6.9', '≥7 mm'],
-              ['EROA', '<20', '20–39', '≥40 mm²'],
-              ['反流容积 RVol', '<30', '30–59', '≥60 mL'],
-              ['反流分数 RF', '<30', '30–49', '≥50%'],
-              ['肺静脉血流', 'S 波占优', 'S 波减低', '收缩期逆流'],
-              ['CW 频谱', '淡 / 不完整', '致密', '致密；可呈早达峰三角形'],
-              ['瓣膜结构', '可正常', '依病因', '连枷瓣、腱索或乳头肌断裂、明显对合缺损'],
-            ],
-          },
-          { kind: 'formula', text: 'EROA = 2π × r² × Va ÷ 反流峰速　　RVol = EROA × 反流 VTI　　RF = RVol ÷ 前向每搏量　　dP/dt = 32000 ÷ Δt（1→3 m/s，ms）' },
-          { kind: 'note', text: '**继发 MR 不能套用原发阈值**：低流量、椭圆 / 新月形反流口、负荷下动态变化会让 PISA 低估。ESC/EACTS 2025 明确 EROA ≥0.30 cm² 和/或 RVol ≥45 mL 已可具有重要预后与治疗意义，别用原发的 0.40 / 60 把这类患者排除在外。', warn: true },
-          { kind: 'text', text: 'PISA 三个前提要写进报告：半球形假设（偏心束会低估）、Nyquist 速度与实际标尺一致（本页默认 40 cm/s）、反流峰速与 VTI 取自同一束血流。三者不成立时，以 VC 与肺静脉血流、CW 频谱密度作为交叉印证。' },
-          { kind: 'note', text: '**分级体系版本差异**：ASE 2017 把过去含糊的「中度偏重」单列为 **III 级（中重度）**（EROA 0.30–0.39 / RVol 45–59 / RF 40–49%）；ESC/EACTS 仍是**三级制**，把这一档并入「中度」并常写作「中度偏重」。同一患者按美标可能报「中重度」、按欧标报「中度」——数值没变，只是分档边界不同，别当成测量误差。', warn: true },
-          { kind: 'h', text: '六、Carpentier 分型与瓣叶定位' },
-          {
-            kind: 'table',
-            heads: ['类型', '机制', '常见病因', '修复可能'],
-            rows: [
-              ['Ⅰ 型 活动正常', '瓣叶活动不受限，仅对合缺失', '瓣环扩大、心内膜炎穿孔', '成形环 / 修补，成功率高'],
-              ['Ⅱ 型 活动过度', '瓣叶越过瓣环平面（脱垂 / 连枷）', '退行性、腱索断裂', '修复率最高，优先修复'],
-              ['Ⅲa 型 活动受限（双相）', '收缩与舒张均受限', '风湿性增厚挛缩', '修复困难，多需置换'],
-              ['Ⅲb 型 活动受限（收缩期）', '心室扩大、乳头肌移位牵拉', '缺血性、扩张型心肌病', '需同期处理左室，复发率高'],
-            ],
-          },
-          { kind: 'text', text: '瓣叶定位：**A1 / P1 在外侧（靠左心耳），A2 / P2 居中，A3 / P3 在内侧**。脱垂反流束常指向病变瓣叶的对侧，但必须多切面证实——单凭束向定位在偏心束上经常错一个区。三维 TEE 的「外科视角」对 A2 / P2 段脱垂显示最好。' },
-          { kind: 'h', text: '七、重度 MR 的干预时机' },
-          { kind: 'text', text: '重度原发 MR：**LVEF ≤60%、LVESD ≥40 mm** 是左室已受累的标志；ESC/EACTS 2025 另纳入 **LVESDi ≥20 mm/m²**。也就是说，EF 还「正常」的 58% 已经不是好消息，等到 EF <60% 才转诊会丢掉修复窗口。' },
-          { kind: 'note', text: '除左室尺寸外，**新发房颤、静息肺动脉高压（PASP >50 mmHg）、左房显著扩大**、以及修复可能性（Ⅱ 型 > Ⅰ 型 > Ⅲ 型）都影响时机。继发 MR 的 TEER 阈值更严：EROA ≥0.4 cm² 且 LVEF 30–50%（COAPT 标准），LVEF <30% 或不可逆左室扩大者获益有限。', warn: true },
-          { kind: 'h', text: '八、MS 的后果：左房、房颤与肺高压' },
+          { kind: 'h', text: '五、MS 的后果：左房、房颤与肺高压' },
           { kind: 'text', text: '风湿性 MS 的病程由「压力后传」决定：左房压升高 → 左房扩大 → 房颤 → 血栓与栓塞；肺静脉压升高 → 肺高压 → 右心受累。所以报告不能只写面积，还要同时给**左房容积指数、心律、PASP、右室大小**——这四项决定抗凝策略与介入时机。' },
           {
             kind: 'table',
@@ -12008,21 +12028,126 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'note', text: '**房颤患者的 MVA 怎么定**：PHT 法在房颤时因舒张期长短不一而失真，取多个周期平均仍不可靠；优先二维描记或连续方程。房颤合并左房自发显影是 PMBV 的相对禁忌，需先规范抗凝再评估。', warn: true },
-          { kind: 'h', text: '九、TEER 缘对缘修复：适应证与解剖门槛' },
+          { kind: 'h', text: '六、反流 MR：先定量，再定级' },
+          { kind: 'text', text: 'MR 的定量不是「算一个 EROA」，而是**四条独立路线互相印证**：PISA、缩流颈（2D VC 或 3D VCA）、容积法（每搏量差）、以及肺静脉血流与 CW 频谱的定性线索。四条同向，结论就可靠；两条相反，先找哪一条的前提被破坏，**不要取平均**。下表是原发 MR 的定级阈值，继发 MR 的门槛低得多，见第十节。' },
           {
             kind: 'table',
-            heads: ['类型', '关键条件', '说明'],
+            heads: ['指标', '轻度', '中度', '重度'],
             rows: [
-              ['原发 MR（退行性）', '重度 + 有症状，或 LVEF ≤60% / LVESD ≥40 mm；外科高危或拒绝手术', '解剖适合时优先修复；瓣叶长度与对合深度要够'],
-              ['继发 MR（功能性）', 'EROA ≥0.30 cm²、LVEF 20–50%、LVESD ≤70 mm、PASP ≤70 mmHg', '先优化心衰药物治疗；LVEF <20% 获益有限'],
-              ['解剖禁忌', '瓣叶短、对合深度浅、重度钙化、腱索断裂游离端、活动性心内膜炎', '夹合器抓不住或不稳定，术后易复发'],
+              ['缩流颈 VC', '<3', '3–6.9', '≥7 mm'],
+              ['EROA', '<20', '20–39', '≥40 mm²'],
+              ['反流容积 RVol', '<30', '30–59', '≥60 mL'],
+              ['反流分数 RF', '<30', '30–49', '≥50%'],
+              ['肺静脉血流', 'S 波占优', 'S 波减低', '收缩期逆流'],
+              ['CW 频谱', '淡 / 不完整', '致密', '致密；可呈早达峰三角形'],
+              ['瓣膜结构', '可正常', '依病因', '连枷瓣、腱索或乳头肌断裂、明显对合缺损'],
             ],
           },
-          { kind: 'text', text: 'TEER 的术前超声任务不是「再测一次 EROA」，而是回答**能不能夹**：瓣叶长度（≥8–10 mm 更稳）、对合深度、瓣口面积（术后不能 <1.5 cm²）、有无钙化与裂隙。术后评估看平均压差（>5 mmHg 提示狭窄）与残余 MR。' },
-          { kind: 'h', text: '十、把两个瓣的问题串起来' },
+          {
+            kind: 'table',
+            heads: ['路线', '怎么测 · 误差往哪边偏'],
+            rows: [
+              ['PISA', '心房侧半球形血流汇聚，测半径与混叠速度（EROA = 2πr²×Va ÷ 反流峰速）。偏心束会低估，可低 30% 以上；Nyquist 标尺与机器设置不一致则整体偏移；瓣环钙化破坏半球形态'],
+              ['缩流颈 2D / 3D VCA', '2D 在 CW 与彩色同屏时取反流束最窄处，3D 直接在彩色数据集上描反流口面积。2D 对椭圆口与偏心束误差大；3D 受颜色增益、帧率与呼吸影响，须取 3 个周期平均'],
+              ['容积法（每搏量差）', 'RVol = SV二尖瓣 − SV左室流出道，RF = RVol ÷ SV二尖瓣，EROA = RVol ÷ 反流 VTI。瓣环是椭圆，单径误差被平方放大，SV二尖瓣偏高；房颤、合并 AR、取样深浅不同都会失真'],
+              ['肺静脉血流 + CW', '看收缩期逆流、S 波反向、D 波增高，以及 CW 密度与早达峰三角形。只能定性或半定量，取样深一点浅一点结论就变，别单独用它定级'],
+            ],
+          },
+          { kind: 'formula', text: 'EROA = 2π × r² × Va ÷ 反流峰速　　RVol = EROA × 反流 VTI　　RF = RVol ÷ 前向每搏量　　dP/dt = 32000 ÷ Δt（1→3 m/s，ms）　　RVol（容积法）= SV二尖瓣 − SV左室流出道' },
+          { kind: 'text', text: 'PISA 的三个前提必须写进报告：半球形假设（偏心束会低估）、Nyquist 速度与实际标尺一致（本页默认 40 cm/s）、反流峰速与 VTI 取自同一束血流。前提不成立时用 VC 与容积法交叉印证，并以 3D VCA 为仲裁——它不依赖任何几何假设。' },
+          { kind: 'text', text: '**四法不一致怎么处理**：PISA 与容积法的 EROA 相差 >25%，说明至少一法的前提破了（半径取到一半、LVOT 直径偏大、取样位置不对），回到图像找原因而不是取平均；VC 与 EROA 落在不同档时，报告写区间并注明哪一条更可靠。可靠度顺序：3D VCA > 容积法 > PISA（2D）> 单看 VC。' },
+          { kind: 'note', text: '**继发 MR 不能套用原发阈值**：低流量、椭圆或新月形反流口、负荷下动态变化会让 PISA 低估。ESC/EACTS 2025 明确 EROA ≥0.30 cm² 和/或 RVol ≥45 mL 已可具有重要预后与治疗意义，别用原发的 0.40 / 60 把这类患者排除在外。', warn: true },
+          { kind: 'note', text: '**分级体系版本差异**：ASE 2017 把过去含糊的「中度偏重」单列为 **III 级（中重度）**（EROA 0.30–0.39 / RVol 45–59 / RF 40–49%）；ESC/EACTS 仍是**三级制**，把这一档并入「中度」并常写作「中度偏重」。同一患者按美标可能报「中重度」、按欧标报「中度」——数值没变，只是分档边界不同，别当成测量误差。', warn: true },
+          { kind: 'note', text: '**MR 报告的最小完整句**：严重度 + 三个数 + 方法，例如「重度 MR（EROA 0.42 cm²、RVol 68 mL、RF 52%，PISA 与容积法一致）」。只写「重度」而不给数，外科与介入团队没法判断该不该夹、夹完降到多少算成功；只给一个数（比如只有 VC 7 mm），在偏心束上很容易错一档。', warn: true },
+          { kind: 'h', text: '七、Carpentier 分型与瓣叶定位' },
+          {
+            kind: 'table',
+            heads: ['类型', '机制', '常见病因', '修复可能'],
+            rows: [
+              ['Ⅰ 型 活动正常', '瓣叶活动不受限，仅对合缺失', '瓣环扩大、心内膜炎穿孔', '成形环 / 修补，成功率高'],
+              ['Ⅱ 型 活动过度', '瓣叶越过瓣环平面（脱垂 / 连枷）', '退行性、腱索断裂', '修复率最高，优先修复'],
+              ['Ⅲa 型 活动受限（双相）', '收缩与舒张均受限', '风湿性增厚挛缩', '修复困难，多需置换'],
+              ['Ⅲb 型 活动受限（收缩期）', '心室扩大、乳头肌移位牵拉', '缺血性、扩张型心肌病', '需同期处理左室，复发率高'],
+            ],
+          },
+          { kind: 'text', text: '瓣叶定位：**A1 / P1 在外侧（靠左心耳），A2 / P2 居中，A3 / P3 在内侧**。脱垂反流束常指向病变瓣叶的对侧，但必须多切面证实——单凭束向定位在偏心束上经常错一个区。三维 TEE 的「外科视角」对 A2 / P2 段脱垂显示最好。' },
+          { kind: 'h', text: '八、继发 MR 的两条机制：心房性与心室性' },
+          { kind: 'text', text: '2025 ESC/EACTS 第一次把继发 MR 拆成两类：**心房性（A-SMR）**与**心室性（V-SMR）**。这不是学术分类——两者的治疗方向几乎相反，心房性靠节律控制加瓣环干预，心室性靠逆转重构。类型分错，后面的门槛全都用错。' },
+          {
+            kind: 'table',
+            heads: ['维度', '心房性 A-SMR', '心室性 V-SMR'],
+            rows: [
+              ['左房与左室', '左房显著扩大（LAVI 常 >40），左室不大、LVEF 保留', '左室扩大（LVEDVi 常 >96），可伴 LVEF 下降'],
+              ['瓣膜与瓣环', '瓣环扩张、瓣叶对合不良，瓣叶本身结构正常', '瓣叶被拴系（tenting），瓣环可正常或扩大'],
+              ['反流口与束向', '多为中央性、反流口较圆', '多为偏心性、反流口呈新月形'],
+              ['常见背景', '长期房颤、老年、高血压、HFpEF', '缺血性心肌病、扩张型心肌病、长期未控制的 HFrEF'],
+              ['治疗重心', '节律控制 + 利尿；手术（瓣环成形 + 消融 + 左心耳封堵，Ⅱa B）；不宜手术者 TEER（Ⅱb B）', 'GDMT 与 CRT 优先；优化后仍重度且符合条件者 TEER（Ⅰ A）'],
+            ],
+          },
+          { kind: 'text', text: '三个数就能把两类分开：**LVEDVi**（<96 偏心房性、>135 偏心室性）、**瓣环前后径**（>35 mm 提示瓣环扩张为主）、**tenting height / area**（>10 mm / >2.5 cm² 提示拴系为主）。三条同向时不用纠结；互相矛盾时以 tenting 为准——它直接决定能不能夹。' },
+          { kind: 'note', text: '**为什么必须先分类型**：同样写「重度继发 MR 建议 TEER」，心房性患者夹完压差容易升高（瓣口本来就偏小、瓣环又大），心室性患者夹完主要看左室能不能逆转。转诊单上只写严重度不写机制，接收方还得从头分一遍。', warn: true },
+          { kind: 'h', text: '九、成比例与不成比例：EROA 要和 LVEDV 对得上' },
+          { kind: 'text', text: '按 Gorlin 水力公式推算：EF 30%、LVEDV 220–250 mL、反流分数 50% 的心衰患者，EROA 自然就是 0.30 cm² 左右——**这个「重度」是左室扩大的必然结果，不是瓣膜自己坏了**。反过来，EROA 0.35 cm² 而 LVEDV 只有 170 mL，说明反流程度超出了左室扩大能解释的范围，瓣膜本身是主因。前者叫成比例（proportionate），后者叫不成比例（disproportionate）。' },
+          { kind: 'formula', text: 'EROA ÷ LVEDV（mm² ÷ mL）：≥0.14 倾向不成比例，<0.14 倾向成比例　　实用换算：EROA 0.40 cm² 需 LVEDV <250 mL；EROA 0.30 cm² 需 LVEDV <200 mL' },
+          {
+            kind: 'table',
+            heads: ['', 'COAPT（TEER 获益）', 'MITRA-FR（中性）'],
+            rows: [
+              ['EROA', '≈0.41 cm²', '≈0.31 cm²'],
+              ['LVEDVi', '≈101 mL/m²', '≈135 mL/m²'],
+              ['MR 与左室的关系', '不成比例：反流重、左室相对不大', '成比例：反流中度、左室已明显扩大'],
+              ['TEER 结果', '死亡与心衰住院显著下降', '与药物治疗无差异'],
+              ['读法', '瓣膜是主因 → 夹瓣有效', '心室是主因 → 该逆转重构，不是夹瓣'],
+            ],
+          },
+          { kind: 'text', text: '这个比值解释的是「为什么两个人同样 EROA 0.35 cm²，一个夹完有效、一个没效」，**不是可以单独用来决定手术的门槛**。实际用法：报告里同时给出 EROA 与 LVEDV，让团队看到比值；比值 <0.14 的人先问「GDMT 足量了吗、CRT 评估了吗」，把逆转重构的机会用完再谈夹瓣。' },
+          { kind: 'note', text: '**这个框架有争议，别当硬指标**：若按 RVol/LVEDV（界值 0.20）另算一遍，两个试验里真正「不成比例」的都很少，说明结论对界值选择很敏感；也有分析指出 COAPT 与 MITRA-FR 的差异还来自药物治疗强度与手术成功率。报告写「提示瓣膜因素占主导」比写「符合 / 不符合」稳妥。', warn: true },
+          { kind: 'h', text: '十、继发 MR 该不该干预：五道门，顺序不能颠倒' },
+          { kind: 'text', text: '**先优化药物，再谈器械**——这是 MITRA-FR 最贵的一课：对照组也在逆转重构，器械的边际获益就被吃掉了。五道门依次过，任何一道不过关，先解决那一道，不要跳。' },
+          {
+            kind: 'table',
+            heads: ['门', '条件', '不过关怎么办'],
+            rows: [
+              ['① 药物与器械优化', 'GDMT 足量（ARNI / β 受体阻滞剂 / MRA / SGLT2i）+ 房颤节律控制 + 有适应证者已行 CRT，稳定 ≥3 个月', '继续优化并随访 3 个月；未优化就夹，等于重复 MITRA-FR'],
+              ['② 症状', 'NYHA ≥Ⅱ；或过去 1 年内 ≥1 次心衰住院；或 BNP ≥300 / NT-proBNP ≥1000 pg/mL', '无症状的重度 SMR 目前不做预防性 TEER，随访'],
+              ['③ 严重度', 'EROA ≥0.30 cm² 和/或 RVol ≥45 mL；VC ≥7 mm', '中度按 3–6 个月随访；报「重度」但左室极大 → 回头看第九节'],
+              ['④ 左室与右心边界', 'LVEF 20–50%、LVESD ≤70 mm、SPAP ≤70 mmHg、无重度右室功能不全、非 stage D 心衰', 'LVEF <20% 或右心重度 → 先评估 LVAD / 移植，而非夹瓣'],
+              ['⑤ 解剖可夹性', '瓣叶长度足够、对合深度与 tenting 在门槛内、术前 MVA ≥4.0 cm²（术后 ≥1.5）', '不适合 → 外科修复或置换（Ⅱb C）；不能手术者药物姑息'],
+            ],
+          },
+          { kind: 'text', text: '**合并冠心病要走另一条路**：需血运重建的重度心室性 SMR，做 CABG 时同期处理二尖瓣（Ⅰ B），中度 SMR 同期手术可考虑（Ⅱb B）；非复杂冠心病可先 PCI、再重新评估反流，仍重度且符合条件者再 TEER（Ⅱb C）。先夹瓣再补血运的顺序是错的。' },
+          { kind: 'note', text: '**2025 年最大的口径变化**：心室性 SMR 的 TEER 升到 **Ⅰ A**（血流动力学稳定、有症状、LVEF <50%、GDMT 与 CRT 优化后仍重度、解剖合适），并且**不再以外科高危为前提**。旧口径「外科高危才考虑夹」已经过时——按旧口径筛人，会把一批本可获益的低危患者挡在门外。报告与转诊单别再写「因外科高危故建议 TEER」。', warn: true },
+          { kind: 'h', text: '十一、原发 MR 的干预时机：两层推荐' },
+          { kind: 'text', text: '2025 指南把无症状重度原发 MR 分成两层：**第一层看左室有没有受累**（LVESD ≥40 mm、LVESDi ≥20 mm/m²、LVEF ≤60%，满足任一即算），有就手术（Ⅰ B），修复优先；**第二层看合并症**，左室还没受累但满足以下 ≥3 条，且低风险、预期修复持久者，同样推荐手术（Ⅰ B）。' },
+          {
+            kind: 'table',
+            heads: ['第二层的四条', '阈值', '为什么算进去'],
+            rows: [
+              ['心房颤动', '新发或阵发', '房颤一旦出现，修复后仍需长期抗凝，生存获益打折'],
+              ['静息肺高压', 'SPAP >50 mmHg', '提示左房压长期升高，术后恢复更慢'],
+              ['左房扩大', 'LAVI ≥60 mL/m² 或左房径 ≥55 mm', '房颤基质已形成，且常伴瓣环扩大'],
+              ['合并继发 TR', '≥中度', '同期处理可避免二次手术，但延长体外循环时间'],
+            ],
+          },
+          { kind: 'text', text: '**别等 EF 掉到 60% 以下**：58% 已经是「左室受累」，等到 55% 才转诊通常已错过修复窗口——退行性 MR 的 EF 是被低阻力出口撑起来的，一旦下降，往往意味着不可逆的心肌损伤已经开始。TEER 在原发 MR 里仍是替代路径：有症状、解剖合适、外科高危者 Ⅱa B。' },
+          { kind: 'note', text: '**报告要写修复可能性**：Ⅱ 型（脱垂 / 连枷）修复率最高，Ⅰ 型次之，Ⅲ 型多需置换。同一份「重度 MR」，写不写「P2 脱垂、后叶长度 18 mm、预计可修复」，直接决定外科接不接这台手术。', warn: true },
+          { kind: 'h', text: '十二、TEER：术前超声要回答的是「能不能夹」' },
+          {
+            kind: 'table',
+            heads: ['参数', '门槛', '为什么'],
+            rows: [
+              ['瓣叶长度', '≥8–10 mm（可抓取段）', '太短抓不住，夹子易脱落'],
+              ['对合深度', '<11 mm', '过深说明拴系重，夹合后瓣叶张力大'],
+              ['tenting height / area', '<10 mm / <2.5 cm²（继发）', '拴系为主者夹完残余 MR 多，且易复发'],
+              ['二尖瓣口面积', '术前 ≥4.0 cm²（术后 ≥1.5）', '夹完必然缩小瓣口，术前太小会做成狭窄'],
+              ['禁忌解剖', '重度瓣环或瓣叶钙化、瓣叶裂隙、腱索断裂游离端、活动性心内膜炎', '抓取不稳定，或感染扩散'],
+            ],
+          },
+          { kind: 'text', text: '术前超声的任务不是「再测一次 EROA」，而是回答能不能夹；术后看两件事：**平均压差**（>5 mmHg 提示功能性狭窄）与**残余 MR**。夹合后常出现多束细小反流，只测单束会低估，要用 3D VCA 或容积法复核。' },
+          { kind: 'h', text: '十三、把两个瓣的问题串起来' },
           { kind: 'text', text: '同一个患者常常「狭窄 + 反流」并存（风湿性 MS 伴 MR、退行性脱垂伴 MS）。判读顺序：**先定主病变**（哪一个造成症状与后果）、**再用主病变的阈值决策**、**最后把合并病变当作风险修正**。合并中度 MR 的 MS 患者做 PMBV 前必须单独评估反流会不会被放大。' },
         ],
-        note: '本页把狭窄与反流放在同一屏：填 PHT 与 LVOT / 二尖瓣 VTI 出三种 MVA，填平均压差与 PASP 出「严重度 → 后果」两行，填 Wilkins 四项出形态分与 PMBV 适合度，填 PISA 四项出 EROA / RVol / 分级，填 VC 与 dP/dt 出缩流颈分级与收缩功能。只填关心的部分也可以，结果行会给已填部分的分段结论。',
+        note: '本页把狭窄与反流放在同一屏：填 PHT 与 LVOT / 二尖瓣 VTI 出三种 MVA，填平均压差与 PASP 出「严重度 → 后果」两行，填 Wilkins 四项出形态分与 PMBV 适合度，填 PISA 四项出 EROA / RVol / 分级，填 VC 与 dP/dt 出缩流颈分级与收缩功能；填二尖瓣环直径与 LVEDV 再给容积法 RVol / RF 与 EROA÷LVEDV 的成比例判断。只填关心的部分也可以，结果行会给已填部分的分段结论。',
       },
       {
         id: 'aortic',
@@ -20561,6 +20686,7 @@ const MATERIALS = [];
       });
       if (mrv.lvotD === undefined && v.mit_lvotD !== undefined) mrv.lvotD = v.mit_lvotD;
       if (mrv.lvotVti === undefined && v.mit_lvotVti !== undefined) mrv.lvotVti = v.mit_lvotVti;
+      if (mrv.mvVti === undefined && v.mit_mvVti !== undefined) mrv.mvVti = v.mit_mvVti;
       const mrr = ValveCalc ? ValveCalc.valveCalc('mr', mrv, bsa) : { rows: [] };
       if (mrr.rows && mrr.rows.length) {
         parts.push('反流 ' + rowsText(mrr.rows) + ' → ' + mrr.summary);

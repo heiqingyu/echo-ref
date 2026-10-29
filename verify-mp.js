@@ -1147,6 +1147,15 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   mpCalc2('mitral', { mit_lvotD: 2.0, mit_lvotVti: 20, mit_mvVti: 8 },
     /MVA 连续方程 7\.85 cm²（不显著）/, '二尖瓣页 MVA 连续性方程 7.85');
+
+  // —— v1.10.8：MR 容积法（每搏量差）与 EROA/LVEDV 成比例判断 ——
+  mpCalc2('mitral', { mit_mvVti: 12, mit_lvotD: 2.0, mit_lvotVti: 20, mr_mvD: 3.4, mr_regVti: 150 },
+    /容积法 RVol 46\.1 mL.*容积法 RF 42\.3%/, '二尖瓣页 容积法 RVol 46.1 / RF 42.3');
+  mpCalc2('mitral', { mr_radius: 0.8, mr_aliasVa: 40, mr_regV: 5.0, mr_lvedv: 200 },
+    /EROA ÷ LVEDV 0\.161.*不成比例/, '二尖瓣页 EROA/LVEDV 0.161 不成比例');
+  // LVOT 直径 / VTI 在 ② 段填（与狭窄段共用同一次测量）
+  mpCalc2('mitral', { mr_radius: 0.8, mr_aliasVa: 40, mr_regV: 5.0, mr_regVti: 150, mit_lvotD: 2.0, mit_lvotVti: 20 },
+    /反流分数 RF 43\.4%/, '二尖瓣页 PISA 路径 RF 分母含反流量（43.4%）');
   mpCalc2('laef', { lavmax: 80, lavmin: 40 },
     /LAEF 50\.0%.*扩张指数 100\.0%.*保留/, 'LAEF 50% 扩张指数 100%');
   mpCalc2('quickratio', { qla: 40, qao: 32, qrv: 40, qlv: 50 },
@@ -1462,10 +1471,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     pgF.data.blocks[0].text.indexOf('一、狭窄 MS') !== -1 ? 1 : 0, 1, 0);
   check('二尖瓣页 Wilkins 评分小节在说明之后',
     pgF.data.blocks.some(function (b) { return (b.text || '').indexOf('三、Wilkins 形态评分') !== -1; }) ? 1 : 0, 1, 0);
-  check('二尖瓣页 17 个输入（Wilkins 4 + MS 7 + MR 6）',
-    pgF.data.inputs.filter(function (r) { return !r.head; }).length, 17, 0);
-  check('二尖瓣页输入框分 3 段（形态 / 狭窄 / 反流）',
-    pgF.data.inputs.filter(function (r) { return r.head; }).length, 3, 0);
+  check('二尖瓣页 19 个输入（Wilkins 4 + MS 7 + MR 6 + 容积法 2）',
+    pgF.data.inputs.filter(function (r) { return !r.head; }).length, 19, 0);
+  check('二尖瓣页输入框分 4 段（形态 / 狭窄 / 反流 / 容积法）',
+    pgF.data.inputs.filter(function (r) { return r.head; }).length, 4, 0);
   check('二尖瓣页输入名带序号',
     (pgF.data.inputs.filter(function (r) { return !r.head; })[0].name.indexOf('瓣叶活动度') !== -1) ? 1 : 0, 1, 0);
   check('二尖瓣页内含 4 张 Wilkins 分档表',

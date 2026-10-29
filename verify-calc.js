@@ -613,5 +613,45 @@ check('LF-LG EF 60 → 反常型', lf2.type, 'paradoxical');
 const lf3 = C.asLflg({ lvef: 35, svi: 30, mpg: 32, ava: 0.95 });
 check('LF-LG EF 35 → 经典型', lf3.type, 'classic');
 
+console.log('=== MR 定量（v1.10.8：容积法 / RF 分母 / 成比例）===');
+
+const mrVol = V.valveCalc('mr', { mvD: 3.4, mvVti: 12, lvotD: 2.0, lvotVti: 20, regVti: 150 }, 1.7);
+const pick = (r, k) => r.rows.filter((x) => x.k === k)[0];
+check('容积法 SV 二尖瓣 109.0 / LVOT 62.8',
+  pick(mrVol, '容积法 SV 二尖瓣 / 左室流出道').v, '109.0 / 62.8 mL', 0);
+check('容积法 RVol 46.1 mL', pick(mrVol, '容积法 RVol').v, '46.1 mL', 0);
+check('容积法 RF 42.3%（分母是二尖瓣总每搏量）',
+  pick(mrVol, '容积法 RF').v, '42.3%', 0);
+check('容积法 EROA 0.31 cm²', pick(mrVol, '容积法 EROA').v, '0.31 cm²', 0);
+
+// ★ 回归：MR 的 LVOT 每搏量是前向量，RF 分母须加回反流量
+const mrPisa = V.valveCalc('mr', { radius: 0.8, aliasVa: 40, regV: 5.0, regVti: 150, lvotD: 2.0, lvotVti: 20 }, 1.7);
+check('PISA 路径 RF 43.4%（= RVol ÷ (SV前向+RVol)，不是 ÷ SV前向）',
+  pick(mrPisa, '反流分数 RF').v, '43.4%', 0);
+const rfPisa = parseFloat(pick(mrPisa, '反流分数 RF').v);
+const rfVol = parseFloat(pick(mrVol, '容积法 RF').v);
+check('两条路径的 RF 相差 <5 个百分点', Math.abs(rfPisa - rfVol) < 5 ? 1 : 0, 1, 0);
+check('容积法行标 noSum，不与 PISA 重复计入综合提示',
+  mrPisa.rows.filter((r) => r.noSum).length, 0, 0);
+
+const mrRatioHi = V.valveCalc('mr', { radius: 0.8, aliasVa: 40, regV: 5.0, lvedv: 200 }, 1.7);
+check('EROA 0.32 / LVEDV 200 → 0.160 不成比例',
+  pick(mrRatioHi, 'EROA ÷ LVEDV').v, '0.161 mm²/mL', 0);
+check('不成比例给出「瓣膜因素为主」标签',
+  pick(mrRatioHi, 'EROA ÷ LVEDV').tag.indexOf('不成比例') >= 0 ? 'ok' : 'bad', 'ok');
+const mrRatioLo = V.valveCalc('mr', { radius: 0.8, aliasVa: 40, regV: 5.0, lvedv: 300 }, 1.7);
+check('EROA 0.32 / LVEDV 300 → 0.107 成比例',
+  pick(mrRatioLo, 'EROA ÷ LVEDV').tag.indexOf('成比例') >= 0 ? 'ok' : 'bad', 'ok');
+check('成比例时提示先优化 GDMT 与 CRT',
+  mrRatioLo.notes.join(' ').indexOf('MITRA-FR') >= 0 ? 'ok' : 'bad', 'ok');
+
+const mrNeg = V.valveCalc('mr', { mvD: 2.6, mvVti: 10, lvotD: 2.2, lvotVti: 22, regVti: 150 }, 1.7);
+check('容积法算出负反流 → 提示取样位置有误',
+  mrNeg.notes.join(' ').indexOf('没有净反流') >= 0 ? 'ok' : 'bad', 'ok');
+
+const mrOnly = V.valveCalc('mr', { mvD: 3.4, mvVti: 12, lvotD: 2.0, lvotVti: 20, regVti: 150 }, 1.7);
+check('只填容积法时 RVol 行计入综合提示（不被 noSum 静默）',
+  mrOnly.summary.indexOf('中度') >= 0 ? 'ok' : 'bad', 'ok');
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);
