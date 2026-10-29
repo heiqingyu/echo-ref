@@ -982,6 +982,14 @@ function check(name, ok, detail) {
   check('左心评估含肥厚病因四联（高血压 / HCM / 淀粉样变 / 运动心脏）',
     ['高血压性肥厚', '肥厚型心肌病', '淀粉样变', '运动心脏'].every((w) => lvTxt.indexOf(w) >= 0), '');
   check('左心评估含三对矛盾判读法', lvTxt.indexOf('三对矛盾') >= 0, '');
+  check('lv-LVMI 男正常上限统一为 115（与 calc-groups:70 / 1478 / ASE 2D 一致，旧 ≤95 已删）',
+    lvTxt.indexOf("LVMI 男（g/m²）', '≤95'") === -1 && lvTxt.indexOf('≤115') >= 0, '');
+  check('lv-E/e′ 舒张分级阈值与全库一致（>14 而非旧 >8）',
+    lvTxt.indexOf('平均 E/e′ >14 或升高指标') >= 0, '');
+  await openBrief('zh-normal');
+  const znTxt = await briefText('zh-normal');
+  check('zh-normal-GLS 注统一为 ASE 2016(−20%)→2025(−18%)，与 GLS 条目一致',
+    znTxt.indexOf('ASE 2016 曾以 −20% 为异常界值，ASE/EACVI 2025 已改为 −18%') >= 0, '');
   await openBrief('rv');
   const rvTxt = await briefText('rv');
   check('右心评估含 TAPSE/PASP 之外的三种写法',
