@@ -2103,6 +2103,20 @@ function check(name, ok, detail) {
     l.indexOf('[console.error') === 0);
   check('无 JS 异常', errs.length === 0, errs.join(' | '));
 
+  console.log('\n【五】中英对照（v1.12.5，仅搜索可见）');
+  const alN = await c.evalJs('((window.ExtraData && window.ExtraData.EN_ALIAS) || []).length');
+  check('EN_ALIAS 已随构建嵌入（≥60 条）', alN >= 60, alN);
+  const mrTo = await c.evalJs('((window.ExtraData.enAliasMatch("mr")[0]) || {}).to || ""');
+  check('enAliasMatch("mr") 命中 → mitral', mrTo === 'mitral', mrTo);
+  // 回到目录视图再模拟搜索输入
+  await c.evalJs('(function(){var b=document.getElementById("calcBack"); if(b) b.click();})()');
+  await new Promise((r) => setTimeout(r, 200));
+  await c.evalJs('(function(){var i=document.getElementById("fxSearch"); if(i){i.value="mr"; i.dispatchEvent(new Event("input"));}})()');
+  await new Promise((r) => setTimeout(r, 150));
+  const hasAl = await c.evalJs('(function(){var t=document.getElementById("calcList").textContent; return t.indexOf("中英对照") !== -1 && t.indexOf("mitral regurgitation") !== -1;})()');
+  check('搜索「mr」时「中英对照」组置顶展示英文全称与中文', hasAl === true, hasAl);
+  await c.evalJs('(function(){var i=document.getElementById("fxSearch"); if(i){i.value=""; i.dispatchEvent(new Event("input"));}})()');
+
   console.log('\n════════ 汇总 ════════');
   const pass = results.filter((r) => r.ok).length;
   console.log('通过 ' + pass + ' / ' + results.length);

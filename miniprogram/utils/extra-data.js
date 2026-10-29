@@ -8752,12 +8752,108 @@ function blockText(blocks) {
   }).join(' ');
 }
 
+/* ────────── 中英对照（v1.12.5）──────────
+   [缩写, 英文全称, 中文, 关联条目id]
+   ★ 用途：搜索时单列一组「中英对照」，平时不进目录、不渲染详情卡。
+   第 4 列关联条目 id 必须真实存在（verify-mp 有断言）；无关联写 ''。
+   匹配口径见 enAliasMatch：缩写整词命中（不分大小写）；英文全称包含匹配
+   仅在关键词 ≥3 字符时启用，防止「as / pe」这类短词过度命中。 */
+var EN_ALIAS = [
+  ['TTE', 'transthoracic echocardiography', '经胸超声心动图', 'tte-std'],
+  ['TEE', 'transesophageal echocardiography', '经食管超声心动图', 'tee-20'],
+  ['LVEF', 'left ventricular ejection fraction', '左室射血分数', 'lv'],
+  ['EF', 'ejection fraction', '射血分数', 'lv'],
+  ['GLS', 'global longitudinal strain', '整体纵向应变', 'strain'],
+  ['LVMI', 'left ventricular mass index', '左室质量指数', 'lv'],
+  ['LAVI', 'left atrial volume index', '左房容积指数', 'la'],
+  ['TAPSE', 'tricuspid annular plane systolic excursion', '三尖瓣环收缩期位移', 'rvfun'],
+  ['MR', 'mitral regurgitation', '二尖瓣反流', 'mitral'],
+  ['MS', 'mitral stenosis', '二尖瓣狭窄', 'mitral'],
+  ['AR', 'aortic regurgitation', '主动脉瓣反流', 'aortic'],
+  ['AS', 'aortic stenosis', '主动脉瓣狭窄', 'aortic'],
+  ['TR', 'tricuspid regurgitation', '三尖瓣反流', 'tr-interv'],
+  ['TS', 'tricuspid stenosis', '三尖瓣狭窄', ''],
+  ['PS', 'pulmonary stenosis', '肺动脉瓣狭窄', ''],
+  ['PR', 'pulmonary regurgitation', '肺动脉瓣反流', ''],
+  ['ASD', 'atrial septal defect', '房间隔缺损', 'shd'],
+  ['VSD', 'ventricular septal defect', '室间隔缺损', 'shd'],
+  ['PDA', 'patent ductus arteriosus', '动脉导管未闭', 'shd'],
+  ['PFO', 'patent foramen ovale', '卵圆孔未闭', 'bubble'],
+  ['TOF', 'tetralogy of Fallot', '法洛四联症', 'tof-pr'],
+  ['DORV', 'double outlet right ventricle', '右室双出口', 'dorv'],
+  ['TGA', 'transposition of the great arteries', '大动脉转位', 'as-switch'],
+  ['CoA', 'coarctation of the aorta', '主动脉缩窄', 'coa-echo'],
+  ['IAA', 'interrupted aortic arch', '主动脉弓离断', 'iaa'],
+  ['TAPVC', 'total anomalous pulmonary venous connection', '完全型肺静脉异位引流', 'pvai'],
+  ['ALCAPA', 'anomalous left coronary artery from the pulmonary artery', '左冠状动脉异常起源于肺动脉', 'aca'],
+  ['CAF', 'coronary artery fistula', '冠状动脉瘘', 'caf'],
+  ['BAV', 'bicuspid aortic valve', '主动脉瓣二叶式畸形', 'bav'],
+  ['PH', 'pulmonary hypertension', '肺高血压', 'zh-ph'],
+  ['PE', 'pulmonary embolism', '肺栓塞', 'pe'],
+  ['DVT', 'deep vein thrombosis', '深静脉血栓形成', 'pe'],
+  ['CTEPH', 'chronic thromboembolic pulmonary hypertension', '慢性血栓栓塞性肺高血压', 'pe'],
+  ['HCM', 'hypertrophic cardiomyopathy', '肥厚型心肌病', 'hcm'],
+  ['DCM', 'dilated cardiomyopathy', '扩张型心肌病', 'dcm'],
+  ['ARVC', 'arrhythmogenic right ventricular cardiomyopathy', '致心律失常性右室心肌病', 'arvc'],
+  ['LVNC', 'left ventricular noncompaction', '左室心肌致密化不全', 'nc-lv'],
+  ['PPCM', 'peripartum cardiomyopathy', '围产期心肌病', 'ppcm'],
+  ['CTRCD', 'cancer therapy-related cardiac dysfunction', '肿瘤治疗相关心功能不全', 'ctrcd'],
+  ['IE', 'infective endocarditis', '感染性心内膜炎', 'ie'],
+  ['CRT', 'cardiac resynchronization therapy', '心脏再同步化治疗', 'crt'],
+  ['LVAD', 'left ventricular assist device', '左室辅助装置', 'lvad'],
+  ['ECMO', 'extracorporeal membrane oxygenation', '体外膜肺氧合', 'ecmo'],
+  ['TAVR', 'transcatheter aortic valve replacement', '经导管主动脉瓣置换', 'tavr'],
+  ['TEER', 'transcatheter edge-to-edge repair', '经导管缘对缘修复', 'mv-interv'],
+  ['IVC', 'inferior vena cava', '下腔静脉', 'rv'],
+  ['RAP', 'right atrial pressure', '右房压', 'rv'],
+  ['PASP', 'pulmonary artery systolic pressure', '肺动脉收缩压', 'zh-ph'],
+  ['PVR', 'pulmonary vascular resistance', '肺血管阻力', 'zh-ph'],
+  ['LVOT', 'left ventricular outflow tract', '左室流出道', 'lv'],
+  ['RVOT', 'right ventricular outflow tract', '右室流出道', 'rv'],
+  ['EROA', 'effective regurgitant orifice area', '有效反流口面积', 'mitral'],
+  ['PISA', 'proximal isovelocity surface area', '近端等速表面积', 'mitral'],
+  ['VTI', 'velocity time integral', '速度时间积分', 'doppler-basics'],
+  ['SAM', 'systolic anterior motion', '收缩期前向运动', 'hcm'],
+  ['RWMA', 'regional wall motion abnormality', '节段性室壁运动异常', 'stress-echo'],
+  ['MVA', 'mitral valve area', '二尖瓣口面积', 'mitral'],
+  ['BSA', 'body surface area', '体表面积', ''],
+  ['SV', 'stroke volume', '每搏输出量', ''],
+  ['CO', 'cardiac output', '心输出量', ''],
+  ['ASO', 'arterial switch operation', '大动脉调转术', 'as-switch'],
+  ['CEUS', 'contrast-enhanced ultrasound', '超声造影', 'contrast-echo'],
+  ['DSE', 'dobutamine stress echocardiography', '多巴酚丁胺负荷超声', 'dse'],
+  ['NYHA', 'New York Heart Association functional class', '纽约心脏协会心功能分级', ''],
+  ['Qp/Qs', 'pulmonary-to-systemic flow ratio', '肺循环与体循环血流比', 'shd'],
+  ['IVRT', 'isovolumetric relaxation time', '等容舒张时间', 'lv'],
+  ['TDI', 'tissue Doppler imaging', '组织多普勒成像', ''],
+  ['CP', 'constrictive pericarditis', '缩窄性心包炎', 'cp-rm'],
+  ['RCM', 'restrictive cardiomyopathy', '限制型心肌病', 'cp-rm'],
+  ['PW', 'pulsed wave Doppler', '脉冲波多普勒', 'doppler-basics'],
+  ['CW', 'continuous wave Doppler', '连续波多普勒', 'doppler-basics'],
+];
+
+/** 中英对照搜索匹配：返回 [{ab, en, zh, to}]；q 为空返回 [] */
+function enAliasMatch(q) {
+  q = (q || '').trim().toLowerCase();
+  if (!q) return [];
+  var out = [];
+  for (var i = 0; i < EN_ALIAS.length; i++) {
+    var a = EN_ALIAS[i];
+    if (a[0].toLowerCase() === q || (q.length >= 3 && a[1].toLowerCase().indexOf(q) !== -1)) {
+      out.push({ ab: a[0], en: a[1], zh: a[2], to: a[3] || '' });
+    }
+  }
+  return out;
+}
+
 module.exports = {
   BRIEF_SECTIONS: BRIEF_SECTIONS,
   LINK_SECTIONS: LINK_SECTIONS,
   REFS: REFS,
   CALC_LINKS: CALC_LINKS,
   ABBR: ABBR,
+  EN_ALIAS: EN_ALIAS,
+  enAliasMatch: enAliasMatch,
   abbrHits: abbrHits,
   blockText: blockText,
 };

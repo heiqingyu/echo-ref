@@ -959,6 +959,8 @@
   const BRIEF = (window.ExtraData && window.ExtraData.BRIEF_SECTIONS) || [];
   const LINKS = (window.ExtraData && window.ExtraData.LINK_SECTIONS) || [];
   const REFS = (window.ExtraData && window.ExtraData.REFS) || [];
+  /** 中英对照（v1.12.5）：搜索时单列一组「缩写 / 英文 → 中文」，不进目录 */
+  const enAliasMatch = (window.ExtraData && window.ExtraData.enAliasMatch) || function () { return []; };
 
   /** 当前打开的条目（详情视图） */
   let curCalcGroup = 'flow';
@@ -1677,6 +1679,19 @@
     const secs = buildCalcSections();
     let list = '';
 
+    // ★ v1.12.5 中英对照：仅搜索时出现——缩写整词或英文全称命中时，在最前单列一组。
+    //   点击进入关联条目（data-id = 目标条目）；无关联的条目不跳转。
+    if (q) {
+      const al = enAliasMatch(q);
+      if (al.length) {
+        list += fxGroupHtml('enalias', '中英对照', '英文 · 缩写 → 中文（点按打开相关条目）', al.length);
+        al.forEach(function (a) {
+          list += fxItemHtml('alias', a.to, a.en, a.zh, '', 0, '', false, a.ab);
+        });
+        list += '</div></div>';
+      }
+    }
+
     secs.forEach(function (sec) {
       if (sec.id === 'fav' && q) return;   // 搜索时收藏组只是镜像，别重复列出
       const items = [];
@@ -1774,6 +1789,11 @@
       const kind = el.dataset.kind;
       // 外链条目渲染为 <a>，没有 data-kind：交给浏览器默认跳转（新窗口播放 / 打开原站）
       if (!kind) return;
+      if (kind === 'alias') {
+        // 中英对照行：跳到关联条目（data-id = 目标 id；无关联的为空串，不动作）
+        if (el.dataset.id) openCalcGroup(el.dataset.id);
+        return;
+      }
       if (kind === 'album') {
         openAlbum(el.dataset.sec, el.dataset.id);
       } else {

@@ -1809,6 +1809,26 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('EF 分级图例由 data 渲染（efLegend）', /wx:for="\{\{efLegend\}\}"/.test(iw) ? 1 : 0, 1, 0);
 }
 
+/* ───── 中英对照（v1.12.5）：数据完整性 + 匹配口径 ───── */
+{
+  const EXA = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
+  const CGA = require(pathW.join(__dirname, 'miniprogram', 'utils', 'calc-groups.js'));
+  const AL = EXA.EN_ALIAS || [];
+  check('中英对照表 ≥ 60 条', AL.length >= 60 ? 1 : 0, 1, 0);
+  const aliasIds = {};
+  EXA.BRIEF_SECTIONS.forEach(function (s) { (s.items || []).forEach(function (it) { aliasIds[it.id] = 1; }); });
+  (CGA.GROUPS || []).forEach(function (g) { aliasIds[g.id] = 1; });
+  const badAlias = AL.filter(function (a) { return a[3] && !aliasIds[a[3]]; });
+  check('中英对照关联条目 id 全部真实存在（不悬空）', badAlias.length, 0, 0);
+  badAlias.forEach(function (a) { console.log('         ' + a[0] + ' → ' + a[3]); });
+  const mr = EXA.enAliasMatch('MR');
+  check('enAliasMatch 缩写整词命中：MR → mitral', (mr[0] && mr[0].to) === 'mitral' ? 1 : 0, 1, 0);
+  check('enAliasMatch 英文包含命中（≥3 字符）：regurgitation ≥ 3 条', EXA.enAliasMatch('regurgitation').length >= 3 ? 1 : 0, 1, 0);
+  check('enAliasMatch 空词返回空数组', EXA.enAliasMatch('').length, 0, 0);
+  check('enAliasMatch 短词（<3 字符）不做英文包含匹配，只命中缩写',
+    EXA.enAliasMatch('as').every(function (a) { return a.ab.toLowerCase() === 'as'; }) ? 1 : 0, 1, 0);
+}
+
 console.log(`\n${'='.repeat(46)}`);
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 console.log('='.repeat(46) + '\n');

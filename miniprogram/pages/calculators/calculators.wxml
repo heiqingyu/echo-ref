@@ -45,7 +45,7 @@
         <view wx:for="{{sec.items}}" wx:key="id" wx:for-item="it"
               class="fx-item" hover-class="fx-item--tap"
               data-kind="{{it.kind}}" data-id="{{it.id}}" data-url="{{it.url}}"
-              data-sec="{{it.sec}}" data-title="{{it.title}}" bindtap="onOpen">
+              data-sec="{{it.sec}}" data-title="{{it.title}}" data-to="{{it.to}}" bindtap="onOpen">
           <view wx:if="{{it.ab}}" class="fx-bd {{it.ab.length >= 5 ? 'fx-bd--s' : ''}}">{{it.ab}}</view>
           <view class="fx-item__main">
             <view class="fx-item__n">{{it.title}}</view>

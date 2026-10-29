@@ -233,6 +233,20 @@ function searchSections(all, kw) {
       out.push({ id: sec.id, title: sec.title, note: sec.note || '', items: items });
     }
   });
+  // ★ v1.12.5 中英对照：仅搜索时出现——缩写整词或英文全称命中时，单列一组置顶。
+  //   点按进入关联条目（to = 目标条目 id）；无关联的条目不跳转。
+  //   id 兜底用 'en-' + 缩写，避免多条无关联项的 wx:key 重复。
+  const alias = EX.enAliasMatch ? EX.enAliasMatch(kw) : [];
+  if (alias.length) {
+    out.unshift({
+      id: 'enalias',
+      title: '中英对照',
+      note: '英文 · 缩写 → 中文（点按打开相关条目）',
+      items: alias.map(function (a) {
+        return { kind: 'alias', id: a.to || ('en-' + a.ab), ab: a.ab, title: a.en, sub: a.zh, to: a.to };
+      }),
+    });
+  }
   return out;
 }
 
@@ -460,6 +474,11 @@ Page({
         return;
       }
       this.copyLink(d.url);
+      return;
+    }
+    if (d.kind === 'alias') {
+      // 中英对照行：跳到关联条目（to = 目标 id；无关联的为空串，不动作）
+      if (d.to) wx.navigateTo({ url: '/pages/formula/formula?id=' + d.to });
       return;
     }
     if (d.kind === 'valveana') {

@@ -2108,7 +2108,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.12.4</div>
+    <div class="verline">心脏超声参考值 · v1.12.5</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2150,7 +2150,7 @@ button.fx-nav__c {
         </div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.12.4</div>
+      <div class="verline">心脏超声参考值 · v1.12.5</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -18189,6 +18189,100 @@ function blockText(blocks) {
   }).join(' ');
 }
 
+/* ────────── 中英对照（v1.12.5）──────────
+   [缩写, 英文全称, 中文, 关联条目id]
+   ★ 用途：搜索时单列一组「中英对照」，平时不进目录、不渲染详情卡。
+   第 4 列关联条目 id 必须真实存在（verify-mp 有断言）；无关联写 ''。
+   匹配口径见 enAliasMatch：缩写整词命中（不分大小写）；英文全称包含匹配
+   仅在关键词 ≥3 字符时启用，防止「as / pe」这类短词过度命中。 */
+var EN_ALIAS = [
+  ['TTE', 'transthoracic echocardiography', '经胸超声心动图', 'tte-std'],
+  ['TEE', 'transesophageal echocardiography', '经食管超声心动图', 'tee-20'],
+  ['LVEF', 'left ventricular ejection fraction', '左室射血分数', 'lv'],
+  ['EF', 'ejection fraction', '射血分数', 'lv'],
+  ['GLS', 'global longitudinal strain', '整体纵向应变', 'strain'],
+  ['LVMI', 'left ventricular mass index', '左室质量指数', 'lv'],
+  ['LAVI', 'left atrial volume index', '左房容积指数', 'la'],
+  ['TAPSE', 'tricuspid annular plane systolic excursion', '三尖瓣环收缩期位移', 'rvfun'],
+  ['MR', 'mitral regurgitation', '二尖瓣反流', 'mitral'],
+  ['MS', 'mitral stenosis', '二尖瓣狭窄', 'mitral'],
+  ['AR', 'aortic regurgitation', '主动脉瓣反流', 'aortic'],
+  ['AS', 'aortic stenosis', '主动脉瓣狭窄', 'aortic'],
+  ['TR', 'tricuspid regurgitation', '三尖瓣反流', 'tr-interv'],
+  ['TS', 'tricuspid stenosis', '三尖瓣狭窄', ''],
+  ['PS', 'pulmonary stenosis', '肺动脉瓣狭窄', ''],
+  ['PR', 'pulmonary regurgitation', '肺动脉瓣反流', ''],
+  ['ASD', 'atrial septal defect', '房间隔缺损', 'shd'],
+  ['VSD', 'ventricular septal defect', '室间隔缺损', 'shd'],
+  ['PDA', 'patent ductus arteriosus', '动脉导管未闭', 'shd'],
+  ['PFO', 'patent foramen ovale', '卵圆孔未闭', 'bubble'],
+  ['TOF', 'tetralogy of Fallot', '法洛四联症', 'tof-pr'],
+  ['DORV', 'double outlet right ventricle', '右室双出口', 'dorv'],
+  ['TGA', 'transposition of the great arteries', '大动脉转位', 'as-switch'],
+  ['CoA', 'coarctation of the aorta', '主动脉缩窄', 'coa-echo'],
+  ['IAA', 'interrupted aortic arch', '主动脉弓离断', 'iaa'],
+  ['TAPVC', 'total anomalous pulmonary venous connection', '完全型肺静脉异位引流', 'pvai'],
+  ['ALCAPA', 'anomalous left coronary artery from the pulmonary artery', '左冠状动脉异常起源于肺动脉', 'aca'],
+  ['CAF', 'coronary artery fistula', '冠状动脉瘘', 'caf'],
+  ['BAV', 'bicuspid aortic valve', '主动脉瓣二叶式畸形', 'bav'],
+  ['PH', 'pulmonary hypertension', '肺高血压', 'zh-ph'],
+  ['PE', 'pulmonary embolism', '肺栓塞', 'pe'],
+  ['DVT', 'deep vein thrombosis', '深静脉血栓形成', 'pe'],
+  ['CTEPH', 'chronic thromboembolic pulmonary hypertension', '慢性血栓栓塞性肺高血压', 'pe'],
+  ['HCM', 'hypertrophic cardiomyopathy', '肥厚型心肌病', 'hcm'],
+  ['DCM', 'dilated cardiomyopathy', '扩张型心肌病', 'dcm'],
+  ['ARVC', 'arrhythmogenic right ventricular cardiomyopathy', '致心律失常性右室心肌病', 'arvc'],
+  ['LVNC', 'left ventricular noncompaction', '左室心肌致密化不全', 'nc-lv'],
+  ['PPCM', 'peripartum cardiomyopathy', '围产期心肌病', 'ppcm'],
+  ['CTRCD', 'cancer therapy-related cardiac dysfunction', '肿瘤治疗相关心功能不全', 'ctrcd'],
+  ['IE', 'infective endocarditis', '感染性心内膜炎', 'ie'],
+  ['CRT', 'cardiac resynchronization therapy', '心脏再同步化治疗', 'crt'],
+  ['LVAD', 'left ventricular assist device', '左室辅助装置', 'lvad'],
+  ['ECMO', 'extracorporeal membrane oxygenation', '体外膜肺氧合', 'ecmo'],
+  ['TAVR', 'transcatheter aortic valve replacement', '经导管主动脉瓣置换', 'tavr'],
+  ['TEER', 'transcatheter edge-to-edge repair', '经导管缘对缘修复', 'mv-interv'],
+  ['IVC', 'inferior vena cava', '下腔静脉', 'rv'],
+  ['RAP', 'right atrial pressure', '右房压', 'rv'],
+  ['PASP', 'pulmonary artery systolic pressure', '肺动脉收缩压', 'zh-ph'],
+  ['PVR', 'pulmonary vascular resistance', '肺血管阻力', 'zh-ph'],
+  ['LVOT', 'left ventricular outflow tract', '左室流出道', 'lv'],
+  ['RVOT', 'right ventricular outflow tract', '右室流出道', 'rv'],
+  ['EROA', 'effective regurgitant orifice area', '有效反流口面积', 'mitral'],
+  ['PISA', 'proximal isovelocity surface area', '近端等速表面积', 'mitral'],
+  ['VTI', 'velocity time integral', '速度时间积分', 'doppler-basics'],
+  ['SAM', 'systolic anterior motion', '收缩期前向运动', 'hcm'],
+  ['RWMA', 'regional wall motion abnormality', '节段性室壁运动异常', 'stress-echo'],
+  ['MVA', 'mitral valve area', '二尖瓣口面积', 'mitral'],
+  ['BSA', 'body surface area', '体表面积', ''],
+  ['SV', 'stroke volume', '每搏输出量', ''],
+  ['CO', 'cardiac output', '心输出量', ''],
+  ['ASO', 'arterial switch operation', '大动脉调转术', 'as-switch'],
+  ['CEUS', 'contrast-enhanced ultrasound', '超声造影', 'contrast-echo'],
+  ['DSE', 'dobutamine stress echocardiography', '多巴酚丁胺负荷超声', 'dse'],
+  ['NYHA', 'New York Heart Association functional class', '纽约心脏协会心功能分级', ''],
+  ['Qp/Qs', 'pulmonary-to-systemic flow ratio', '肺循环与体循环血流比', 'shd'],
+  ['IVRT', 'isovolumetric relaxation time', '等容舒张时间', 'lv'],
+  ['TDI', 'tissue Doppler imaging', '组织多普勒成像', ''],
+  ['CP', 'constrictive pericarditis', '缩窄性心包炎', 'cp-rm'],
+  ['RCM', 'restrictive cardiomyopathy', '限制型心肌病', 'cp-rm'],
+  ['PW', 'pulsed wave Doppler', '脉冲波多普勒', 'doppler-basics'],
+  ['CW', 'continuous wave Doppler', '连续波多普勒', 'doppler-basics'],
+];
+
+/** 中英对照搜索匹配：返回 [{ab, en, zh, to}]；q 为空返回 [] */
+function enAliasMatch(q) {
+  q = (q || '').trim().toLowerCase();
+  if (!q) return [];
+  var out = [];
+  for (var i = 0; i < EN_ALIAS.length; i++) {
+    var a = EN_ALIAS[i];
+    if (a[0].toLowerCase() === q || (q.length >= 3 && a[1].toLowerCase().indexOf(q) !== -1)) {
+      out.push({ ab: a[0], en: a[1], zh: a[2], to: a[3] || '' });
+    }
+  }
+  return out;
+}
+
   window.ExtraData = {
     BRIEF_SECTIONS: BRIEF_SECTIONS,
     BV_BASE: BV_BASE,
@@ -18204,6 +18298,8 @@ function blockText(blocks) {
     ABBR: ABBR,
     abbrHits: abbrHits,
     blockText: blockText,
+    EN_ALIAS: EN_ALIAS,
+    enAliasMatch: enAliasMatch,
   };
 })();
 
@@ -20148,6 +20244,8 @@ const MATERIALS = [];
   const BRIEF = (window.ExtraData && window.ExtraData.BRIEF_SECTIONS) || [];
   const LINKS = (window.ExtraData && window.ExtraData.LINK_SECTIONS) || [];
   const REFS = (window.ExtraData && window.ExtraData.REFS) || [];
+  /** 中英对照（v1.12.5）：搜索时单列一组「缩写 / 英文 → 中文」，不进目录 */
+  const enAliasMatch = (window.ExtraData && window.ExtraData.enAliasMatch) || function () { return []; };
 
   /** 当前打开的条目（详情视图） */
   let curCalcGroup = 'flow';
@@ -20866,6 +20964,19 @@ const MATERIALS = [];
     const secs = buildCalcSections();
     let list = '';
 
+    // ★ v1.12.5 中英对照：仅搜索时出现——缩写整词或英文全称命中时，在最前单列一组。
+    //   点击进入关联条目（data-id = 目标条目）；无关联的条目不跳转。
+    if (q) {
+      const al = enAliasMatch(q);
+      if (al.length) {
+        list += fxGroupHtml('enalias', '中英对照', '英文 · 缩写 → 中文（点按打开相关条目）', al.length);
+        al.forEach(function (a) {
+          list += fxItemHtml('alias', a.to, a.en, a.zh, '', 0, '', false, a.ab);
+        });
+        list += '</div></div>';
+      }
+    }
+
     secs.forEach(function (sec) {
       if (sec.id === 'fav' && q) return;   // 搜索时收藏组只是镜像，别重复列出
       const items = [];
@@ -20963,6 +21074,11 @@ const MATERIALS = [];
       const kind = el.dataset.kind;
       // 外链条目渲染为 <a>，没有 data-kind：交给浏览器默认跳转（新窗口播放 / 打开原站）
       if (!kind) return;
+      if (kind === 'alias') {
+        // 中英对照行：跳到关联条目（data-id = 目标 id；无关联的为空串，不动作）
+        if (el.dataset.id) openCalcGroup(el.dataset.id);
+        return;
+      }
       if (kind === 'album') {
         openAlbum(el.dataset.sec, el.dataset.id);
       } else {
