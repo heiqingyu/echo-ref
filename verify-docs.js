@@ -793,7 +793,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 112 条（计算 41 + 评估判读 71；v1.11.3 新增冠脉异常起源与肺静脉异位引流）', d.items === 112, d.items);
+    check('条目 114 条（计算 41 + 评估判读 73；v1.11.4 新增主动脉弓离断与肺动脉起源异常）', d.items === 114, d.items);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
       d.resistOuts + ' / ' + d.lvgeomOuts);
@@ -1181,6 +1181,55 @@ function check(name, ok, detail) {
     /10 cm\/s/.test(fnTxt) && /转氨酶正常不能排除/.test(fnTxt), '');
   check('Fontan：仍保留开窗与肝静脉反向血流两条要点',
     ['开窗', '肝静脉'].every((w) => fnTxt.indexOf(w) >= 0), '');
+  /* ★ v1.11.4：Fontan 运动与药物试验 */
+  check('Fontan：运动试验三项限制（变时 / 前负荷 / 开窗分流）',
+    ['变时功能', '前负荷', '峰值 VO'].every((w) => fnTxt.indexOf(w) >= 0), '');
+  check('Fontan：药物段写清过度利尿压低前负荷',
+    /西地那非/.test(fnTxt) && /过度利尿/.test(fnTxt), '');
+  check('Fontan：小节编号连续到十四（新增三节后不跳号）',
+    ['十一、运动试验', '十二、负荷超声与药物试验', '十三、药物', '十四、七个坑']
+      .every((w) => fnTxt.indexOf(w) >= 0), '');
+
+  /* v1.11.4：主动脉弓离断 / 肺动脉起源异常两个新条目 */
+  await openBrief('iaa');
+  const iaaTxt = await briefText('iaa');
+  check('主动脉弓离断：三型按断口位置写清（A 远端 / B 左颈总与左锁骨下之间 / C）',
+    ['左锁骨下动脉开口远端', '左颈总与左锁骨下之间'].every((w) => iaaTxt.indexOf(w) >= 0), '');
+  check('主动脉弓离断：点明「压差测不出不能排除」',
+    /压差测不出/.test(iaaTxt) || /没有连续腔/.test(iaaTxt), '');
+  check('主动脉弓离断：B 型要查 22q11 与迷走右锁骨下',
+    ['22q11', '迷走右锁骨下'].every((w) => iaaTxt.indexOf(w) >= 0), '');
+  check('主动脉弓离断：术后看吻合口与 LVOT',
+    ['弓部吻合口', 'LVOT'].every((w) => iaaTxt.indexOf(w) >= 0), '');
+
+  await openBrief('pa-origin');
+  const paTxt = await briefText('pa-origin');
+  check('肺动脉起源异常：三型齐全（AOPA / 吊带 / 单侧缺如）',
+    ['AOPA', '肺动脉吊带', '单侧缺如'].every((w) => paTxt.indexOf(w) >= 0), '');
+  check('肺动脉起源异常：AOPA 两个不该有的分支 + 双期连续血流',
+    ['主肺动脉少一支', '升主动脉多一支', '双期连续'].every((w) => paTxt.indexOf(w) >= 0), '');
+  check('肺动脉起源异常：吊带写清气管受压与完全性气管环',
+    /气管下段/.test(paTxt) && /完全性气管环/.test(paTxt), '');
+
+  /* v1.11.4：ALCAPA 术后负荷超声（并入冠脉异常起源条目，不另开入口） */
+  await openBrief('aca');
+  const acaTxt2 = await briefText('aca');
+  check('冠脉异常起源：新增术后负荷超声（运动 / 多巴酚丁胺 / 灌注）',
+    ['运动负荷超声', '多巴酚丁胺', '吻合口流速'].every((w) => acaTxt2.indexOf(w) >= 0), '');
+  check('冠脉异常起源：写清「未达负荷」不等于阴性',
+    /未达负荷/.test(acaTxt2), '');
+
+  /* v1.11.4：HCM 下蹲-站立激发 */
+  await openBrief('hcm');
+  const hcmTxt = await briefText('hcm');
+  check('肥厚型心肌病：新增下蹲-站立体位激发（四步 + 优缺点）',
+    ['下蹲-站立', '蹲位 30–60 s', '优点', '局限'].every((w) => hcmTxt.indexOf(w) >= 0), '');
+  check('肥厚型心肌病：写清与主动脉瓣狭窄的相反反应',
+    /蹲下变轻/.test(hcmTxt) && /杂音增强/.test(hcmTxt), '');
+  check('肥厚型心肌病：说明只测蹲位会低估梗阻',
+    /只测蹲位会低估梗阻/.test(hcmTxt), '');
+  check('肥厚型心肌病：小节编号连续到十一（插入新节后不跳号）',
+    ['五、下蹲-站立', '六、SAM', '十一、报告怎么写'].every((w) => hcmTxt.indexOf(w) >= 0), '');
 
   /* v1.11.3：条目内引用 → 参考文献总表，展开 + 定位 + 高亮 */
   await openBrief('pvai');
