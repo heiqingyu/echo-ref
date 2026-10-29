@@ -990,6 +990,16 @@ function check(name, ok, detail) {
     ['adaptation', '勉强适应', '失适应'].every((w) => rvTxt.indexOf(w) >= 0), '');
   check('右心评估含决策用法（右心门槛 / 术后右心衰）',
     rvTxt.indexOf('右心门槛') >= 0 && rvTxt.indexOf('术后右心衰') >= 0, '');
+  check('rv-PASP 表与 sPAP 多普勒分级对齐（≥54 标 ≥中度，非「中重度」）',
+    rvTxt.indexOf('≥54 mmHg（≥中度）') >= 0 && rvTxt.indexOf('正式分级按 sPAP 多普勒') >= 0, '');
+  check('rv-加 PASP>50 重度(MS尺度) 与 sPAP 分级的区分警示',
+    rvTxt.indexOf('别和「PASP >50 = 重度肺高压」混为一谈') >= 0, '');
+  check('rv-PVR 分档不重叠（2–3 轻 / >3–5 中 / >5 重度）',
+    rvTxt.indexOf('2–3 轻 / >3–5 中 / >5 重度') >= 0, '');
+  check('rv-PADP 正常统一为 8–15 mmHg',
+    rvTxt.indexOf('PADP 多在正常 8–15 mmHg') >= 0, '');
+  check('rv-RV S′ 统一为 <9.5 cm/s（非 <10）',
+    rvTxt.indexOf('RV S′ <9.5 cm/s、PASP >50 mmHg') >= 0, '');
   await openBrief('rvfun');
   const rfTxt = await briefText('rvfun');
   check('右室功能含两种负荷方式（多巴酚丁胺 / 仰卧踏车）',
@@ -1150,6 +1160,8 @@ function check(name, ok, detail) {
   const tofTxt = await briefText('tof-pr');
   check('TOF 补上术前四联征确认与骑跨率',
     ['四联征是四件事', '骑跨率', 'DORV'].every((w) => tofTxt.indexOf(w) >= 0), '');
+  check('tof-pr 右室基底内径统一为 >41 mm（与全库一致，非 >45）',
+    tofTxt.indexOf('右室基底内径 >41 mm') >= 0, '');
   check('TOF 补上可根治性判断（McGoon / Nakata / MAPCA）',
     ['McGoon', 'Nakata', 'MAPCA'].every((w) => tofTxt.indexOf(w) >= 0), '');
   check('TOF 补上术式与术后基线五件事',
