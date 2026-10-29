@@ -1164,6 +1164,42 @@ function check(name, ok, detail) {
     /舒张期平坦/.test(shdTxt) && /收缩期也平坦/.test(shdTxt), '');
   check('分流估压：PVR 的分母是 Qp 不是 Qs',
     /PVR 的分母是肺血流/.test(shdTxt), '');
+  check('分流估压：小节编号连续到十二（插入两节后不跳号）',
+    ['六、VSD 合并主动脉瓣脱垂', '七、PDA 形态分型', '八、PDA 封堵后左肺动脉狭窄',
+      '九、三条通路', '十二、成人先心病'].every((w) => shdTxt.indexOf(w) >= 0), '');
+
+  /* v1.11.8：VSD 合并主动脉瓣脱垂（量化）+ PDA 封堵后左肺动脉狭窄 */
+  check('VSD 脱垂：量化三件事（脱垂深度 / 反流 / 缺损-瓣环距离）',
+    ['脱垂程度', '主动脉瓣反流', '缺损-瓣环距离'].every((w) => shdTxt.indexOf(w) >= 0), '');
+  check('VSD 脱垂：点明脱垂与反流不同步，决定手术的是反流',
+    /并不同步/.test(shdTxt) && /决定手术的是/.test(shdTxt), '');
+  check('VSD 脱垂：偏心束三条指标都会低估',
+    /三者都会失真|都会低估/.test(shdTxt) && /PISA/.test(shdTxt), '');
+  check('VSD 脱垂：封堵而不处理脱垂，反流不减反增',
+    /封堵 VSD 而不处理脱垂/.test(shdTxt), '');
+  check('VSD 脱垂：四条误判含「反流束当残余分流」「术后新发反流」',
+    ['瓣下、舒张期', '新发反流'].every((w) => shdTxt.indexOf(w) >= 0), '');
+  check('PDA 术后：必须单测左肺动脉起始部（只测主肺动脉会漏）',
+    /只测主肺动脉会漏/.test(shdTxt), '');
+  check('PDA 术后：禁止术后即刻下狭窄结论（1–3 个月复查）',
+    /别在术后即刻下/.test(shdTxt) && /1–3 个月/.test(shdTxt), '');
+  check('PDA 术后：左肺动脉流速五档与 >3.0 m/s 干预线',
+    ['2.5–3.0 m/s', '>3.0 m/s'].every((w) => shdTxt.indexOf(w) >= 0), '');
+  check('PDA 术后：与残余分流 / 血流重新分配的两条鉴别',
+    ['封堵器内或盘缘', '血流重新分配'].every((w) => shdTxt.indexOf(w) >= 0), '');
+  check('交叉引用：shd 已删「主动脉侧边缘可适当放宽」的旧口径',
+    shdTxt.indexOf('主动脉侧边缘可适当放宽') < 0, '');
+  check('交叉引用：shd 把五项边缘指给《房间隔缺损分型与封堵前 TEE》',
+    /见《房间隔缺损分型与封堵前 TEE》/.test(shdTxt), '');
+
+  await openBrief('asd-close');
+  const asdTxt = await briefText('asd-close');
+  check('交叉引用：asd-close 与 shd 口径统一（主动脉缘不是磨蚀独立预测因素）',
+    /不是磨蚀的独立预测因素/.test(asdTxt) && /口径/.test(asdTxt), '');
+  check('交叉引用：asd-close 明确下缘与后缘才是脱落 / 磨蚀高危',
+    /下缘（IVC 缘）与后缘不足 5 mm/.test(asdTxt), '');
+  check('交叉引用：asd-close 回指 shd（本条目只管测量与术中）',
+    /本条目只管/.test(asdTxt) && /先心病分流判读/.test(asdTxt), '');
 
   /* ★ v1.11.3：一个病一条、术前到术后 —— 冠脉异常起源 / 肺静脉异位引流 / Fontan 扩写 */
   await openBrief('aca');
