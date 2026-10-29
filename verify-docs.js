@@ -793,7 +793,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 114 条（计算 41 + 评估判读 73；v1.11.4 新增主动脉弓离断与肺动脉起源异常）', d.items === 114, d.items);
+    check('条目 116 条（计算 41 + 评估判读 75；v1.11.5 新增主动脉-左室隧道与三房心）', d.items === 116, d.items);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
       d.resistOuts + ' / ' + d.lvgeomOuts);
@@ -1211,6 +1211,29 @@ function check(name, ok, detail) {
   check('肺动脉起源异常：吊带写清气管受压与完全性气管环',
     /气管下段/.test(paTxt) && /完全性气管环/.test(paTxt), '');
 
+  /* v1.11.5：主动脉-左室隧道 / 三房心 */
+  await openBrief('alt');
+  const altTxt = await briefText('alt');
+  check('主动脉-左室隧道：与主动脉瓣反流的四条鉴别',
+    ['窦管交界上方的异常口', '瓣叶形态', '反流束位置', '出现年龄'].every((w) => altTxt.indexOf(w) >= 0), '');
+  check('主动脉-左室隧道：五步找隧道口 + 双期双向血流',
+    ['主动脉端开口', '隧道走行', '左室端开口', '双期双向'].every((w) => altTxt.indexOf(w) >= 0), '');
+  check('主动脉-左室隧道：点明「瓣膜正常的中重度 AR」要追',
+    /瓣膜正常的中重度 AR/.test(altTxt), '');
+  check('主动脉-左室隧道：术后盯残余分流与根部',
+    ['残余分流', '主动脉瓣反流', '主动脉根部'].every((w) => altTxt.indexOf(w) >= 0), '');
+
+  await openBrief('cor-tri');
+  const ctTxt = await briefText('cor-tri');
+  check('三房心：副房 / 隔膜 / 真左房三件套',
+    ['副房', '隔膜', '真左房'].every((w) => ctTxt.indexOf(w) >= 0), '');
+  check('三房心：与二尖瓣上环 / PAPVC / PPHN 鉴别（左心耳定位）',
+    ['二尖瓣上环', '肺静脉异位引流', 'PPHN', '左心耳'].every((w) => ctTxt.indexOf(w) >= 0), '');
+  check('三房心：隔膜压差阈值（平均 >10 / 峰值 >20 mmHg）',
+    /10 mmHg/.test(ctTxt) && /20 mmHg/.test(ctTxt), '');
+  check('三房心：术后看隔膜再狭窄与肺静脉开口',
+    ['再狭窄', '肺静脉开口'].every((w) => ctTxt.indexOf(w) >= 0), '');
+
   /* v1.11.4：ALCAPA 术后负荷超声（并入冠脉异常起源条目，不另开入口） */
   await openBrief('aca');
   const acaTxt2 = await briefText('aca');
@@ -1222,14 +1245,20 @@ function check(name, ok, detail) {
   /* v1.11.4：HCM 下蹲-站立激发 */
   await openBrief('hcm');
   const hcmTxt = await briefText('hcm');
-  check('肥厚型心肌病：新增下蹲-站立体位激发（四步 + 优缺点）',
-    ['下蹲-站立', '蹲位 30–60 s', '优点', '局限'].every((w) => hcmTxt.indexOf(w) >= 0), '');
-  check('肥厚型心肌病：写清与主动脉瓣狭窄的相反反应',
-    /蹲下变轻/.test(hcmTxt) && /杂音增强/.test(hcmTxt), '');
-  check('肥厚型心肌病：说明只测蹲位会低估梗阻',
-    /只测蹲位会低估梗阻/.test(hcmTxt), '');
-  check('肥厚型心肌病：小节编号连续到十一（插入新节后不跳号）',
-    ['五、下蹲-站立', '六、SAM', '十一、报告怎么写'].every((w) => hcmTxt.indexOf(w) >= 0), '');
+  check('肥厚型心肌病：蹲起激发按 R65 写成「20 次蹲起 + 60 秒内卧倒」',
+    ['20 次下蹲-站立', '60 秒内左侧卧', '优点', '局限'].every((w) => hcmTxt.indexOf(w) >= 0), '');
+  check('肥厚型心肌病：三档目标心率与「未充分激发不等于阴性」',
+    ['220 − 年龄', '200 − 年龄', '190 − 年龄', '未充分激发'].every((w) => hcmTxt.indexOf(w) >= 0), '');
+  check('肥厚型心肌病：新增强调「蹲着不动测压差不是蹲起激发」',
+    /蹲着不动测压差/.test(hcmTxt), '');
+  check('肥厚型心肌病：新增餐后与体位一节（餐后 / 站立位 / 平板）',
+    ['六、餐后与体位', '餐后更易诱发', '站立位压差高于卧位', '平板（直立）'].every((w) => hcmTxt.indexOf(w) >= 0), '');
+  check('肥厚型心肌病：药物口径已纠正（多巴酚丁胺不再推荐）',
+    /多巴酚丁胺/.test(hcmTxt) && /不再推荐/.test(hcmTxt), '');
+  check('肥厚型心肌病：写清两套阈值（30 诊断 / 50 运动阳性）',
+    /两套阈值别混/.test(hcmTxt) && /≥50 mmHg/.test(hcmTxt), '');
+  check('肥厚型心肌病：小节编号连续到十二（两次插节后不跳号）',
+    ['五、蹲起激发', '六、餐后与体位', '七、SAM', '十二、报告怎么写'].every((w) => hcmTxt.indexOf(w) >= 0), '');
 
   /* v1.11.3：条目内引用 → 参考文献总表，展开 + 定位 + 高亮 */
   await openBrief('pvai');
