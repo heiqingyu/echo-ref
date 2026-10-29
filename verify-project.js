@@ -227,7 +227,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 86) ok('参考文献 86 条（新增 R84 AHA/ASE 2002 17 节段命名、R85 2020 中国心功能指南、R86 2023 中国 CCS 负荷超声指南）');
+if (EX.REFS.length === 87) ok('参考文献 87 条（新增 R87 VARC-3 结构衰败三级定义）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);

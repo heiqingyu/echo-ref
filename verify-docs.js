@@ -806,7 +806,7 @@ function check(name, ok, detail) {
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
-    check('参考文献 86 条', d.refs === 86, d.refs);
+    check('参考文献 87 条', d.refs === 87, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
 
@@ -1048,6 +1048,27 @@ function check(name, ok, detail) {
   check('主动脉瓣：AVA 连续方程 0.95（1.8 / 15 / 40）', /AVA 连续方程 0\.95/.test(aoOut), aoOut.slice(0, 120));
   check('主动脉瓣：四值齐备判反常型 LF-LG', /低流量低压差.*反常/.test(aoOut), aoOut.slice(-120));
   check('主动脉瓣：LF-LG 已判时不再重复 ⚠ 提示', /⚠ AVA ≤1\.0/.test(aoOut) ? 'dup' : 'ok', 'ok');
+
+  // v1.10.9：人工瓣条目扩充 —— 五道门 / PPM 双切点 / 血栓 vs pannus / VARC-3 三级 / 瓣周漏
+  await openBrief('prosthetic');
+  const prTxt = await briefText('prosthetic');
+  const hasPr = (ws) => ws.every((w) => prTxt.indexOf(w) >= 0);
+  check('人工瓣含五道门判别路径',
+    hasPr(['① 流量', '② 尺寸', '③ 几何', '④ 反流', '⑤ 时间轴']), '');
+  check('人工瓣含 PPM 两套切点（含 BMI ≥ 30）',
+    hasPr(['0.66–0.85', '≤ 0.65', '0.56–0.70', '≤ 0.55', '0.91–1.20', '≤ 0.75']), '');
+  check('人工瓣含血栓 vs pannus 六维鉴别',
+    hasPr(['瓣膜血栓', '血管翳 pannus', '抗凝 / 溶栓', '高密度（纤维组织）']), '');
+  check('人工瓣含 VARC-3 三级 SVD',
+    hasPr(['Stage 1 形态学 SVD', 'Stage 2 中度血流动力学 SVD', 'Stage 3 重度血流动力学 SVD']), '');
+  check('人工瓣含瓣周漏三级定量',
+    hasPr(['VC < 3 mm', 'VC 3–6 mm', 'VC ≥ 6 mm', '周向 > 20%']), '');
+  check('人工瓣含八个高频误判',
+    hasPr(['用不同切面测压差', '不记心率就比压差', '把 pannus 当血栓反复溶栓']), '');
+  check('人工瓣十二节编号连续',
+    ['一、第一原则', '二、正常流速与压差', '三、压差升高', '四、PPM', '五、机械瓣与生物瓣',
+      '六、瓣膜血栓', '七、血管翳', '八、SVD', '九、低流量', '十、瓣周漏',
+      '十一、随访节奏', '十二、八个高频误判'].every((w) => prTxt.indexOf(w) >= 0), '');
 
   await openCalc('mpap');
   await fillCalc('mpap', 'pp_tr', '3.0');
@@ -1451,7 +1472,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 86 条', /86/.test(ri.cnt), refsInit);
+  check('折叠头显示 87 条', /87/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -1470,7 +1491,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 86 条', ro.hidden === false && ro.n === 86 && ro.h > 0, refsOpen);
+  check('点击后展开全部 87 条', ro.hidden === false && ro.n === 87 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 
