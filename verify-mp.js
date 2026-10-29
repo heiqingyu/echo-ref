@@ -575,7 +575,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 116 条（计算 41 + 判读 75；v1.11.5 新增主动脉-左室隧道、三房心）', nItems, 116, 0);
+  check('目录共 117 条（计算 41 + 判读 76；v1.11.6 新增右室双腔）', nItems, 117, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -899,7 +899,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病（含术后）22 条（18 判读含冠状动脉瘘、冠脉异常起源、主动脉-左室隧道、肺静脉异位引流、主动脉弓离断、肺动脉起源异常、三房心 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率）', dirById('chd').items.length, 22, 0);
+  check('先天性心脏病（含术后）23 条（19 判读含冠状动脉瘘、冠脉异常起源、主动脉-左室隧道、右室双腔、肺静脉异位引流、主动脉弓离断、肺动脉起源异常、三房心 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率）', dirById('chd').items.length, 23, 0);
   ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
     check('先天性心脏病含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);

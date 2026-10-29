@@ -793,7 +793,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 116 条（计算 41 + 评估判读 75；v1.11.5 新增主动脉-左室隧道与三房心）', d.items === 116, d.items);
+    check('条目 117 条（计算 41 + 评估判读 76；v1.11.6 新增右室双腔）', d.items === 117, d.items);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
       d.resistOuts + ' / ' + d.lvgeomOuts);
@@ -1234,6 +1234,34 @@ function check(name, ok, detail) {
   check('三房心：术后看隔膜再狭窄与肺静脉开口',
     ['再狭窄', '肺静脉开口'].every((w) => ctTxt.indexOf(w) >= 0), '');
 
+  /* v1.11.6：右室双腔（DCRV） */
+  await openBrief('dbv');
+  const dbvTxt = await briefText('dbv');
+  check('右室双腔：肌束把右室切成近端腔 / 远端腔，并点明近端腔是高压腔',
+    ['近端腔', '远端腔', '近端腔是高压腔'].every((w) => dbvTxt.indexOf(w) >= 0), '');
+  check('右室双腔：三个压差分开列（肌束 / TR / PR）',
+    ['肌束压差', 'TR 压差', 'PR 压差'].every((w) => dbvTxt.indexOf(w) >= 0), '');
+  check('右室双腔：警告「别用 TR 估肺动脉压」',
+    /不是肺动脉高压/.test(dbvTxt) && /非肺动脉高压/.test(dbvTxt), '');
+  check('右室双腔：与流出道狭窄、调节束、肺动脉瓣狭窄鉴别',
+    ['漏斗部', '调节束', '肺动脉瓣狭窄'].every((w) => dbvTxt.indexOf(w) >= 0), '');
+  check('右室双腔：术前必须报 VSD 开口在肌束哪一侧',
+    /开口位于肌束近端/.test(dbvTxt) && /哪一侧/.test(dbvTxt), '');
+  check('右室双腔：报告模板含肌束位置与两端压力',
+    ['距三尖瓣环', '峰值压差'].every((w) => dbvTxt.indexOf(w) >= 0), '');
+
+  /* v1.11.6：冠状动脉瘘术后残余分流 */
+  await openBrief('caf');
+  const cafTxt2 = await briefText('caf');
+  check('冠状动脉瘘：新增术后一节（残余分流 / 冠脉回退 / 溶血）',
+    ['七、术后：残余分流、冠脉回退与溶血', '残余分流', '冠脉回退'].every((w) => cafTxt2.indexOf(w) >= 0), '');
+  check('冠状动脉瘘：区分「装置内部血流」与真残余分流',
+    /装置内部的血流/.test(cafTxt2) && /装置与管壁的交界/.test(cafTxt2), '');
+  check('冠状动脉瘘：写清「少量但高速」的残余分流更易溶血',
+    /少量但高速/.test(cafTxt2) && /结合珠蛋白/.test(cafTxt2), '');
+  check('冠状动脉瘘：术后时间点（即刻 / 24–48 小时 / 1 个月 / 3–6 个月）',
+    ['24–48 小时', '3–6 个月'].every((w) => cafTxt2.indexOf(w) >= 0), '');
+
   /* v1.11.4：ALCAPA 术后负荷超声（并入冠脉异常起源条目，不另开入口） */
   await openBrief('aca');
   const acaTxt2 = await briefText('aca');
@@ -1251,14 +1279,20 @@ function check(name, ok, detail) {
     ['220 − 年龄', '200 − 年龄', '190 − 年龄', '未充分激发'].every((w) => hcmTxt.indexOf(w) >= 0), '');
   check('肥厚型心肌病：新增强调「蹲着不动测压差不是蹲起激发」',
     /蹲着不动测压差/.test(hcmTxt), '');
-  check('肥厚型心肌病：新增餐后与体位一节（餐后 / 站立位 / 平板）',
-    ['六、餐后与体位', '餐后更易诱发', '站立位压差高于卧位', '平板（直立）'].every((w) => hcmTxt.indexOf(w) >= 0), '');
+  check('肥厚型心肌病：餐后与体位一节（餐后 / 站立位 / 平板）',
+    ['七、餐后与体位', '餐后更易诱发', '站立位压差高于卧位', '平板（直立）'].every((w) => hcmTxt.indexOf(w) >= 0), '');
   check('肥厚型心肌病：药物口径已纠正（多巴酚丁胺不再推荐）',
     /多巴酚丁胺/.test(hcmTxt) && /不再推荐/.test(hcmTxt), '');
   check('肥厚型心肌病：写清两套阈值（30 诊断 / 50 运动阳性）',
     /两套阈值别混/.test(hcmTxt) && /≥50 mmHg/.test(hcmTxt), '');
-  check('肥厚型心肌病：小节编号连续到十二（两次插节后不跳号）',
-    ['五、蹲起激发', '六、餐后与体位', '七、SAM', '十二、报告怎么写'].every((w) => hcmTxt.indexOf(w) >= 0), '');
+  check('肥厚型心肌病：目标导向 Valsalva 独立成节（软管 >40 mmHg + 检出率对比）',
+    ['五、目标导向 Valsalva', '>40 mmHg', '16.6%', '38%'].every((w) => hcmTxt.indexOf(w) >= 0), '');
+  check('肥厚型心肌病：Valsalva 四期，且写明只在 II 期测压差',
+    ['开始用力', '持续用力', '开始松弛', '完全松弛', 'II 期'].every((w) => hcmTxt.indexOf(w) >= 0), '');
+  check('肥厚型心肌病：Valsalva「充分」五条标准 + 重复不超过 4 次',
+    ['颈静脉', '面部', '≥20 cm/s', '重复不超过 4 次'].every((w) => hcmTxt.indexOf(w) >= 0), '');
+  check('肥厚型心肌病：小节编号连续到十三（三次插节后不跳号）',
+    ['五、目标导向 Valsalva', '六、蹲起激发', '七、餐后与体位', '八、SAM', '十三、报告怎么写'].every((w) => hcmTxt.indexOf(w) >= 0), '');
 
   /* v1.11.3：条目内引用 → 参考文献总表，展开 + 定位 + 高亮 */
   await openBrief('pvai');
