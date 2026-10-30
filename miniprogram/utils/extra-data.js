@@ -7177,7 +7177,7 @@ const PHILIPS_CLASS = [
   },
   { g: '④ 三维 · 多平面 · 心腔重建' },
   {
-    id: 'ph-057', title: '飞利浦3D多平面技术的临床应用及操作技巧', sub: '2022.07.25 · 云教室 · 45 分钟',
+    id: 'ph-057', title: '3D 多平面技术的临床应用及操作技巧', sub: '2022.07.25 · 云教室 · 45 分钟',
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E9%A3%9E%E5%88%A9%E6%B5%A63D%E5%A4%9A%E5%B9%B3%E9%9D%A2%E6%8A%80%E6%9C%AF%E7%9A%84%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%8A%80%E5%B7%A7_v2.mp4',
   },
   {
@@ -7354,7 +7354,7 @@ const PHILIPS_CLASS = [
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/%E5%89%AA%E8%BE%91-3.12-%E5%AD%99%E9%B9%8F%E6%B6%9B-%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E5%8F%8D%E6%B5%81%E4%B8%B4%E5%BA%8A%E8%AF%84%E4%BC%B0%E5%92%8C%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%8C%87%E5%8D%97%E8%A7%A3%E6%9E%90.mp4',
   },
   {
-    id: 'ph-101', title: '经导管左心耳封堵术(LAAC)飞利浦TEE解决方案', sub: '2025.03.24 · 云教室 · 28 分钟',
+    id: 'ph-101', title: '经导管左心耳封堵术（LAAC）TEE 解决方案', sub: '2025.03.24 · 云教室 · 28 分钟',
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/2025.3.24%E7%BB%8F%E5%AF%BC%E7%AE%A1%E5%B7%A6%E5%BF%83%E8%80%B3%E5%B0%81%E5%A0%B5%E6%9C%AF%EF%BC%88LAAC%EF%BC%89%E9%A3%9E%E5%88%A9%E6%B5%A6TEE%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%20%E9%BB%84%E5%B0%8F%E6%9D%BE.mp4',
   },
   {
@@ -7408,7 +7408,7 @@ const PHILIPS_CLASS = [
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E5%BF%83%E5%8A%9F%E8%83%BD%E7%9A%84%E8%AF%84%E4%BB%B7%E6%96%B9%E6%B3%95%E5%8F%8A%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B.mp4',
   },
   {
-    id: 'ph-115', title: '左室功能评估及飞利浦定量技术应用', sub: '2022.06.27 · 云教室 · 34 分钟',
+    id: 'ph-115', title: '左室功能评估与定量技术应用', sub: '2022.06.27 · 云教室 · 34 分钟',
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E5%B7%A6%E5%AE%A4%E5%8A%9F%E8%83%BD%E8%AF%84%E4%BC%B0%E5%8F%8A%E9%A3%9E%E5%88%A9%E6%B5%A6%E5%AE%9A%E9%87%8F%E6%8A%80%E6%9C%AF%E5%BA%94%E7%94%A8.mp4',
   },
   {
@@ -7509,7 +7509,7 @@ const PHILIPS_CLASS = [
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E7%99%BE%E5%AE%B6%E8%AE%B2%E5%9D%9B/2024.9.18-%E9%99%88%E6%B5%B7%E7%87%95-%E4%B8%BB%E5%8A%A8%E8%84%89%E5%A4%B9%E5%B1%82%E7%9A%84%E8%B6%85%E5%A3%B0%E8%AF%8A%E6%96%AD%E6%8A%80%E5%B7%A7.mp4',
   },
   {
-    id: 'ph-140', title: '飞利浦负荷超声临床应用', sub: '2019.07.22 · 云教室 · 32 分钟',
+    id: 'ph-140', title: '负荷超声临床应用', sub: '2019.07.22 · 云教室 · 32 分钟',
     url: 'https://philips-idp.oss-cn-shanghai.aliyuncs.com/live_broadcast/%E8%B6%85%E5%A3%B0/%E4%BA%91%E6%95%99%E5%AE%A4/%E9%A3%9E%E5%88%A9%E6%B5%A6%E8%B4%9F%E8%8D%B7%E8%B6%85%E5%A3%B0%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8.mp4',
   },
   {
@@ -7641,7 +7641,7 @@ const LINK_SECTIONS = [
       {
         id: 'ktvid',
         title: '心脏超声术语及标准切面（视频）',
-        sub: 'GE 心课堂 上下篇 17 段 · 探头手法 + 逐个标准切面',
+        sub: '上下篇 17 段 · 探头手法 + 逐个标准切面',
         album: true,
         note: 'GE 心课堂「心脏超声基础规范学习班」学习笔记（上 / 下篇）· 微信公众号「GE超声」· 720p 转存。'
           + '★ 这批视频托管在国外静态站点（GitHub Pages），国内打开与拖动都偏慢，点开请先等几秒缓冲；'
@@ -7655,7 +7655,7 @@ const LINK_SECTIONS = [
       },
       {
         id: 'philips',
-        title: '飞利浦云课堂 · 心脏超声讲座（视频）',
+        title: '心脏超声讲座（视频）',
         sub: '150 段 / 65 小时 · 十个心脏类目 · 按 8 个专题分组 · 可搜索',
         album: true,
         note: '飞利浦超声云课堂公开回放，按 8 个专题排列：探头维护 / 标准切面 / 定量操作 / 三维与多平面 / '
@@ -7663,7 +7663,7 @@ const LINK_SECTIONS = [
           + '（1080p 热链，非转存）；标注「HLS 分片」的 3 条需在浏览器打开官方页。',
         links: [
           {
-            n: '飞利浦云课堂 · 心脏应用全部课程',
+            n: '课程总目录（原站）',
             url: 'https://app.ma.scrmtech.com/meetings/MeetingPc/index?category_id=30021&pf_uid=37564_2395&pf_type=3',
           },
         ],
@@ -8341,6 +8341,8 @@ const REFS = [
     where: '中国介入心脏病学杂志, 2025, 33(12): 675–686',
     use: '三尖瓣反流分级、TEE 经胃底短轴三叶定位、环成形 / 夹合术前超声评估要点',
     dl: [
+      { t: 'DOI 官方页', u: 'https://doi.org/10.3969/j.issn.1004-8812.2025.12.002' },
+      { t: '万方检索', u: 'https://s.wanfangdata.com.cn/paper?q=%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%89%E5%B0%96%E7%93%A3%E7%8E%AF%E6%88%90%E5%BD%A2%E6%9C%AF%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86%EF%BC%88%E8%AF%95%E8%A1%8C%E7%89%88%EF%BC%89' },
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/2512%2B%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%89%E5%B0%96%E7%93%A3%E7%8E%AF%E6%88%90%E5%BD%A2%E6%9C%AF%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86%EF%BC%88%E8%AF%95%E8%A1%8C%E7%89%88%EF%BC%89.pdf' },
     ],
   },
@@ -8351,6 +8353,7 @@ const REFS = [
     where: '心电与循环, 2024, 43(1): 1–8',
     use: 'TEE 适应证、禁忌与 20 个标准切面的操作规范',
     dl: [
+      { t: '万方检索', u: 'https://s.wanfangdata.com.cn/paper?q=%E6%B5%99%E6%B1%9F%E7%9C%81%E7%BB%8F%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%AE%9E%E8%B7%B5%E5%BA%94%E7%94%A8%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86%EF%BC%88%E4%B8%80%EF%BC%89' },
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E6%B5%99%E6%B1%9F%E7%9C%81%E7%BB%8F%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%AE%9E%E8%B7%B5%E5%BA%94%E7%94%A8%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86(%E4%B8%80).pdf' },
     ],
   },
@@ -8361,6 +8364,7 @@ const REFS = [
     where: '心电与循环, 2024, 43(2): 101–109',
     use: 'TEE 术中监测、并发症识别与围术期评估',
     dl: [
+      { t: '万方检索', u: 'https://s.wanfangdata.com.cn/paper?q=%E6%B5%99%E6%B1%9F%E7%9C%81%E7%BB%8F%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%AE%9E%E8%B7%B5%E5%BA%94%E7%94%A8%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86%EF%BC%88%E4%BA%8C%EF%BC%89' },
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E6%B5%99%E6%B1%9F%E7%9C%81%E7%BB%8F%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%AE%9E%E8%B7%B5%E5%BA%94%E7%94%A8%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86(%E4%BA%8C).pdf' },
     ],
   },
@@ -8371,6 +8375,7 @@ const REFS = [
     where: '中华心血管病杂志（网络版）, 2025, 8: e1000191',
     use: 'TAVR 术前超声 / CT 评估、瓣环与冠脉高度测量、术后随访节点',
     dl: [
+      { t: '万方检索', u: 'https://s.wanfangdata.com.cn/paper?q=%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E7%BD%AE%E6%8D%A2%E6%9C%AF%E4%B8%B4%E5%BA%8A%E8%B7%AF%E5%BE%84%EF%BC%882024%20%E5%85%A8%E6%96%87%E7%89%88%EF%BC%89' },
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E7%BD%AE%E6%8D%A2%E6%9C%AF%E4%B8%B4%E5%BA%8A%E8%B7%AF%E5%BE%84%EF%BC%882024%E5%85%A8%E6%96%87%E7%89%88%EF%BC%89.pdf' },
     ],
   },
@@ -8381,6 +8386,7 @@ const REFS = [
     where: '中国循环杂志, 2025, 40(12): 1148–1163',
     use: 'TEER 适应证与禁忌、TEE 引导流程、术后反流与压差评估',
     dl: [
+      { t: '万方检索', u: 'https://s.wanfangdata.com.cn/paper?q=%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%BA%8C%E5%B0%96%E7%93%A3%E4%BB%8B%E5%85%A5%E4%BF%AE%E5%A4%8D%E6%8A%80%E6%9C%AF%E4%B8%B4%E5%BA%8A%E5%AE%9E%E8%B7%B5%E6%8C%87%E5%8D%97' },
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%BA%8C%E5%B0%96%E7%93%A3%E4%BB%8B%E5%85%A5%E4%BF%AE%E5%A4%8D%E6%8A%80%E6%9C%AF%E4%B8%B4%E5%BA%8A%E5%AE%9E%E8%B7%B5%E6%8C%87%E5%8D%97.pdf' },
     ],
   },
@@ -8391,6 +8397,7 @@ const REFS = [
     where: '中华超声影像学杂志, 2024, 33(1): 1–13',
     use: 'TTE 测量切面、规范化操作与报告要素',
     dl: [
+      { t: '万方检索', u: 'https://s.wanfangdata.com.cn/paper?q=%E7%BB%8F%E8%83%B8%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%A3%80%E6%9F%A5%E8%A7%84%E8%8C%83%E5%8C%96%E5%BA%94%E7%94%A8%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86' },
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E8%83%B8%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%A3%80%E6%9F%A5%E8%A7%84%E8%8C%83%E5%8C%96%E5%BA%94%E7%94%A8%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6.pdf' },
     ],
   },
@@ -8401,6 +8408,7 @@ const REFS = [
     where: '中华超声影像学杂志, 2024, 33(8): 645–658',
     use: 'HCM 激发试验适应证、简易激发（Valsalva 与 20 次蹲起）、餐后与体位对压差的影响、运动/药物负荷的阳性判断与终止标准、SAM 与隐匿性梗阻判读',
     dl: [
+      { t: '万方检索', u: 'https://s.wanfangdata.com.cn/paper?q=%E8%82%A5%E5%8E%9A%E5%9E%8B%E5%BF%83%E8%82%8C%E7%97%85%E6%BF%80%E5%8F%91%E8%B4%9F%E8%8D%B7%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8%E6%8C%87%E5%8D%97%EF%BC%882024%20%E7%89%88%EF%BC%89' },
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E8%82%A5%E5%8E%9A%E5%9E%8B%E5%BF%83%E8%82%8C%E7%97%85%E6%BF%80%E5%8F%91%E8%B4%9F%E8%8D%B7%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8%E6%8C%87%E5%8D%97(2024%E7%89%88).pdf' },
     ],
   },

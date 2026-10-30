@@ -254,9 +254,15 @@ else bad('参考文献条数异常: ' + EX.REFS.length);
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
 if (dlAll.length >= 80) ok('文献直链 ' + dlAll.length + ' 条（官方 PDF / 免费全文 / 需订阅地址）');
 else bad('文献直链过少: ' + dlAll.length);
-if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文|需订阅|官网|免费页面/.test(d.t)))
+if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文|需订阅|官网|免费页面|检索|DOI/.test(d.t)))
   ok('每条直链含 https 地址与类型标注');
-else bad('存在不合规的文献直链');
+else bad('存在不合规的文献直链: ' + dlAll.filter(d => !/PDF|全文|需订阅|官网|免费页面|检索|DOI/.test(d.t)).map(d => d.t).join(' '));
+// v1.13.1：中文指南补「数据库检索 + DOI」，只许指向万方 / 知网 / doi.org，不来自造地址
+const searchDl = dlAll.filter(d => /检索|DOI/.test(d.t));
+if (searchDl.length >= 7 &&
+    searchDl.every(d => /^https:\/\/s\.wanfangdata\.com\.cn\/|^https:\/\/kns\.cnki\.net\/|^https:\/\/doi\.org\/10\./.test(d.u)))
+  ok('数据库检索 / DOI 入口 ' + searchDl.length + ' 条均指向万方・知网・doi.org');
+else bad('检索入口不合规: ' + searchDl.map(d => d.u).join(' '));
 const subDl = dlAll.filter(d => d.t === '需订阅');
 if (subDl.length >= 5 && subDl.length <= 12 &&
     subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)))

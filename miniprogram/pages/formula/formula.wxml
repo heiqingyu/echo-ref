@@ -162,6 +162,11 @@
     </view>
   </view>
 
+  <view class="note note--strong">
+    本工具为数值计算与参考值查询工具，所有结果仅供专业参考，不作为诊断依据；
+    具体诊断与治疗决策请结合临床。
+  </view>
+
   <view class="pagefoot">
     <view class="pagefoot__hd">继续看其他页面</view>
     <view class="pagefoot__grid">

@@ -458,8 +458,12 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
   // 文献直链：优先官方/免费 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
   const allDl = EXD.REFS.reduce((a, r) => a.concat(r.dl || []), []);
   check('文献直链均为 https 地址', allDl.every(d => String(d.u).indexOf('https://') === 0) ? 1 : 0, 1, 0);
-  check('文献直链均标注类型（PDF / 中文 PDF / 免费全文 / PMC / 需订阅 / 官网）',
-    allDl.every(d => /PDF|全文|需订阅|官网|免费页面/.test(d.t)) ? 1 : 0, 1, 0);
+  check('文献直链均标注类型（PDF / 中文 PDF / 免费全文 / PMC / 需订阅 / 官网 / 检索 / DOI）',
+    allDl.every(d => /PDF|全文|需订阅|官网|免费页面|检索|DOI/.test(d.t)) ? 1 : 0, 1, 0);
+  const searchDlMp = allDl.filter(d => /检索|DOI/.test(d.t));
+  check('数据库检索 / DOI 入口 ≥7 条且只指向万方・知网・doi.org',
+    searchDlMp.length >= 7 &&
+    searchDlMp.every(d => /^https:\/\/s\.wanfangdata\.com\.cn\/|^https:\/\/kns\.cnki\.net\/|^https:\/\/doi\.org\/10\./.test(d.u)) ? 1 : 0, 1, 0);
   const subDl = allDl.filter(d => d.t === '需订阅');
   check('需订阅地址均为 DOI 解析页或中华医学期刊网页面',
     subDl.length >= 5 && subDl.length <= 12 &&
@@ -1859,6 +1863,13 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
     pgJs8.indexOf("headItems(sections, 'chd', ['shd'])") !== -1 ? 1 : 0, 1, 0);
   check('搜索命中自动展开中英对照（applySearch 写 aliasOpen）',
     pgJs8.indexOf('aliasOpen: aliasHit.length > 0') !== -1 ? 1 : 0, 1, 0);
+  // v1.13.1：五个页面统一免责声明（formula 是核心判读页，之前反而缺）
+  const discPages = ['formula', 'segments', 'album', 'video', 'valveana'];
+  const discHit = discPages.filter(function (pg) {
+    const s = require('fs').readFileSync(__dirname + '/miniprogram/pages/' + pg + '/' + pg + '.wxml', 'utf8');
+    return s.indexOf('不作为诊断依据') !== -1;
+  });
+  check('五个页面均含统一免责声明「不作为诊断依据」', discHit.length === 5 ? 1 : 0, 1, 0);
   check('目录页中英对照数据就位（calculators.js 由 EN_ALIAS 映射行数据）',
     pgJs8.indexOf('EX.EN_ALIAS.map') !== -1 && EXA.EN_ALIAS.length === 72 ? 1 : 0, 1, 0);
   // ── v1.12.9：首屏导航条也要有「中英对照」（原先只有 navGroupsOf 里挂，首屏看不到） ──

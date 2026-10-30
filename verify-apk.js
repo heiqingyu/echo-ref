@@ -606,6 +606,8 @@ check('含页脚品牌行（EchoRef · 心脏超声参考工具 by qingyu）',
   html.indexOf('copyfoot__by') !== -1 && html.indexOf('by qingyu') !== -1, true);
 check('含页脚版权声明（禁止去除署名后转载）',
   html.indexOf('禁止去除署名后转载') !== -1, true);
+check('含页脚免责声明（不作为诊断依据）',
+  html.indexOf('不作为诊断依据') !== -1, true);
 check('页脚不出现其他端的引导地址',
   html.indexOf('手机端小程序') === -1 && html.indexOf('安卓 APK') === -1, true);
 check('head 含 noai 抓取声明', html.indexOf('noai,noimageai') !== -1, true);

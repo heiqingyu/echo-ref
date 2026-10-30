@@ -750,6 +750,8 @@ ${SEG_HTML}
 
 <footer class="copyfoot">
   <b>EchoRef · 心脏超声参考工具</b><span class="copyfoot__by">by qingyu</span><br>
+  本工具为数值计算与参考值查询工具，所有结果仅供专业参考，不作为诊断依据；
+  具体诊断与治疗决策请结合临床。<br>
   欢迎自用与转发；禁止去除署名后转载。
 </footer>
 

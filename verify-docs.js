@@ -2162,6 +2162,14 @@ function check(name, ok, detail) {
   const chdFirst = await c.evalJs('(function(){var g=document.getElementById("g-chd"); if(!g) return ""; var card=g.closest(".fx-card"); if(!card) return ""; var it=card.querySelector(".fx-item"); return (it && it.dataset.id) || "";})()');
   check('先心组目录第一条是先心病分流判读（shd 置顶）', chdFirst === 'shd', chdFirst);
 
+  /* v1.13.1：免责声明（网页/APK 页脚全局一份，小程序五页各一份） */
+  const footDisc = await c.evalJs('(function(){var f=document.querySelector(".copyfoot");' +
+    'return f ? (f.textContent.indexOf("不作为诊断依据") !== -1 ? 1 : 0) : 0;})()');
+  check('页脚含免责声明「不作为诊断依据」', footDisc === 1, footDisc);
+  const noBrand = await c.evalJs('(function(){var h=document.documentElement.outerHTML;' +
+    'return (h.indexOf("飞利浦负荷超声") !== -1 || h.indexOf("飞利浦云课堂 · 心脏超声讲座") !== -1) ? 1 : 0;})()');
+  check('教学视频专辑/条目标题已去厂商品牌（通用描述）', noBrand === 0, noBrand);
+
   console.log('\n════════ 汇总 ════════');
   const pass = results.filter((r) => r.ok).length;
   console.log('通过 ' + pass + ' / ' + results.length);
