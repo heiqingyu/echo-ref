@@ -385,3 +385,28 @@
   box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, .16);
   z-index: 60;
 }
+
+/* ── 中英对照（v1.12.8，refs 同款折叠卡） ── */
+.alias-item {
+  display: flex;
+  align-items: baseline;
+  padding: 14rpx 4rpx;
+  border-bottom: 1rpx solid #e8e8e8;
+}
+.alias-item:last-child { border-bottom: none; }
+.alias-item__ab {
+  flex: 0 0 auto;
+  min-width: 120rpx;
+  font-weight: 700;
+  font-size: 26rpx;
+  color: #1a66cc;
+}
+.alias-item__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.alias-item__en { font-size: 26rpx; color: #1f2937; }
+.alias-item__ipa { font-size: 22rpx; color: #6b7280; }
+.alias-item__zh { flex: 0 0 auto; font-size: 24rpx; color: #374151; }

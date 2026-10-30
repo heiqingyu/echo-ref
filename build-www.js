@@ -484,6 +484,20 @@ const html = `<!DOCTYPE html>
         </div>
       </div>
 
+      <!-- 中英对照（v1.12.8：列表由 app.js 渲染；平时折叠同参考文献，搜索命中自动展开；
+             行点击跳关联条目，点 🔊 用浏览器内置语音朗读英文——零音频资源、不联网） -->
+      <div class="card" id="calcAlias">
+        <div class="card__t refs-hd" id="aliasToggle" role="button" tabindex="0"
+             aria-expanded="false" aria-controls="aliasList">
+          <span>中英对照</span>
+          <span class="refs-hd__n" id="aliasCount"></span>
+          <span class="refs-hd__a" aria-hidden="true">›</span>
+        </div>
+        <div class="card__d">常用缩写与英文全称对照，附音标。点 🔊 朗读英文（浏览器内置语音，不联网、不上传）；
+          点条目行跳到关联条目。搜索框输入缩写或英文（如 MR、regurgitation）时本卡自动展开。</div>
+        <div id="aliasList" hidden></div>
+      </div>
+
       <div class="verline">心脏超声参考值 · v${APP_VERSION}</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、

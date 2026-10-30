@@ -166,6 +166,9 @@ function buildSections() {
   moveSectionFirst(sections, 'valve');
   headItems(sections, 'valve', ['mitral', 'aortic']);
 
+  // ★ v1.12.8：先心组「先心病分流判读」置顶（用户指定；sec:'chd' 的计算器排其后）
+  headItems(sections, 'chd', ['shd']);
+
   // ★ v1.7.7：收藏组置顶（没有收藏时不出现），每条目也记一个 fav 标记给星标用
   const favs = readFavs();
   const byId = {};
@@ -265,6 +268,12 @@ Page({
       return (r.dl || []).some(function (d) { return d.t !== '需订阅'; });
     }).length,
     refsOpen: false,
+    // 中英对照（v1.12.8）：平时折叠，搜索命中自动展开；附音标（小程序无内置 TTS，网页/APK 点 🔊 发音）
+    aliasRows: EX.EN_ALIAS.map(function (r) {
+      return { ab: r[0], en: r[1], zh: r[2], to: r[3] || '', ipa: r[4] || '' };
+    }),
+    aliasCount: EX.EN_ALIAS.length,
+    aliasOpen: false,
     // 从条目详情跳过来时，被定位的那条文献闪一下（v1.11.3）
     hitRef: '',
     appVersion: V.APP_VERSION,
@@ -339,6 +348,18 @@ Page({
     this.setData({ refsOpen: !this.data.refsOpen });
   },
 
+  /** 中英对照（v1.12.8）：同款折叠；搜索命中时由 applySearch 自动展开 */
+  onToggleAlias() {
+    this.setData({ aliasOpen: !this.data.aliasOpen });
+  },
+
+  /** 中英对照行点击 → 跳关联条目（无关联不动作） */
+  onAliasTap(e) {
+    const to = e && e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.to : '';
+    if (!to) return;
+    wx.navigateTo({ url: '/pages/formula/formula?id=' + to });
+  },
+
   /**
    * 点组名胶囊 → 滚到该组
    * 用选择查询拿元素相对视口的位置 + 当前滚动量，算出目标 scrollTop
@@ -364,6 +385,11 @@ Page({
     // 「参考文献」：先展开再量位置（setData 是异步的，位置要等回调里量）
     if (id === 'refs') {
       this.setData({ curGroup: id, refsOpen: true }, scroll);
+      return;
+    }
+    // 「中英对照」（v1.12.8）：同款先展开再滚动
+    if (id === 'enalias') {
+      this.setData({ curGroup: id, aliasOpen: true }, scroll);
       return;
     }
     this.setData({ curGroup: id });
@@ -393,10 +419,12 @@ Page({
       this.setData({
         kw: '', searching: false, sections: all,
         countText: this.countTextOf(all), segCrossN: 0,
+        aliasOpen: false,        // 清空搜索 → 中英对照收回折叠（与参考文献一致）
       });
       return;
     }
     const secs = searchSections(all, kw);
+    const aliasHit = EX.enAliasMatch ? EX.enAliasMatch(kw) : [];
     this.setData({
       kw: kw,
       searching: true,
@@ -404,6 +432,8 @@ Page({
       countText: secs.length ? '找到 ' + kw : '没有匹配「' + kw + '」',
       // v1.6.5：切面学习页签的速查/视频/演示不在本目录里，命中就给一条过去的入口
       segCrossN: XS.segCount(kw),
+      // v1.12.8：缩写/英文有命中时底部「中英对照」折叠卡自动展开
+      aliasOpen: aliasHit.length > 0,
     });
   },
 
@@ -453,7 +483,7 @@ Page({
   navGroupsOf(list) {
     return list.map(function (s) {
       return { id: s.id, title: s.title.replace(/（.*?）/g, '') };
-    }).concat([{ id: 'refs', title: '参考文献' }]);
+    }).concat([{ id: 'refs', title: '参考文献' }, { id: 'enalias', title: '中英对照' }]);
   },
 
   onOpen(e) {

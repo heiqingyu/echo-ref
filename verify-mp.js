@@ -575,7 +575,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 119 条（计算 41 + 判读 78；v1.12.7 新增大动脉转位、共同动脉干）', nItems, 119, 0);
+  check('目录共 118 条（计算 40 + 判读 78；v1.12.8 Qp/Qs 计算器并入先心病分流判读）', nItems, 118, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -818,7 +818,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segSim.some(i => /ct2tee/.test(i.url)) &&
     segSim.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
-  check('血流动力学、舒张与心功能 13 条（M 型三合一 / 快速比值 / Ea / VTI 比 / 舒张功能 / CRT 前 25 条）', dirById('hemo').items.length, 13, 0);
+  check('血流动力学、舒张与心功能 12 条（v1.12.8 Qp/Qs 并入先心病分流判读；M 型三合一 / 快速比值 / Ea / VTI 比 / 舒张功能 / CRT 前）', dirById('hemo').items.length, 12, 0);
   check('右心与肺循环 6 条（v1.8.3 合并后：mpap / rvvol / papi / resist / rvsyst / tapse）',
     dirById('right').items.length, 6, 0);
   check('右心组条目齐全，且被合并的旧条目不再单独出现',
@@ -831,8 +831,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       !dirById('hemo').items.some(i => i.id === 'dias' || i.id === 'evp') ? 1 : 0, 1, 0);
   check('心脏同步化条目在重构组',
     dirById('recon').items.some(i => i.id === 'sync' && i.kind === 'calc') ? 1 : 0, 1, 0);
-  check('血流动力学、舒张与心功能 13 条（合并 dias / evp 之后）',
-    dirById('hemo').items.length, 13, 0);
+  check('血流动力学、舒张与心功能 12 条（合并 dias / evp 之后；v1.12.8 Qp/Qs 移出）',
+    dirById('hemo').items.length, 12, 0);
   check('重构、室壁运动与心肌功能 12 条（v1.11.2 起 lvnc 内嵌进 LVNC 判读条目、目录不再单列）',
     dirById('recon').items.length, 12, 0);
   check('重构组条目齐全（四联已并为 lvgeom，旧的 lvmih / rwsv / spher / volidx 不再单列）',
@@ -840,8 +840,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) &&
       !['lvmih', 'rwsv', 'spher', 'volidx'].some(id => dirById('recon').items.some(i => i.id === id))
       ? 1 : 0, 1, 0);
-  check('计算类条目 3 个计算组合计 31 条（另 10 条并入瓣膜 4 / 先心 4 / 心腔 2，合计 41；lvnc 已内嵌 LVNC 条目）',
-    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 31, 0);
+  check('计算类条目 3 个计算组合计 30 条（v1.12.8 Qp/Qs 并入 shd；另并入瓣膜 4 / 先心 4 / 心腔 2，合计 40；lvnc 已内嵌 LVNC 条目）',
+    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 30, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -899,11 +899,13 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病（含术后）25 条（21 判读含冠状动脉瘘、冠脉异常起源、大动脉转位、共同动脉干、右室双腔、肺静脉异位引流、主动脉弓离断、三房心 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率）', dirById('chd').items.length, 25, 0);
+  check('先天性心脏病（含术后）25 条（21 判读含冠状动脉瘘、冠脉异常起源、大动脉转位、共同动脉干、右室双腔、肺静脉异位引流、主动脉弓离断、三房心 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率 4 计算器；Qp/Qs 已并入分流判读不计目录）', dirById('chd').items.length, 25, 0);
   ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
     check('先天性心脏病含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
+  check('v1.12.8：先心组目录第一条是先心病分流判读',
+    (dirById('chd').items[0] && dirById('chd').items[0].id) === 'shd' ? 1 : 0, 1, 0);
   check('先心病合并术后 3 条（Mustard / Fontan / ASO）',
     ['mustard', 'fontan', 'as-switch'].filter(id => dirById('chd').items.some(i => i.id === id)).length, 3, 0);
   ['mustard', 'fontan', 'as-switch'].forEach(id => {
@@ -1357,15 +1359,32 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   pgF.onLoad({ id: 'shd' });
   pgF.onShow();
-  pgF.data.inputs[0].value = '6.0';
-  pgF.data.inputs[1].value = '3.0';
+  // v1.12.8：fields 改为两段（直径/VTI 优先），实填改按 key 定位，不再依赖下标
+  const setShd = function (k, val) {
+    const it = pgF.data.inputs.filter(function (x) { return x.key === k; })[0];
+  if (it) it.value = val;
+  };
+  setShd('shqp', '6.0');
+  setShd('shqs', '3.0');
   pgF.refresh();
   check('Qp/Qs 2.0 → 大量分流',
     /Qp\/Qs = 2\.00/.test(pgF.data.out) && /大量分流/.test(pgF.data.out) ? 1 : 0, 1, 0);
-  pgF.data.inputs[0].value = '2.4';
+  setShd('shqp', '2.4');
   pgF.refresh();
   check('Qp/Qs 0.8 → 警惕艾森曼格',
     /艾森曼格/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  // v1.12.8：流出道直径与 VTI 直算路径（Qp/Qs 计算器已并入 shd 条目）
+  setShd('shqp', '');
+  setShd('shqs', '');
+  setShd('rd', '2.0');
+  setShd('rvti', '40');
+  setShd('ld', '2.0');
+  setShd('lvti', '20');
+  pgF.refresh();
+  check('Qp/Qs 直径/VTI 路径（RVOT 2.0×40 / LVOT 2.0×20）→ 2.00 大量分流，含 Qp/Qs 每搏量',
+    /Qp\/Qs = 2\.00/.test(pgF.data.out) && /大量分流/.test(pgF.data.out)
+      && /125\.7/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
   pgF.onLoad({ id: 'pht-rev' });
   pgF.onShow();
@@ -1827,6 +1846,21 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('enAliasMatch 空词返回空数组', EXA.enAliasMatch('').length, 0, 0);
   check('enAliasMatch 短词（<3 字符）不做英文包含匹配，只命中缩写',
     EXA.enAliasMatch('as').every(function (a) { return a.ab.toLowerCase() === 'as'; }) ? 1 : 0, 1, 0);
+  // ── v1.12.8：中英对照升格为参考文献后的折叠卡 ──
+  check('中英对照 72 条全部带音标（第 5 列，/ 开头）',
+    AL.every(function (a) { return a.length === 5 && typeof a[4] === 'string' && a[4].charAt(0) === '/'; }) ? 1 : 0, 1, 0);
+  check('Qp/Qs 计算器已 dirHide（并入先心病分流判读，目录不再单列）',
+    (CGA.GROUPS.filter(function (g) { return g.id === 'shunt'; })[0] || {}).dirHide === true ? 1 : 0, 1, 0);
+  const pgWxml8 = require('fs').readFileSync(__dirname + '/miniprogram/pages/calculators/calculators.wxml', 'utf8');
+  check('calculators 页有中英对照折叠卡（g-enalias + aliasOpen）',
+    pgWxml8.indexOf('g-enalias') !== -1 && pgWxml8.indexOf('aliasOpen') !== -1 ? 1 : 0, 1, 0);
+  const pgJs8 = require('fs').readFileSync(__dirname + '/miniprogram/pages/calculators/calculators.js', 'utf8');
+  check('chd 组 shd 置顶（headItems）',
+    pgJs8.indexOf("headItems(sections, 'chd', ['shd'])") !== -1 ? 1 : 0, 1, 0);
+  check('搜索命中自动展开中英对照（applySearch 写 aliasOpen）',
+    pgJs8.indexOf('aliasOpen: aliasHit.length > 0') !== -1 ? 1 : 0, 1, 0);
+  check('目录页中英对照数据就位（calculators.js 由 EN_ALIAS 映射行数据）',
+    pgJs8.indexOf('EX.EN_ALIAS.map') !== -1 && EXA.EN_ALIAS.length === 72 ? 1 : 0, 1, 0);
 }
 
 console.log(`\n${'='.repeat(46)}`);

@@ -713,8 +713,16 @@ Page({
       }
       out = parts.join('；');
     } else if (gid === 'shd') {
-      // —— 先心病分流：Qp/Qs 分级 ——
-      if (valid(v.shqp, v.shqs)) {
+      // —— 先心病分流：Qp/Qs 分级（v1.12.8：直径/VTI 直算优先，每搏量直填仍可用）——
+      if (valid(v.rd, v.rvti, v.ld, v.lvti)) {
+        const qs2 = calc.strokeVolume(v.ld, v.lvti);
+        const qp2 = calc.strokeVolume(v.rd, v.rvti);
+        if (qs2 > 0) {
+          const r = calc.shuntGrade(qp2, qs2);
+          out = r.text ? 'Qp/Qs = ' + calc.fmt(r.ratio) + ' · ' + r.text +
+            '（Qp ' + calc.fmt(qp2, 1) + ' / Qs ' + calc.fmt(qs2, 1) + ' mL）' : '';
+        }
+      } else if (valid(v.shqp, v.shqs)) {
         const r = calc.shuntGrade(v.shqp, v.shqs);
         out = r.text ? 'Qp/Qs = ' + calc.fmt(r.ratio) + ' · ' + r.text : '';
       }

@@ -793,7 +793,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 119 条（计算 41 + 评估判读 78；v1.12.7 新增大动脉转位、共同动脉干）', d.items === 119, d.items);
+    check('条目 118 条（计算 40 + 评估判读 78；v1.12.8 Qp/Qs 计算器并入先心病分流判读）', d.items === 118, d.items);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
       d.resistOuts + ' / ' + d.lvgeomOuts);
@@ -1212,6 +1212,18 @@ function check(name, ok, detail) {
   check('分流估压：小节编号连续到十二（插入两节后不跳号）',
     ['六、VSD 合并主动脉瓣脱垂', '七、PDA 形态分型', '八、PDA 封堵后左肺动脉狭窄',
       '九、三条通路', '十二、成人先心病'].every((w) => shdTxt.indexOf(w) >= 0), '');
+
+  /* v1.12.8：Qp/Qs 计算器并入 shd（两段式输入，直径/VTI 优先） */
+  check('shd 详情卡内嵌 Qp/Qs 输入（两段式：直径/VTI 优先，每搏量备选）',
+    ['① 按流出道直径与 VTI', 'RVOT 直径', 'RVOT VTI', 'LVOT 直径（体循环）',
+      '② 或直接填每搏量', 'Qp 肺循环每搏量'].every((w) => shdTxt.indexOf(w) >= 0), '');
+  await fillCalc('shd', 'rd', '2.0');
+  await fillCalc('shd', 'rvti', '40');
+  await fillCalc('shd', 'ld', '2.0');
+  await fillCalc('shd', 'lvti', '20');
+  const shdOut8 = await outOf('shd');
+  check('shd 直径/VTI 实填 → Qp/Qs 2.00 大量分流（含 Qp 125.7 / Qs 62.8 mL）',
+    /Qp\/Qs = 2\.00/.test(shdOut8) && /大量分流/.test(shdOut8) && /125\.7/.test(shdOut8), shdOut8);
 
   /* v1.11.8：VSD 合并主动脉瓣脱垂（量化）+ PDA 封堵后左肺动脉狭窄 */
   check('VSD 脱垂：量化指路主条（不再重复一遍）',
@@ -1901,7 +1913,7 @@ function check(name, ok, detail) {
   })()`);
   const rn = JSON.parse(refNav);
   check('目录顶部导航条含「参考文献」标签', rn.has === true && rn.txt === '参考文献', refNav);
-  check('「参考文献」排在导航条末尾', rn.last === '参考文献', refNav);
+  check('「中英对照」排在导航条末尾（v1.12.8 卡片在参考文献之后）、参考文献紧随其后', rn.last === '中英对照' && rn.txt === '参考文献', refNav);
   check('导航条不再用 #g- 锚点（button + goToY，免得和视图栈 hash 打架）',
     rn.anchors === 0, refNav);
   await c.evalJs('(function(){document.querySelector("#calcList [data-refjump]").click();return 1;})()');
@@ -2115,7 +2127,22 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 150));
   const hasAl = await c.evalJs('(function(){var t=document.getElementById("calcList").textContent; return t.indexOf("中英对照") !== -1 && t.indexOf("mitral regurgitation") !== -1;})()');
   check('搜索「mr」时「中英对照」组置顶展示英文全称与中文', hasAl === true, hasAl);
+
+  /* v1.12.8：参考文献后的「中英对照」折叠卡——平时折叠，搜索命中自动展开，72 行全带音标 */
+  const alOpen = await c.evalJs('(function(){var l=document.getElementById("aliasList"); return l ? !l.hidden : null;})()');
+  check('搜索「mr」时底部「中英对照」卡自动展开', alOpen === true, alOpen);
+  const alRows = await c.evalJs('(function(){var c=document.getElementById("aliasList"); return c ? c.querySelectorAll(".alias-item").length + "/" + c.querySelectorAll(".alias-item__ipa").length : "0/0";})()');
+  check('中英对照卡渲染 72 行且每行带音标', alRows === '72/72', alRows);
+  const alMr = await c.evalJs('(function(){return [].slice.call(document.querySelectorAll("#aliasList .alias-item__ipa")).some(function(x){return x.textContent.indexOf("maɪtrəl") !== -1;});})()');
+  check('MR 行音标就位（/ˈmaɪtrəl …/）', alMr === true, alMr);
+  const alSpeak = await c.evalJs('(function(){return !!document.querySelector("#aliasList [data-say]");})()');
+  check('网页版朗读按钮（data-say，浏览器内置 TTS）就位', alSpeak === true, alSpeak);
   await c.evalJs('(function(){var i=document.getElementById("fxSearch"); if(i){i.value=""; i.dispatchEvent(new Event("input"));}})()');
+  await new Promise((r) => setTimeout(r, 150));
+  const alClosed = await c.evalJs('(function(){var l=document.getElementById("aliasList"); return l ? l.hidden : null;})()');
+  check('清空搜索后中英对照卡收回折叠（与参考文献一致）', alClosed === true, alClosed);
+  const chdFirst = await c.evalJs('(function(){var g=document.getElementById("g-chd"); if(!g) return ""; var card=g.closest(".fx-card"); if(!card) return ""; var it=card.querySelector(".fx-item"); return (it && it.dataset.id) || "";})()');
+  check('先心组目录第一条是先心病分流判读（shd 置顶）', chdFirst === 'shd', chdFirst);
 
   console.log('\n════════ 汇总 ════════');
   const pass = results.filter((r) => r.ok).length;

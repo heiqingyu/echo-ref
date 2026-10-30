@@ -109,6 +109,8 @@ const GROUPS = [
   },
   {
     id: 'shunt',
+    // ★ v1.12.8：已并入「先心病分流判读」条目（fields 前段同键同步），目录不再单列（硬坑 31）
+    dirHide: true,
     ab: 'Qp/Qs',
     title: 'Qp/Qs 肺体循环血流比',
     sub: '分流方向与分流量分级',

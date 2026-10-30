@@ -594,7 +594,8 @@
         ['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pr', 'PR 舒张末期流速（可选）', 'm/s'],
         ['pp_rvotat', 'RVOT 加速时间（可选）', 'ms']],
       note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
-    { id: 'shunt', title: 'Qp/Qs 肺体循环血流比',
+    { id: 'shunt', dirHide: true, title: 'Qp/Qs 肺体循环血流比',
+      // ★ v1.12.8：已并入「先心病分流判读」条目（同键输入互相同步），目录不再单列（硬坑 31）
       fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm'],
         ['ld', 'LVOT 直径（体循环）', 'cm'], ['lvti', 'LVOT VTI（体循环）', 'cm']],
       note: 'Qp/Qs = (π·d_RVOT²/4 × VTI_RVOT) ÷ (π·d_LVOT²/4 × VTI_LVOT)；>2.0 大量分流、1.5–2.0 中等量、<1.0 提示净右向左' },
@@ -1241,6 +1242,73 @@
     }
   }
 
+  /**
+   * 中英对照总表（v1.12.8）：与参考文献同款折叠卡，放参考文献之后。
+   * 平时折叠；搜索框命中缩写/英文时由 renderCalcList 自动展开。
+   * 行点击跳关联条目；点 🔊 用浏览器内置 speechSynthesis 朗读英文（零资源、不联网）。
+   */
+  function renderAlias() {
+    const box = $('aliasList');
+    if (!box) return;
+    const AL = (window.ExtraData && window.ExtraData.EN_ALIAS) || [];
+    let h = '';
+    AL.forEach(function (a) {
+      const ab = a[0], en = a[1], zh = a[2], to = a[3] || '', ipa = a[4] || '';
+      h += '<div class="alias-item"' + (to ? ' data-ato="' + esc(to) + '"' : '') + '>' +
+        '<span class="alias-item__ab">' + esc(ab) + '</span>' +
+        '<span class="alias-item__body">' +
+        '<span class="alias-item__en">' + esc(en) + '</span>' +
+        (ipa ? '<span class="alias-item__ipa">' + esc(ipa) + '</span>' : '') +
+        '</span>' +
+        '<span class="alias-item__zh">' + esc(zh) + '</span>' +
+        '<button class="alias-item__sp" type="button" data-say="' + esc(en) +
+        '" aria-label="朗读 ' + esc(en) + '">🔊</button>' +
+        '</div>';
+    });
+    box.innerHTML = h;
+    const cnt = $('aliasCount');
+    if (cnt) cnt.textContent = AL.length + ' 条 · 附音标';
+    const hd = $('aliasToggle');
+    if (hd && !hd.dataset.bound) {
+      hd.dataset.bound = '1';
+      hd.addEventListener('click', function () { toggleAlias(); });
+      hd.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAlias(); }
+      });
+    }
+    if (!box.dataset.bound) {
+      box.dataset.bound = '1';
+      box.addEventListener('click', function (ev) {
+        const say = ev.target.closest ? ev.target.closest('[data-say]') : null;
+        if (say) { speakEn(say.dataset.say); return; }
+        const row = ev.target.closest ? ev.target.closest('[data-ato]') : null;
+        if (row && row.dataset.ato) openCalcGroup(row.dataset.ato);
+      });
+    }
+  }
+
+  function toggleAlias(force) {
+    const hd = $('aliasToggle');
+    const list = $('aliasList');
+    if (!hd || !list) return;
+    const open = typeof force === 'boolean' ? force : !!list.hidden;
+    list.hidden = !open;
+    hd.classList.toggle('refs-hd--open', open);
+    hd.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  /** 浏览器内置英文朗读：不引任何音频资源，APK WebView 同样支持 */
+  function speakEn(text) {
+    if (!text || !window.speechSynthesis) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = 0.9;
+      speechSynthesis.speak(u);
+    } catch (e) { /* 不支持则静默 */ }
+  }
+
   /** 文献链接（官方 / 免费 PDF 点开即下载；标「需订阅」的是 DOI 解析页，仅供核对出处与题录） */
   function dlHtml(dl) {
     if (!dl || !dl.length) return '';
@@ -1437,6 +1505,19 @@
       if (head.length) {
         vSec.items = head.concat(vSec.items.filter(function (it) {
           return head.indexOf(it) === -1;
+        }));
+      }
+    }
+
+    // ★ v1.12.8：先心组「先心病分流判读」置顶（用户指定；sec:'chd' 的计算器排其后）
+    const cSec = secs.filter(function (s) { return s.id === 'chd'; })[0];
+    if (cSec) {
+      const chdHead = ['shd'].map(function (id) {
+        return cSec.items.filter(function (it) { return it.id === id; })[0];
+      }).filter(Boolean);
+      if (chdHead.length) {
+        cSec.items = chdHead.concat(cSec.items.filter(function (it) {
+          return chdHead.indexOf(it) === -1;
         }));
       }
     }
@@ -1692,6 +1773,9 @@
       }
     }
 
+    // ★ v1.12.8：底部「中英对照」折叠卡随搜索展开/收起（平时与参考文献一样折叠）
+    if ($('aliasList')) toggleAlias(q ? enAliasMatch(q).length > 0 : false);
+
     secs.forEach(function (sec) {
       if (sec.id === 'fav' && q) return;   // 搜索时收藏组只是镜像，别重复列出
       const items = [];
@@ -1741,6 +1825,9 @@
     if ($('calcRefs')) {
       nav += '<button class="fx-nav__c" data-refjump="1">参考文献</button>';
     }
+    if ($('calcAlias')) {
+      nav += '<button class="fx-nav__c" data-aliasjump="1">中英对照</button>';
+    }
     box.innerHTML = (nav ? '<div class="fx-nav">' + nav + '</div>' : '') + list;
   }
 
@@ -1776,6 +1863,13 @@
         toggleRefs(true);   // 文献默认折叠，点标签直接展开
         const t = $('calcRefs');
         if (t) goToY(t.getBoundingClientRect().top + window.pageYOffset - 56);
+        return;
+      }
+      const aj = ev.target.closest ? ev.target.closest('[data-aliasjump]') : null;
+      if (aj) {
+        toggleAlias(true);  // 中英对照默认折叠，点标签直接展开
+        const t2 = $('calcAlias');
+        if (t2) goToY(t2.getBoundingClientRect().top + window.pageYOffset - 56);
         return;
       }
       // 星标：只收藏 / 取消收藏，不打开条目
@@ -2039,6 +2133,7 @@
     renderSegExtras();
 
     renderRefs();
+    renderAlias();
 
     // ── 详情：一次性渲染全部条目卡，按条目切换显示 ──
     let html = '';
@@ -3222,10 +3317,20 @@
       put('infiltr', partsOf(parts));
     }
 
-    // 先心病分流：Qp/Qs 分级
+    // 先心病分流：Qp/Qs 分级（v1.12.8：流出道直径与 VTI 直算优先，每搏量直填仍可用）
     {
-      const r = (has('shqp', 'shqs') ? Calc.shuntGrade(v.shqp, v.shqs) : {});
-      put('shd', r.text ? 'Qp/Qs = ' + Calc.fmt(r.ratio) + ' · ' + r.text : '');
+      let r = null, tail = '';
+      if (has('rd', 'rvti', 'ld', 'lvti')) {
+        const qs2 = Calc.strokeVolume(v.ld, v.lvti);
+        const qp2 = Calc.strokeVolume(v.rd, v.rvti);
+        if (qs2 > 0) {
+          r = Calc.shuntGrade(qp2, qs2);
+          tail = '（Qp ' + Calc.fmt(qp2, 1) + ' / Qs ' + Calc.fmt(qs2, 1) + ' mL）';
+        }
+      } else if (has('shqp', 'shqs')) {
+        r = Calc.shuntGrade(v.shqp, v.shqs);
+      }
+      put('shd', r && r.text ? 'Qp/Qs = ' + Calc.fmt(r.ratio) + ' · ' + r.text + tail : '');
     }
 
     // 分流性肺高压的可手术性
