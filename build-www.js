@@ -485,7 +485,7 @@ const html = `<!DOCTYPE html>
       </div>
 
       <!-- 中英对照（v1.12.8：列表由 app.js 渲染；平时折叠同参考文献，搜索命中自动展开；
-             行点击跳关联条目，点 🔊 用浏览器内置语音朗读英文——零音频资源、不联网） -->
+             行点击跳关联条目，点 🔊 朗读英文——v1.13.0 起系统无英文语音时自动降级到在线发音） -->
       <div class="card" id="calcAlias">
         <div class="card__t refs-hd" id="aliasToggle" role="button" tabindex="0"
              aria-expanded="false" aria-controls="aliasList">
@@ -493,8 +493,9 @@ const html = `<!DOCTYPE html>
           <span class="refs-hd__n" id="aliasCount"></span>
           <span class="refs-hd__a" aria-hidden="true">›</span>
         </div>
-        <div class="card__d">常用缩写与英文全称对照，附音标。点 🔊 朗读英文（浏览器内置语音，不联网、不上传）；
-          点条目行跳到关联条目。搜索框输入缩写或英文（如 MR、regurgitation）时本卡自动展开。</div>
+        <div class="card__d">常用缩写与英文全称对照，附音标。点 🔊 朗读英文：优先用系统语音（离线、不上传）；
+          系统没装英文语音时自动改用在线发音（需联网）；点条目行跳到关联条目。搜索框输入缩写或英文
+          （如 MR、regurgitation）时本卡自动展开。</div>
         <div id="aliasList" hidden></div>
       </div>
 

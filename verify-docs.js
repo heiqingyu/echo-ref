@@ -2137,6 +2137,24 @@ function check(name, ok, detail) {
   check('MR 行音标就位（/ˈmaɪtrəl …/）', alMr === true, alMr);
   const alSpeak = await c.evalJs('(function(){return !!document.querySelector("#aliasList [data-say]");})()');
   check('网页版朗读按钮（data-say，浏览器内置 TTS）就位', alSpeak === true, alSpeak);
+
+  /* v1.13.0：朗读健壮化——系统没有英文语音时点 🔊 不能静默失败 */
+  const sayWired = await c.evalJs('(function(){var h=document.documentElement.outerHTML;' +
+    'return (h.indexOf("voiceschanged") !== -1 && h.indexOf("dict.youdao.com/dictvoice") !== -1) ? 1 : 0;})()');
+  check('朗读有 voices 预加载 + 在线发音兜底（v1.13.0）', sayWired === 1, sayWired);
+  const sayWatch = await c.evalJs('(function(){var h=document.documentElement.outerHTML;' +
+    'return (h.indexOf("alias-tip") !== -1 && h.indexOf("时间和语言") !== -1) ? 1 : 0;})()');
+  check('两条路都不通时给中文提示（含装语音包路径），不再无声无息', sayWatch === 1, sayWatch);
+  // 实测降级链：合成点击不是用户手势 → 本地 TTS 必报 not-allowed → 应自动落到在线发音
+  await c.evalJs('(function(){var l=document.getElementById("aliasList"); if(l && l.hidden){var h=document.getElementById("aliasToggle"); if(h) h.click();} return 1;})()');
+  await new Promise((r) => setTimeout(r, 200));
+  await c.evalJs('(function(){var OA=window.Audio; window.__sayA="";' +
+    'window.Audio=function(s){window.__sayA=String(s); return new OA(s);};' +
+    'var b=document.querySelector("#aliasList [data-say]"); if(b) b.click(); return 1;})()');
+  await new Promise((r) => setTimeout(r, 2600));
+  const sayFallback = String(await c.evalJs('String(window.__sayA||"")'));
+  check('点 🔊 失败时自动降级在线发音（实测请求已发出）',
+    sayFallback.indexOf('dict.youdao.com/dictvoice') !== -1, sayFallback.slice(0, 46) || '(未发出)');
   await c.evalJs('(function(){var i=document.getElementById("fxSearch"); if(i){i.value=""; i.dispatchEvent(new Event("input"));}})()');
   await new Promise((r) => setTimeout(r, 150));
   const alClosed = await c.evalJs('(function(){var l=document.getElementById("aliasList"); return l ? l.hidden : null;})()');

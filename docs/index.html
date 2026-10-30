@@ -1980,6 +1980,29 @@ button.fx-nav__c {
   cursor: pointer;
   padding: 0;
 }
+/* 朗读中：按钮高亮 + 呼吸环，让「点了有反应」可见（v1.13.0） */
+.alias-item__sp.is-say {
+  background: #e8f0fe;
+  border-color: #1a66cc;
+  animation: sayPulse 1.1s ease-out infinite;
+}
+@keyframes sayPulse {
+  0% { box-shadow: 0 0 0 0 rgba(26, 102, 204, 0.35); }
+  70% { box-shadow: 0 0 0 6px rgba(26, 102, 204, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(26, 102, 204, 0); }
+}
+/* 朗读失败/降级时的内联提示（替代无声无息，v1.13.0） */
+.alias-tip {
+  margin: 8px 0 2px;
+  padding: 8px 10px;
+  background: #fff7e6;
+  border: 1px solid #f0d9a8;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: #8a5a00;
+}
+.alias-tip[hidden] { display: none; }
 
 /* ★ 以上公式集样式（.fx-nav / .fx-group / .ref-dl / .chip 等）必须留在
    下面「已裁掉的瓣膜专页」注释块之前：build-www.js 的 stripCssBlock 会把
@@ -2146,7 +2169,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.12.9</div>
+    <div class="verline">心脏超声参考值 · v1.13.0</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2189,7 +2212,7 @@ button.fx-nav__c {
       </div>
 
       <!-- 中英对照（v1.12.8：列表由 app.js 渲染；平时折叠同参考文献，搜索命中自动展开；
-             行点击跳关联条目，点 🔊 用浏览器内置语音朗读英文——零音频资源、不联网） -->
+             行点击跳关联条目，点 🔊 朗读英文——v1.13.0 起系统无英文语音时自动降级到在线发音） -->
       <div class="card" id="calcAlias">
         <div class="card__t refs-hd" id="aliasToggle" role="button" tabindex="0"
              aria-expanded="false" aria-controls="aliasList">
@@ -2197,12 +2220,13 @@ button.fx-nav__c {
           <span class="refs-hd__n" id="aliasCount"></span>
           <span class="refs-hd__a" aria-hidden="true">›</span>
         </div>
-        <div class="card__d">常用缩写与英文全称对照，附音标。点 🔊 朗读英文（浏览器内置语音，不联网、不上传）；
-          点条目行跳到关联条目。搜索框输入缩写或英文（如 MR、regurgitation）时本卡自动展开。</div>
+        <div class="card__d">常用缩写与英文全称对照，附音标。点 🔊 朗读英文：优先用系统语音（离线、不上传）；
+          系统没装英文语音时自动改用在线发音（需联网）；点条目行跳到关联条目。搜索框输入缩写或英文
+          （如 MR、regurgitation）时本卡自动展开。</div>
         <div id="aliasList" hidden></div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.12.9</div>
+      <div class="verline">心脏超声参考值 · v1.13.0</div>
       <div class="note note--warn">
         公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
         Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
@@ -20876,7 +20900,7 @@ const MATERIALS = [];
       box.dataset.bound = '1';
       box.addEventListener('click', function (ev) {
         const say = ev.target.closest ? ev.target.closest('[data-say]') : null;
-        if (say) { speakEn(say.dataset.say); return; }
+        if (say) { speakEn(say.dataset.say, say); return; }
         const row = ev.target.closest ? ev.target.closest('[data-ato]') : null;
         if (row && row.dataset.ato) openCalcGroup(row.dataset.ato);
       });
@@ -20893,16 +20917,122 @@ const MATERIALS = [];
     hd.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
-  /** 浏览器内置英文朗读：不引任何音频资源，APK WebView 同样支持 */
-  function speakEn(text) {
-    if (!text || !window.speechSynthesis) return;
-    try {
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'en-US';
-      u.rate = 0.9;
-      speechSynthesis.speak(u);
-    } catch (e) { /* 不支持则静默 */ }
+  /* ══════════ 英文朗读（v1.13.0 健壮化）══════════
+     ★ 用户实测「Edge / Chrome 点 🔊 没反应」。根因不是事件没绑上，而是系统没有英文语音：
+       中文版 Windows 只装 Microsoft Huihui/Kangkang/Yaoyao，Chrome 里能匹配 en-US 的只有
+       Google 在线语音（国内连不上），Edge 直接拿不到英文 voice。此时 speechSynthesis
+       会「静默挂起」——speaking 一直 true、不出声、onend 也不来，页面毫无反馈。
+     对策（按顺序降级）：
+       ① 预加载 voices，优先选本地（localService）的 en-US；
+       ② resume → cancel → 延时 30ms 再 speak，避开 Chrome 的 cancel/speak 竞态；
+       ③ 1.5s 看门狗：还没开口就当本地语音不可用，自动改用在线发音（有道词典发音接口，
+          国内可直连、零体积、音质标准）；
+       ④ 两条路都不通才给文字提示（告诉用户装英文语音包的位置），不再无声无息。 */
+  let EN_VOICE = null, VOICES_READY = false, saySeq = 0, sayTipEl = null, sayTipTimer = 0, voiceTries = 0;
+
+  /** 挑一个可用的英文语音：本地 en-US > 本地任意 en > 在线 en-US > 在线任意 en */
+  function loadVoices() {
+    if (!window.speechSynthesis) return;
+    const all = speechSynthesis.getVoices() || [];
+    voiceTries += 1;
+    // 首次调用常返回空数组（voices 异步加载），给一次机会；第二次仍空就认定系统无语音
+    if (!all.length && voiceTries < 2) return;
+    VOICES_READY = true;
+    const en = all.filter(function (v) { return /^en(-|_|$)/i.test(v.lang || ''); });
+    EN_VOICE =
+      en.filter(function (v) { return v.localService && /^en-US/i.test(v.lang); })[0] ||
+      en.filter(function (v) { return v.localService; })[0] ||
+      en.filter(function (v) { return /^en-US/i.test(v.lang); })[0] ||
+      en[0] || null;
+  }
+
+  if (window.speechSynthesis) {
+    loadVoices();
+    if (typeof speechSynthesis.addEventListener === 'function') {
+      speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    } else {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }
+
+  /** 卡片内联提示条（不用 alert，不打断阅读） */
+  function sayTip(msg) {
+    const box = $('aliasList');
+    if (!box || !msg) return;
+    if (!sayTipEl) {
+      sayTipEl = document.createElement('div');
+      sayTipEl.className = 'alias-tip';
+      box.parentNode.insertBefore(sayTipEl, box.nextSibling);
+    }
+    sayTipEl.textContent = msg;
+    sayTipEl.hidden = false;
+    if (sayTipTimer) clearTimeout(sayTipTimer);
+    sayTipTimer = setTimeout(function () { if (sayTipEl) sayTipEl.hidden = true; }, 9000);
+  }
+
+  function speakEn(text, btn) {
+    if (!text) return;
+    const seq = saySeq += 1;
+    if (btn) btn.classList.add('is-say');
+    const done = function () { if (btn) btn.classList.remove('is-say'); };
+    const fail = function () {
+      if (seq !== saySeq) return;
+      done();
+      sayTip('这台电脑没有可用的英文语音（中文版 Windows 只装了中文语音），在线发音也没连上。' +
+        '可在「设置 → 时间和语言 → 语言和区域」添加 English (United States) 并勾选「语音」，' +
+        '装好后重新点 🔊 即可；音标已标在词条下方。');
+    };
+    /* 兜底：在线发音（有道词典 dictvoice，GET 直连 mp3，无 key、零体积） */
+    const online = function () {
+      if (seq !== saySeq) return;
+      try {
+        const a = new Audio('https://dict.youdao.com/dictvoice?type=2&audio=' + encodeURIComponent(text));
+        a.addEventListener('playing', function () { if (btn) btn.classList.add('is-say'); });
+        a.addEventListener('ended', done);
+        a.addEventListener('error', fail);
+        const pr = a.play();
+        if (pr && pr.catch) pr.catch(fail);
+      } catch (e) { fail(); }
+    };
+    if (!window.speechSynthesis) { online(); return; }   // 老 WebView：直接在线
+
+    const local = function () {
+      if (seq !== saySeq) return;
+      if (!EN_VOICE) { online(); return; }               // 系统根本没英文语音 → 直接在线
+      let started = false;
+      try {
+        speechSynthesis.resume();                        // Chrome 有时停在 paused，先唤醒
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
+        u.rate = 0.9;
+        u.voice = EN_VOICE;
+        u.onstart = function () { started = true; };
+        u.onend = done;
+        u.onerror = function (e) {
+          const c = e && e.error;
+          if (c === 'interrupted' || c === 'canceled') return;
+          online();                                      // not-allowed / synthesis-failed 等
+        };
+        setTimeout(function () { speechSynthesis.speak(u); }, 30);
+        setTimeout(function () {                         // 看门狗
+          if (started || seq !== saySeq) return;
+          try { speechSynthesis.cancel(); } catch (e2) { /* ignore */ }
+          online();
+        }, 1800);
+      } catch (e) { online(); }
+    };
+
+    if (!VOICES_READY) {                                 // 首屏 voices 未就绪，等一次事件
+      let fired = false;
+      const go = function () { if (fired) return; fired = true; local(); };
+      if (typeof speechSynthesis.addEventListener === 'function') {
+        speechSynthesis.addEventListener('voiceschanged', go, { once: true });
+      }
+      setTimeout(go, 350);
+      return;
+    }
+    local();
   }
 
   /** 文献链接（官方 / 免费 PDF 点开即下载；标「需订阅」的是 DOI 解析页，仅供核对出处与题录） */
