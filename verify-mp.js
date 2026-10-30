@@ -1861,6 +1861,11 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
     pgJs8.indexOf('aliasOpen: aliasHit.length > 0') !== -1 ? 1 : 0, 1, 0);
   check('目录页中英对照数据就位（calculators.js 由 EN_ALIAS 映射行数据）',
     pgJs8.indexOf('EX.EN_ALIAS.map') !== -1 && EXA.EN_ALIAS.length === 72 ? 1 : 0, 1, 0);
+  // ── v1.12.9：首屏导航条也要有「中英对照」（原先只有 navGroupsOf 里挂，首屏看不到） ──
+  const navCnt = (pgJs8.match(/\{ id: 'enalias', title: '中英对照' \}/g) || []).length;
+  check('导航条两处（首屏 data + navGroupsOf）都挂「中英对照」', navCnt >= 2 ? 1 : 0, 1, 0);
+  check('小程序中英对照卡不再写「暂不支持发音」说明（v1.12.9 用户要求删除）',
+    pgWxml8.indexOf('暂不支持发音') === -1 ? 1 : 0, 1, 0);
 }
 
 console.log(`\n${'='.repeat(46)}`);

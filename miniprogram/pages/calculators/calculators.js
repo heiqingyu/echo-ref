@@ -277,10 +277,11 @@ Page({
     // 从条目详情跳过来时，被定位的那条文献闪一下（v1.11.3）
     hitRef: '',
     appVersion: V.APP_VERSION,
-    // 组名跳转条：目录很长，点一下定位到该组；末尾挂「参考文献」直达页底文献卡（v1.6.6）
+    // 组名跳转条：目录很长，点一下定位到该组；末尾挂「参考文献」「中英对照」直达页底两张卡（v1.6.6 / v1.12.9）
+    // ★ 首屏用的这份与 navGroupsOf() 必须同构，否则「中英对照」只在重绘后才有
     navGroups: buildSections().map(function (s) {
       return { id: s.id, title: s.title.replace(/（.*?）/g, '') };
-    }).concat([{ id: 'refs', title: '参考文献' }]),
+    }).concat([{ id: 'refs', title: '参考文献' }, { id: 'enalias', title: '中英对照' }]),
     curGroup: '',
     showTop: false,
   },

@@ -127,9 +127,6 @@
         </view>
         <text class="alias-item__zh">{{item.zh}}</text>
       </view>
-      <view class="refs-copy">
-        网页 / APK 版点条目可用浏览器内置语音朗读英文（不联网）；小程序暂不支持发音，已标注音标。
-      </view>
     </view>
   </view>
 
