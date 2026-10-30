@@ -8344,7 +8344,7 @@ const REFS = [
     dl: [
       { t: 'DOI 官方页', u: 'https://doi.org/10.3969/j.issn.1004-8812.2025.12.002' },
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/2512%2B%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%89%E5%B0%96%E7%93%A3%E7%8E%AF%E6%88%90%E5%BD%A2%E6%9C%AF%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86%EF%BC%88%E8%AF%95%E8%A1%8C%E7%89%88%EF%BC%89.pdf' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zgjzxgbzz202512002' },
+      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zgjrxzbxzz202512002' },
     ],
   },
   {
@@ -8376,7 +8376,7 @@ const REFS = [
     where: '中华心血管病杂志（网络版）, 2025, 8: e1000191',
     use: 'TAVR 术前超声 / CT 评估、瓣环与冠脉高度测量、术后随访节点',
     dl: [
-      { t: '万方检索', u: 'https://s.wanfangdata.com.cn/paper?q=%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E7%BD%AE%E6%8D%A2%E6%9C%AF%E4%B8%B4%E5%BA%8A%E8%B7%AF%E5%BE%84%EF%BC%882024%20%E5%85%A8%E6%96%87%E7%89%88%EF%BC%89' },
+      { t: 'DOI 官方页', u: 'https://doi.org/10.3760/cma.j.cn116031.2025.1000191' },
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%BB%E5%8A%A8%E8%84%89%E7%93%A3%E7%BD%AE%E6%8D%A2%E6%9C%AF%E4%B8%B4%E5%BA%8A%E8%B7%AF%E5%BE%84%EF%BC%882024%E5%85%A8%E6%96%87%E7%89%88%EF%BC%89.pdf' },
     ],
   },
@@ -8387,8 +8387,9 @@ const REFS = [
     where: '中国循环杂志, 2025, 40(12): 1148–1163',
     use: 'TEER 适应证与禁忌、TEE 引导流程、术后反流与压差评估',
     dl: [
-      { t: '万方检索', u: 'https://s.wanfangdata.com.cn/paper?q=%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%BA%8C%E5%B0%96%E7%93%A3%E4%BB%8B%E5%85%A5%E4%BF%AE%E5%A4%8D%E6%8A%80%E6%9C%AF%E4%B8%B4%E5%BA%8A%E5%AE%9E%E8%B7%B5%E6%8C%87%E5%8D%97' },
+      
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%BA%8C%E5%B0%96%E7%93%A3%E4%BB%8B%E5%85%A5%E4%BF%AE%E5%A4%8D%E6%8A%80%E6%9C%AF%E4%B8%B4%E5%BA%8A%E5%AE%9E%E8%B7%B5%E6%8C%87%E5%8D%97.pdf' },
+          { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zgxhzz202512002' },
     ],
   },
   {

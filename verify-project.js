@@ -260,12 +260,24 @@ else bad('存在不合规的文献直链: ' + dlAll.filter(d => !/PDF|全文|需
 // v1.13.2：中文文献从「万方搜索页」改为「万方文章详情页」——用户要求点一下直接到文章
 const wfRe = /^https:\/\/d\.wanfangdata\.com\.cn\/periodical\/[a-z]+\d{9}$/;
 const wfDl = dlAll.filter(d => d.t === '万方');
-if (wfDl.length >= 12 && wfDl.every(d => wfRe.test(d.u)))
+if (wfDl.length >= 17 && wfDl.every(d => wfRe.test(d.u)))
   ok('万方文章详情页 ' + wfDl.length + ' 条（d.wanfangdata 直链，非搜索页）');
 else bad('万方详情页不合规: ' + wfDl.filter(d => !wfRe.test(d.u)).map(d => d.u).join(' '));
-if (dlAll.filter(d => /^https:\/\/s\.wanfangdata\.com\.cn\/paper\?q=/.test(d.u)).length <= 3)
-  ok('万方搜索页链接仅剩 ' + dlAll.filter(d => /^https:\/\/s\.wanfangdata\.com\.cn\/paper\?q=/.test(d.u)).length + ' 条（万方未收录的少数文献作退路）');
-else bad('仍有过多万方搜索页: ' + dlAll.filter(d => /^https:\/\/s\.wanfangdata\.com\.cn\/paper\?q=/.test(d.u)).map(d => d.u).join(' '));
+// ★ 逐个核对过的文章 ID 白名单（2026-10-30 用 m.wanfangdata 详情页标题逐条验证）：
+// 防止以后手改 URL 或凭「刊名缩写+年+期+001」推断，再写出 zgjzxgbzz 这种查不到的 ID
+const WF_OK = ['zhcsyx201608001', 'zgjrxzbxzz202512002', 'xdxzz202401002', 'xdxzz202402001',
+  'zhcsyx202401001', 'zhcsyx202408001', 'zhyx202101002', 'zhxxgb201910005', 'zhxxgb201709004',
+  'zhqkyszz202401001', 'zhxxxgwk201912001', 'zgxhzz202102002', 'zhyxcszz201402012',
+  'zhcsyx202501001', 'zhcsyx202006001', 'zhcsyx202311001', 'zgxhzz202512002'];
+const wfBad = wfDl.filter(d => WF_OK.indexOf(String(d.u).split('/').pop()) === -1);
+if (wfBad.length === 0)
+  ok('万方文章 ID 全部在已核对白名单内（' + WF_OK.length + ' 个）');
+else bad('万方 ID 未经核对: ' + wfBad.map(d => d.u).join(' '));
+// v1.13.3：用户要求彻底去掉万方搜索页（R63 补到详情页、R62 改挂 doi.org 官方页）
+const wfSearch = dlAll.filter(d => String(d.u).indexOf('s.wanfangdata.com.cn/paper?q=') !== -1);
+if (wfSearch.length === 0)
+  ok('已无万方搜索页链接（全部指向文章详情页）');
+else bad('仍挂着万方搜索页: ' + wfSearch.map(d => d.u).join(' '));
 // DOI 入口只许 doi.org 解析页，不来自造地址
 const doiDl = dlAll.filter(d => /DOI/.test(d.t));
 if (doiDl.length >= 3 && doiDl.every(d => /^https:\/\/doi\.org\/10\./.test(d.u)))

@@ -463,10 +463,11 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
   // v1.13.2：中文文献挂万方文章详情页，不再挂搜索页
   const wfReMp = /^https:\/\/d\.wanfangdata\.com\.cn\/periodical\/[a-z]+\d{9}$/;
   const wfDlMp = allDl.filter(d => d.t === '万方');
-  check('万方文章详情页 ≥12 条且均为 d.wanfangdata 直链',
-    wfDlMp.length >= 12 && wfDlMp.every(d => wfReMp.test(d.u)) ? 1 : 0, 1, 0);
-  check('万方搜索页链接 ≤3 条（万方未收录的少数文献作退路）',
-    allDl.filter(d => /^https:\/\/s\.wanfangdata\.com\.cn\/paper\?q=/.test(d.u)).length <= 3 ? 1 : 0, 1, 0);
+  check('万方文章详情页 ≥17 条且均为 d.wanfangdata 直链',
+    wfDlMp.length >= 17 && wfDlMp.every(d => wfReMp.test(d.u)) ? 1 : 0, 1, 0);
+  // v1.13.3：用户要求「不要再出现万方搜索页」——中文文献一律直达文章详情页
+  check('已无万方搜索页链接（全部指向文章详情页）',
+    allDl.filter(d => d.u.indexOf('s.wanfangdata.com.cn/paper?q=') !== -1).length === 0 ? 1 : 0, 1, 0);
   const doiDlMp = allDl.filter(d => /DOI/.test(d.t));
   check('DOI 入口 ≥3 条且只指向 doi.org',
     doiDlMp.length >= 3 && doiDlMp.every(d => /^https:\/\/doi\.org\/10\./.test(d.u)) ? 1 : 0, 1, 0);
