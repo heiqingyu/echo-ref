@@ -639,7 +639,11 @@ check('17 项均值随体重单调递增',
 const exd = require('./miniprogram/utils/extra-data.js');
 const r80 = exd.REFS.filter(function (r) { return r.id === 'R80'; })[0];
 check('R80 已入库', !!r80, true);
-check('R80 为中文期刊（需订阅 DOI）', r80 && r80.dl.length === 1 && r80.dl[0].t === '需订阅', true);
+// v1.13.2：R80 除中文期刊需订阅 DOI 外，另挂了一条万方详情页
+check('R80 为中文期刊（需订阅 DOI + 万方详情页）',
+  r80 && r80.dl.some(function (x) { return x.t === '需订阅'; }) &&
+    r80.dl.some(function (x) { return x.t === '万方' && /^https:\/\/d\.wanfangdata\.com\.cn\/periodical\//.test(x.u); }),
+  true);
 check('R80 题录含卷期页 11(2): 142–154',
   r80 && /11\(2\): 142–154/.test(r80.where) ? 1 : 0, 1);
 

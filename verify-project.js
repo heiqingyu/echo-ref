@@ -254,15 +254,23 @@ else bad('参考文献条数异常: ' + EX.REFS.length);
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
 if (dlAll.length >= 80) ok('文献直链 ' + dlAll.length + ' 条（官方 PDF / 免费全文 / 需订阅地址）');
 else bad('文献直链过少: ' + dlAll.length);
-if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文|需订阅|官网|免费页面|检索|DOI/.test(d.t)))
+if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文|需订阅|官网|免费页面|检索|DOI|万方/.test(d.t)))
   ok('每条直链含 https 地址与类型标注');
-else bad('存在不合规的文献直链: ' + dlAll.filter(d => !/PDF|全文|需订阅|官网|免费页面|检索|DOI/.test(d.t)).map(d => d.t).join(' '));
-// v1.13.1：中文指南补「数据库检索 + DOI」，只许指向万方 / 知网 / doi.org，不来自造地址
-const searchDl = dlAll.filter(d => /检索|DOI/.test(d.t));
-if (searchDl.length >= 7 &&
-    searchDl.every(d => /^https:\/\/s\.wanfangdata\.com\.cn\/|^https:\/\/kns\.cnki\.net\/|^https:\/\/doi\.org\/10\./.test(d.u)))
-  ok('数据库检索 / DOI 入口 ' + searchDl.length + ' 条均指向万方・知网・doi.org');
-else bad('检索入口不合规: ' + searchDl.map(d => d.u).join(' '));
+else bad('存在不合规的文献直链: ' + dlAll.filter(d => !/PDF|全文|需订阅|官网|免费页面|检索|DOI|万方/.test(d.t)).map(d => d.t).join(' '));
+// v1.13.2：中文文献从「万方搜索页」改为「万方文章详情页」——用户要求点一下直接到文章
+const wfRe = /^https:\/\/d\.wanfangdata\.com\.cn\/periodical\/[a-z]+\d{9}$/;
+const wfDl = dlAll.filter(d => d.t === '万方');
+if (wfDl.length >= 12 && wfDl.every(d => wfRe.test(d.u)))
+  ok('万方文章详情页 ' + wfDl.length + ' 条（d.wanfangdata 直链，非搜索页）');
+else bad('万方详情页不合规: ' + wfDl.filter(d => !wfRe.test(d.u)).map(d => d.u).join(' '));
+if (dlAll.filter(d => /^https:\/\/s\.wanfangdata\.com\.cn\/paper\?q=/.test(d.u)).length <= 3)
+  ok('万方搜索页链接仅剩 ' + dlAll.filter(d => /^https:\/\/s\.wanfangdata\.com\.cn\/paper\?q=/.test(d.u)).length + ' 条（万方未收录的少数文献作退路）');
+else bad('仍有过多万方搜索页: ' + dlAll.filter(d => /^https:\/\/s\.wanfangdata\.com\.cn\/paper\?q=/.test(d.u)).map(d => d.u).join(' '));
+// DOI 入口只许 doi.org 解析页，不来自造地址
+const doiDl = dlAll.filter(d => /DOI/.test(d.t));
+if (doiDl.length >= 3 && doiDl.every(d => /^https:\/\/doi\.org\/10\./.test(d.u)))
+  ok('DOI 入口 ' + doiDl.length + ' 条均指向 doi.org');
+else bad('DOI 入口不合规: ' + doiDl.map(d => d.u).join(' '));
 const subDl = dlAll.filter(d => d.t === '需订阅');
 if (subDl.length >= 5 && subDl.length <= 12 &&
     subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)))
@@ -270,15 +278,16 @@ if (subDl.length >= 5 && subDl.length <= 12 &&
 else bad('需订阅地址不合规: ' + subDl.map(d => d.u).join(' '));
 // v1.6.6：R75 原来挂中国循环杂志官网首页，点进去站内搜不到这篇文章 → 改挂公开 PDF 全文
 const r79 = EX.REFS.filter(r => r.id === 'R75')[0];
-if (r79 && (r79.dl || []).length === 1 && r79.dl[0].t === '中文 PDF' &&
-    /^https:\/\/.+\.pdf$/.test(r79.dl[0].u))
+if (r79 && (r79.dl || []).some(d => d.t === '中文 PDF' && /^https:\/\/.+\.pdf$/.test(d.u)) &&
+    !(r79.dl || []).some(d => /chinacirculation\.org/.test(d.u)))
   ok('R75 挂公开 PDF 全文直链（不再挂官网首页）');
 else bad('R75 直链不合规: ' + JSON.stringify(r79 && r79.dl));
 if (!dlAll.some(d => /chinacirculation\.org/.test(d.u)))
   ok('已无指向期刊官网首页的无效直链');
 else bad('仍挂着搜不到文章的期刊官网首页');
 // 能免费拿到的必须标成免费：免费页面 / 免费全文 PDF / PMC 全文 三类合计应远多于需订阅
-const freeDl = dlAll.filter(d => d.t !== '需订阅');
+// 万方详情页需登录订阅，不能算「免费可获取」，故排除
+const freeDl = dlAll.filter(d => !/需订阅|万方/.test(d.t));
 if (freeDl.length >= 70)
   ok('免费可获取链接 ' + freeDl.length + ' 条（免费 PDF / PMC / 免费页面 / 中文全文）');
 else bad('免费链接过少: ' + freeDl.length);

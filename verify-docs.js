@@ -1957,10 +1957,12 @@ function check(name, ok, detail) {
   })()`);
   const sd = JSON.parse(subDl);
   // ★ 数量从数据源算，避免每加一条需订阅文献就要改断言
-  const onlySubN = require('./miniprogram/utils/extra-data.js').REFS.filter(function (r) {
-    return (r.dl || []).length && r.dl.every(function (x) { return x.t === '需订阅'; });
-  }).length;
-  check('「需订阅」胶囊渲染出 ' + onlySubN + ' 个（其余均可免费获取）', sd.n === onlySubN, subDl);
+  // v1.13.2：口径改为「所有标注需订阅的直链数」——原来数的是「dl 全部为需订阅的条目数」，
+  //   给 R80 补上「万方」详情页后两者不再相等（条目数 10 ≠ 胶囊数 11）
+  const onlySubN = require('./miniprogram/utils/extra-data.js').REFS.reduce(function (a, r) {
+    return a + (r.dl || []).filter(function (x) { return x.t === '需订阅'; }).length;
+  }, 0);
+  check('「需订阅」胶囊渲染出 ' + onlySubN + ' 个（与数据源一致）', sd.n === onlySubN, subDl);
   check('「需订阅」胶囊文案为「需订阅」', sd.txt === '需订阅', subDl);
   check('「需订阅」用虚线灰边与免费直链区分', sd.border === 'dashed', subDl);
   check('折叠头同时给出免费直链条数', /条附免费直链/.test(sd.cnt), subDl);

@@ -458,22 +458,28 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
   // 文献直链：优先官方/免费 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
   const allDl = EXD.REFS.reduce((a, r) => a.concat(r.dl || []), []);
   check('文献直链均为 https 地址', allDl.every(d => String(d.u).indexOf('https://') === 0) ? 1 : 0, 1, 0);
-  check('文献直链均标注类型（PDF / 中文 PDF / 免费全文 / PMC / 需订阅 / 官网 / 检索 / DOI）',
-    allDl.every(d => /PDF|全文|需订阅|官网|免费页面|检索|DOI/.test(d.t)) ? 1 : 0, 1, 0);
-  const searchDlMp = allDl.filter(d => /检索|DOI/.test(d.t));
-  check('数据库检索 / DOI 入口 ≥7 条且只指向万方・知网・doi.org',
-    searchDlMp.length >= 7 &&
-    searchDlMp.every(d => /^https:\/\/s\.wanfangdata\.com\.cn\/|^https:\/\/kns\.cnki\.net\/|^https:\/\/doi\.org\/10\./.test(d.u)) ? 1 : 0, 1, 0);
+  check('文献直链均标注类型（PDF / 中文 PDF / 免费全文 / PMC / 需订阅 / 官网 / 检索 / DOI / 万方）',
+    allDl.every(d => /PDF|全文|需订阅|官网|免费页面|检索|DOI|万方/.test(d.t)) ? 1 : 0, 1, 0);
+  // v1.13.2：中文文献挂万方文章详情页，不再挂搜索页
+  const wfReMp = /^https:\/\/d\.wanfangdata\.com\.cn\/periodical\/[a-z]+\d{9}$/;
+  const wfDlMp = allDl.filter(d => d.t === '万方');
+  check('万方文章详情页 ≥12 条且均为 d.wanfangdata 直链',
+    wfDlMp.length >= 12 && wfDlMp.every(d => wfReMp.test(d.u)) ? 1 : 0, 1, 0);
+  check('万方搜索页链接 ≤3 条（万方未收录的少数文献作退路）',
+    allDl.filter(d => /^https:\/\/s\.wanfangdata\.com\.cn\/paper\?q=/.test(d.u)).length <= 3 ? 1 : 0, 1, 0);
+  const doiDlMp = allDl.filter(d => /DOI/.test(d.t));
+  check('DOI 入口 ≥3 条且只指向 doi.org',
+    doiDlMp.length >= 3 && doiDlMp.every(d => /^https:\/\/doi\.org\/10\./.test(d.u)) ? 1 : 0, 1, 0);
   const subDl = allDl.filter(d => d.t === '需订阅');
   check('需订阅地址均为 DOI 解析页或中华医学期刊网页面',
     subDl.length >= 5 && subDl.length <= 12 &&
     subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)) ? 1 : 0, 1, 0);
-  check('免费可获取链接 ≥ 70 条', allDl.filter(d => d.t !== '需订阅').length >= 70 ? 1 : 0, 1, 0);
+  check('免费可获取链接 ≥ 70 条', allDl.filter(d => !/需订阅|万方/.test(d.t)).length >= 70 ? 1 : 0, 1, 0);
   // v1.6.6：R75 原挂中国循环杂志官网首页（站内搜不到这篇文章）→ 改挂公开 PDF 全文直链
   const r79 = EXD.REFS.filter(r => r.id === 'R75')[0];
   check('R75 挂公开 PDF 全文直链（不再挂官网首页）',
-    r79 && r79.dl && r79.dl.length === 1 && r79.dl[0].t === '中文 PDF' &&
-      /^https:\/\/.+\.pdf$/.test(r79.dl[0].u) ? 1 : 0, 1, 0);
+    r79 && r79.dl && r79.dl.some(d => d.t === '中文 PDF' && /^https:\/\/.+\.pdf$/.test(d.u)) &&
+      !r79.dl.some(d => /chinacirculation\.org/.test(d.u)) ? 1 : 0, 1, 0);
   check('已无指向期刊官网首页的无效直链',
     allDl.some(d => /chinacirculation\.org/.test(d.u)) ? 0 : 1, 1, 0);
   check('「免费页面」类型已启用',
