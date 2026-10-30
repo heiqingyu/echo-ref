@@ -7844,10 +7844,11 @@ const REFS = [
     id: 'R11',
     zh: '肺动脉高压诊断与治疗指南（ESC/ERS 2022）',
     en: 'Humbert M, Kovacs G, Hoeper MM, et al. 2022 ESC/ERS Guidelines for the Diagnosis and Treatment of Pulmonary Hypertension.',
-    where: 'Eur Respir J, 2022, 60(1): 2200879',
+    where: 'Eur Respir J, 2023, 61(1): 2200879',
     use: 'PH 血流动力学分型、超声概率与右心导管定义',
     dl: [
-      { t: '免费全文 PDF', u: 'https://erj.ersjournals.com/content/erj/early/2022/08/25/13993003.00879-2022.full.pdf' },
+      { t: '免费页面', u: 'https://publications.ersnet.org/content/erj/61/1/2200879' },
+      { t: '需订阅（DOI）', u: 'https://doi.org/10.1183/13993003.00879-2022' },
     ],
   },
   {
@@ -8105,7 +8106,7 @@ const REFS = [
     where: 'Eur Respir J, 2015, 45(3): 700–708',
     use: '低剂量多巴酚丁胺下 RVFWS 变化与右室收缩储备的判读标准',
     dl: [
-      { t: '免费全文 PDF', u: 'https://erj.ersjournals.com/content/erj/45/3/700.full.pdf' },
+      { t: '免费页面', u: 'https://publications.ersnet.org/content/erj/45/3/700' },
     ],
   },
   {
@@ -8521,7 +8522,7 @@ const REFS = [
     en: '中华医学会心血管病学分会心血管影像学组, 北京医学会心血管病学会影像学组. 中国成人心脏瓣膜病超声心动图规范化检查专家共识.',
     where: '中国循环杂志, 2021, 36(2): 109–125',
     dl: [
-      { t: '中文 PDF', u: 'https://www.ddzxhospital.com/library/up_f/file/20260526/202605261605484836.pdf' },
+      { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/valve-echo-consensus-2021.pdf' },
       { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zgxhzz202102002' },
     ],
     use: '国内成人瓣膜病超声规范化检查与严重程度评估的权威共识；MS 按 MVA <1.0 cm² 为重度（与 ESC/EACTS 2021 一致），AS 按 AVA <1.0 cm² 或 Vmax ≥4.0 m/s 或平均压差 ≥40 mmHg 提示重度',
@@ -8603,7 +8604,8 @@ const REFS = [
     en: 'Chinese Expert Consensus on Standardized Transthoracic Echocardiographic Examination of the Coronary Arteries in Children.',
     where: '中华超声影像学杂志, 2025, 34(11): 921–931',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.3760/cma.j.cn131148-20250716-00416' },
+      { t: '需订阅', u: 'https://doi.org/10.3760/cma.j.cn131148-20250919-00508' },
+      { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/1608694' },
     ],
     use: '儿童冠脉 AHA 15 分段法与可显示的 9 段、舒张早期（T 波终点）测量、内膜至内膜、图像放大 2–4 倍、BSA 校正 Z 值、AHA 2017 川崎病冠脉分级口径；用于「儿童 Z 值」页冠脉组说明与判读',
   },
@@ -8636,7 +8638,7 @@ const REFS = [
     en: '中国超声心动图学会, 中华医学会超声医学分会浅表组织和血管学组, 中国医药教育学会超声医学专业委员会.',
     where: '中华超声影像学杂志, 2023, 32(11): 921–945',
     dl: [
-      { t: '中文 PDF', u: 'https://www.ddzxhospital.com/library/up_f/file/20240116/202401161456289637.pdf' },
+      { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/ccs-stress-echo-2023.pdf' },
       { t: '需订阅（DOI）', u: 'https://doi.org/10.3760/cma.j.cn131148-20230511-00267' },
       { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202311001' },
     ],

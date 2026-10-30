@@ -313,6 +313,36 @@ if (dlAll.filter(d => /asecho\.org\/wp-content\/uploads\/.+\.pdf$/.test(d.u)).le
   ok('ASE 官方 PDF 直链 ≥ 20 条');
 else bad('ASE 官方 PDF 直链不足');
 
+// ── v1.13.4：全库直链体检后的四条回归（用户实测 R11 报「page could not be found」）──
+// ① ERS 期刊已迁站 erj.ersjournals.com → publications.ersnet.org，旧域名一律不许再出现
+const ersOld = dlAll.filter(d => /erj\.ersjournals\.com/.test(d.u));
+if (!ersOld.length) ok('已无旧 ERS 域名 erj.ersjournals.com（迁至 publications.ersnet.org）');
+else bad('仍挂着旧 ERS 域名: ' + ersOld.map(d => d.u).join(' '));
+// ② 第三方医院图书馆托管的 PDF 域名已整体失效（DNS 不通），一律不许再出现
+const ddzx = dlAll.filter(d => /ddzxhospital\.com/.test(d.u));
+if (!ddzx.length) ok('已无 ddzxhospital.com 失效托管地址');
+else bad('仍挂着 ddzxhospital.com: ' + ddzx.map(d => d.u).join(' '));
+// ③ R11 是 2023 年 61(1) 正式出版（不是 2022 年 60(1)），链接与卷期都要对上
+const r11 = EX.REFS.filter(r => r.id === 'R11')[0];
+if (r11 && (r11.dl || []).some(d => d.u === 'https://publications.ersnet.org/content/erj/61/1/2200879') &&
+    /61\(1\)/.test(r11.where))
+  ok('R11 指向 ERS 正式全文页 61(1):2200879，卷期与链接一致');
+else bad('R11 链接或卷期不合规: ' + JSON.stringify(r11 && { where: r11.where, dl: r11.dl }));
+// ④ R75 / R86 原第三方 PDF 失效后改为本站自托管，文件必须在 docs/materials 里真实存在
+const selfHost = [['R75', 'valve-echo-consensus-2021.pdf'], ['R86', 'ccs-stress-echo-2023.pdf']];
+const selfBad = selfHost.filter(([id, f]) => {
+  const r = EX.REFS.filter(x => x.id === id)[0];
+  if (!r || !(r.dl || []).some(d => d.u.indexOf('/materials/' + f) !== -1)) return true;
+  return !fs.existsSync(path.join(__dirname, 'docs', 'materials', f));
+});
+if (!selfBad.length) ok('R75 / R86 改挂本站自托管 PDF，且 docs/materials 内文件存在');
+else bad('自托管 PDF 缺失: ' + selfBad.map(x => x[0] + '/' + x[1]).join(' '));
+// ⑤ R83 的 DOI 曾经写错（-20250716-00416 在 doi.org 上 404），锁死正确值
+const r83 = EX.REFS.filter(r => r.id === 'R83')[0];
+if (r83 && (r83.dl || []).some(d => /10\.3760\/cma\.j\.cn131148-20250919-00508/.test(d.u)))
+  ok('R83 DOI 指向真实文章（cn131148-20250919-00508）');
+else bad('R83 DOI 不合规: ' + JSON.stringify(r83 && r83.dl));
+
 console.log('\n=== 4f. 切面学习（含操作规范专辑）/ TEE 切面在线演示（纯外链） ===');
 console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 R9 / R10 / R38）');
 if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 切面在线演示）');

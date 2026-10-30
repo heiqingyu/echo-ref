@@ -491,6 +491,24 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
   check('折叠头显示可直连条数（refsPdf）',
     calcWxml.indexOf('{{refsPdf}}') !== -1 &&
     /refsPdf:\s*EX\.REFS\.filter/.test(calcJs) ? 1 : 0, 1, 0);
+
+  // v1.13.4：用户实测 R11 报「page could not be found」后的回归断言
+  check('已无旧 ERS 域名 erj.ersjournals.com（已迁 publications.ersnet.org）',
+    allDl.some(d => /erj\.ersjournals\.com/.test(d.u)) ? 0 : 1, 1, 0);
+  check('已无 ddzxhospital.com 失效托管地址（R75 / R86 改自托管）',
+    allDl.some(d => /ddzxhospital\.com/.test(d.u)) ? 0 : 1, 1, 0);
+  const r11m = EXD.REFS.filter(r => r.id === 'R11')[0];
+  check('R11 指向 ERS 正式全文页 61(1):2200879',
+    r11m && (r11m.dl || []).some(d => d.u === 'https://publications.ersnet.org/content/erj/61/1/2200879') &&
+    /61\(1\)/.test(r11m.where) ? 1 : 0, 1, 0);
+  check('R75 / R86 的中文 PDF 走本站 materials 自托管',
+    ['R75', 'R86'].every(function (id) {
+      const r = EXD.REFS.filter(x => x.id === id)[0];
+      return r && (r.dl || []).some(d => d.t === '中文 PDF' && /\/materials\/[a-z0-9-]+\.pdf$/.test(d.u));
+    }) ? 1 : 0, 1, 0);
+  check('R83 DOI 指向真实文章（cn131148-20250919-00508）',
+    (EXD.REFS.filter(r => r.id === 'R83')[0].dl || [])
+      .some(d => /10\.3760\/cma\.j\.cn131148-20250919-00508/.test(d.u)) ? 1 : 0, 1, 0);
   check('文献直链渲染成可点胶囊（data-url + catchtap）',
     calcWxml.indexOf('class="ref-dl__i') !== -1 &&
     calcWxml.indexOf('catchtap="onCopyLink"') !== -1 ? 1 : 0, 1, 0);
