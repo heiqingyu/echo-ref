@@ -15,6 +15,8 @@ javac.log
 ref-tte/
 _attic/
 zsecho-shell.apk
+# 竞品（ZS-Echo Copilot）整页离线副本，仅本地对照，不上传公开仓库
+zsecho-offline.html
 # 原型草图
 prototype.html
 prototype-peds.html

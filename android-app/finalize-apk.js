@@ -36,11 +36,15 @@ function main() {
   console.log('  COPY: ' + dst + '  (' + size + ' bytes)');
 
   // 根目录只保留最新一个版本化 APK
+  // ★ 例外：KEEP 名单里的历史版本不清（第一个发布版留给用户存档；
+  //   以前这里是「除当前版本外全删」，下次打包会把手工留的 v1.0.0 删掉）
+  const KEEP = ['EchoRef-v1.0.0.apk'];
   const keep = path.basename(dst);
   const removed = [];
   for (const name of fs.readdirSync(ROOT)) {
     if (!/^EchoRef-v.*\.apk$/i.test(name)) continue;
     if (name === keep) continue;
+    if (KEEP.indexOf(name) !== -1) { console.log('  KEEP: ' + name); continue; }
     fs.unlinkSync(path.join(ROOT, name));
     removed.push(name);
   }
