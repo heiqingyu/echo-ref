@@ -299,9 +299,11 @@ if (!dlAll.some(d => /chinacirculation\.org/.test(d.u)))
 else bad('仍挂着搜不到文章的期刊官网首页');
 // 能免费拿到的必须标成免费：免费页面 / 免费全文 PDF / PMC 全文 三类合计应远多于需订阅
 // 万方详情页需登录订阅，不能算「免费可获取」，故排除
-const freeDl = dlAll.filter(d => !/需订阅|万方/.test(d.t));
-if (freeDl.length >= 70)
-  ok('免费可获取链接 ' + freeDl.length + ' 条（免费 PDF / PMC / 免费页面 / 中文全文）');
+// v1.13.5：「官网 PDF」= 期刊社自己的 PDF 地址（脚本侧一律 403、浏览器里能开，是否免费取决于该刊政策），
+//           不再计入「免费可获取」，也不许再冒充「免费全文 PDF」（用户反馈点了发现要自己找）
+const freeDl = dlAll.filter(d => !/需订阅|万方|官网 PDF/.test(d.t));
+if (freeDl.length >= 65)
+  ok('免费可获取链接 ' + freeDl.length + ' 条（可直接下载的 PDF / PMC / 免费页面 / 中文全文，不含官网 PDF）');
 else bad('免费链接过少: ' + freeDl.length);
 if (dlAll.filter(d => d.t === '免费页面').length >= 3)
   ok('「免费页面」类型已启用 ' + dlAll.filter(d => d.t === '免费页面').length + ' 条（进页面点 PDF 即可下）');
@@ -342,6 +344,32 @@ const r83 = EX.REFS.filter(r => r.id === 'R83')[0];
 if (r83 && (r83.dl || []).some(d => /10\.3760\/cma\.j\.cn131148-20250919-00508/.test(d.u)))
   ok('R83 DOI 指向真实文章（cn131148-20250919-00508）');
 else bad('R83 DOI 不合规: ' + JSON.stringify(r83 && r83.dl));
+
+// ── v1.13.5：直链标签诚实化（用户反馈「标着免费 PDF，点进去还得自己找」）──
+// ① R87 VARC-3 的 EHJ DOI 曾写成 ehaa924（实测跳到 42(10):960 另一篇），锁死 ehaa799
+const r87 = EX.REFS.filter(r => r.id === 'R87')[0];
+if (r87 && (r87.dl || []).some(d => d.u === 'https://doi.org/10.1093/eurheartj/ehaa799') &&
+    !(r87.dl || []).some(d => /ehaa924/.test(d.u)))
+  ok('R87 DOI 指向 VARC-3 原文（ehaa799 = 42(19):1825）');
+else bad('R87 DOI 不合规: ' + JSON.stringify(r87 && r87.dl));
+// ② 「官网 PDF」只许挂已知出版商域名
+const officialPdf = dlAll.filter(d => d.t === '官网 PDF');
+const OFF_OK = /^https:\/\/(academic\.oup\.com|www\.ahajournals\.org|www\.onlinejase\.com|www\.sciencedirect\.com|www\.internationaljournalofcardiology\.com|www\.escardio\.org)\//;
+if (officialPdf.length >= 15 && officialPdf.every(d => OFF_OK.test(d.u)))
+  ok('官网 PDF ' + officialPdf.length + ' 条均指向出版商域名（要浏览器会话，不再标「免费」）');
+else bad('官网 PDF 域名不合规: ' + officialPdf.filter(d => !OFF_OK.test(d.u)).map(d => d.u).join(' '));
+// ③ 标「免费全文 PDF」的必须真能点开即下载
+const freePdf = dlAll.filter(d => d.t === '免费全文 PDF');
+if (freePdf.length >= 3 && freePdf.every(d => /\.pdf$/.test(d.u)))
+  ok('免费全文 PDF ' + freePdf.length + ' 条均为 .pdf 直链');
+else bad('免费全文 PDF 仍含非直链: ' + freePdf.map(d => d.u).join(' '));
+// ④ R21 / R23 补挂 PMC 全文（Europe PMC 核实 inPMC=Y、hasPDF=Y）
+[['R21', 'PMC7539677'], ['R23', 'PMC9725093']].forEach(function (pair) {
+  const r = EX.REFS.filter(x => x.id === pair[0])[0];
+  if (r && (r.dl || []).some(d => d.t === 'PMC 全文' && d.u.indexOf(pair[1]) !== -1))
+    ok(pair[0] + ' 补挂 PMC 免费全文 ' + pair[1]);
+  else bad(pair[0] + ' 缺 PMC 全文 ' + pair[1]);
+});
 
 console.log('\n=== 4f. 切面学习（含操作规范专辑）/ TEE 切面在线演示（纯外链） ===');
 console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 R9 / R10 / R38）');

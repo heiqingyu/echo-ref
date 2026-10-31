@@ -7760,7 +7760,7 @@ const REFS = [
     en: 'Voigt JU, Pedrizzetti G, Lysyansky P, et al. Definitions for a Common Standard for 2D Speckle Tracking Echocardiography: Consensus Document of the EACVI/ASE/Industry Task Force to Standardize Deformation Imaging.',
     where: 'Eur Heart J Cardiovasc Imaging, 2015, 16(1): 1–11',
     dl: [
-      { t: '免费全文 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/16/1/1/7140604/jeu184.pdf' },
+      { t: '官网 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/16/1/1/7140604/jeu184.pdf' },
     ],
 
     use: '应变采集、追踪与报告规范',
@@ -7771,7 +7771,7 @@ const REFS = [
     en: 'Sugimoto T, Robinet S, Dulgheru R, et al. Echocardiographic Reference Ranges for Normal Left Atrial Function Parameters: Results from the EACVI NORRE Study.',
     where: 'Eur Heart J Cardiovasc Imaging, 2018, 19(6): 630–638',
     dl: [
-      { t: '免费全文 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/19/6/630/24834097/jey018.pdf' },
+      { t: '官网 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/19/6/630/24834097/jey018.pdf' },
     ],
 
     use: 'LASr / LASa / LASc 的阈值与临床意义',
@@ -7803,7 +7803,7 @@ const REFS = [
     en: 'Gardin JM, Adams DB, Douglas PS, et al. Recommendations for a Standardized Report for Adult Transthoracic Echocardiography: A Report from the American Society of Echocardiography.',
     where: 'J Am Soc Echocardiogr, 2002, 15(3): 275–290（现行报告规范见 R41，TTE 操作见 R9）',
     dl: [
-      { t: '免费全文 PDF', u: 'https://www.onlinejase.com/article/S0894731702594712/pdf' },
+      { t: '官网 PDF', u: 'https://www.onlinejase.com/article/S0894731702594712/pdf' },
     ],
 
     use: '报告结构与必填条目的历史依据、测量时相与切面命名的统一写法',
@@ -7911,7 +7911,7 @@ const REFS = [
     where: 'Eur Heart J, 2023, 44(39): 3948–4042',
     use: '赘生物大小与栓塞风险、TEE 指征、重复超声时机',
     dl: [
-      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/advance-article-pdf/doi/10.1093/eurheartj/ehad193/51716381/ehad193.pdf' },
+      { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/advance-article-pdf/doi/10.1093/eurheartj/ehad193/51716381/ehad193.pdf' },
     ],
   },
   {
@@ -7921,7 +7921,7 @@ const REFS = [
     where: 'Circulation, 2020, 142(25): e558–e631',
     use: '最大壁厚诊断阈值、LVOT 梗阻分级与猝死风险因素',
     dl: [
-      { t: '免费全文 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000937' },
+      { t: '官网 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000937' },
     ],
   },
   {
@@ -7941,7 +7941,7 @@ const REFS = [
     where: 'Circulation, 2021, 143(5): e72–e227',
     use: '低流量低压差 AS 的负荷试验、钙化评分与手术时机',
     dl: [
-      { t: '免费全文 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000923' },
+      { t: '官网 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000923' },
     ],
   },
   {
@@ -7951,7 +7951,8 @@ const REFS = [
     where: 'Eur Heart J, 2015, 36(42): 2921–2964',
     use: '缩窄性心包炎的呼吸变异、瓣环反转与鉴别路径',
     dl: [
-      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/36/42/2921/33342779/ehv318.pdf' },
+      { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7539677/' },
+      { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/36/42/2921/33342779/ehv318.pdf' },
     ],
   },
   {
@@ -7972,7 +7973,8 @@ const REFS = [
     where: 'Eur Heart J, 2022, 43(7): 561–632',
     use: '二尖瓣 TEER 适应证、解剖适配与介入时机',
     dl: [
-      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/advance-article-pdf/doi/10.1093/eurheartj/ehab395/40340593/ehab395.pdf' },
+      { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9725093/' },
+      { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/advance-article-pdf/doi/10.1093/eurheartj/ehab395/40340593/ehab395.pdf' },
     ],
   },
   {
@@ -7982,7 +7984,7 @@ const REFS = [
     where: 'Eur Heart J Cardiovasc Imaging, 2018, 19(6): 591–600',
     use: '左房应变三时相（LASr / LAScd / LASct）的正常值与测量规范',
     dl: [
-      { t: '免费全文 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/19/6/591/24834126/jey042.pdf' },
+      { t: '官网 PDF', u: 'https://academic.oup.com/ehjcimaging/article-pdf/19/6/591/24834126/jey042.pdf' },
     ],
   },
   {
@@ -7992,7 +7994,7 @@ const REFS = [
     where: 'Eur Heart J, 2019, 40(40): 3297–3317',
     use: '形态学 + 功能两大类计分、总分判读与负荷试验指征',
     dl: [
-      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/40/40/3297/30195412/ehz641.pdf' },
+      { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/40/40/3297/30195412/ehz641.pdf' },
     ],
   },
   {
@@ -8024,7 +8026,7 @@ const REFS = [
     where: 'Eur Heart J, 2020, 41(4): 543–603',
     use: '右心功能不全的危险分层地位、McConnell 征与随访',
     dl: [
-      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/41/4/543/34306708/ehz405.pdf' },
+      { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/41/4/543/34306708/ehz405.pdf' },
     ],
   },
   {
@@ -8034,7 +8036,7 @@ const REFS = [
     where: 'Eur Heart J, 2022, 43(41): 4229–4361',
     use: 'CTRCD 三级分档、GLS 相对下降 15% 阈值与监测节点',
     dl: [
-      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/43/41/4229/51099586/ehac244.pdf' },
+      { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/43/41/4229/51099586/ehac244.pdf' },
     ],
   },
   {
@@ -8065,7 +8067,7 @@ const REFS = [
     where: 'Circulation, 2019, 139(14): e698–e800',
     use: 'ASD / VSD / PDA 的分型、干预指征与随访节点',
     dl: [
-      { t: '免费全文 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000603' },
+      { t: '官网 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000603' },
     ],
   },
   {
@@ -8075,7 +8077,7 @@ const REFS = [
     where: 'Eur Heart J, 2021, 42(6): 563–645',
     use: '分流性肺高压的可手术性评估、艾森曼格综合征管理',
     dl: [
-      { t: '免费全文 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/42/6/563/39353654/ehaa554.pdf' },
+      { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/42/6/563/39353654/ehaa554.pdf' },
     ],
   },
   {
@@ -8096,7 +8098,7 @@ const REFS = [
     where: 'J Cardiovasc Magn Reson, 2011, 13(1): 9',
     use: 'RVEDVi >160 / RVESVi >80 mL/m² 等 PVR 容量阈值的来源',
     dl: [
-      { t: '免费全文 PDF', u: 'https://jcmr-online.biomedcentral.com/articles/10.1186/1532-429X-13-9' },
+      { t: '免费全文 PDF', u: 'https://jcmr-online.biomedcentral.com/counter/pdf/10.1186/1532-429X-13-9.pdf' },
     ],
   },
   {
@@ -8265,7 +8267,7 @@ const REFS = [
     en: 'Hachicha Z, Dumesnil JG, Bogaty P, Pibarot P. Usefulness of the Valvuloarterial Impedance to Predict Adverse Outcome in Asymptomatic Aortic Stenosis.',
     where: 'J Am Coll Cardiol, 2009, 54(11): 1003–1011',
     dl: [
-      { t: '免费全文 PDF', u: 'https://www.sciencedirect.com/science/article/pii/S0735109709020592/pdf' },
+      { t: '官网 PDF', u: 'https://www.sciencedirect.com/science/article/pii/S0735109709020592/pdf' },
     ],
 
     use: 'asload 判读页：Zva =（收缩压 + 平均跨瓣压差）/ 每搏量指数；Zva > 3.5 提示总负荷（瓣膜 + 动脉）升高，> 4.5 组心血管死亡风险约为低 Zva 组的 3.7 倍',
@@ -8287,7 +8289,7 @@ const REFS = [
     where: 'Eur Heart J, 2025, 46(43): 4462–4568',
     use: 'pregnancy-echo 判读页：mWHO 2.0 风险分级与随访强度（I 级 1–2 次 / II–III 级每季度 / IV 级劝阻妊娠）、妊娠 Heart Team 职责、围产期心肌病章节、主动脉病与妊娠',
     dl: [
-      { t: '免费全文 PDF', u: 'https://www.escardio.org/static-file/Escardio/Guidelines/Products/Essential%20Messages/2025%20Gls/2025%20Essential%20Messages_Pregnancy.pdf' },
+      { t: '官网 PDF', u: 'https://www.escardio.org/static-file/Escardio/Guidelines/Products/Essential%20Messages/2025%20Gls/2025%20Essential%20Messages_Pregnancy.pdf' },
     ],
   },
   {
@@ -8432,7 +8434,7 @@ const REFS = [
     en: 'Corrado D, Perazzolo Marra M, Zorzi A, et al. Diagnosis of Arrhythmogenic Cardiomyopathy: The Padua Criteria.',
     where: 'Int J Cardiol, 2020, 319: 106–114',
     dl: [
-      { t: '免费全文 PDF', u: 'https://www.internationaljournalofcardiology.com/article/S0167527320332939/pdf' },
+      { t: '官网 PDF', u: 'https://www.internationaljournalofcardiology.com/article/S0167527320332939/pdf' },
     ],
 
     use: 'ACM 的右优势 / 双室 / 左优势三种表型、形态功能与结构异常的分层标准、超声局部运动异常的判读与随访',
@@ -8650,7 +8652,7 @@ const REFS = [
     en: 'Genereux P, Piazza N, Alu MC, et al. Valve Academic Research Consortium 3: Updated Endpoint Definitions for Aortic Valve Clinical Research.',
     where: 'Eur Heart J, 2021, 42(19): 1825–1857（同时发表于 J Am Coll Cardiol 2021; 77(21): 2717–2746）',
     dl: [
-      { t: '需订阅（DOI）', u: 'https://doi.org/10.1093/eurheartj/ehaa924' },
+      { t: '需订阅（DOI）', u: 'https://doi.org/10.1093/eurheartj/ehaa799' },
       { t: '需订阅（DOI）', u: 'https://doi.org/10.1016/j.jacc.2021.02.038' },
     ],
     use: '生物瓣结构衰败（SVD）的三级定义：Stage 1 形态学 SVD，Stage 2 / 3 为中度 / 重度血流动力学 SVD，判定用与术后基线的 Δ平均压差、ΔEOA、ΔDVI 门槛；瓣周漏与瓣膜血栓的终点定义。用于「人工瓣膜评估」的 SVD 分期表',

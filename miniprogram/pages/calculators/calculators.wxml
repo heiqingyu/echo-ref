@@ -68,16 +68,18 @@
     <view class="card__title refs-hd {{refsOpen ? 'refs-hd--open' : ''}}"
           bindtap="onToggleRefs">
       <text class="refs-hd__t">参考文献</text>
-      <text class="refs-hd__n">{{refsCount}} 条 · {{refsPdf}} 条附免费直链</text>
+      <text class="refs-hd__n">{{refsCount}} 条 · {{refsPdf}} 条附原文链接</text>
       <text class="refs-hd__a">›</text>
     </view>
     <view class="card__desc">
       本工具全部数据与分级标准的来源（含 ASE 官方指南 PDF 直链，切面指南已并入此处）。
-      详情页底部会标注该条目使用的文献编号，点标题展开全部；点条目上的「PDF / 中文 PDF / 中文全文」
-      复制链接，粘贴到手机浏览器即可打开（「中文全文」= 中华医学知识库免费在线全文）。
-      多数条目可免费获取：「ASE PDF / 中文 PDF / 免费全文 PDF / PMC 全文」点开直接下载；
-      「免费页面」是免费全文页面，进去点 PDF 下载即可，不用登录。
-      只有标「需订阅」的少数条目需要机构订阅（多为近年原创研究，暂无公开全文，给出 DOI 便于按题录在机构内检索）。
+      详情页底部会标注该条目使用的文献编号，点标题展开全部；点条目上的胶囊
+      复制链接，粘贴到手机浏览器即可打开。
+      「ASE PDF / 中文 PDF / 免费全文 PDF」是点开即下载的 PDF（学会官方直链或本站自托管），
+      「PMC 全文」是 PubMed Central 的免费全文；「官网 PDF」是期刊社自己的 PDF 地址，
+      能否直接下载取决于该刊的开放政策（部分要机构订阅）；
+      「免费页面」是免费全文网页，进去点 PDF 下载即可，不用登录；「中文全文」为中华医学知识库免费在线全文。
+      标「需订阅」的条目多为近年原创研究，暂无公开全文，给出 DOI 便于按题录在机构内检索。
     </view>
 
     <view wx:if="{{refsOpen}}">

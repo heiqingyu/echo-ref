@@ -1226,11 +1226,11 @@
 
     const cnt = $('refsCount');
     if (cnt) {
-      // 只数「点开就能看」的免费链；标「需订阅」的 DOI 页面不算直链
+      // 只数「点开就能看」的链接；标「需订阅」的 DOI 页面不算
       const free = REFS.filter(function (r) {
         return (r.dl || []).some(function (d) { return d.t !== '需订阅'; });
       }).length;
-      cnt.textContent = REFS.length + ' 条 · ' + free + ' 条附免费直链';
+      cnt.textContent = REFS.length + ' 条 · ' + free + ' 条附原文链接';
     }
     const hd = $('refsToggle');
     if (hd && !hd.dataset.bound) {

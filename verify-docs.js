@@ -1965,7 +1965,8 @@ function check(name, ok, detail) {
   check('「需订阅」胶囊渲染出 ' + onlySubN + ' 个（与数据源一致）', sd.n === onlySubN, subDl);
   check('「需订阅」胶囊文案为「需订阅」', sd.txt === '需订阅', subDl);
   check('「需订阅」用虚线灰边与免费直链区分', sd.border === 'dashed', subDl);
-  check('折叠头同时给出免费直链条数', /条附免费直链/.test(sd.cnt), subDl);
+  // v1.13.5：口径从「免费直链」改为「原文链接」——有 17 条只挂出版商 PDF（官网 PDF），不宜再叫免费
+  check('折叠头同时给出附原文链接的条数', /条附原文链接/.test(sd.cnt) && /\d+ 条 · \d+ 条/.test(sd.cnt), subDl);
   check('R1 标为「免费页面」且指向中华医学期刊网（进页面点 PDF 可下）',
     sd.r1txt === '免费页面' && /^https:\/\/rs\.yiigle\.com\/cmaid\//.test(sd.r1href), subDl);
 
