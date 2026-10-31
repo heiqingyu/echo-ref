@@ -987,6 +987,17 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     fxWxml.indexOf('pagefoot') !== -1 && fxWxml.indexOf('bindtap="onGo"') !== -1 ? 1 : 0, 1, 0);
   check('onGo 区分 switchTab / navigateTo',
     /switchTab/.test(fxJs) && /navigateTo/.test(fxJs) ? 1 : 0, 1, 0);
+  // ── v1.13.6：小节导航统一成「换行平铺」（用户：单行横滑要来回拖、看不全）──
+  const fxWxss = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.wxss'), 'utf8');
+  check('详情页小节导航用 view 换行平铺（不再是 scroll-view 横滑）',
+    fxWxml.indexOf('class="fx-nav"') !== -1 &&
+    fxWxml.indexOf('fx-nav--scroll') === -1 &&
+    fxWxss.indexOf('.fx-nav--scroll {') === -1 ? 1 : 0, 1, 0);
+  const mpNavAt = fxWxss.indexOf('.fx-nav__c {');
+  const mpNavCss = mpNavAt === -1 ? '' : fxWxss.slice(mpNavAt, fxWxss.indexOf('}', mpNavAt));
+  check('小节胶囊允许折行（white-space: normal，不撑出横向滚动）',
+    mpNavCss.indexOf('white-space: normal') !== -1 ? 1 : 0, 1, 0);
 
   // 跳转
   pgA.onOpen({ currentTarget: { dataset: { kind: 'calc', id: 'bernoulli' } } });

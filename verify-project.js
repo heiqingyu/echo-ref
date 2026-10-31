@@ -371,8 +371,25 @@ else bad('免费全文 PDF 仍含非直链: ' + freePdf.map(d => d.u).join(' '))
   else bad(pair[0] + ' 缺 PMC 全文 ' + pair[1]);
 });
 
-console.log('\n=== 4f. 切面学习（含操作规范专辑）/ TEE 切面在线演示（纯外链） ===');
-console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 R9 / R10 / R38）');
+// ── v1.13.6：条目内小节导航改「换行平铺」，与小程序一致 ──
+// 用户实测：单行横滑要来回拖才看得全，节数多的条目尤其难找。网页/APK 的 .fx-nav--sec
+// 不许再出现横向滚动声明；小程序侧在 verify-mp 里单独断言。
+const appCssTxt = fs.readFileSync(path.join(__dirname, 'android-app', 'app.css'), 'utf8');
+const secNavAt = appCssTxt.indexOf('.fx-nav--sec {');
+const secNavCss = secNavAt === -1 ? '' :
+  appCssTxt.slice(secNavAt, appCssTxt.indexOf('}', secNavAt));
+if (secNavAt !== -1 && secNavCss.indexOf('overflow-x') === -1 &&
+    secNavCss.indexOf('nowrap') === -1 && secNavCss.indexOf('scrollbar') === -1)
+  ok('网页/APK 小节导航为换行平铺（.fx-nav--sec 无横向滚动声明）');
+else bad('小节导航仍是单行横滑: ' + JSON.stringify(secNavCss.slice(0, 140)));
+const secChipAt = appCssTxt.indexOf('.fx-nav--sec .fx-nav__c {');
+const secChipCss = secChipAt === -1 ? '' :
+  appCssTxt.slice(secChipAt, appCssTxt.indexOf('}', secChipAt));
+if (secChipCss.indexOf('white-space: normal') !== -1)
+  ok('小节胶囊允许折行（white-space: normal，360px 窄屏不撑出横向滚动）');
+else bad('小节胶囊仍是 nowrap，长标题会撑破容器');
+
+console.log('\n=== 4f. 切面学习（含操作规范专辑）/ TEE 切面在线演示（纯外链） ===');console.log('（原「切面指南」4 份 ASE 官方 PDF 已并入参考文献 R9 / R10 / R38）');
 if (EX.LINK_SECTIONS && EX.LINK_SECTIONS.length === 2) ok('外链分组 2 个（切面学习 / TEE 切面在线演示）');
 else bad('外链分组数异常: ' + (EX.LINK_SECTIONS || []).length);
 const linkIds = EX.LINK_SECTIONS.reduce((a, s3) => a.concat(s3.items.map(i => i.id)), []);

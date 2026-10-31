@@ -77,17 +77,9 @@
   line-height: 1.4;
 }
 
-/* 小节导航横向滚动（v1.11.3）：节数多的条目不换行、靠左右滑，省下首屏高度 */
-.fx-nav--scroll {
-  width: 100%;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-}
-
-.fx-nav--scroll .fx-nav__c {
-  display: inline-block;
-  vertical-align: top;
-}
+/* ★ v1.13.6：删掉 .fx-nav--scroll（单行横滑）。
+   注意它的 flex-wrap: nowrap 写在 .fx-nav 之前、同权重，早就被下面的 wrap 覆盖，
+   所以小程序其实一直是换行的 —— 网页/APK 现在也对齐成换行平铺。 */
 
 /* 行内加粗（正文里的 **重点**） */
 .fx-b {
@@ -140,7 +132,9 @@
   color: #6b7280;
   background: #f1f3f6;
   border-radius: 999rpx;
-  white-space: nowrap;
+  /* v1.13.6：超长小节名在胶囊内折行，别把页面撑出横向滚动 */
+  white-space: normal;
+  word-break: break-word;
 }
 
 .fx-nav__c--on {

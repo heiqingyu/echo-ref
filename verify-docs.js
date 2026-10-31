@@ -2089,6 +2089,19 @@ function check(name, ok, detail) {
   const navN = await c.evalJs(
     'document.querySelectorAll(\'#calcGroups .card[data-g="tavr"] .fx-nav--sec .fx-nav__c\').length');
   check('TAVR 条目渲染出 8 个小节导航胶囊', navN === 8, navN);
+  // v1.13.6：小节导航必须是换行平铺（flex-wrap:wrap），且内容不横向溢出被裁
+  const navLayout = await c.evalJs(`(function(){
+    var n = document.querySelector('#calcGroups .card[data-g="tavr"] .fx-nav--sec');
+    if (!n) return 'no';
+    var cs = getComputedStyle(n);
+    return JSON.stringify({ wrap: cs.flexWrap, ox: cs.overflowX,
+      sh: Math.round(n.scrollWidth), cw: Math.round(n.clientWidth),
+      h: Math.round(n.getBoundingClientRect().height),
+      rows: Math.round(n.getBoundingClientRect().height / 26) });
+  })()`);
+  check('小节导航换行平铺（不横滑、内容不被裁）',
+    navLayout !== 'no' && JSON.parse(navLayout).wrap === 'wrap' &&
+    JSON.parse(navLayout).sh <= JSON.parse(navLayout).cw + 1, navLayout);
   await c.evalJs(
     'document.querySelector(\'#calcGroups .card[data-g="tavr"] .fx-nav--sec .fx-nav__c:nth-child(5)\').click()');
   await new Promise((r) => setTimeout(r, 900));

@@ -16,13 +16,13 @@
     </view>
 
     <!-- 条目内小节导航：长条目滚到中间容易迷路，点胶囊直接定位到该节 -->
-    <!-- 条目内小节导航：长条目（如 Fontan 11 节）平铺会占 6 行、把首屏正文压没，
-         v1.11.3 起改单行横向滚动，节数多也不吃版面高度 -->
-    <scroll-view wx:if="{{toc.length}}" class="fx-nav fx-nav--scroll" scroll-x="{{true}}" enable-flex="{{true}}">
+    <!-- ★ v1.13.6：统一为换行平铺（网页/APK 同步跟进）。v1.11.3 曾用单行横向滚动省高度，
+         结果节数多的条目要左右拖才能看全，用户反馈很难找，改回平铺。 -->
+    <view wx:if="{{toc.length}}" class="fx-nav">
       <view wx:for="{{toc}}" wx:key="id" wx:for-item="sec"
             class="fx-nav__c {{curSec === sec.id ? 'fx-nav__c--on' : ''}}"
             data-id="{{sec.id}}" hover-class="fx-nav__c--tap" bindtap="onJumpSec">{{sec.t}}</view>
-    </scroll-view>
+    </view>
 
     <!-- 评估类内容（extra-data）或计算条目的评分细则表（calc-groups 的 blocks） -->
     <block wx:if="{{blocks.length > 0}}">
