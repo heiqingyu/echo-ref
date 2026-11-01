@@ -1976,6 +1976,29 @@ function check(name, ok, detail) {
     'JSON.stringify({hidden: !!document.getElementById("calcRefList").hidden})');
   check('再点一次可收起', JSON.parse(refsAgain).hidden === true, refsAgain);
 
+  // ── v1.13.8：计算条目也挂「本条目引用」（此前只有判读条目有）──
+  const calcRefs = await c.evalJs(`(function(){
+    function probe(id){
+      var card = document.querySelector('.card[data-g="' + id + '"]');
+      if(!card) return { id: id, found: false, n: 0, head: '' };
+      var hs = card.querySelectorAll('.fx-h'); var head = '';
+      for(var i=0;i<hs.length;i++){ if((hs[i].textContent||'').indexOf('本条目引用')>=0) head = '本条目引用'; }
+      return { id: id, found: true, n: card.querySelectorAll('.ref-item').length, head: head };
+    }
+    var cs = ['flow','mpap','dfun','tapse','tr'].map(probe);
+    return JSON.stringify({
+      cs: cs,
+      citedLeft: document.querySelectorAll('.ref-cited').length
+    });
+  })()`);
+  const cr = JSON.parse(calcRefs);
+  check('计算条目详情带「本条目引用」：flow / mpap / dfun / tapse / tr',
+    cr.cs.every(function (x) { return x.found && x.head === '本条目引用' && x.n >= 1; }), calcRefs);
+  check('mpap 引用 3 条（ESC/ERS + 中国 PH + 右心指南）',
+    cr.cs.filter(function (x) { return x.id === 'mpap'; })[0].n === 3, calcRefs);
+  // v1.13.8：用户要求撤掉「被引用于」反向胶囊（显得乱），这里锁定不再出现
+  check('文献卡不再渲染「被引用于」反向胶囊', cr.citedLeft === 0, calcRefs);
+
   // 转载内容仍应剥离干净；节段划分页（自有内容）已回归发布版
   const stripped = await c.evalJs(`(function(){
     return JSON.stringify({

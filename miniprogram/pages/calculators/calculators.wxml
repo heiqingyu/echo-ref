@@ -91,12 +91,6 @@
           <view class="ref-item__en">{{item.en}}</view>
           <view class="ref-item__where">{{item.where}}</view>
           <view class="ref-item__use">用于：{{item.use}}</view>
-          <view wx:if="{{item.citedBy.length}}" class="ref-cited">
-            <text class="ref-cited__l">被引用于</text>
-            <text wx:for="{{item.citedBy}}" wx:for-item="cb" wx:key="id"
-                  class="ref-cited__i" hover-class="ref-cited__i--tap"
-                  data-to="{{cb.id}}" catchtap="onAliasTap">{{cb.title}}</text>
-          </view>
           <view wx:if="{{item.dl.length}}" class="ref-dl">
             <view wx:for="{{item.dl}}" wx:for-item="lk" wx:key="u"
                   class="ref-dl__i {{lk.sub ? 'ref-dl__i--sub' : ''}}" hover-class="ref-dl__i--tap"

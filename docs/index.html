@@ -1720,35 +1720,6 @@ button.fx-nav__c {
   background: #f1f3f5;
 }
 
-/* 被引用于（文献 → 条目的反向跳转，v1.13.7） */
-.ref-cited {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-}
-.ref-cited__l {
-  font-size: 12px;
-  color: #9aa3af;
-}
-.ref-cited__i {
-  display: inline-block;
-  padding: 2px 9px;
-  font-size: 12px;
-  color: #0f766e;
-  background: #effaf8;
-  border: 1px solid #cdeee9;
-  border-radius: 999px;
-  text-decoration: none;
-  max-width: 100%;
-  word-break: break-word;
-  cursor: pointer;
-}
-.ref-cited__i:hover {
-  background: #d7f2ee;
-}
-
 /* 「相关计算」胶囊：点了直接进对应计算器 */
 .chiprow {
   display: flex;
@@ -2197,7 +2168,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.13.7</div>
+    <div class="verline">心脏超声参考值 · v1.13.8</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2255,7 +2226,7 @@ button.fx-nav__c {
         <div id="aliasList" hidden></div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.13.7</div>
+      <div class="verline">心脏超声参考值 · v1.13.8</div>
       <div class="note note--warn">
         公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
@@ -10390,7 +10361,7 @@ const BRIEF_SECTIONS = [
           { kind: 'note', text: '**读这张表的两个要点**：①「经皮支架主动脉瓣置换」那一行 **TTE 与 ICE 都是 -**——经导管 TAVR（不是外科 TAVR）早期完全靠 TEE；②「房间隔封堵」TTE 只是 +，因为**封堵器放进去后几乎所有切面都被挡住**，尤其房间隔下缘（IVC 水平）看不清，所以成人中心基本都用 TEE 或 ICE。', warn: true },
 
           { kind: 'h', text: '三、心包穿刺：超声引导怎么做' },
-          { kind: 'text', text: '**这是超声科最常独立完成的有创操作**，也是最该掌握的。原文给的数据：Mayo Clinic 系列中，超声引导心包穿刺**成功引流或解除填塞率 97%**；**主要并发症 1.2%**（心腔撕裂、肋间血管损伤、需置胸管的���胸、持续性室速、菌血症、死亡）；**轻微并发症 3.2%**（一过性心腔进入、一过性心律失常、少量气胸、迷走反射）。' },
+          { kind: 'text', text: '**这是超声科最常独立完成的有创操作**，也是最该掌握的。原文给的数据：Mayo Clinic 系列中，超声引导心包穿刺**成功引流或解除填塞率 97%**；**主要并发症 1.2%**（心腔撕裂、肋间血管损伤、需置胸管的气胸、持续性室速、菌血症、死亡）；**轻微并发症 3.2%**（一过性心腔进入、一过性心律失常、少量气胸、迷走反射）。' },
           {
             kind: 'table',
             heads: ['环节', '要点'],
@@ -17779,7 +17750,7 @@ const REFS = [
     zh: '超声引导下有创操作指南（TTE / TEE / ICE）',
     en: 'Silvestry FE, Kerber RE, Brook MM, et al. Echocardiography-Guided Interventions.',
     where: 'J Am Soc Echocardiogr, 2009, 22(3): 213–231',
-    use: 'echo-interv 判读页：12 类操作 × TTE/TEE/ICE 对照表、心包穿刺成功��与并发症率、心肌活检取材部位、房间隔封堵与 ICE 风险清单',
+    use: 'echo-interv 判读页：12 类操作 × TTE/TEE/ICE 对照表、心包穿刺成功率与并发症率、心肌活检取材部位、房间隔封堵与 ICE 风险清单',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2009_Echo-Guided-Interventions.pdf' },
       { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/ASE-Echo-Guided-Interventions_Chinese.pdf' },
@@ -18699,6 +18670,57 @@ function enAliasMatch(q) {
   return out;
 }
 
+/**
+ * 计算类条目 → 参考来源（v1.13.8）
+ *
+ * ★ 为什么单独一张表：计算器组（calc-groups.js）只有字段和公式、没有 source 字段，
+ *   所以「公式集」里 40 个计算条目的详情页此前一个文献都不显示，而判读条目全都有。
+ *   这里按公式的原始出处逐条指定，详情页复用与判读条目相同的「本条目引用」块。
+ * ★ 只放真的算出这个公式/阈值的文献，不为凑数挂不相干的条目。
+ */
+const CALC_SRC = {
+  flow: ['R2'],                    // SV / CO：2015 定量指南的流出道测量
+  ef: ['R2'],                      // Simpson 双平面 EF 与容积指数
+  lvmass: ['R2', 'R1'],            // Devereux 公式 + 中国成人正常值
+  mapse: ['R2'],                   // 长轴缩短
+  tei: ['R2', 'R12'],              // Tei 指数（左心 / 右心）
+  mpap: ['R11', 'R68', 'R12'],     // 肺动脉压与 PH 概率（ESC/ERS + 中国指南 + 右心指南）
+  bernoulli: ['R2'],               // 简化伯努利方程
+  atrial: ['R2', 'R1'],            // LAVI / RAVI
+  rvvol: ['R5'],                   // 右室容积指数（ASE 2025 右心）
+  papi: ['R11', 'R12'],            // 肺动脉搏动指数
+  tr: ['R44', 'R22', 'R81'],       // TR 定量（自体瓣反流 + TVARC + 2025 ESC/EACTS）
+  laef: ['R2', 'R4'],              // 左房排空分数
+  quickratio: ['R1'],              // LA/Ao、RV/LV 半定量比值
+  paidx: ['R32'],                  // McGoon / Nakata（先心根治可行性）
+  ras: ['R19', 'R31'],             // 心尖保留比值（淀粉样变）
+  ea: ['R2'],                      // 有效动脉弹性
+  coa: ['R32', 'R27'],             // 主动脉缩窄（先心指南 + 胸主动脉影像）
+  aortaz: ['R27', 'R1'],           // 主动脉分节段内径参考区间
+  lastiff: ['R4', 'R24'],          // 左房僵硬度（LASr 相关）
+  vtir: ['R32', 'R33'],            // RVOT/LVOT VTI 比替代分流
+  ppm: ['R15'],                    // EOAi 与 PPM（人工瓣 2024）
+  dfun: ['R14', 'R39'],            // 舒张功能四步法 + 2025 更新
+  sync: ['R6', 'R2'],              // CRT 与机械不同步
+  lastrain: ['R4', 'R24', 'R40'],  // 左房应变三时相
+  aortaidx: ['R27', 'R1'],         // 升主动脉直径指数
+  mdsv: ['R40', 'R3'],             // 应变离散度
+  swv: ['R2'],                     // 每搏功
+  mtype: ['R2'],                   // FS / Teichholz / EPSS
+  wmsi: ['R26', 'R85'],            // 室壁运动积分 + 17 节段模式依据
+  h2fpef: ['R25', 'R39'],          // H2FPEF 评分
+  hfapeff: ['R25', 'R39'],         // HFA-PEFF 评分
+  tavrsz: ['R62', 'R30'],          // TAVR 瓣环尺寸与 oversizing
+  laasz: ['R38'],                  // 左心耳封堵尺寸（TEE 介入筛查）
+  aortagrow: ['R27'],              // 主动脉扩张速率
+  pvfu: ['R15', 'R30'],            // 人工瓣跨瓣血流
+  cfr: ['R86'],                    // 冠脉血流储备（负荷超声）
+  resist: ['R11', 'R72'],          // PVR / SVR 合并页
+  rvsyst: ['R5', 'R12'],           // FAC / RVFWS / dP/dt 合并页
+  lvgeom: ['R2', 'R1'],            // 质量 · 应力 · 球形度 · 容积 合并页
+  tapse: ['R5', 'R16'],            // TAPSE 与 RV-PA 耦联
+};
+
   window.ExtraData = {
     BRIEF_SECTIONS: BRIEF_SECTIONS,
     BV_BASE: BV_BASE,
@@ -18716,6 +18738,7 @@ function enAliasMatch(q) {
     blockText: blockText,
     EN_ALIAS: EN_ALIAS,
     enAliasMatch: enAliasMatch,
+    CALC_SRC: CALC_SRC,
   };
 })();
 
@@ -20661,6 +20684,8 @@ const MATERIALS = [];
   const BRIEF = (window.ExtraData && window.ExtraData.BRIEF_SECTIONS) || [];
   const LINKS = (window.ExtraData && window.ExtraData.LINK_SECTIONS) || [];
   const REFS = (window.ExtraData && window.ExtraData.REFS) || [];
+  /** 计算类条目的参考来源（v1.13.8）：calc-groups 没有 source 字段，靠这张表补「本条目引用」 */
+  const CALC_SRC = (window.ExtraData && window.ExtraData.CALC_SRC) || {};
   /** 中英对照（v1.12.5）：搜索时单列一组「缩写 / 英文 → 中文」，不进目录 */
   const enAliasMatch = (window.ExtraData && window.ExtraData.enAliasMatch) || function () { return []; };
 
@@ -20909,54 +20934,21 @@ const MATERIALS = [];
    * 点一下才把全部条目展开（再点收起）。展开状态由 #calcRefList 的 hidden 决定，
    * 单一数据源，不必另存变量。
    */
-  /**
-   * 文献 → 引用它的条目（v1.13.7：给文献挂「被引用于」，反向跳转）
-   * 只收 BRIEF_SECTIONS 的 source，计算器的文献在各自详情里。
-   */
-  function refCitedEntries(rid) {
-    const out = [];
-    BRIEF.forEach(function (sec) {
-      (sec.items || []).forEach(function (it) {
-        if ((it.source || []).indexOf(rid) >= 0) out.push({ id: it.id, title: it.title });
-      });
-    });
-    return out;
-  }
-
   function renderRefs() {
     const box = $('calcRefList');
     if (!box) return;
     let h = '';
     REFS.forEach(function (r) {
-      const cited = refCitedEntries(r.id);
-      let chips = '';
-      if (cited.length) {
-        chips = '<div class="ref-cited"><span class="ref-cited__l">被引用于</span>' +
-          cited.map(function (c) {
-            return '<a class="ref-cited__i" data-entry="' + esc(c.id) + '">' + esc(c.title) + '</a>';
-          }).join('') + '</div>';
-      }
       h += '<div class="ref-item" id="ref-' + esc(r.id) + '"><div class="ref-item__id">' + esc(r.id) + '</div>' +
         '<div class="ref-item__body">' +
         '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
         '<div class="ref-item__en">' + esc(r.en) + '</div>' +
         '<div class="ref-item__where">' + esc(r.where) + '</div>' +
         '<div class="ref-item__use">用于：' + esc(r.use) + '</div>' +
-        chips +
         dlHtml(r.dl) +
         '</div></div>';
     });
     box.innerHTML = h;
-
-    // 「被引用于」→ 打开对应条目（容器节点不变，只绑一次）
-    if (!box.dataset.entryBound) {
-      box.dataset.entryBound = '1';
-      box.addEventListener('click', function (ev) {
-        const el = ev.target.closest ? ev.target.closest('[data-entry]') : null;
-        if (!el) return;
-        openCalcGroup(el.dataset.entry);
-      });
-    }
 
     const cnt = $('refsCount');
     if (cnt) {
@@ -22007,7 +21999,8 @@ const MATERIALS = [];
           '<span class="calc-out__lbl">' + esc(o[1]) + '</span>' +
           '<span class="calc-out__v">等待输入</span></div>';
       });
-      html += '</div>';
+      // ★ v1.13.8：计算条目也挂「本条目引用」（此前只有判读条目有）
+      html += briefRefsHtml(CALC_SRC[g.id]) + '</div>';
     });
 
     BRIEF.forEach(function (sec) {

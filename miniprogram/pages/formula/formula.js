@@ -24,6 +24,14 @@ function findBrief(id) {
   return null;
 }
 
+/** 文献 id → 视图模型（id / 中文标题 / 出处）；只保留数据里真存在的 */
+function refsOf(ids) {
+  return (ids || []).map(function (rid) {
+    const r = EX.REFS.filter(function (x) { return x.id === rid; })[0];
+    return r ? { id: r.id, zh: r.zh, where: r.where } : null;
+  }).filter(Boolean);
+}
+
 /**
  * valve-calc 的 rows → 一行文本：`k v（分级）`，用 · 连接
  * 评估页把「狭窄 / 反流」并进同一条目后，结果行按段拼接，段内统一用这个格式
@@ -144,10 +152,7 @@ Page({
         noteSegs: MD.parseInline(brief.note || ''),
         blocks: toBlocks(brief.blocks),
         toc: buildToc(brief.blocks),
-        refs: (brief.source || []).map(function (rid) {
-          const r = EX.REFS.filter(function (x) { return x.id === rid; })[0];
-          return r ? { id: r.id, zh: r.zh, where: r.where } : null;
-        }).filter(Boolean),
+        refs: refsOf(brief.source),
         // 相关内容：条目间的交叉引用（同组或跨组），点一下换到那条
         rels: (brief.rel || []).map(function (rid) {
           const r = findBrief(rid);
@@ -201,7 +206,7 @@ Page({
         noteSegs: MD.parseInline(g.note || ''),
         blocks: toBlocks(calcBlocks),
         toc: buildToc(calcBlocks),
-        refs: [],
+        refs: refsOf((EX.CALC_SRC || {})[g.id]),
         inputs: inputs,
         opts: opts,
         optsV: optsV,

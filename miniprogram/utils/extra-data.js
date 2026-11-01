@@ -845,7 +845,7 @@ const BRIEF_SECTIONS = [
           { kind: 'note', text: '**读这张表的两个要点**：①「经皮支架主动脉瓣置换」那一行 **TTE 与 ICE 都是 -**——经导管 TAVR（不是外科 TAVR）早期完全靠 TEE；②「房间隔封堵」TTE 只是 +，因为**封堵器放进去后几乎所有切面都被挡住**，尤其房间隔下缘（IVC 水平）看不清，所以成人中心基本都用 TEE 或 ICE。', warn: true },
 
           { kind: 'h', text: '三、心包穿刺：超声引导怎么做' },
-          { kind: 'text', text: '**这是超声科最常独立完成的有创操作**，也是最该掌握的。原文给的数据：Mayo Clinic 系列中，超声引导心包穿刺**成功引流或解除填塞率 97%**；**主要并发症 1.2%**（心腔撕裂、肋间血管损伤、需置胸管的���胸、持续性室速、菌血症、死亡）；**轻微并发症 3.2%**（一过性心腔进入、一过性心律失常、少量气胸、迷走反射）。' },
+          { kind: 'text', text: '**这是超声科最常独立完成的有创操作**，也是最该掌握的。原文给的数据：Mayo Clinic 系列中，超声引导心包穿刺**成功引流或解除填塞率 97%**；**主要并发症 1.2%**（心腔撕裂、肋间血管损伤、需置胸管的气胸、持续性室速、菌血症、死亡）；**轻微并发症 3.2%**（一过性心腔进入、一过性心律失常、少量气胸、迷走反射）。' },
           {
             kind: 'table',
             heads: ['环节', '要点'],
@@ -8235,7 +8235,7 @@ const REFS = [
     zh: '超声引导下有创操作指南（TTE / TEE / ICE）',
     en: 'Silvestry FE, Kerber RE, Brook MM, et al. Echocardiography-Guided Interventions.',
     where: 'J Am Soc Echocardiogr, 2009, 22(3): 213–231',
-    use: 'echo-interv 判读页：12 类操作 × TTE/TEE/ICE 对照表、心包穿刺成功��与并发症率、心肌活检取材部位、房间隔封堵与 ICE 风险清单',
+    use: 'echo-interv 判读页：12 类操作 × TTE/TEE/ICE 对照表、心包穿刺成功率与并发症率、心肌活检取材部位、房间隔封堵与 ICE 风险清单',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/2009_Echo-Guided-Interventions.pdf' },
       { t: '中文 PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/04/ASE-Echo-Guided-Interventions_Chinese.pdf' },
@@ -9155,10 +9155,62 @@ function enAliasMatch(q) {
   return out;
 }
 
+/**
+ * 计算类条目 → 参考来源（v1.13.8）
+ *
+ * ★ 为什么单独一张表：计算器组（calc-groups.js）只有字段和公式、没有 source 字段，
+ *   所以「公式集」里 40 个计算条目的详情页此前一个文献都不显示，而判读条目全都有。
+ *   这里按公式的原始出处逐条指定，详情页复用与判读条目相同的「本条目引用」块。
+ * ★ 只放真的算出这个公式/阈值的文献，不为凑数挂不相干的条目。
+ */
+const CALC_SRC = {
+  flow: ['R2'],                    // SV / CO：2015 定量指南的流出道测量
+  ef: ['R2'],                      // Simpson 双平面 EF 与容积指数
+  lvmass: ['R2', 'R1'],            // Devereux 公式 + 中国成人正常值
+  mapse: ['R2'],                   // 长轴缩短
+  tei: ['R2', 'R12'],              // Tei 指数（左心 / 右心）
+  mpap: ['R11', 'R68', 'R12'],     // 肺动脉压与 PH 概率（ESC/ERS + 中国指南 + 右心指南）
+  bernoulli: ['R2'],               // 简化伯努利方程
+  atrial: ['R2', 'R1'],            // LAVI / RAVI
+  rvvol: ['R5'],                   // 右室容积指数（ASE 2025 右心）
+  papi: ['R11', 'R12'],            // 肺动脉搏动指数
+  tr: ['R44', 'R22', 'R81'],       // TR 定量（自体瓣反流 + TVARC + 2025 ESC/EACTS）
+  laef: ['R2', 'R4'],              // 左房排空分数
+  quickratio: ['R1'],              // LA/Ao、RV/LV 半定量比值
+  paidx: ['R32'],                  // McGoon / Nakata（先心根治可行性）
+  ras: ['R19', 'R31'],             // 心尖保留比值（淀粉样变）
+  ea: ['R2'],                      // 有效动脉弹性
+  coa: ['R32', 'R27'],             // 主动脉缩窄（先心指南 + 胸主动脉影像）
+  aortaz: ['R27', 'R1'],           // 主动脉分节段内径参考区间
+  lastiff: ['R4', 'R24'],          // 左房僵硬度（LASr 相关）
+  vtir: ['R32', 'R33'],            // RVOT/LVOT VTI 比替代分流
+  ppm: ['R15'],                    // EOAi 与 PPM（人工瓣 2024）
+  dfun: ['R14', 'R39'],            // 舒张功能四步法 + 2025 更新
+  sync: ['R6', 'R2'],              // CRT 与机械不同步
+  lastrain: ['R4', 'R24', 'R40'],  // 左房应变三时相
+  aortaidx: ['R27', 'R1'],         // 升主动脉直径指数
+  mdsv: ['R40', 'R3'],             // 应变离散度
+  swv: ['R2'],                     // 每搏功
+  mtype: ['R2'],                   // FS / Teichholz / EPSS
+  wmsi: ['R26', 'R85'],            // 室壁运动积分 + 17 节段模式依据
+  h2fpef: ['R25', 'R39'],          // H2FPEF 评分
+  hfapeff: ['R25', 'R39'],         // HFA-PEFF 评分
+  tavrsz: ['R62', 'R30'],          // TAVR 瓣环尺寸与 oversizing
+  laasz: ['R38'],                  // 左心耳封堵尺寸（TEE 介入筛查）
+  aortagrow: ['R27'],              // 主动脉扩张速率
+  pvfu: ['R15', 'R30'],            // 人工瓣跨瓣血流
+  cfr: ['R86'],                    // 冠脉血流储备（负荷超声）
+  resist: ['R11', 'R72'],          // PVR / SVR 合并页
+  rvsyst: ['R5', 'R12'],           // FAC / RVFWS / dP/dt 合并页
+  lvgeom: ['R2', 'R1'],            // 质量 · 应力 · 球形度 · 容积 合并页
+  tapse: ['R5', 'R16'],            // TAPSE 与 RV-PA 耦联
+};
+
 module.exports = {
   BRIEF_SECTIONS: BRIEF_SECTIONS,
   LINK_SECTIONS: LINK_SECTIONS,
   REFS: REFS,
+  CALC_SRC: CALC_SRC,
   CALC_LINKS: CALC_LINKS,
   ABBR: ABBR,
   EN_ALIAS: EN_ALIAS,

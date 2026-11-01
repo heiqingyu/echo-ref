@@ -960,6 +960,8 @@
   const BRIEF = (window.ExtraData && window.ExtraData.BRIEF_SECTIONS) || [];
   const LINKS = (window.ExtraData && window.ExtraData.LINK_SECTIONS) || [];
   const REFS = (window.ExtraData && window.ExtraData.REFS) || [];
+  /** 计算类条目的参考来源（v1.13.8）：calc-groups 没有 source 字段，靠这张表补「本条目引用」 */
+  const CALC_SRC = (window.ExtraData && window.ExtraData.CALC_SRC) || {};
   /** 中英对照（v1.12.5）：搜索时单列一组「缩写 / 英文 → 中文」，不进目录 */
   const enAliasMatch = (window.ExtraData && window.ExtraData.enAliasMatch) || function () { return []; };
 
@@ -1208,54 +1210,21 @@
    * 点一下才把全部条目展开（再点收起）。展开状态由 #calcRefList 的 hidden 决定，
    * 单一数据源，不必另存变量。
    */
-  /**
-   * 文献 → 引用它的条目（v1.13.7：给文献挂「被引用于」，反向跳转）
-   * 只收 BRIEF_SECTIONS 的 source，计算器的文献在各自详情里。
-   */
-  function refCitedEntries(rid) {
-    const out = [];
-    BRIEF.forEach(function (sec) {
-      (sec.items || []).forEach(function (it) {
-        if ((it.source || []).indexOf(rid) >= 0) out.push({ id: it.id, title: it.title });
-      });
-    });
-    return out;
-  }
-
   function renderRefs() {
     const box = $('calcRefList');
     if (!box) return;
     let h = '';
     REFS.forEach(function (r) {
-      const cited = refCitedEntries(r.id);
-      let chips = '';
-      if (cited.length) {
-        chips = '<div class="ref-cited"><span class="ref-cited__l">被引用于</span>' +
-          cited.map(function (c) {
-            return '<a class="ref-cited__i" data-entry="' + esc(c.id) + '">' + esc(c.title) + '</a>';
-          }).join('') + '</div>';
-      }
       h += '<div class="ref-item" id="ref-' + esc(r.id) + '"><div class="ref-item__id">' + esc(r.id) + '</div>' +
         '<div class="ref-item__body">' +
         '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
         '<div class="ref-item__en">' + esc(r.en) + '</div>' +
         '<div class="ref-item__where">' + esc(r.where) + '</div>' +
         '<div class="ref-item__use">用于：' + esc(r.use) + '</div>' +
-        chips +
         dlHtml(r.dl) +
         '</div></div>';
     });
     box.innerHTML = h;
-
-    // 「被引用于」→ 打开对应条目（容器节点不变，只绑一次）
-    if (!box.dataset.entryBound) {
-      box.dataset.entryBound = '1';
-      box.addEventListener('click', function (ev) {
-        const el = ev.target.closest ? ev.target.closest('[data-entry]') : null;
-        if (!el) return;
-        openCalcGroup(el.dataset.entry);
-      });
-    }
 
     const cnt = $('refsCount');
     if (cnt) {
@@ -2306,7 +2275,8 @@
           '<span class="calc-out__lbl">' + esc(o[1]) + '</span>' +
           '<span class="calc-out__v">等待输入</span></div>';
       });
-      html += '</div>';
+      // ★ v1.13.8：计算条目也挂「本条目引用」（此前只有判读条目有）
+      html += briefRefsHtml(CALC_SRC[g.id]) + '</div>';
     });
 
     BRIEF.forEach(function (sec) {

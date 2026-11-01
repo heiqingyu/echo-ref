@@ -1913,6 +1913,27 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('导航条两处（首屏 data + navGroupsOf）都挂「中英对照」', navCnt >= 2 ? 1 : 0, 1, 0);
   check('小程序中英对照卡不再写「暂不支持发音」说明（v1.12.9 用户要求删除）',
     pgWxml8.indexOf('暂不支持发音') === -1 ? 1 : 0, 1, 0);
+
+  // ── v1.13.8：计算类条目补「本条目引用」（calc-groups 没有 source，靠 extra-data 的 CALC_SRC） ──
+  const pgJsF = require('fs').readFileSync(__dirname + '/miniprogram/pages/formula/formula.js', 'utf8');
+  check('公式详情页计算分支挂 CALC_SRC（refsOf((EX.CALC_SRC || {})[g.id])）',
+    pgJsF.indexOf('refsOf((EX.CALC_SRC || {})[g.id])') !== -1 ? 1 : 0, 1, 0);
+  const refIds8 = {};
+  EXA.REFS.forEach(function (r) { refIds8[r.id] = 1; });
+  const visCalc = CGA.GROUPS.filter(function (g) { return !g.dirHide && !g.partOnly; });
+  const noSrc8 = visCalc.filter(function (g) { return !(EXA.CALC_SRC && EXA.CALC_SRC[g.id] && EXA.CALC_SRC[g.id].length); });
+  check('全部可见计算条目都有参考来源（' + visCalc.length + ' 条，无遗漏）',
+    noSrc8.length === 0 ? 1 : 0, 1, 0);
+  const badSrc8 = [];
+  Object.keys(EXA.CALC_SRC || {}).forEach(function (k) {
+    (EXA.CALC_SRC[k] || []).forEach(function (r) { if (!refIds8[r]) badSrc8.push(k + '->' + r); });
+  });
+  check('CALC_SRC 引用的文献 id 全部真实存在', badSrc8.length === 0 ? 1 : 0, 1, 0);
+  check('calculators 页不再渲染「被引用于」反向胶囊（v1.13.8 用户要求撤掉）',
+    pgWxml8.indexOf('ref-cited') === -1 && pgWxml8.indexOf('被引用于') === -1 ? 1 : 0, 1, 0);
+  // 数据源里不许留 U+FFFD（曾出现「需置胸管的���胸」「心包穿刺成功��」两处乱码）
+  const extraRaw = require('fs').readFileSync(__dirname + '/miniprogram/utils/extra-data.js', 'utf8');
+  check('extra-data.js 无 U+FFFD 乱码字符', extraRaw.indexOf('\uFFFD') === -1 ? 1 : 0, 1, 0);
 }
 
 console.log(`\n${'='.repeat(46)}`);

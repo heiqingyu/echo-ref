@@ -6,25 +6,6 @@ const MT = require('../../utils/materials.js');
 const app = getApp();
 
 /**
- * 文献 → 引用它的条目索引（v1.13.7）
- *
- * 条目详情里「本条目引用」只能单向往文献表跳；这里反向建索引，
- * 在文献条目下挂「被引用于 xxx」，点了直接进对应条目，省得回目录翻。
- * 只收 BRIEF_SECTIONS 的 source（计算器的文献在各自详情里，不在此列）。
- */
-const REF_CITED = (function () {
-  const map = {};
-  (EX.BRIEF_SECTIONS || []).forEach(function (sec) {
-    (sec.items || []).forEach(function (it) {
-      (it.source || []).forEach(function (rid) {
-        (map[rid] = map[rid] || []).push({ id: it.id, title: it.title });
-      });
-    });
-  });
-  return map;
-})();
-
-/**
  * 公式集目录
  *
  * ★ 以后新增条目（只需改一处）：
@@ -281,14 +262,12 @@ Page({
     bsaText: '—',
     countText: '',
     refs: EX.REFS.map(function (r) {
-      // citedBy：引用本条文献的条目（点击跳转）；无引用时为空数组
       // dl 预置 sub：需订阅 / 需订阅（DOI）都按订阅样式（虚线灰边），WXML 不能调 indexOf
       return {
         id: r.id, zh: r.zh, en: r.en, where: r.where, use: r.use,
         dl: (r.dl || []).map(function (d) {
           return { t: d.t, u: d.u, sub: d.t.indexOf('需订阅') === 0 };
         }),
-        citedBy: REF_CITED[r.id] || [],
       };
     }),
     refsCount: EX.REFS.length,

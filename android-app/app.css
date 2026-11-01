@@ -1709,35 +1709,6 @@ button.fx-nav__c {
   background: #f1f3f5;
 }
 
-/* 被引用于（文献 → 条目的反向跳转，v1.13.7） */
-.ref-cited {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-}
-.ref-cited__l {
-  font-size: 12px;
-  color: #9aa3af;
-}
-.ref-cited__i {
-  display: inline-block;
-  padding: 2px 9px;
-  font-size: 12px;
-  color: #0f766e;
-  background: #effaf8;
-  border: 1px solid #cdeee9;
-  border-radius: 999px;
-  text-decoration: none;
-  max-width: 100%;
-  word-break: break-word;
-  cursor: pointer;
-}
-.ref-cited__i:hover {
-  background: #d7f2ee;
-}
-
 /* 「相关计算」胶囊：点了直接进对应计算器 */
 .chiprow {
   display: flex;
