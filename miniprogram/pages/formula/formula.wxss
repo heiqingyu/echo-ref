@@ -13,6 +13,24 @@
   background: #f3f4f6;
 }
 
+/* 回到顶部（长条目详情页，2026-11-01） */
+.totop {
+  position: fixed;
+  right: 28rpx;
+  bottom: 140rpx;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .97);
+  border: 1rpx solid #dbe3ec;
+  color: #2563eb;
+  font-size: 40rpx;
+  line-height: 86rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, .16);
+  z-index: 60;
+}
+
 /* ★ v1.8.3 合并页：小节名放上一行，结果独占下一行（横排会把长结果挤成窄条） */
 .calc-out--multi {
   display: block;

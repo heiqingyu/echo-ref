@@ -117,6 +117,7 @@ Page({
     curSec: '',
     // ★ v1.11.2：本条正文里出现过的缩写 → 中文全称（跨页面阅读时不给读者留「只认识字母」的坑）
     abbrs: [],
+    showTop: false,
   },
 
   onLoad(query) {
@@ -1608,6 +1609,17 @@ Page({
     }
 
     this.setData({ out: out, hasOut: !!out, outs: outsArr });
+  },
+
+  /* 长条目（如先心、人工瓣）滚动后给个回到顶部（与公式集目录页同逻辑） */
+  onPageScroll(e) {
+    const show = e.scrollTop > 420;
+    if (show !== this.data.showTop) this.setData({ showTop: show });
+  },
+
+  onToTop() {
+    wx.pageScrollTo({ scrollTop: 0, duration: 260 });
+    this.setData({ showTop: false });
   },
 
   /* ────────── 转发给朋友 / 收藏（v1.5.8）──────────

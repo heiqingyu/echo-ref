@@ -628,3 +628,27 @@ page {
   color: #b6bcc6;
   padding: 28rpx 0 8rpx;
 }
+
+/* 品牌水印（与网页/APK 同款：固定角落、低透明度、不拦截点击，2026-11-01） */
+.wmark {
+  position: fixed;
+  left: 12rpx;
+  bottom: 120rpx;
+  z-index: 4;
+  font-size: 18rpx;
+  line-height: 1.2;
+  letter-spacing: .3px;
+  color: #94a3b8;
+  opacity: .28;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  white-space: nowrap;
+}
+.wmark__by {
+  display: block;
+  margin-top: 3rpx;
+  font-size: 16rpx;
+  letter-spacing: .2px;
+  text-align: left;
+}

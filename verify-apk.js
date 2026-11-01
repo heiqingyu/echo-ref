@@ -577,7 +577,7 @@ check('版本号已注入（非 1.0.0）', /v\d+\.\d+\.\d+/.test(html) && html.i
 check('含 LINK_SECTIONS 外链数据', html.indexOf('LINK_SECTIONS') !== -1, true);
 check('含切面学习分组', (html.match(/title: '切面学习（视频）'/g) || []).length === 1, true);
 check('含书籍视频分组（25 段 mp4）',
-  html.match(/title: '实用超声规范化检查与操作（视频）'/g) &&
+  html.match(/title: '实用超声规范化检查与操作'/g) &&
   (html.match(/image\.medonhand\.com/g) || []).length >= 1 &&
   html.indexOf('978-7-5189-8028-4') !== -1, true);
 check('含 TEE 切面在线演示分组', (html.match(/title: 'TEE 切面在线演示'/g) || []).length === 1, true);

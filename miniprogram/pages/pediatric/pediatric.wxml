@@ -491,4 +491,6 @@
     儿童测量受切面、心率、镇静状态影响较大，请结合临床与随访综合判断。
   </view>
 
+  <view class="wmark">EchoRef · 心脏超声参考<view class="wmark__by">by qingyu</view></view>
+
 </view>

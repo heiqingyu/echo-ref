@@ -425,7 +425,7 @@ const views = EX.LINK_SECTIONS.filter(function (s3) { return s3.id === 'views'; 
 const bvAlb = views ? views.items.filter(function (it) { return it.album; })[0] : null;
 if (views && bvAlb && views.items[0] === bvAlb) ok('操作规范专辑排在切面学习第一条');
 else bad('操作规范专辑不在切面学习第一条');
-if (bvAlb && bvAlb.title === '实用超声规范化检查与操作（视频）') ok('专辑标题为「实用超声规范化检查与操作（视频）」');
+if (bvAlb && bvAlb.title === '实用超声规范化检查与操作') ok('专辑标题为「实用超声规范化检查与操作」');
 else bad('专辑标题异常: ' + (bvAlb ? bvAlb.title : 'missing'));
 if (bvAlb && bvAlb.children.length === 25) ok('专辑内 25 段（第三章心血管系统 1–25）');
 else bad('专辑子条目数异常: ' + (bvAlb ? bvAlb.children.length : 'missing'));

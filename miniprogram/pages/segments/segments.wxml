@@ -104,7 +104,7 @@
     <view class="fx-list">
       <block wx:for="{{viewsList}}" wx:key="id"><template is="fxItem" data="{{item}}" /></block>
     </view>
-    <view class="note">多伦多 PIE 站点建议用 360 极速浏览器兼容模式打开；《实用超声规范化检查与操作》视频为公开直链，点击即播。</view>
+    <view class="note">多伦多 PIE 站点（含 TEE/TTE 切面与交互演示）建议用 360 极速浏览器兼容模式打开；《实用超声规范化检查与操作》视频为公开直链，点击即播。</view>
   </view>
 
   <!-- ④ TEE 演示 -->
@@ -117,10 +117,11 @@
   </view>
 
   <view class="note note--strong">
-    本页为速查资料整理，内容依据 ASE 系列指南；具体应用请回看指南原文并结合临床判断。
-    本工具为数值计算与参考值查询工具，所有结果仅供专业参考，不作为诊断依据。
+    本页为室壁节段与运动评分的速查整理：节段划分与 WMSI 记分依据 ASE 标准化心肌分段（17 段法，观察 16 段）；腔室与节段阈值参考 ASE-EACVI 2015 定量。具体应用请回看指南原文并结合临床判断。所有结果仅供专业参考，不作为诊断依据。
   </view>
 </view>
+
+  <view class="wmark">EchoRef · 心脏超声参考<view class="wmark__by">by qingyu</view></view>
 
 <!-- 列表条目通用模板（切面速查 / 教学视频 / TEE 演示共用） -->
 <template name="fxItem">

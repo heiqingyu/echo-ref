@@ -7561,7 +7561,7 @@ const PHILIPS_CLASS = [
 
 
 /**
- * 第三章 25 段切面视频。作为「实用超声规范化检查与操作（视频）」专辑的子条目：
+ * 第三章 25 段切面视频。作为「实用超声规范化检查与操作」专辑的子条目：
  * 只在专辑页展开，不进目录 setData（体积大、目录页用不到）。
  */
 const BOOK_CH3_VIDEOS = [
@@ -7632,7 +7632,7 @@ const LINK_SECTIONS = [
     items: [
       {
         id: 'bookvid',
-        title: '实用超声规范化检查与操作（视频）',
+        title: '实用超声规范化检查与操作',
         sub: '王辉、王小丛 主编 · 第 3 章心血管系统 25 段 · 点开选切面',
         album: true,
         note: '王辉、王小丛 主编 · 科学技术文献出版社 2021 年 9 月北京 · ISBN 978-7-5189-8028-4',
@@ -7640,7 +7640,7 @@ const LINK_SECTIONS = [
       },
       {
         id: 'ktvid',
-        title: '心脏超声术语及标准切面（视频）',
+        title: '心脏超声术语及标准切面',
         sub: '上下篇 17 段 · 探头手法 + 逐个标准切面',
         album: true,
         note: 'GE 心课堂「心脏超声基础规范学习班」学习笔记（上 / 下篇）· 微信公众号「GE超声」· 720p 转存。'
@@ -7655,7 +7655,7 @@ const LINK_SECTIONS = [
       },
       {
         id: 'philips',
-        title: '心脏超声讲座（视频）',
+        title: '心脏超声讲座',
         sub: '150 段 / 65 小时 · 十个心脏类目 · 按 8 个专题分组 · 可搜索',
         album: true,
         note: '飞利浦超声云课堂公开回放，按 8 个专题排列：探头维护 / 标准切面 / 定量操作 / 三维与多平面 / '
@@ -7696,7 +7696,7 @@ const LINK_SECTIONS = [
       {
         id: 'tee-cheat',
         title: 'TEE 标准视图速查表',
-        sub: '探头角度 · 平面 · 对应结构 · 可打印（360 极速浏览器打开）',
+        sub: '探头角度 · 平面 · 对应结构 · 可打印',
         url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/TEE-cheat-sheet/index.htm',
       },
     ],
@@ -7709,7 +7709,7 @@ const LINK_SECTIONS = [
       {
         id: 'sim-toronto',
         title: '多伦多 TEE 交互演示',
-        sub: '标准切面全流程交互演示 · 360 极速浏览器兼容模式打开',
+        sub: '标准切面全流程交互演示',
         url: 'https://pie.med.utoronto.ca/tee/TEE_content/assets/applications/teeSimulation/index.html',
       },
       {
@@ -7721,7 +7721,7 @@ const LINK_SECTIONS = [
       {
         id: 'sim-atlas',
         title: 'TEE 切面交互图谱',
-        sub: '交互式切面图谱（英文）· 需科学上网',
+        sub: '交互式切面图谱（英文）· 需可访问英文原站',
         url: 'https://tee-simulator.anesthbeta.com/atlas?lang=en',
       },
     ],
@@ -9114,6 +9114,31 @@ var EN_ALIAS = [
   ['RCM', 'restrictive cardiomyopathy', '限制型心肌病', 'cp-rm', '/rɪˈstrɪktɪv ˌkɑrdioʊmaɪˈɑpəθi/'],
   ['PW', 'pulsed wave Doppler', '脉冲波多普勒', 'doppler-basics', '/pʌlst weɪv ˈdɑplər/'],
   ['CW', 'continuous wave Doppler', '连续波多普勒', 'doppler-basics', '/kənˈtɪnjuəs weɪv ˈdɑplər/'],
+  // ── v1.13.7：补充常用切面 / 腔室 / 瓣膜 / 测量术语 ──
+  ['PLAX', 'parasternal long-axis view', '胸骨旁左室长轴切面', '', '/ˌpærəˈstɜrnl lɔŋ ˈæksɪs vjuː/'],
+  ['PSAX', 'parasternal short-axis view', '胸骨旁短轴切面', '', '/ˌpærəˈstɜrnl ʃɔrt ˈæksɪs vjuː/'],
+  ['A4C', 'apical four-chamber view', '心尖四腔心切面', '', '/ˈæpɪkl fɔr ˈtʃeɪmbər vjuː/'],
+  ['A2C', 'apical two-chamber view', '心尖二腔心切面', '', '/ˈæpɪkl tu ˈtʃeɪmbər vjuː/'],
+  ['A3C', 'apical long-axis (three-chamber) view', '心尖长轴（三腔心）切面', '', '/ˈæpɪkl lɔŋ ˈæksɪs vjuː/'],
+  ['A5C', 'apical five-chamber view', '心尖五腔心切面', '', '/ˈæpɪkl faɪv ˈtʃeɪmbər vjuː/'],
+  ['SSN', 'suprasternal notch view', '胸骨上窝切面', '', '/ˌsuprəˈstɜrnl nɑtʃ vjuː/'],
+  ['SubC', 'subcostal view', '剑突下切面', '', '/sʌbˈkɑstl vjuː/'],
+  ['LV', 'left ventricle', '左心室', 'lv', '/lɛft ˈvɛntrɪkl/'],
+  ['RV', 'right ventricle', '右心室', 'rv', '/raɪt ˈvɛntrɪkl/'],
+  ['LA', 'left atrium', '左心房', 'la', '/lɛft ˈeɪtriəm/'],
+  ['RA', 'right atrium', '右心房', '', '/raɪt ˈeɪtriəm/'],
+  ['AO', 'aorta', '主动脉', 'aorta', '/eɪˈɔrtə/'],
+  ['PA', 'pulmonary artery', '肺动脉', '', '/ˈpʌlməˌnɛri ˈɑrtəri/'],
+  ['MV', 'mitral valve', '二尖瓣', 'mitral', '/ˈmaɪtrəl vælv/'],
+  ['AV', 'aortic valve', '主动脉瓣', 'aortic', '/eɪˈɔrtɪk vælv/'],
+  ['TV', 'tricuspid valve', '三尖瓣', 'tr-interv', '/traɪˈkʌspɪd vælv/'],
+  ['PV', 'pulmonary valve', '肺动脉瓣', '', '/ˈpʌlməˌnɛri vælv/'],
+  ['LVEDD', 'left ventricular end-diastolic diameter', '左室舒张末期内径', 'lv', '/lɛft vɛnˈtrɪkjələr ɛnd ˌdaɪəˈstɑlɪk daɪˈæmətər/'],
+  ['FS', 'fractional shortening', '左室短轴缩短率', 'lv', '/ˈfrækʃənl ˈʃɔrtnɪŋ/'],
+  ['RF', 'regurgitant fraction', '反流分数', 'mitral', '/rɪˈɡɜrdʒɪtənt ˈfrækʃn/'],
+  ['RVol', 'regurgitant volume', '反流量', 'mitral', '/rɪˈɡɜrdʒɪtənt ˈvɑljum/'],
+  ['VC', 'vena contracta', '缩流颈', 'mitral', '/ˈviːnə kənˈtræktə/'],
+  ['WMSI', 'wall motion score index', '室壁运动评分指数', 'stress-echo', '/wɔl ˈmoʊʃn skɔr ˈɪndɛks/'],
 ];
 
 /** 中英对照搜索匹配：返回 [{ab, en, zh, to}]；q 为空返回 [] */

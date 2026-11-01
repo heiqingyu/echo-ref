@@ -2,9 +2,6 @@
 
   <view class="card">
     <view class="card__title">{{title}}</view>
-    <view class="card__desc">
-      BSA {{bsaText}} m²（来自「EF·参考值」页）· 按{{sexLabel}}参考区间判读 · 留空跳过
-    </view>
 
     <!-- ★ v1.11.2 本文缩写：从搜索或交叉链接直接进来时，也能在第一屏看到缩写的中文全称 -->
     <view wx:if="{{abbrs.length}}" class="abbr">
@@ -187,5 +184,9 @@
       </view>
     </view>
   </view>
+
+  <view wx:if="{{showTop}}" class="totop" bindtap="onToTop" aria-role="button" aria-label="回到顶部">↑</view>
+
+  <view class="wmark">EchoRef · 心脏超声参考<view class="wmark__by">by qingyu</view></view>
 
 </view>

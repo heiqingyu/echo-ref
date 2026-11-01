@@ -213,14 +213,14 @@ function buildSegPage() {
       <div class="card__t">切面学习（视频）</div>
       <div class="card__d">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</div>
       <div class="fx-list" id="segViewsList"></div>
-      <div class="note">多伦多 PIE 站点建议用 360 极速浏览器兼容模式打开；《实用超声规范化检查与操作》视频为公开直链，点击即播。</div>
+      <div class="note">多伦多 PIE 站点（含 TEE/TTE 切面与交互演示）建议用 360 极速浏览器兼容模式打开；《实用超声规范化检查与操作》视频为公开直链，点击即播。</div>
     </div>
     <div class="card" id="simpart">
       <div class="card__t">TEE 切面在线演示</div>
       <div class="card__d">交互式 TEE 切面演示站点（外链，新窗口打开，不嵌入本页）。</div>
       <div class="fx-list" id="segSimList"></div>
     </div>
-    <div class="note note--warn">本页为速查资料整理，内容依据 ASE 系列指南；具体应用请回看指南原文并结合临床判断。</div>
+    <div class="note note--warn">本页为室壁节段与运动评分的速查整理：节段划分与 WMSI 记分依据 ASE 标准化心肌分段（17 段法，观察 16 段）；腔室与节段阈值参考 ASE-EACVI 2015 定量。具体应用请回看指南原文并结合临床判断。</div>
   </section>`;
 }
 
@@ -271,7 +271,7 @@ const PUBNOTE_HTML = `<div class="pubnote">
  * 锚点是公式集页最后的「公式来源」说明块 —— 插在它之后即为整页最末。
  */
 function insertPubnote(src) {
-  const anchor = 'Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。\n      </div>\n    </div>';
+  const anchor = '公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。\n      </div>\n    </div>';
   if (src.indexOf(anchor) === -1) throw new Error('未找到公式集末尾锚点');
   return src.replace(anchor, anchor.replace(
     '      </div>\n    </div>',
@@ -503,8 +503,7 @@ const html = `<!DOCTYPE html>
 
       <div class="verline">心脏超声参考值 · v${APP_VERSION}</div>
       <div class="note note--warn">
-        公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA = 220/PHT）、
-        Abbas（PVR 经验公式）。仅供速查与学习，不构成诊断依据。
+        公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
     </div>
 

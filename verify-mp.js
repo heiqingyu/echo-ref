@@ -724,8 +724,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirs.some(function (d) { return d.id === 'materials'; }) ? 0 : 1, 1, 0);
   check('操作规范专辑排在切面学习视频第一条',
     segViews[0] && segViews[0].kind === 'album' && segViews[0].id === 'bookvid' ? 1 : 0, 1, 0);
-  check('专辑标题为「实用超声规范化检查与操作（视频）」',
-    segViews[0].title === '实用超声规范化检查与操作（视频）' ? 1 : 0, 1, 0);
+  check('专辑标题为「实用超声规范化检查与操作」',
+    segViews[0].title === '实用超声规范化检查与操作' ? 1 : 0, 1, 0);
   check('外链条目为 link 类型（专辑除外）',
     segViews.filter(i => i.kind !== 'album')
       .every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
@@ -1907,7 +1907,7 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   });
   check('五个页面均含统一免责声明「不作为诊断依据」', discHit.length === 5 ? 1 : 0, 1, 0);
   check('目录页中英对照数据就位（calculators.js 由 EN_ALIAS 映射行数据）',
-    pgJs8.indexOf('EX.EN_ALIAS.map') !== -1 && EXA.EN_ALIAS.length === 72 ? 1 : 0, 1, 0);
+    pgJs8.indexOf('EX.EN_ALIAS.map') !== -1 && EXA.EN_ALIAS.length === 96 ? 1 : 0, 1, 0);
   // ── v1.12.9：首屏导航条也要有「中英对照」（原先只有 navGroupsOf 里挂，首屏看不到） ──
   const navCnt = (pgJs8.match(/\{ id: 'enalias', title: '中英对照' \}/g) || []).length;
   check('导航条两处（首屏 data + navGroupsOf）都挂「中英对照」', navCnt >= 2 ? 1 : 0, 1, 0);

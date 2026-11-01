@@ -135,11 +135,12 @@
   <view class="verline">心脏超声参考值 · v{{appVersion}}</view>
 
   <view class="note note--strong">
-    公式来源：ASE/EACVI 2015 定量指南、ESC/ERS 2022 肺高压指南、Hatle（MVA=220/PHT）、
-    Abbas（PVR 经验公式）。本工具仅供速查与学习，不构成诊断依据。
+    公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。本工具仅供速查与学习，不构成诊断依据。
   </view>
 
   <!-- 回到顶部：目录 100+ 条，滚下去后给个回顶按钮 -->
   <view wx:if="{{showTop}}" class="totop" bindtap="onToTop" aria-role="button" aria-label="回到顶部">↑</view>
+
+  <view class="wmark">EchoRef · 心脏超声参考<view class="wmark__by">by qingyu</view></view>
 
 </view>
