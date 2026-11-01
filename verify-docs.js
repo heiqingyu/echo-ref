@@ -1959,11 +1959,12 @@ function check(name, ok, detail) {
   // ★ 数量从数据源算，避免每加一条需订阅文献就要改断言
   // v1.13.2：口径改为「所有标注需订阅的直链数」——原来数的是「dl 全部为需订阅的条目数」，
   //   给 R80 补上「万方」详情页后两者不再相等（条目数 10 ≠ 胶囊数 11）
+  // v1.13.7：口径并入「需订阅（DOI）」——两者都是付费墙，样式与计数必须一致
   const onlySubN = require('./miniprogram/utils/extra-data.js').REFS.reduce(function (a, r) {
-    return a + (r.dl || []).filter(function (x) { return x.t === '需订阅'; }).length;
+    return a + (r.dl || []).filter(function (x) { return x.t.indexOf('需订阅') === 0; }).length;
   }, 0);
   check('「需订阅」胶囊渲染出 ' + onlySubN + ' 个（与数据源一致）', sd.n === onlySubN, subDl);
-  check('「需订阅」胶囊文案为「需订阅」', sd.txt === '需订阅', subDl);
+  check('「需订阅」胶囊文案以「需订阅」开头', /^需订阅/.test(sd.txt), subDl);
   check('「需订阅」用虚线灰边与免费直链区分', sd.border === 'dashed', subDl);
   // v1.13.5：口径从「免费直链」改为「原文链接」——有 17 条只挂出版商 PDF（官网 PDF），不宜再叫免费
   check('折叠头同时给出附原文链接的条数', /条附原文链接/.test(sd.cnt) && /\d+ 条 · \d+ 条/.test(sd.cnt), subDl);

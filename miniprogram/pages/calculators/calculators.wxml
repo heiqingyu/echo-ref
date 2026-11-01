@@ -79,7 +79,7 @@
       「PMC 全文」是 PubMed Central 的免费全文；「官网 PDF」是期刊社自己的 PDF 地址，
       能否直接下载取决于该刊的开放政策（部分要机构订阅）；
       「免费页面」是免费全文网页，进去点 PDF 下载即可，不用登录；「中文全文」为中华医学知识库免费在线全文。
-      标「需订阅」的条目多为近年原创研究，暂无公开全文，给出 DOI 便于按题录在机构内检索。
+      标「需订阅 / 需订阅（DOI）」的条目多为近年原创研究，暂无公开全文，给出 DOI 便于按题录在机构内检索。
     </view>
 
     <view wx:if="{{refsOpen}}">
@@ -91,9 +91,15 @@
           <view class="ref-item__en">{{item.en}}</view>
           <view class="ref-item__where">{{item.where}}</view>
           <view class="ref-item__use">用于：{{item.use}}</view>
+          <view wx:if="{{item.citedBy.length}}" class="ref-cited">
+            <text class="ref-cited__l">被引用于</text>
+            <text wx:for="{{item.citedBy}}" wx:for-item="cb" wx:key="id"
+                  class="ref-cited__i" hover-class="ref-cited__i--tap"
+                  data-to="{{cb.id}}" catchtap="onAliasTap">{{cb.title}}</text>
+          </view>
           <view wx:if="{{item.dl.length}}" class="ref-dl">
             <view wx:for="{{item.dl}}" wx:for-item="lk" wx:key="u"
-                  class="ref-dl__i {{lk.t === '需订阅' ? 'ref-dl__i--sub' : ''}}" hover-class="ref-dl__i--tap"
+                  class="ref-dl__i {{lk.sub ? 'ref-dl__i--sub' : ''}}" hover-class="ref-dl__i--tap"
                   data-url="{{lk.u}}" catchtap="onCopyLink">{{lk.t}}</view>
           </view>
         </view>

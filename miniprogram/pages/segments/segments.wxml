@@ -100,11 +100,11 @@
   <!-- ③ 教学视频 -->
   <view class="card" id="viewspart" wx:if="{{!segSearching || viewsList.length}}">
     <view class="card__title">切面学习（视频）</view>
-    <view class="card__desc">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</view>
+    <view class="card__desc">标准切面教学视频可直接在本页内播放；交互演示与速查表为第三方公开站点，点击后由浏览器打开，本工具不加载其内容。</view>
     <view class="fx-list">
       <block wx:for="{{viewsList}}" wx:key="id"><template is="fxItem" data="{{item}}" /></block>
     </view>
-    <view class="note">外链资源为公开站点的心脏超声教学资料，点击即跳转原站查看。</view>
+    <view class="note">教学视频在站内直接播放，无需跳转；速查表与交互演示为第三方公开站点网页，需在浏览器中打开。</view>
   </view>
 
   <!-- ④ TEE 演示 -->
@@ -117,7 +117,7 @@
   </view>
 
   <view class="note note--strong">
-    本页为室壁节段与运动评分的速查整理：节段划分与 WMSI 记分依据 ASE 标准化心肌分段（17 段法，观察 16 段）；腔室与节段阈值参考 ASE-EACVI 2015 定量。具体应用请回看指南原文并结合临床判断。所有结果仅供专业参考，不作为诊断依据。
+    本页为室壁节段与运动评分的速查整理：节段划分与 WMSI 记分依据 ASE 标准化心肌分段（17 段法，观察 16 段，详见参考文献 R84 / R85 / R86）；腔室与节段阈值参考 ASE-EACVI 2015 定量。具体应用请回看指南原文并结合临床判断。所有结果仅供专业参考，不作为诊断依据。
   </view>
 </view>
 

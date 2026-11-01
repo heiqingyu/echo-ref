@@ -7696,7 +7696,7 @@ const LINK_SECTIONS = [
       {
         id: 'tee-cheat',
         title: 'TEE 标准视图速查表',
-        sub: '探头角度 · 平面 · 对应结构 · 可打印',
+        sub: '探头角度 · 平面 · 对应结构 · 可打印 · 需 360 极速浏览器兼容模式打开',
         url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/TEE-cheat-sheet/index.htm',
       },
     ],
@@ -7721,7 +7721,7 @@ const LINK_SECTIONS = [
       {
         id: 'sim-atlas',
         title: 'TEE 切面交互图谱',
-        sub: '交互式切面图谱（英文）· 需可访问英文原站',
+        sub: '交互式切面图谱（英文）· 三维操作演示 · 分段标注仅供参考',
         url: 'https://tee-simulator.anesthbeta.com/atlas?lang=en',
       },
     ],

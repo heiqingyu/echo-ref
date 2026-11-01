@@ -1208,27 +1208,60 @@
    * 点一下才把全部条目展开（再点收起）。展开状态由 #calcRefList 的 hidden 决定，
    * 单一数据源，不必另存变量。
    */
+  /**
+   * 文献 → 引用它的条目（v1.13.7：给文献挂「被引用于」，反向跳转）
+   * 只收 BRIEF_SECTIONS 的 source，计算器的文献在各自详情里。
+   */
+  function refCitedEntries(rid) {
+    const out = [];
+    BRIEF.forEach(function (sec) {
+      (sec.items || []).forEach(function (it) {
+        if ((it.source || []).indexOf(rid) >= 0) out.push({ id: it.id, title: it.title });
+      });
+    });
+    return out;
+  }
+
   function renderRefs() {
     const box = $('calcRefList');
     if (!box) return;
     let h = '';
     REFS.forEach(function (r) {
+      const cited = refCitedEntries(r.id);
+      let chips = '';
+      if (cited.length) {
+        chips = '<div class="ref-cited"><span class="ref-cited__l">被引用于</span>' +
+          cited.map(function (c) {
+            return '<a class="ref-cited__i" data-entry="' + esc(c.id) + '">' + esc(c.title) + '</a>';
+          }).join('') + '</div>';
+      }
       h += '<div class="ref-item" id="ref-' + esc(r.id) + '"><div class="ref-item__id">' + esc(r.id) + '</div>' +
         '<div class="ref-item__body">' +
         '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
         '<div class="ref-item__en">' + esc(r.en) + '</div>' +
         '<div class="ref-item__where">' + esc(r.where) + '</div>' +
         '<div class="ref-item__use">用于：' + esc(r.use) + '</div>' +
+        chips +
         dlHtml(r.dl) +
         '</div></div>';
     });
     box.innerHTML = h;
 
+    // 「被引用于」→ 打开对应条目（容器节点不变，只绑一次）
+    if (!box.dataset.entryBound) {
+      box.dataset.entryBound = '1';
+      box.addEventListener('click', function (ev) {
+        const el = ev.target.closest ? ev.target.closest('[data-entry]') : null;
+        if (!el) return;
+        openCalcGroup(el.dataset.entry);
+      });
+    }
+
     const cnt = $('refsCount');
     if (cnt) {
-      // 只数「点开就能看」的链接；标「需订阅」的 DOI 页面不算
+      // 只数「点开就能看」的链接；需订阅 / 需订阅（DOI）都不算
       const free = REFS.filter(function (r) {
-        return (r.dl || []).some(function (d) { return d.t !== '需订阅'; });
+        return (r.dl || []).some(function (d) { return d.t.indexOf('需订阅') !== 0; });
       }).length;
       cnt.textContent = REFS.length + ' 条 · ' + free + ' 条附原文链接';
     }
@@ -1420,7 +1453,7 @@
     if (!dl || !dl.length) return '';
     let h = '<div class="ref-dl">';
     dl.forEach(function (d) {
-      h += '<a class="ref-dl__i' + (d.t === '需订阅' ? ' ref-dl__i--sub' : '') +
+      h += '<a class="ref-dl__i' + (d.t.indexOf('需订阅') === 0 ? ' ref-dl__i--sub' : '') +
         '" href="' + esc(d.u) + '" target="_blank" rel="noopener">' +
         esc(d.t) + '</a>';
     });

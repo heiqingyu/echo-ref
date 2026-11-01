@@ -1720,6 +1720,35 @@ button.fx-nav__c {
   background: #f1f3f5;
 }
 
+/* 被引用于（文献 → 条目的反向跳转，v1.13.7） */
+.ref-cited {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.ref-cited__l {
+  font-size: 12px;
+  color: #9aa3af;
+}
+.ref-cited__i {
+  display: inline-block;
+  padding: 2px 9px;
+  font-size: 12px;
+  color: #0f766e;
+  background: #effaf8;
+  border: 1px solid #cdeee9;
+  border-radius: 999px;
+  text-decoration: none;
+  max-width: 100%;
+  word-break: break-word;
+  cursor: pointer;
+}
+.ref-cited__i:hover {
+  background: #d7f2ee;
+}
+
 /* 「相关计算」胶囊：点了直接进对应计算器 */
 .chiprow {
   display: flex;
@@ -2202,7 +2231,7 @@ button.fx-nav__c {
           「ASE PDF / 中文 PDF / 免费全文 PDF」是点开即下载的 PDF（学会官方直链或本站自托管），
           「PMC 全文」是 PubMed Central 的免费全文；「官网 PDF」是期刊社自己的 PDF 地址，
           能否直接下载取决于该刊开放政策（部分要机构订阅）；「免费页面」进去点 PDF 即可、不用登录。
-          标「需订阅」的条目多为近年原创研究，暂无公开全文，给出 DOI 便于按题录在机构内检索。</div>
+          标「需订阅 / 需订阅（DOI）」的条目多为近年原创研究，暂无公开全文，给出 DOI 便于按题录在机构内检索。</div>
         <div id="calcRefList" hidden></div>
         <div class="refs-copy">
           带「中文 PDF」标记的条目为公开指南 / 专家共识的 PDF 全文（本站收录，或由公开站点提供直链）；「中文全文」为指向中华医学知识库
@@ -2337,16 +2366,16 @@ button.fx-nav__c {
     </div>
     <div class="card" id="viewspart">
       <div class="card__t">切面学习（视频）</div>
-      <div class="card__d">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</div>
+      <div class="card__d">标准切面教学视频可直接在本页内播放；交互演示与速查表为第三方公开站点，点击后由浏览器打开，本工具不加载其内容。</div>
       <div class="fx-list" id="segViewsList"></div>
-      <div class="note">外链资源为公开站点的心脏超声教学资料，点击即跳转原站查看。</div>
+      <div class="note">教学视频在站内直接播放，无需跳转；速查表与交互演示为第三方公开站点网页，需在浏览器中打开。</div>
     </div>
     <div class="card" id="simpart">
       <div class="card__t">TEE 切面在线演示</div>
       <div class="card__d">交互式 TEE 切面演示站点（外链，新窗口打开，不嵌入本页）。</div>
       <div class="fx-list" id="segSimList"></div>
     </div>
-    <div class="note note--warn">本页为室壁节段与运动评分的速查整理：节段划分与 WMSI 记分依据 ASE 标准化心肌分段（17 段法，观察 16 段）；腔室与节段阈值参考 ASE-EACVI 2015 定量。具体应用请回看指南原文并结合临床判断。</div>
+    <div class="note note--warn">本页为室壁节段与运动评分的速查整理：节段划分与 WMSI 记分依据 ASE 标准化心肌分段（17 段法，观察 16 段，详见参考文献 R84 / R85 / R86）；腔室与节段阈值参考 ASE-EACVI 2015 定量。具体应用请回看指南原文并结合临床判断。</div>
   </section>
 
   <!-- ───── Tab5 儿童 Z 值 ───── -->
@@ -17211,7 +17240,7 @@ const LINK_SECTIONS = [
       {
         id: 'tee-cheat',
         title: 'TEE 标准视图速查表',
-        sub: '探头角度 · 平面 · 对应结构 · 可打印',
+        sub: '探头角度 · 平面 · 对应结构 · 可打印 · 需 360 极速浏览器兼容模式打开',
         url: 'https://pie.med.utoronto.ca/TEE/TEE_content/assets/applications/TEE-cheat-sheet/index.htm',
       },
     ],
@@ -17236,7 +17265,7 @@ const LINK_SECTIONS = [
       {
         id: 'sim-atlas',
         title: 'TEE 切面交互图谱',
-        sub: '交互式切面图谱（英文）· 需可访问英文原站',
+        sub: '交互式切面图谱（英文）· 三维操作演示 · 分段标注仅供参考',
         url: 'https://tee-simulator.anesthbeta.com/atlas?lang=en',
       },
     ],
@@ -20880,27 +20909,60 @@ const MATERIALS = [];
    * 点一下才把全部条目展开（再点收起）。展开状态由 #calcRefList 的 hidden 决定，
    * 单一数据源，不必另存变量。
    */
+  /**
+   * 文献 → 引用它的条目（v1.13.7：给文献挂「被引用于」，反向跳转）
+   * 只收 BRIEF_SECTIONS 的 source，计算器的文献在各自详情里。
+   */
+  function refCitedEntries(rid) {
+    const out = [];
+    BRIEF.forEach(function (sec) {
+      (sec.items || []).forEach(function (it) {
+        if ((it.source || []).indexOf(rid) >= 0) out.push({ id: it.id, title: it.title });
+      });
+    });
+    return out;
+  }
+
   function renderRefs() {
     const box = $('calcRefList');
     if (!box) return;
     let h = '';
     REFS.forEach(function (r) {
+      const cited = refCitedEntries(r.id);
+      let chips = '';
+      if (cited.length) {
+        chips = '<div class="ref-cited"><span class="ref-cited__l">被引用于</span>' +
+          cited.map(function (c) {
+            return '<a class="ref-cited__i" data-entry="' + esc(c.id) + '">' + esc(c.title) + '</a>';
+          }).join('') + '</div>';
+      }
       h += '<div class="ref-item" id="ref-' + esc(r.id) + '"><div class="ref-item__id">' + esc(r.id) + '</div>' +
         '<div class="ref-item__body">' +
         '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
         '<div class="ref-item__en">' + esc(r.en) + '</div>' +
         '<div class="ref-item__where">' + esc(r.where) + '</div>' +
         '<div class="ref-item__use">用于：' + esc(r.use) + '</div>' +
+        chips +
         dlHtml(r.dl) +
         '</div></div>';
     });
     box.innerHTML = h;
 
+    // 「被引用于」→ 打开对应条目（容器节点不变，只绑一次）
+    if (!box.dataset.entryBound) {
+      box.dataset.entryBound = '1';
+      box.addEventListener('click', function (ev) {
+        const el = ev.target.closest ? ev.target.closest('[data-entry]') : null;
+        if (!el) return;
+        openCalcGroup(el.dataset.entry);
+      });
+    }
+
     const cnt = $('refsCount');
     if (cnt) {
-      // 只数「点开就能看」的链接；标「需订阅」的 DOI 页面不算
+      // 只数「点开就能看」的链接；需订阅 / 需订阅（DOI）都不算
       const free = REFS.filter(function (r) {
-        return (r.dl || []).some(function (d) { return d.t !== '需订阅'; });
+        return (r.dl || []).some(function (d) { return d.t.indexOf('需订阅') !== 0; });
       }).length;
       cnt.textContent = REFS.length + ' 条 · ' + free + ' 条附原文链接';
     }
@@ -21092,7 +21154,7 @@ const MATERIALS = [];
     if (!dl || !dl.length) return '';
     let h = '<div class="ref-dl">';
     dl.forEach(function (d) {
-      h += '<a class="ref-dl__i' + (d.t === '需订阅' ? ' ref-dl__i--sub' : '') +
+      h += '<a class="ref-dl__i' + (d.t.indexOf('需订阅') === 0 ? ' ref-dl__i--sub' : '') +
         '" href="' + esc(d.u) + '" target="_blank" rel="noopener">' +
         esc(d.t) + '</a>';
     });

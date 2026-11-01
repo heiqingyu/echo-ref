@@ -211,16 +211,16 @@ function buildSegPage() {
     </div>
     <div class="card" id="viewspart">
       <div class="card__t">切面学习（视频）</div>
-      <div class="card__d">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</div>
+      <div class="card__d">标准切面教学视频可直接在本页内播放；交互演示与速查表为第三方公开站点，点击后由浏览器打开，本工具不加载其内容。</div>
       <div class="fx-list" id="segViewsList"></div>
-      <div class="note">外链资源为公开站点的心脏超声教学资料，点击即跳转原站查看。</div>
+      <div class="note">教学视频在站内直接播放，无需跳转；速查表与交互演示为第三方公开站点网页，需在浏览器中打开。</div>
     </div>
     <div class="card" id="simpart">
       <div class="card__t">TEE 切面在线演示</div>
       <div class="card__d">交互式 TEE 切面演示站点（外链，新窗口打开，不嵌入本页）。</div>
       <div class="fx-list" id="segSimList"></div>
     </div>
-    <div class="note note--warn">本页为室壁节段与运动评分的速查整理：节段划分与 WMSI 记分依据 ASE 标准化心肌分段（17 段法，观察 16 段）；腔室与节段阈值参考 ASE-EACVI 2015 定量。具体应用请回看指南原文并结合临床判断。</div>
+    <div class="note note--warn">本页为室壁节段与运动评分的速查整理：节段划分与 WMSI 记分依据 ASE 标准化心肌分段（17 段法，观察 16 段，详见参考文献 R84 / R85 / R86）；腔室与节段阈值参考 ASE-EACVI 2015 定量。具体应用请回看指南原文并结合临床判断。</div>
   </section>`;
 }
 
@@ -477,7 +477,7 @@ const html = `<!DOCTYPE html>
           「ASE PDF / 中文 PDF / 免费全文 PDF」是点开即下载的 PDF（学会官方直链或本站自托管），
           「PMC 全文」是 PubMed Central 的免费全文；「官网 PDF」是期刊社自己的 PDF 地址，
           能否直接下载取决于该刊开放政策（部分要机构订阅）；「免费页面」进去点 PDF 即可、不用登录。
-          标「需订阅」的条目多为近年原创研究，暂无公开全文，给出 DOI 便于按题录在机构内检索。</div>
+          标「需订阅 / 需订阅（DOI）」的条目多为近年原创研究，暂无公开全文，给出 DOI 便于按题录在机构内检索。</div>
         <div id="calcRefList" hidden></div>
         <div class="refs-copy">
           带「中文 PDF」标记的条目为公开指南 / 专家共识的 PDF 全文（本站收录，或由公开站点提供直链）；「中文全文」为指向中华医学知识库

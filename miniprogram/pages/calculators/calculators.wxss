@@ -368,6 +368,32 @@
   border: 1rpx dashed #cfd6df;
 }
 
+/* 被引用于（文献 → 条目的反向跳转，v1.13.7） */
+.ref-cited {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10rpx;
+  margin-top: 10rpx;
+}
+.ref-cited__l {
+  font-size: 21rpx;
+  color: #9aa3af;
+}
+.ref-cited__i {
+  padding: 4rpx 14rpx;
+  font-size: 21rpx;
+  color: #0f766e;
+  background: #effaf8;
+  border: 1rpx solid #cdeee9;
+  border-radius: 999rpx;
+  max-width: 100%;
+  word-break: break-word;
+}
+.ref-cited__i--tap {
+  background: #d7f2ee;
+}
+
 /* 回到顶部（目录很长，2026-10-21） */
 .totop {
   position: fixed;
