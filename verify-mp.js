@@ -1952,9 +1952,12 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
     rewardPages.length === 1 ? 1 : 0, 1, 0);
   // ── v1.13.9：主动更新提示（微信只在冷启动查新版，且下载完要再冷启动一次才生效）──
   const appJs9 = fs9.readFileSync(__dirname + '/miniprogram/app.js', 'utf8');
-  check('app.js 用 UpdateManager 主动提示新版本（getUpdateManager + applyUpdate）',
+  check('app.js 用 UpdateManager 静默更新（getUpdateManager + applyUpdate）',
     appJs9.indexOf('getUpdateManager') !== -1 && appJs9.indexOf('applyUpdate()') !== -1 ? 1 : 0, 1, 0);
   check('onLaunch 调用 checkUpdate()', appJs9.indexOf('this.checkUpdate()') !== -1 ? 1 : 0, 1, 0);
+  // 用户明确要求静默：更新时不弹窗（版本更新频繁，弹窗是噪音）
+  check('更新过程不弹窗（app.js 内无 showModal）',
+    appJs9.indexOf('showModal') === -1 ? 1 : 0, 1, 0);
 }
 
 console.log(`\n${'='.repeat(46)}`);

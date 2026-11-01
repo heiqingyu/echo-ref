@@ -40,23 +40,20 @@ App({
     this.checkUpdate();
   },
 
-  /* ★ 主动更新提示（v1.13.9）
-     微信只在小程序「冷启动」时检查新版，且下载完成后要再冷启动一次才生效，
-     所以用户常以为「发布了却还是旧版」。检测到新包就提示重启，
-     applyUpdate() 会立即重载，不用删小程序、也不用等微信被系统回收。 */
+  /* ★ 静默更新（v1.13.9）
+     微信只在小程序「冷启动」时检查新版，且新包下载完成后要再冷启动一次才生效，
+     所以用户常以为「发布了却还是旧版」。
+     这里不弹窗，直接 applyUpdate() 让新版本在本次启动内生效：
+       · onUpdateReady 只在「冷启动 + 新包已下载」时触发，热启动不会来；
+       · 只在启动后 3 秒内切 —— 这个窗口用户刚打开、还没开始输入，重载代价最小；
+       · 超过窗口就什么也不做，留到下次冷启动自动生效（微信默认行为），同样不打扰。
+     不弹窗是有意的：版本更新频繁，每次弹窗对使用者是噪音。 */
   checkUpdate() {
     if (!wx.getUpdateManager) return;
     const um = wx.getUpdateManager();
+    const t0 = Date.now();
     um.onUpdateReady(() => {
-      wx.showModal({
-        title: '发现新版本',
-        content: '新版本已下载完成，重启后生效。是否立即重启？',
-        confirmText: '立即重启',
-        cancelText: '稍后',
-        success: (res) => {
-          if (res.confirm) um.applyUpdate();
-        },
-      });
+      if (Date.now() - t0 < 3000) um.applyUpdate();
     });
   },
 });
