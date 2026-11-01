@@ -286,7 +286,7 @@ const html = `<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <meta name="format-detection" content="telephone=no">
-<meta name="robots" content="index,follow,noai,noimageai">
+<meta name="robots" content="noindex,nofollow,noai,noimageai">
 <title>心脏超声参考值</title>
 <link rel="icon" type="image/png" href="${FAVICON_DATA}">
 <link rel="apple-touch-icon" href="${FAVICON_DATA}">
@@ -1036,6 +1036,13 @@ if (process.argv.indexOf('--full') === -1) {
   fs.mkdirSync(path.join(ROOT, 'docs'), { recursive: true });
   writeFresh(path.join(ROOT, 'docs', 'index.html'), publicHtml);
   fs.writeFileSync(path.join(ROOT, 'docs', '.nojekyll'), '', 'utf8');
+  // ★ 不对外公开（v1.13.9）：全站禁止抓取，配合 head 里的 noindex,nofollow。
+  //   GitHub Pages 免费账号只能用公开仓库、站点也必然公开，所以「不公开」只能做到
+  //   「不被搜索引擎收录、不被爬」——知道确切网址的人仍可直接打开，自用不受影响。
+  writeFresh(path.join(ROOT, 'docs', 'robots.txt'),
+    '# 个人参考工具，不参与搜索引擎收录\n' +
+    'User-agent: *\n' +
+    'Disallow: /\n');
   console.log('✅ 已生成 ' + path.join('docs', 'index.html') +
     '  (' + (Buffer.byteLength(publicHtml, 'utf8') / 1024).toFixed(1) + ' KB，仅 ' +
     PUBLIC_TABS.length + ' 个页签)');

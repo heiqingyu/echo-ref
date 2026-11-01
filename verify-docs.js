@@ -2209,6 +2209,12 @@ function check(name, ok, detail) {
   const noBrand = await c.evalJs('(function(){var h=document.documentElement.outerHTML;' +
     'return (h.indexOf("飞利浦负荷超声") !== -1 || h.indexOf("飞利浦云课堂 · 心脏超声讲座") !== -1) ? 1 : 0;})()');
   check('教学视频专辑/条目标题已去厂商品牌（通用描述）', noBrand === 0, noBrand);
+  // ★ v1.13.9：网页版不对外公开（不收录、不抓取；网址本身仍可自用直接打开）
+  const headHtml = await c.evalJs('document.head.innerHTML');
+  check('head 的 robots 为 noindex,nofollow（搜索引擎不收录）',
+    headHtml.indexOf('noindex,nofollow') !== -1, 1);
+  const robotsTxt = require('fs').readFileSync(__dirname + '/docs/robots.txt', 'utf8');
+  check('docs/robots.txt 全站 Disallow: /', robotsTxt.indexOf('Disallow: /') !== -1, 1);
 
   console.log('\n════════ 汇总 ════════');
   const pass = results.filter((r) => r.ok).length;
