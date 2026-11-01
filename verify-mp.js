@@ -1950,6 +1950,11 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   });
   check('全小程序只有一个页面放 <reward />（当前：' + rewardPages.join(',') + '）',
     rewardPages.length === 1 ? 1 : 0, 1, 0);
+  // ── v1.13.9：主动更新提示（微信只在冷启动查新版，且下载完要再冷启动一次才生效）──
+  const appJs9 = fs9.readFileSync(__dirname + '/miniprogram/app.js', 'utf8');
+  check('app.js 用 UpdateManager 主动提示新版本（getUpdateManager + applyUpdate）',
+    appJs9.indexOf('getUpdateManager') !== -1 && appJs9.indexOf('applyUpdate()') !== -1 ? 1 : 0, 1, 0);
+  check('onLaunch 调用 checkUpdate()', appJs9.indexOf('this.checkUpdate()') !== -1 ? 1 : 0, 1, 0);
 }
 
 console.log(`\n${'='.repeat(46)}`);

@@ -37,5 +37,26 @@ App({
   onLaunch() {
     // 本工具无需登录、无需联网，所有计算均在本地完成
     console.log('[echo-ref] launched');
+    this.checkUpdate();
+  },
+
+  /* ★ 主动更新提示（v1.13.9）
+     微信只在小程序「冷启动」时检查新版，且下载完成后要再冷启动一次才生效，
+     所以用户常以为「发布了却还是旧版」。检测到新包就提示重启，
+     applyUpdate() 会立即重载，不用删小程序、也不用等微信被系统回收。 */
+  checkUpdate() {
+    if (!wx.getUpdateManager) return;
+    const um = wx.getUpdateManager();
+    um.onUpdateReady(() => {
+      wx.showModal({
+        title: '发现新版本',
+        content: '新版本已下载完成，重启后生效。是否立即重启？',
+        confirmText: '立即重启',
+        cancelText: '稍后',
+        success: (res) => {
+          if (res.confirm) um.applyUpdate();
+        },
+      });
+    });
   },
 });
