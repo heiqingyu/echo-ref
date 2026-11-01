@@ -23,3 +23,8 @@
   display: inline-block;
   line-height: 1.5;
 }
+
+/* 赞赏「喜欢开发者」组件容器（页尾，免责声明之下） */
+.reward-wrap {
+  margin: 24rpx 0 8rpx;
+}

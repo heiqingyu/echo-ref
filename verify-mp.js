@@ -1934,6 +1934,22 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   // 数据源里不许留 U+FFFD（曾出现「需置胸管的���胸」「心包穿刺成功��」两处乱码）
   const extraRaw = require('fs').readFileSync(__dirname + '/miniprogram/utils/extra-data.js', 'utf8');
   check('extra-data.js 无 U+FFFD 乱码字符', extraRaw.indexOf('\uFFFD') === -1 ? 1 : 0, 1, 0);
+  // ── v1.13.9：赞赏改「代码接入」<reward />，发版后不必再去开发者助手重新智能接入 ──
+  const fs9 = require('fs');
+  const pgWxmlIdx = fs9.readFileSync(__dirname + '/miniprogram/pages/index/index.wxml', 'utf8');
+  const pgJsIdx = fs9.readFileSync(__dirname + '/miniprogram/pages/index/index.js', 'utf8');
+  check('首页含赞赏「喜欢开发者」组件 <reward />',
+    pgWxmlIdx.indexOf('<reward') !== -1 ? 1 : 0, 1, 0);
+  check('赞赏组件有基础库守卫（showReward + 3.17.5）',
+    pgWxmlIdx.indexOf('wx:if="{{showReward}}"') !== -1 && pgJsIdx.indexOf("'3.17.5'") !== -1 ? 1 : 0, 1, 0);
+  // 同一个小程序只允许一个页面放 <reward />，多放则整页组件都不渲染
+  const rewardPages = [];
+  ['index', 'calculators', 'formula', 'segments', 'valveana', 'pediatric', 'album', 'video'].forEach(function (p) {
+    const f9 = __dirname + '/miniprogram/pages/' + p + '/' + p + '.wxml';
+    if (fs9.existsSync(f9) && fs9.readFileSync(f9, 'utf8').indexOf('<reward') !== -1) rewardPages.push(p);
+  });
+  check('全小程序只有一个页面放 <reward />（当前：' + rewardPages.join(',') + '）',
+    rewardPages.length === 1 ? 1 : 0, 1, 0);
 }
 
 console.log(`\n${'='.repeat(46)}`);

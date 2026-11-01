@@ -10,6 +10,28 @@ const EF_COLOR = {
   severe: '#a11f1f',
 };
 
+/* ★ 赞赏「喜欢开发者」组件（<reward />）需基础库 3.17.5 及以上；
+   低版本放上去是空白，所以先判版本再渲染。
+   ★ 走「代码接入」后，每次发新版本都不必再去「开发者助手」重新做智能接入。 */
+function rewardReady() {
+  let sv = '';
+  try {
+    sv = (wx.getAppBaseInfo && wx.getAppBaseInfo().SDKVersion) ||
+      (wx.getSystemInfoSync && wx.getSystemInfoSync().SDKVersion) || '';
+  } catch (e) {
+    sv = '';
+  }
+  if (!sv) return false;
+  const a = String(sv).split('.');
+  const b = '3.17.5'.split('.');
+  for (let i = 0; i < 3; i += 1) {
+    const x = parseInt(a[i] || '0', 10);
+    const y = parseInt(b[i] || '0', 10);
+    if (x !== y) return x > y;
+  }
+  return true;
+}
+
 Page({
   data: {
     appVersion: V.APP_VERSION,
@@ -47,6 +69,8 @@ Page({
     hasMeasurements: false,
     refDesc: '',
     sourceText: '',
+    /* ★ 赞赏「喜欢开发者」组件开关（基础库 3.17.5+ 才渲染） */
+    showReward: false,
   },
 
   onLoad() {
@@ -57,6 +81,7 @@ Page({
       height: String(p.height),
       weight: String(p.weight),
       standard: app.globalData.standard,
+      showReward: rewardReady(),
       lvedd: m && m.lvedd ? String(m.lvedd) : this.data.lvedd,
       lvesd: m && m.lvesd ? String(m.lvesd) : this.data.lvesd,
       ivsd: m && m.ivsd ? String(m.ivsd) : this.data.ivsd,

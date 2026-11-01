@@ -276,6 +276,11 @@
     测量值受操作者、仪器、切面及心率影响，请结合临床综合判断。
   </view>
 
+  <!-- ★ 赞赏「喜欢开发者」：代码接入（基础库 3.17.5+），发版后无需再重新接入 -->
+  <view class="reward-wrap" wx:if="{{showReward}}">
+    <reward theme="transparent" width="96" />
+  </view>
+
   <view class="wmark">EchoRef · 心脏超声参考<view class="wmark__by">by qingyu</view></view>
 
 </view>
