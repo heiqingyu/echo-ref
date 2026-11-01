@@ -104,7 +104,7 @@
     <view class="fx-list">
       <block wx:for="{{viewsList}}" wx:key="id"><template is="fxItem" data="{{item}}" /></block>
     </view>
-    <view class="note">多伦多 PIE 站点（含 TEE/TTE 切面与交互演示）建议用 360 极速浏览器兼容模式打开；《实用超声规范化检查与操作》视频为公开直链，点击即播。</view>
+    <view class="note">外链资源为公开站点的心脏超声教学资料，点击即跳转原站查看。</view>
   </view>
 
   <!-- ④ TEE 演示 -->

@@ -213,7 +213,7 @@ function buildSegPage() {
       <div class="card__t">切面学习（视频）</div>
       <div class="card__d">标准切面教学视频与交互应用。专辑点开后再选具体切面；外链为第三方站点的文字链接，本工具不加载其任何内容。</div>
       <div class="fx-list" id="segViewsList"></div>
-      <div class="note">多伦多 PIE 站点（含 TEE/TTE 切面与交互演示）建议用 360 极速浏览器兼容模式打开；《实用超声规范化检查与操作》视频为公开直链，点击即播。</div>
+      <div class="note">外链资源为公开站点的心脏超声教学资料，点击即跳转原站查看。</div>
     </div>
     <div class="card" id="simpart">
       <div class="card__t">TEE 切面在线演示</div>
