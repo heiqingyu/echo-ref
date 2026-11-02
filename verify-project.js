@@ -248,7 +248,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 90) ok('参考文献 90 条（新增 R88 2023 ESC 心肌病指南、R89 Jenni 超声标准、R90 Petersen CMR 标准）');
+if (EX.REFS.length === 92) ok('参考文献 92 条（新增 R91《超声心动图学》第5版专著、R92 2–6 kg 婴儿 PDA 封堵队列）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
