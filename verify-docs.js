@@ -788,8 +788,8 @@ function check(name, ok, detail) {
     check('发布版含公式集页且默认可见', d.visible, true);
     // v1.6.5：回到公式集目录后「重置」重新出现（详情页与切面学习页会隐藏）
     check('公式集目录恢复显示「重置」按钮', d.resetShown === true, 'shown=' + d.resetShown);
-    check('公式集分组 = 4 个计算组 + 瓣膜 + 4 组评估（v1.6.3 起外链组移出目录）',
-      d.groups.join('|') === '瓣膜评估|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景',
+    check('公式集分组 = 瓣膜 + 先心病 + 3 个计算组 + 4 组评估（v1.13.10 先心前置）',
+      d.groups.join('|') === '瓣膜评估|先天性心脏病（含术后）|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|急症与特殊场景',
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
@@ -2191,6 +2191,33 @@ function check(name, ok, detail) {
   check('清空搜索后中英对照卡收回折叠（与参考文献一致）', alClosed === true, alClosed);
   const chdFirst = await c.evalJs('(function(){var g=document.getElementById("g-chd"); if(!g) return ""; var card=g.closest(".fx-card"); if(!card) return ""; var it=card.querySelector(".fx-item"); return (it && it.dataset.id) || "";})()');
   check('先心组目录第一条是房间隔缺损（ASD 置顶）', chdFirst === 'asd', chdFirst);
+
+  /* v1.13.10：先心病整组紧跟瓣膜评估 */
+  const secHead = await c.evalJs('(function(){return [].slice.call(document.querySelectorAll("#calcList .fx-group")).slice(0,2).map(function(e){return e.id;}).join(",");})()');
+  check('目录前两组为 瓣膜评估 → 先天性心脏病', secHead === 'g-valve,g-chd', secHead);
+
+  /* v1.13.10：条目内小节导航必须用 button —— 用 <a href="#sec-…"> 时移动端
+     touchend 会先写 hash，视图栈把未知 hash 当目录，点击分节直接回公式集。 */
+  await c.evalJs('(function(){var b=document.getElementById("calcBack"); if(b) b.click();})()');
+  await new Promise((r) => setTimeout(r, 200));
+  await c.evalJs('(function(){var e=document.querySelector(String.fromCharCode(35)+"calcList .fx-item[data-kind=brief][data-id=asd]"); if(e) e.click();})()');
+  await new Promise((r) => setTimeout(r, 400));
+  const tocTag = String(await c.evalJs('(function(){var l=document.querySelectorAll("#calcGroups .fx-nav--sec .fx-nav__c"); if(!l.length) return "0"; var bad=0,href=0;' +
+    '[].forEach.call(l,function(a){ if(a.tagName!=="BUTTON") bad++; if(a.hasAttribute("href")) href++; });' +
+    'return l.length+"/"+bad+"/"+href;})()'));
+  check('小节导航用 button 且不带 href（v1.13.10）', tocTag.split('/')[1] === '0' && tocTag.split('/')[2] === '0', tocTag);
+  await c.evalJs('(function(){var l=document.querySelectorAll("#calcGroups .fx-nav--sec .fx-nav__c"); if(l[1]) l[1].click(); return 1;})()');
+  await new Promise((r) => setTimeout(r, 500));
+  const afterToc = String(await c.evalJs('JSON.stringify({h:location.hash,card:!!document.querySelector("#calcGroups .card[data-g=asd]"),y:Math.round(window.scrollY)})'));
+  const at = JSON.parse(afterToc);
+  // 只判「视图没被切走」；滚动量由前面 TAVR 那条单独判（这里视口高度不定，量不可靠）
+  check('点分节不切视图（hash 仍为 #/calc/asd）', at.card === true && at.h === '#/calc/asd', afterToc);
+  await c.evalJs('(function(){location.hash = "#sec-1-asd"; return 1;})()');
+  await new Promise((r) => setTimeout(r, 400));
+  const anchorSafe = await c.evalJs('(function(){return !!document.querySelector("#calcGroups .card[data-g=asd]");})()');
+  check('外部写入 #sec-… 锚点不再被打回目录', anchorSafe === true, anchorSafe);
+  await c.evalJs('(function(){history.replaceState(null,"","#/calc/asd"); var b=document.getElementById("calcBack"); if(b) b.click(); return 1;})()');
+  await new Promise((r) => setTimeout(r, 300));
 
   /* v1.13.1：免责声明（网页/APK 页脚全局一份，小程序五页各一份） */
   const footDisc = await c.evalJs('(function(){var f=document.querySelector(".copyfoot");' +

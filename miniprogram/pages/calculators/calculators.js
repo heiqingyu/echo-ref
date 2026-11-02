@@ -49,6 +49,17 @@ function saveFavs(arr) {
   try { wx.setStorageSync(FAV_KEY, arr); } catch (e) { /* 存储满 / 隐私模式：静默 */ }
 }
 
+/** 把某个组挪到另一组之后（v1.13.10：先心病紧跟瓣膜评估） */
+function moveSectionAfter(sections, id, afterId) {
+  const ids = sections.map(function (s) { return s.id; });
+  const i = ids.indexOf(id);
+  const j = ids.indexOf(afterId);
+  if (i < 0 || j < 0 || i === j + 1) return;
+  const sec = sections.splice(i, 1)[0];
+  const j2 = sections.map(function (s) { return s.id; }).indexOf(afterId);
+  sections.splice(j2 + 1, 0, sec);
+}
+
 /** 把某个 id 的组挪到最前（桌面端与网页端同一套规则） */
 function moveSectionFirst(sections, id) {
   const i = sections.map(function (s) { return s.id; }).indexOf(id);
@@ -165,6 +176,9 @@ function buildSections() {
   // ★ v1.7.7：瓣膜评估整组前置（临床使用频率最高），组内二尖瓣 / 主动脉瓣评估再提到最前
   moveSectionFirst(sections, 'valve');
   headItems(sections, 'valve', ['mitral', 'aortic']);
+
+  // ★ v1.13.10：先心病整组紧跟瓣膜评估（用户指定：放在瓣膜评估后面）
+  moveSectionAfter(sections, 'chd', 'valve');
 
   // ★ v1.13.10：先心组「ASD / VSD / PDA」三条置顶（用户指定；sec:'chd' 的计算器排其后）
   headItems(sections, 'chd', ['asd', 'vsd', 'pda']);

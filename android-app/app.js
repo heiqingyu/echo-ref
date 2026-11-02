@@ -165,6 +165,9 @@
    */
   function onNavEvent() {
     const h = location.hash || '';
+    // ★ v1.13.10：非视图 hash（旧版分节锚点 #sec-1-asd、外部 #g-xxx 等）一律忽略。
+    //   否则一次页内锚点写入就会把界面打回目录 —— 用户反馈「点分节回到公式集」。
+    if (h && h.indexOf('#/') !== 0) return;
     if (h === lastHash) return;    // 已处理过（popstate + hashchange 双触发）
     lastHash = h;
     if (viewStack.length) viewStack.pop();
@@ -1127,7 +1130,12 @@
     if (!toc || toc.length < 2) return '';
     let h = '<div class="fx-nav fx-nav--sec">';
     toc.forEach(function (s) {
-      h += '<a class="fx-nav__c" href="#' + s.id + '" data-sec="' + s.id + '">' + esc(s.t) + '</a>';
+      // ★ v1.13.10：必须用 button，不能用 <a href="#sec-…">。
+      //   移动端浏览器 / WebView 在 touchend 就先写 hash，等 click 里的
+      //   preventDefault 已经来不及 —— hashchange 被视图栈当成未知路由，
+      //   parseHash 返回 null → leaveView()，界面被打回公式集目录。
+      //   与 v1.6.6 组名跳转条踩的是同一个坑。
+      h += '<button type="button" class="fx-nav__c" data-sec="' + s.id + '">' + esc(s.t) + '</button>';
     });
     return h + '</div>';
   }
@@ -1615,6 +1623,13 @@
           return head.indexOf(it) === -1;
         }));
       }
+    }
+
+    // ★ v1.13.10：先心病整组紧跟瓣膜评估（用户指定：放在瓣膜评估后面）
+    const chdIdx = secs.map(function (s) { return s.id; }).indexOf('chd');
+    const vvIdx = secs.map(function (s) { return s.id; }).indexOf('valve');
+    if (chdIdx > 0 && vvIdx >= 0 && chdIdx !== vvIdx + 1) {
+      secs.splice(vvIdx + 1, 0, secs.splice(chdIdx, 1)[0]);
     }
 
     // ★ v1.13.10：先心组「ASD / VSD / PDA」三条置顶（用户指定；sec:'chd' 的计算器排其后）

@@ -598,9 +598,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // —— 目录页 ——
   const dirs = pgA.data.sections;
   check('公式集分 8 个大组（3 计算 + 1 瓣膜 + 4 评估；v1.6.3 起「切面学习 / TEE 演示」移出目录）', dirs.length, 8, 0);
-  check('组标题顺序',
+  check('组标题顺序（v1.13.10：先心病紧跟瓣膜评估）',
     dirs.map(d => d.title).join('|') ===
-      '瓣膜评估|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|先天性心脏病（含术后）|急症与特殊场景' ? 1 : 0, 1, 0);
+      '瓣膜评估|先天性心脏病（含术后）|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|急症与特殊场景' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
@@ -933,6 +933,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('先天性心脏病含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
+  check('v1.13.10：目录前两组为 瓣膜评估 → 先天性心脏病',
+    (dirs[0].id === 'valve' && dirs[1].id === 'chd') ? 1 : 0, 1, 0);
   check('v1.13.10：先心组目录前三条依次为 ASD / VSD / PDA',
     dirById('chd').items.slice(0, 3).map(i => i.id).join(',') === 'asd,vsd,pda' ? 1 : 0, 1, 0);
   check('先心病合并术后 3 条（Mustard / Fontan / ASO）',
