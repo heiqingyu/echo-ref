@@ -2162,7 +2162,7 @@ function check(name, ok, detail) {
   const alOpen = await c.evalJs('(function(){var l=document.getElementById("aliasList"); return l ? !l.hidden : null;})()');
   check('搜索「mr」时底部「中英对照」卡自动展开', alOpen === true, alOpen);
   const alRows = await c.evalJs('(function(){var c=document.getElementById("aliasList"); return c ? c.querySelectorAll(".alias-item").length + "/" + c.querySelectorAll(".alias-item__ipa").length : "0/0";})()');
-  check('中英对照卡渲染 96 行且每行带音标', alRows === '96/96', alRows);
+  check('中英对照卡渲染 125 行且每行带音标', alRows === '125/125', alRows);
   const alMr = await c.evalJs('(function(){return [].slice.call(document.querySelectorAll("#aliasList .alias-item__ipa")).some(function(x){return x.textContent.indexOf("maɪtrəl") !== -1;});})()');
   check('MR 行音标就位（/ˈmaɪtrəl …/）', alMr === true, alMr);
   const alSpeak = await c.evalJs('(function(){return !!document.querySelector("#aliasList [data-say]");})()');

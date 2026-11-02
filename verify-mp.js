@@ -1889,7 +1889,7 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('enAliasMatch 短词（<3 字符）不做英文包含匹配，只命中缩写',
     EXA.enAliasMatch('as').every(function (a) { return a.ab.toLowerCase() === 'as'; }) ? 1 : 0, 1, 0);
   // ── v1.12.8：中英对照升格为参考文献后的折叠卡 ──
-  check('中英对照 72 条全部带音标（第 5 列，/ 开头）',
+  check('中英对照 125 条全部带音标（第 5 列，/ 开头）',
     AL.every(function (a) { return a.length === 5 && typeof a[4] === 'string' && a[4].charAt(0) === '/'; }) ? 1 : 0, 1, 0);
   check('Qp/Qs 计算器已 dirHide（并入先心病分流判读，目录不再单列）',
     (CGA.GROUPS.filter(function (g) { return g.id === 'shunt'; })[0] || {}).dirHide === true ? 1 : 0, 1, 0);
@@ -1909,7 +1909,7 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   });
   check('五个页面均含统一免责声明「不作为诊断依据」', discHit.length === 5 ? 1 : 0, 1, 0);
   check('目录页中英对照数据就位（calculators.js 由 EN_ALIAS 映射行数据）',
-    pgJs8.indexOf('EX.EN_ALIAS.map') !== -1 && EXA.EN_ALIAS.length === 96 ? 1 : 0, 1, 0);
+    pgJs8.indexOf('EX.EN_ALIAS.map') !== -1 && EXA.EN_ALIAS.length === 125 ? 1 : 0, 1, 0);
   // ── v1.12.9：首屏导航条也要有「中英对照」（原先只有 navGroupsOf 里挂，首屏看不到） ──
   const navCnt = (pgJs8.match(/\{ id: 'enalias', title: '中英对照' \}/g) || []).length;
   check('导航条两处（首屏 data + navGroupsOf）都挂「中英对照」', navCnt >= 2 ? 1 : 0, 1, 0);
