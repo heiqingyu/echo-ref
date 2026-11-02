@@ -822,10 +822,29 @@ function groupOf(id) {
   return null;
 }
 
+/**
+ * ★ v1.13.15：**需要「身高 + 体重 → BSA」的条目**
+ *
+ * 背景（用户 2026-11-02）：BSA 原来是全局值，挂在公式集目录页顶部（「BSA 1.75 m²（来自
+ * 「EF·参考值」页）」），但 119 条里绝大多数用不到 BSA，长期占着首屏还容易误解成
+ * 「所有公式都按这个 BSA 算」。改为：**哪个条目要用，就在那个条目里填身高体重现算**，
+ * 目录页不再显示 BSA。
+ *
+ * 判定依据：refresh() 里真正读 bsa 的分支（gid === 'xxx' 且用到 bsa）。
+ * 注意 ebstein 不在列 —— 它本来就有 `ebbsa` 字段让人直接填 m²，别再叠一层。
+ * 三端同源：web 端 app.js 有同名内联副本（CALC_GROUPS 同理），改这里必须同步改那边。
+ */
+const BSA_GROUPS = [
+  'flow', 'atrial', 'ef', 'lvmass', 'la', 'svrv', 'avav', 'asload',
+  'ppm', 'volidx', 'aortaidx', 'swv', 'pvfu', 'rvvol', 'residx',
+  'tr', 'mitral', 'aortic', 'paidx', 'aortaz', 'resist', 'lvgeom',
+];
+
 module.exports = {
   GROUPS: GROUPS,
   CALC_SECTIONS: CALC_SECTIONS,
   COLLAPSE: COLLAPSE,
   SIGNS: SIGNS,
+  BSA_GROUPS: BSA_GROUPS,
   groupOf: groupOf,
 };

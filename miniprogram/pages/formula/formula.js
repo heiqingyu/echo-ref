@@ -10,10 +10,42 @@
 const CG = require('../../utils/calc-groups.js');
 const EX = require('../../utils/extra-data.js');
 const calc = require('../../utils/echo-calc.js');
+const Core = require('../../utils/echo-core.js');
 const VC = require('../../utils/valve-calc.js');
 const MD = require('../../utils/inline-md.js');
 const CN = require('../../utils/calc-notes.js');
 const app = getApp();
+
+/**
+ * ★ v1.13.15：BSA 由「全局」改为「本条自己填」
+ *
+ * 用户 2026-11-02：公式集目录页原来一直挂着「BSA 1.75 m²（来自「EF·参考值」页）」，
+ * 但 119 条里绝大多数公式用不到 BSA，长期占着首屏。现在只在需要的条目（CG.BSA_GROUPS）
+ * 里给两行「身高 / 体重」，填了就地换算，不填则回落到「EF·参考值」页的值（老行为兜底）。
+ */
+const BSA_H = '__bsah';
+const BSA_W = '__bsaw';
+
+/** 该条目是否需要身高体重（没有输入区的纯判读条目不用） */
+function needBsa(id, fields) {
+  return CG.BSA_GROUPS.indexOf(id) !== -1 && (fields || []).length > 0;
+}
+
+/**
+ * 本条目 BSA 的初始 state
+ * ★ 故意**不并进 data.inputs**：inputs 是「公式字段」数组，verify-mp 按条目索引填值、
+ *   按长度断言字段个数；BSA 两行若混进去，几十条既有断言全要重编号。独立成 bsaH / bsaW。
+ */
+function bsaState(id, fields, cache) {
+  const on = needBsa(id, fields);
+  const c = cache || {};
+  return {
+    needBsa: on,
+    bsaH: on ? (c[BSA_H] || '') : '',
+    bsaW: on ? (c[BSA_W] || '') : '',
+    bsaSub: '填身高与体重即自动换算；不填则沿用「EF·参考值」页',
+  };
+}
 
 /** 在评估类内容里按 id 找条目 */
 function findBrief(id) {
@@ -117,6 +149,11 @@ Page({
     collapseV: '',
     signsV: '',
     bsaText: '—',
+    // ★ v1.13.15：本条 BSA（只有 CG.BSA_GROUPS 里的条目才显示这两行）
+    needBsa: false,
+    bsaH: '',
+    bsaW: '',
+    bsaSub: '填身高与体重即自动换算；不填则沿用「EF·参考值」页',
     sexLabel: '男性',
     out: '',
     hasOut: false,
@@ -137,6 +174,7 @@ Page({
       // ★ 字段里可以混入 { g: '① …' } 分段标题（评估页把「狭窄 / 反流」并进同一条目），
       //   渲染成小标题，后面的输入框归入该段
       const inputs = [];
+      const bs = bsaState(brief.id, brief.fields, cache);
       (brief.fields || []).forEach(function (f, i) {
         if (f.g) {
           inputs.push({ key: '__g' + i, head: f.g });
@@ -159,6 +197,10 @@ Page({
           return r ? { id: r.id, t: r.title } : null;
         }).filter(Boolean),
         inputs: inputs,
+        needBsa: bs.needBsa,
+        bsaH: bs.bsaH,
+        bsaW: bs.bsaW,
+        bsaSub: bs.bsaSub,
         isReference: !(brief.fields && brief.fields.length),
         abbrs: EX.abbrHits
           ? EX.abbrHits((brief.ab || '') + ' ' + (EX.blockText ? EX.blockText(brief.blocks) : ''))
@@ -173,6 +215,7 @@ Page({
       //   brief 分支早就转了 head，calc 分支漏转 → {g} 被当成普通字段，标签渲染成「 / 」，
       //   小节标题全丢（v1.8.3 起就存在）。
       const inputs = [];
+      const bs = bsaState(g.id, g.fields, cache);
       (g.fields || []).forEach(function (f, i) {
         if (f.g) {
           inputs.push({ key: '__g' + i, head: f.g });
@@ -208,6 +251,10 @@ Page({
         toc: buildToc(calcBlocks),
         refs: refsOf((EX.CALC_SRC || {})[g.id]),
         inputs: inputs,
+        needBsa: bs.needBsa,
+        bsaH: bs.bsaH,
+        bsaW: bs.bsaW,
+        bsaSub: bs.bsaSub,
         opts: opts,
         optsV: optsV,
         isReference: false,
@@ -232,6 +279,15 @@ Page({
     const idx = e.currentTarget.dataset.idx;
     const patch = {};
     patch['inputs[' + idx + '].value'] = e.detail.value;
+    this.setData(patch);
+    this.refresh();
+  },
+
+  /** ★ v1.13.15：本条 BSA 的身高 / 体重（独立于 inputs，不参与公式字段计数） */
+  onBsaInput(e) {
+    const k = e.currentTarget.dataset.k;
+    const patch = {};
+    patch[k === 'w' ? 'bsaW' : 'bsaH'] = e.detail.value;
     this.setData(patch);
     this.refresh();
   },
@@ -289,7 +345,10 @@ Page({
     const inputs = this.data.inputs.map(function (r) {
       return Object.assign({}, r, { value: '' });
     });
-    this.setData({ inputs: inputs, collapseV: '', signsV: '', out: '', hasOut: false });
+    this.setData({
+      inputs: inputs, bsaH: '', bsaW: '', bsaSub: '填身高与体重即自动换算；不填则沿用「EF·参考值」页',
+      collapseV: '', signsV: '', out: '', hasOut: false,
+    });
     this.saveCache();
   },
 
@@ -330,6 +389,9 @@ Page({
     this.data.inputs.forEach(function (r) {
       if (!r.head && r.value !== '') c[r.key] = r.value;
     });
+    // ★ v1.13.15：本条身高体重随条目缓存，返回目录再进不丢
+    if (this.data.bsaH !== '') c[BSA_H] = this.data.bsaH;
+    if (this.data.bsaW !== '') c[BSA_W] = this.data.bsaW;
     if (this.data.collapseV) c.__collapse = this.data.collapseV;
     if (this.data.signsV) c.__signs = this.data.signsV;
     const ov = this.data.optsV || {};
@@ -349,7 +411,11 @@ Page({
     });
 
     const prof = app.globalData.profile || {};
-    const bsa = prof.bsa || 0;
+    // ★ v1.13.15：本条填了身高体重就现算（Mosteller），否则回落到「EF·参考值」页的 BSA
+    const bh = parseFloat(this.data.bsaH);
+    const bw = parseFloat(this.data.bsaW);
+    const bsaLocal = (bh > 0 && bw > 0) ? Core.bsaMosteller(bh, bw) : 0;
+    const bsa = bsaLocal > 0 ? Core.round(bsaLocal, 3) : (prof.bsa || 0);
     const female = prof.sex === 'female';
     const ov = this.data.optsV || {};
     const valid = (...xs) => xs.every((x) => x !== undefined && isFinite(x));
@@ -401,7 +467,7 @@ Page({
         if (valid(v.rav)) parts.push('RAVI ' + calc.fmt(v.rav / bsa) + ' mL/m²');
         out = parts.join('；');
       } else if (valid(v.lav) || valid(v.rav)) {
-        out = '请先在「EF·参考值」页填写身高体重（BSA 为 0 时无法计算指数）';
+        out = '请在本条填身高与体重（BSA 为 0 时无法计算指数）';
       }
     } else if (gid === 'ef') {
       // —— 左室容积与射血分数 ——
@@ -509,7 +575,7 @@ Page({
         out = 'LAVi ' + calc.fmt(lavi) + ' mL/m² · ' +
           (lavi > 34 ? '增大（>34 mL/m²，男女同阈值）' : '正常（≤34 mL/m²）');
       } else if (valid(v.lav)) {
-        out = '需先在「EF·参考值」页填写身高体重（BSA 为 0 时无法计算指数）';
+        out = '需在本条填身高与体重（BSA 为 0 时无法计算指数）';
       }
     } else if (gid === 'lv') {
       // —— 左室质量指数分级 + RWT ——
@@ -922,7 +988,7 @@ Page({
         out = 'EOAi ' + calc.fmt(r.eoai, 2) + ' cm²/m²（' +
           (r.pos === 'av' ? '主动脉位' : '二尖瓣位') + '）→ ' + r.text;
       } else if (valid(v.peoa) && bsa <= 0) {
-        out = '需先在「EF·参考值」页填写身高体重（BSA 为 0 时无法算 EOAi）';
+        out = '需在本条填身高与体重（BSA 为 0 时无法算 EOAi）';
       }
     } else if (gid === 'dfun') {
       // —— 舒张功能分级（四步法）——
@@ -994,7 +1060,7 @@ Page({
         out = '内径 ' + calc.fmt(r.cm, 1) + ' cm · 指数 ' + calc.fmt(r.index, 2) +
           ' cm/m² → ' + r.text + '；' + r.absText;
       } else if (valid(v.aodim) && bsa <= 0) {
-        out = '需先在「EF·参考值」页填写身高体重（BSA 为 0 时无法算指数）';
+        out = '需在本条填身高与体重（BSA 为 0 时无法算指数）';
       }
     } else if (gid === 'mdsv') {
       // —— 应变离散度 MDS ——
@@ -1615,7 +1681,16 @@ Page({
       }
     }
 
-    this.setData({ out: out, hasOut: !!out, outs: outsArr });
+    // ★ v1.13.15：本条 BSA 小标题同步换算结果（只有需要的条目才有这一行）
+    const patch = { out: out, hasOut: !!out, outs: outsArr };
+    if (this.data.needBsa) {
+      patch.bsaSub = bsaLocal > 0
+        ? bsa.toFixed(2) + ' m² · Mosteller（' + bh + ' cm / ' + bw + ' kg）'
+        : (bsa > 0
+          ? '当前沿用「EF·参考值」页的 ' + bsa.toFixed(2) + ' m²；填身高体重可覆盖'
+          : '填身高与体重即自动换算');
+    }
+    this.setData(patch);
   },
 
   /* 长条目（如先心、人工瓣）滚动后给个回到顶部（与公式集目录页同逻辑） */

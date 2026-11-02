@@ -3,7 +3,7 @@
   <view class="card">
     <view class="card__title">公式集</view>
     <view class="card__desc">
-      按主题分组，点击条目进入对应公式。{{countText}} · BSA {{bsaText}} m²（来自「EF·参考值」页）
+      按主题分组，点击条目进入对应公式。{{countText}}
     </view>
   </view>
 

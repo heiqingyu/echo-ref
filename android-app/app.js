@@ -22,6 +22,9 @@
     peds: null,
   };
 
+  /** ★ v1.13.15：公式集目录页说明。BSA 不再挂全局（用户 2026-11-02），改为需要的条目内自填 */
+  const CALC_LIST_DESC = '按主题分组，点击条目进入对应公式。需要体表面积的条目，进入后在条目内填身高体重即可。';
+
   const $ = (id) => document.getElementById(id);
 
   /** 可空取值：发布版会移除部分页面，相关元素可能不存在 */
@@ -352,7 +355,7 @@
           ? '请输入有效的身高（50–250 cm）与体重（2–300 kg）'
           : '';
       state.bsa = 0;
-      setText('calcBsaNote', '按主题分组，点击条目进入公式 · BSA —（请先在上方填写有效身高体重）');
+      setText('calcBsaNote', CALC_LIST_DESC);
       // renderEF 内部会刷新参考值列表；EF 结果的 LVM/BSA 也随 BSA 变化
       renderEF();
       return;
@@ -374,8 +377,7 @@
     $('outBmiTag').className = 'bmi-tag bmi--' + bc.level;
 
     $('bsaHint').textContent = '';
-    setText('calcBsaNote',
-      '按主题分组，点击条目进入公式 · BSA ' + state.bsa.toFixed(2) + ' m²（来自本页上方）');
+    setText('calcBsaNote', CALC_LIST_DESC);
 
     // 参考值列表、EF 结果（LVM/BSA）与计算页都依赖 BSA，一并刷新
     renderEF();
@@ -822,6 +824,26 @@
 
   const calcVal = {};
   let calcCollapse = '';
+
+  /**
+   * ★ v1.13.15：需要「身高 + 体重 → BSA」的条目（与 miniprogram/utils/calc-groups.js 的
+   * BSA_GROUPS 同源，改一处必须同步另一处）。
+   * 用户 2026-11-02：BSA 原来挂全局、长期占公式集首屏，但 119 条里绝大多数用不到；
+   * 改为哪个条目要用就在那个条目里填，填了现算，不填回落「EF·参考值」页。
+   */
+  const BSA_GROUPS = [
+    'flow', 'atrial', 'ef', 'lvmass', 'la', 'svrv', 'avav', 'asload',
+    'ppm', 'volidx', 'aortaidx', 'swv', 'pvfu', 'rvvol', 'residx',
+    'tr', 'mitral', 'aortic', 'paidx', 'aortaz', 'resist', 'lvgeom',
+  ];
+
+  /** 某个条目的 BSA：填了身高体重就现算（Mosteller），否则用全局（EF·参考值页） */
+  function bsaOf(id, v) {
+    const h = v[id + '~h'];
+    const w = v[id + '~w'];
+    if (h > 0 && w > 0) return Core.round(Math.sqrt((h * w) / 3600), 3);
+    return state.bsa;
+  }
   /* ────────── 收藏（v1.7.7）：只存 id 数组，存在本机 localStorage ────────── */
   const FAV_KEY = 'echoref_favs';
   function readFavs() {
@@ -1455,9 +1477,23 @@
    * 输入框按段成组显示，一段内仍两两一行。
    * 评估页（mitral / aortic）把「狭窄 / 反流」塞进同一条目，靠它分区。
    */
-  function fieldsHtml(fields) {
+  function fieldsHtml(fields, gid) {
     let h = '';
     let buf = [];
+    /* ★ v1.13.15：需要 BSA 的条目，在输入区最前面给「身高 / 体重」，就地换算 */
+    if (gid && BSA_GROUPS.indexOf(gid) !== -1 && fields && fields.length) {
+      const hv = calcVal[gid + '~h'] !== undefined ? calcVal[gid + '~h'] : '';
+      const wv = calcVal[gid + '~w'] !== undefined ? calcVal[gid + '~w'] : '';
+      h += '<div class="fx-fgrp">本条 BSA<span class="fx-fgrp__sub" id="bsaLocal-' + gid + '">' +
+        '填身高与体重即自动换算；不填则沿用「EF·参考值」页</span></div>' +
+        '<div class="row">' +
+        '<div class="field"><label class="field__l">身高 / cm</label>' +
+        '<input class="field__i" type="number" inputmode="decimal" step="any" data-ck="' + gid +
+        '~h" placeholder="未填写" value="' + hv + '"></div>' +
+        '<div class="field"><label class="field__l">体重 / kg</label>' +
+        '<input class="field__i" type="number" inputmode="decimal" step="any" data-ck="' + gid +
+        '~w" placeholder="未填写" value="' + wv + '"></div></div>';
+    }
     const flush = function () {
       for (let i = 0; i < buf.length; i += 2) {
         h += '<div class="row">';
@@ -2274,7 +2310,7 @@
           // 分段标题（合并页的小节）原样透传
           if (f.g) return { g: f.g };
           return { k: f[0], n: f[1], u: f[2] };
-        }));
+        }), g.id);
       if (g.opts) html += optsHtml(g.opts);
       // 肺高压条目需要 IVC 塌陷 + 支持征象两个选项（与右心评估共用同一条状态）
       if (g.id === 'mpap') {
@@ -2303,7 +2339,7 @@
           tocHtml(bl.toc) +
           bl.html;
         if (it.fields && it.fields.length) {
-          html += fieldsHtml(it.fields);
+          html += fieldsHtml(it.fields, it.id);
           if (it.id === 'rv') {
             html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse) +
               segHtml('calcsigns', CALC_SIGNS, calcSigns);
@@ -2502,7 +2538,7 @@
       const n = parseFloat(calcVal[k]);
       if (calcVal[k] !== '' && !isNaN(n)) v[k] = n;
     });
-    const bsa = state.bsa;
+    // ★ v1.13.15：不再用一个全局 bsa —— 各条目按需在卡内填身高体重（bsaOf）
     const has = function () {
       for (let i = 0; i < arguments.length; i++) {
         if (v[arguments[i]] === undefined || !isFinite(v[arguments[i]])) return false;
@@ -2523,9 +2559,10 @@
       if (has('hr')) {
         const co = Calc.cardiacOutput(sv, v.hr);
         parts.push('CO ' + Calc.fmt(co) + ' L/min');
-        if (bsa > 0) {
-          parts.push('SVi ' + Calc.fmt(sv / bsa, 1) + ' mL/m²');
-          parts.push('CI ' + Calc.fmt(co / bsa) + ' L/min/m²');
+        const bflow = bsaOf('flow', v);
+        if (bflow > 0) {
+          parts.push('SVi ' + Calc.fmt(sv / bflow, 1) + ' mL/m²');
+          parts.push('CI ' + Calc.fmt(co / bflow) + ' L/min/m²');
         }
       }
       put('flow', partsOf(parts));
@@ -2549,10 +2586,11 @@
     } else put('bernoulli');
 
     // atrial
-    if (bsa > 0 && (has('lav') || has('rav'))) {
+    const batrial = bsaOf('atrial', v);
+    if (batrial > 0 && (has('lav') || has('rav'))) {
       const parts = [];
-      if (has('lav')) parts.push('LAVI ' + Calc.fmt(v.lav / bsa) + ' mL/m²');
-      if (has('rav')) parts.push('RAVI ' + Calc.fmt(v.rav / bsa) + ' mL/m²');
+      if (has('lav')) parts.push('LAVI ' + Calc.fmt(v.lav / batrial) + ' mL/m²');
+      if (has('rav')) parts.push('RAVI ' + Calc.fmt(v.rav / batrial) + ' mL/m²');
       put('atrial', partsOf(parts));
     } else put('atrial');
 
@@ -2560,7 +2598,7 @@
 
     // 左室容积与射血分数
     if (has('edv', 'esv')) {
-      const r = Calc.lvEf(v.edv, v.esv, bsa);
+      const r = Calc.lvEf(v.edv, v.esv, bsaOf('ef', v));
       if (r.error) put('ef', r.error);
       else {
         const parts = ['EF ' + Calc.fmt(r.ef, 1) + '%', 'SV ' + Calc.fmt(r.sv, 1) + ' mL'];
@@ -2575,7 +2613,7 @@
 
     // 左室质量与几何构型
     if (has('lvid', 'ivs', 'lvpw')) {
-      const r = Calc.lvMass({ lvid: v.lvid, ivs: v.ivs, lvpw: v.lvpw, bsa: bsa, female: female });
+      const r = Calc.lvMass({ lvid: v.lvid, ivs: v.ivs, lvpw: v.lvpw, bsa: bsaOf('lvmass', v), female: female });
       const parts = ['LV Mass ' + Calc.fmt(r.mass, 1) + ' g', 'RWT ' + Calc.fmt(r.rwt, 2)];
       if (r.lvmi !== undefined) {
         parts.push('LVMI ' + Calc.fmt(r.lvmi, 1) + ' g/m²（' + (female ? '女' : '男') + ' 上限 ' + r.hi + '）');
@@ -2662,7 +2700,7 @@
 
     // SVR
     {
-      const r = Calc.svrResistance(v.smap, v.srap, v.sco, bsa);
+      const r = Calc.svrResistance(v.smap, v.srap, v.sco, bsaOf('svrv', v));
       if (r.dyn !== undefined) {
         svrDyn = r.dyn;
         const parts = ['SVR ' + Calc.fmt(r.dyn, 0) + ' dyn·s·cm⁻⁵'];
@@ -2695,8 +2733,9 @@
       const sv = Calc.strokeVolume(v.ald, v.alvti);
       const ava = Calc.avaContinuity(sv, v.aavti);
       const parts = ['SV ' + Calc.fmt(sv, 1) + ' mL', 'AVA ' + Calc.fmt(ava, 2) + ' cm²（' + Calc.gradeAva(ava).text + '）'];
-      if (bsa > 0) {
-        const idx = ava / bsa;
+      const bavav = bsaOf('avav', v);
+      if (bavav > 0) {
+        const idx = ava / bavav;
         parts.push('AVAi ' + Calc.fmt(idx, 2) + ' cm²/m²' + (idx <= 0.6 ? '（≤0.6 支持重度）' : ''));
       }
       const dvi = Calc.dviIndex(v.alvti, v.aavti);
@@ -2713,7 +2752,7 @@
         ascAo: has('alao') ? v.alao : null,
         sbp: has('alsbp') ? v.alsbp : null,
         sv: has('alsv') ? v.alsv : null,
-        bsa: bsa,
+        bsa: bsaOf('asload', v),
       });
       const parts = [];
       const notes = [];
@@ -2760,12 +2799,13 @@
 
     // 人工瓣 EOAi / PPM
     {
-      const r = Calc.eoaPpm(v.peoa, bsa, v.ppos, v.pbmi);
+      const bppm = bsaOf('ppm', v);
+      const r = Calc.eoaPpm(v.peoa, bppm, v.ppos, v.pbmi);
       if (r.eoai !== undefined) {
         put('ppm', 'EOAi ' + Calc.fmt(r.eoai, 2) + ' cm²/m²（' +
           (r.pos === 'av' ? '主动脉位' : '二尖瓣位') + '）→ ' + r.text);
-      } else if (has('peoa') && bsa <= 0) {
-        put('ppm', '需先在「EF·参考值」页填写身高体重（BSA 为 0 时无法算 EOAi）');
+      } else if (has('peoa') && bppm <= 0) {
+        put('ppm', '需在本条填身高与体重（BSA 为 0 时无法算 EOAi）');
       } else put('ppm');
     }
 
@@ -2779,7 +2819,7 @@
       Object.keys(v).forEach(function (k) {
         if (k.indexOf(vid + '_') === 0) vv[k.slice(vid.length + 1)] = v[k];
       });
-      const rv = ValveCalc.valveCalc(vid, vv, bsa);
+      const rv = ValveCalc.valveCalc(vid, vv, bsaOf(vid, v));
       let txt = '';
       if (rv.rows && rv.rows.length) {
         txt = rv.rows.slice(0, 5).map(function (r) {
@@ -2825,7 +2865,7 @@
     // ── 重构与心肌功能 ──
     // 容积指数
     {
-      const r = Calc.volumeIndices(v.vedv, v.vesv, bsa, female);
+      const r = Calc.volumeIndices(v.vedv, v.vesv, bsaOf('volidx', v), female);
       if (r.error) put('volidx', r.error);
       else if (r.sv !== undefined) {
         const parts = ['EF ' + Calc.fmt(r.ef, 1) + '%', 'SV ' + Calc.fmt(r.sv, 1) + ' mL'];
@@ -2871,12 +2911,13 @@
 
     // 升主动脉指数
     {
-      const r = Calc.aortaIndex(v.aodim, bsa, female);
+      const baortaidx = bsaOf('aortaidx', v);
+      const r = Calc.aortaIndex(v.aodim, baortaidx, female);
       if (r.index !== undefined) {
         put('aortaidx', '内径 ' + Calc.fmt(r.cm, 1) + ' cm · 指数 ' + Calc.fmt(r.index, 2) +
           ' cm/m² → ' + r.text + '；' + r.absText);
-      } else if (has('aodim') && bsa <= 0) {
-        put('aortaidx', '需先在「EF·参考值」页填写身高体重（BSA 为 0 时无法算指数）');
+      } else if (has('aodim') && baortaidx <= 0) {
+        put('aortaidx', '需在本条填身高与体重（BSA 为 0 时无法算指数）');
       } else put('aortaidx');
     }
 
@@ -2891,7 +2932,7 @@
 
     // 每搏功
     if (has('ssv', 'wmap')) {
-      const r = Calc.strokeWork(v.ssv, v.wmap, bsa);
+      const r = Calc.strokeWork(v.ssv, v.wmap, bsaOf('swv', v));
       const parts = ['SW ' + Calc.fmt(r.sw, 1) + ' g·m'];
       if (r.swi !== undefined) parts.push('SWi ' + Calc.fmt(r.swi, 1) + ' g·m/m²');
       parts.push('· ' + r.text);
@@ -2995,7 +3036,7 @@
     if (has('lvotD', 'lvotVti', 'valveVti') || has('fupvmax') || has('fupmean')) {
       const r = Calc.prostheticValveFunction({
         lvotD: v.lvotD, lvotVti: v.lvotVti, valveVti: v.valveVti,
-        vmax: v.fupvmax, meanGrad: v.fupmean, bsa: bsa,
+        vmax: v.fupvmax, meanGrad: v.fupmean, bsa: bsaOf('pvfu', v),
       });
       put('pvfu', r.error ? r.error : r.text + '｜' + r.note);
     } else put('pvfu');
@@ -3010,7 +3051,7 @@
 
     // RV 容积指数
     if (has('rvedv')) {
-      const r = Calc.rvVolumeIndex(v.rvedv, v.rvesv, bsa, female);
+      const r = Calc.rvVolumeIndex(v.rvedv, v.rvesv, bsaOf('rvvol', v), female);
       if (r.error) put('rvvol', r.error);
       else {
         const parts = ['RVEDVi ' + Calc.fmt(r.edvi, 1) + ' mL/m² · ' + r.edvText];
@@ -3053,7 +3094,7 @@
       const inPvr = (pvrWu !== null) ? pvrWu : v.ripvr;
       const inSvr = (svrDyn !== null) ? svrDyn : v.risvr;
       if (has('ripvr') || has('risvr') || pvrWu !== null || svrDyn !== null) {
-        const r = Calc.resistanceIndices(inPvr, inSvr, bsa);
+        const r = Calc.resistanceIndices(inPvr, inSvr, bsaOf('residx', v));
         if (r.error) put('residx', r.error);
         else {
           const parts = [];
@@ -3150,7 +3191,7 @@
 
     // McGoon / Nakata
     if (has('prpa', 'plpa')) {
-      const r = Calc.paIndex(v.prpa, v.plpa, v.pdao, bsa);
+      const r = Calc.paIndex(v.prpa, v.plpa, v.pdao, bsaOf('paidx', v));
       if (r.error) put('paidx', r.error);
       else {
         const parts = [];
@@ -3190,7 +3231,7 @@
     // 主动脉分节段 Z 值
     if (has('azann') || has('azsin') || has('azstj') || has('azasc')) {
       const r = Calc.aorticZscore(
-        [v.azann, v.azsin, v.azstj, v.azasc], calcOpt.azsex === 'f', bsa);
+        [v.azann, v.azsin, v.azstj, v.azasc], calcOpt.azsex === 'f', bsaOf('aortaz', v));
       if (r.error) put('aortaz', r.error);
       else {
         const segTxt = r.segs.map(function (s) {
@@ -3215,8 +3256,9 @@
     }
 
     // 左心房容积指数
-    if (has('lav') && bsa > 0) {
-      const lavi = v.lav / bsa;
+    const bla = bsaOf('la', v);
+    if (has('lav') && bla > 0) {
+      const lavi = v.lav / bla;
       put('la', 'LAVi ' + Calc.fmt(lavi) + ' mL/m² · ' +
         (lavi > 34 ? '增大（>34 mL/m²，男女同阈值）' : '正常（≤34 mL/m²）'));
     } else put('la');
@@ -3613,7 +3655,7 @@
       Object.keys(v).forEach(function (k) {
         if (k.indexOf('mit_') === 0) msv[k.slice(4)] = v[k];
       });
-      const msr = ValveCalc ? ValveCalc.valveCalc('ms', msv, bsa) : { rows: [] };
+      const msr = ValveCalc ? ValveCalc.valveCalc('ms', msv, bsaOf('mitral', v)) : { rows: [] };
       if (msr.rows && msr.rows.length) {
         parts.push('狭窄 ' + rowsText(msr.rows) + ' → ' + msr.summary);
       }
@@ -3626,7 +3668,7 @@
       if (mrv.lvotD === undefined && v.mit_lvotD !== undefined) mrv.lvotD = v.mit_lvotD;
       if (mrv.lvotVti === undefined && v.mit_lvotVti !== undefined) mrv.lvotVti = v.mit_lvotVti;
       if (mrv.mvVti === undefined && v.mit_mvVti !== undefined) mrv.mvVti = v.mit_mvVti;
-      const mrr = ValveCalc ? ValveCalc.valveCalc('mr', mrv, bsa) : { rows: [] };
+      const mrr = ValveCalc ? ValveCalc.valveCalc('mr', mrv, bsaOf('mitral', v)) : { rows: [] };
       if (mrr.rows && mrr.rows.length) {
         parts.push('反流 ' + rowsText(mrr.rows) + ' → ' + mrr.summary);
       }
@@ -3676,12 +3718,12 @@
         if (k.indexOf('as_') === 0) asv[k.slice(3)] = v[k];
         else if (k.indexOf('ar_') === 0) arv[k.slice(3)] = v[k];
       });
-      const asr = ValveCalc ? ValveCalc.valveCalc('as', asv, bsa) : { rows: [] };
+      const asr = ValveCalc ? ValveCalc.valveCalc('as', asv, bsaOf('aortic', v)) : { rows: [] };
       const asVals = (asr && asr.vals) || {};
       if (asr.rows && asr.rows.length) {
         parts.push('狭窄 ' + rowsText(asr.rows) + ' → ' + asr.summary);
       }
-      const arr = ValveCalc ? ValveCalc.valveCalc('ar', arv, bsa) : { rows: [] };
+      const arr = ValveCalc ? ValveCalc.valveCalc('ar', arv, bsaOf('aortic', v)) : { rows: [] };
       if (arr.rows && arr.rows.length) {
         parts.push('反流 ' + rowsText(arr.rows) + ' → ' + arr.summary);
       }
@@ -3733,6 +3775,22 @@
       }
       put('aortic', parts.join('\n'));
     }
+    // ★ v1.13.15：各条目「本条 BSA」小标题回写换算结果（只有需要 BSA 的条目才有这一行）
+    BSA_GROUPS.forEach(function (id) {
+      const el = $('bsaLocal-' + id);
+      if (!el) return;
+      const hh = v[id + '~h'];
+      const ww = v[id + '~w'];
+      if (hh > 0 && ww > 0) {
+        el.textContent = Calc.fmt(Math.sqrt(hh * ww / 3600), 2) + ' m² · Mosteller（' +
+          hh + ' cm / ' + ww + ' kg）';
+      } else if (state.bsa > 0) {
+        el.textContent = '当前沿用「EF·参考值」页的 ' + state.bsa.toFixed(2) + ' m²；填身高体重可覆盖';
+      } else {
+        el.textContent = '填身高与体重即自动换算';
+      }
+    });
+
   }
 
   if ($('calcClear')) $('calcClear').addEventListener('click', function () {

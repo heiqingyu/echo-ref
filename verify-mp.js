@@ -1037,6 +1037,26 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('结果写入输入缓存',
     gData23.calcCache.flow && gData23.calcCache.flow.ld === '2' ? 1 : 0, 1, 0);
 
+  // —— ★ v1.13.15：本条 BSA（身高体重现算，不再挂在公式集目录页顶部）——
+  check('flow 有条目内 BSA 两行（needBsa）', pgF.data.needBsa ? 1 : 0, 1, 0);
+  check('BSA 初始为空（未覆盖时沿用「EF·参考值」页）', pgF.data.bsaH === '' ? 1 : 0, 1, 0);
+  pgF.data.bsaH = '170';
+  pgF.data.bsaW = '65';
+  pgF.refresh();
+  check('填身高体重 → 小标题显示 Mosteller 1.75 m²',
+    pgF.data.bsaSub.indexOf('1.75 m²') === 0 ? 1 : 0, 1, 0);
+  check('本条 BSA 真的参与计算（SVi 出现）', /SVi/.test(pgF.data.out) ? 1 : 0, 1, 0);
+  check('身高体重写入条目缓存',
+    gData23.calcCache.flow && gData23.calcCache.flow.__bsah === '170' ? 1 : 0, 1, 0);
+  pgF.data.bsaH = '';
+  pgF.data.bsaW = '';
+  pgF.refresh();
+  check('清空身高体重 → 小标题不再用 Mosteller（回落全局）',
+    pgF.data.bsaSub.indexOf('Mosteller') === -1 ? 1 : 0, 1, 0);
+  // 不需要 BSA 的条目不该出这两行（shunt 只看流量比）
+  pgF.onLoad({ id: 'shunt' });
+  check('shunt 不出 BSA 输入行', pgF.data.needBsa ? 0 : 1, 1, 0);
+
   // —— 右心评估详情（已合并右心压力 / PH 概率 / 右室功能）——
   pgF.onLoad({ id: 'rv' });
   check('右心评估为 brief 模式', pgF.data.mode === 'brief' ? 1 : 0, 1, 0);

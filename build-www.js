@@ -453,7 +453,7 @@ const html = `<!DOCTYPE html>
     <div id="calcIndex">
       <div class="card">
         <div class="card__t">公式集</div>
-        <div class="card__d" id="calcBsaNote">按主题分组，点击条目进入对应公式 · BSA — m²（来自「EF·参考值」页上方）</div>
+        <div class="card__d" id="calcBsaNote">按主题分组，点击条目进入对应公式；需要体表面积的条目，进入后在条目内填身高体重即可</div>
       </div>
 
       <!-- 搜索：条目较多，顶部常驻过滤（输入即筛，不再往下翻长列表） -->

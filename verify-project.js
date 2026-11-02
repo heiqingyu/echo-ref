@@ -1165,6 +1165,41 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   else bad('小程序 note 未按片段渲染（wilkins / mva / ppm 的 ** 会漏出）');
 }
 
+/* ---- ★ v1.13.15：BSA 从「目录页全局」改为「需要的条目内自填」 ---- */
+{
+  const CG = require(path.join(MP, 'utils', 'calc-groups.js'));
+  const list = CG.BSA_GROUPS || [];
+  if (list.length === 22) ok('CG.BSA_GROUPS 覆盖 22 个需要体表面积的条目');
+  else bad('CG.BSA_GROUPS 应为 22 项，实际 ' + list.length);
+
+  const need = ['flow', 'atrial', 'ef', 'ppm', 'volidx', 'aortaidx', 'paidx', 'tr', 'mitral', 'aortic'];
+  const miss = need.filter(function (id) { return list.indexOf(id) === -1; });
+  if (!miss.length) ok('BSA_GROUPS 含关键条目（flow / ppm / paidx / tr / mitral / aortic …）');
+  else bad('BSA_GROUPS 缺关键条目：' + miss.join(','));
+
+  if (list.indexOf('ebstein') === -1) ok('ebstein 不在 BSA_GROUPS（它本来就有 ebbsa 手填字段）');
+  else bad('ebstein 又加进 BSA_GROUPS 了，会和 ebbsa 字段重复');
+
+  // ★ web 端内联副本必须与小程序逐一相同（与 CALC_GROUPS 同款坑，改一处必须同改两处）
+  const webJs = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
+  const m = webJs.match(/const BSA_GROUPS = \[([\s\S]*?)\];/);
+  const webList = m ? (m[1].match(/'([\w-]+)'/g) || []).map(function (s) { return s.replace(/'/g, ''); }) : [];
+  if (JSON.stringify(webList) === JSON.stringify(list)) {
+    ok('web app.js 的 BSA_GROUPS 与小程序逐一相同（' + webList.length + ' 项）');
+  } else bad('web BSA_GROUPS 与小程序不一致：' + webList.join(',') + ' ≠ ' + list.join(','));
+
+  // 目录页不再挂全局 BSA
+  const calcWxml = fs.readFileSync(path.join(MP, 'pages', 'calculators', 'calculators.wxml'), 'utf8');
+  if (calcWxml.indexOf('BSA {{bsaText}}') === -1) ok('公式集目录页不再显示全局 BSA');
+  else bad('目录页顶部又挂回 BSA {{bsaText}}');
+
+  // web 目录说明也不许再带 BSA 数字
+  const buildWww = fs.readFileSync(path.join(ROOT, 'build-www.js'), 'utf8');
+  if (buildWww.indexOf('calcBsaNote">') !== -1 && buildWww.indexOf('BSA — m²') === -1) {
+    ok('web 公式集目录说明已去掉「BSA — m²」');
+  } else bad('web 目录说明仍带「BSA — m²」');
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {

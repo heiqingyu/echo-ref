@@ -1474,6 +1474,31 @@ function check(name, ok, detail) {
   o = await outOf('cfr');
   check('CFR 2.40 正常', /2\.40/.test(o) && /正常/.test(o), o);
 
+  // —— ★ v1.13.15：本条 BSA（需要的条目自己填身高体重，不再挂公式集目录页）——
+  await openCalc('flow');
+  const bsaParts = await c.evalJs(`(function(){
+    var box=document.querySelector('#calcGroups .card[data-g="flow"]');
+    if(!box) return '';
+    return [box.querySelector('#bsaLocal-flow')?'1':'0',
+            box.querySelector('input[data-ck="flow~h"]')?'1':'0',
+            box.querySelector('input[data-ck="flow~w"]')?'1':'0'].join('');
+  })()`);
+  check('flow 卡内有 BSA 小标题 + 身高 / 体重两行', bsaParts === '111', bsaParts);
+
+  await fillCalc('flow', 'ld', '2');
+  await fillCalc('flow', 'lvti', '20');
+  await fillCalc('flow', 'hr', '70');
+  await fillCalc('flow', 'flow~h', '170');
+  await fillCalc('flow', 'flow~w', '65');
+  await new Promise((r) => setTimeout(r, 300));
+  const bsaTxt = await c.evalJs(`(document.getElementById('bsaLocal-flow')||{}).textContent||''`);
+  check('填 170/65 → 小标题给出 Mosteller 1.75 m²', /1\.75 m²/.test(bsaTxt), bsaTxt);
+  o = await outOf('flow');
+  check('本条 BSA 真的参与计算（SVi 出现）', /SVi/.test(o), o);
+
+  const calcDesc = await c.evalJs(`(document.getElementById('calcBsaNote')||{}).textContent||''`);
+  check('公式集目录说明不再显示全局 BSA', calcDesc.indexOf('BSA') === -1, calcDesc);
+
   // 说明块（临床意义 / 参考标准 / 判读要点）应出现在计算器详情里
   const notesOk = await c.evalJs(`(function(){
     var box=document.querySelector('#calcGroups .card[data-g="flow"]');

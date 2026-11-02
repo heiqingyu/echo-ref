@@ -65,6 +65,22 @@
       </block>
     </block>
 
+    <!-- ★ v1.13.15：本条 BSA —— 只有需要的条目（calc-groups.js 的 BSA_GROUPS）才出这两行。
+         填了就地换算，不填沿用「EF·参考值」页；独立于 inputs，不参与公式字段计数。 -->
+    <block wx:if="{{needBsa}}">
+      <view class="fx-fgrp">本条 BSA<text class="fx-fgrp__sub">{{bsaSub}}</text></view>
+      <view class="field">
+        <text class="field__label">身高 / cm</text>
+        <input class="field__input" type="digit" value="{{bsaH}}" data-k="h"
+               bindinput="onBsaInput" placeholder="未填写" />
+      </view>
+      <view class="field">
+        <text class="field__label">体重 / kg</text>
+        <input class="field__input" type="digit" value="{{bsaW}}" data-k="w"
+               bindinput="onBsaInput" placeholder="未填写" />
+      </view>
+    </block>
+
     <!-- 输入框：评估页（二尖瓣 / 主动脉瓣）按「① 形态 / ② 狭窄 / ③ 反流」分段，
          item.head 为段标题项（无输入框），其余为普通数值输入 -->
     <block wx:for="{{inputs}}" wx:key="key">

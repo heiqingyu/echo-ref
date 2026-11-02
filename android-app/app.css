@@ -1784,6 +1784,18 @@ button.fx-nav__c {
 }
 .fx-fgrp:first-child { margin-top: 4px; }
 
+/* ★ v1.13.15：「本条 BSA」小标题后面的换算结果（1.75 m² · Mosteller …），
+   小一号、灰一档，可换行；flex 下必须给 min-width:0 才会收缩换行 */
+.fx-fgrp__sub {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #7b8794;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 @media (min-width: 720px) {
   .totop { right: calc(50% - 400px); }
 }
