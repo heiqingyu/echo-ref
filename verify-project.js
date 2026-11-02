@@ -195,7 +195,7 @@ const EX = require(exPath);
 if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（图像质控与规范 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rvfun,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,dse,hcm,infiltr,dcm,nc-lv,athlete,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,shd,caf,aca,alt,pht-rev,tof-pr,ebstein,dorv,dbv,asd-close,pvai,iaa,pa-origin,cor-tri,bubble,coa-echo,tga,mustard,fontan,as-switch,truncus,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 81 条（5 个分组）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rvfun,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,dse,hcm,infiltr,dcm,nc-lv,athlete,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,asd,vsd,pda,caf,aca,alt,pht-rev,tof-pr,ebstein,dorv,dbv,pvai,iaa,pa-origin,cor-tri,bubble,coa-echo,tga,mustard,fontan,as-switch,truncus,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 82 条（5 个分组；ASD / VSD / PDA 已拆为三条）');
 
 else bad('评估条目异常: ' + briefIds.join(','));
 
@@ -802,8 +802,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
       }
     });
   });
-  (bridged.length === 81) ? ok('81 个判读条目全部挂上「相关计算」桥接')
-    : bad('桥接条目数 ' + bridged.length + '（期望 81）');
+  (bridged.length === 82) ? ok('82 个判读条目全部挂上「相关计算」桥接')
+    : bad('桥接条目数 ' + bridged.length + '（期望 82）');
   bridged.every(function (b) { return b.text.indexOf('公式集 → ') !== -1; })
     ? ok('桥接文案统一指向「公式集 → 组 · 计算器」')
     : bad('桥接文案格式不一致');

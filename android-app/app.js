@@ -1617,10 +1617,10 @@
       }
     }
 
-    // ★ v1.12.8：先心组「先心病分流判读」置顶（用户指定；sec:'chd' 的计算器排其后）
+    // ★ v1.13.10：先心组「ASD / VSD / PDA」三条置顶（用户指定；sec:'chd' 的计算器排其后）
     const cSec = secs.filter(function (s) { return s.id === 'chd'; })[0];
     if (cSec) {
-      const chdHead = ['shd'].map(function (id) {
+      const chdHead = ['asd', 'vsd', 'pda'].map(function (id) {
         return cSec.items.filter(function (it) { return it.id === id; })[0];
       }).filter(Boolean);
       if (chdHead.length) {
@@ -3426,21 +3426,22 @@
       put('infiltr', partsOf(parts));
     }
 
-    // 先心病分流：Qp/Qs 分级（v1.12.8：流出道直径与 VTI 直算优先，每搏量直填仍可用）
-    {
+    // 先心病分流：Qp/Qs 分级（ASD / VSD / PDA 三条目同算法，字段键按条目前缀区分）
+    [['asd', 'a'], ['vsd', 'v'], ['pda', 'p']].forEach(function (pair) {
+      const pre = pair[1];
       let r = null, tail = '';
-      if (has('rd', 'rvti', 'ld', 'lvti')) {
-        const qs2 = Calc.strokeVolume(v.ld, v.lvti);
-        const qp2 = Calc.strokeVolume(v.rd, v.rvti);
+      if (has(pre + 'rd', pre + 'rvti', pre + 'ld', pre + 'lvti')) {
+        const qs2 = Calc.strokeVolume(v[pre + 'ld'], v[pre + 'lvti']);
+        const qp2 = Calc.strokeVolume(v[pre + 'rd'], v[pre + 'rvti']);
         if (qs2 > 0) {
           r = Calc.shuntGrade(qp2, qs2);
           tail = '（Qp ' + Calc.fmt(qp2, 1) + ' / Qs ' + Calc.fmt(qs2, 1) + ' mL）';
         }
-      } else if (has('shqp', 'shqs')) {
-        r = Calc.shuntGrade(v.shqp, v.shqs);
+      } else if (has(pre + 'qp', pre + 'qs')) {
+        r = Calc.shuntGrade(v[pre + 'qp'], v[pre + 'qs']);
       }
-      put('shd', r && r.text ? 'Qp/Qs = ' + Calc.fmt(r.ratio) + ' · ' + r.text + tail : '');
-    }
+      put(pair[0], r && r.text ? 'Qp/Qs = ' + Calc.fmt(r.ratio) + ' · ' + r.text + tail : '');
+    });
 
     // 分流性肺高压的可手术性
     {

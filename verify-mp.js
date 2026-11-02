@@ -604,7 +604,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 118 条（计算 40 + 判读 78；v1.12.8 Qp/Qs 计算器并入先心病分流判读）', nItems, 118, 0);
+  check('目录共 119 条（计算 40 + 判读 79；v1.13.10 先心分流拆为 ASD / VSD / PDA 三条）', nItems, 119, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -928,13 +928,13 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('先天性心脏病（含术后）25 条（21 判读含冠状动脉瘘、冠脉异常起源、大动脉转位、共同动脉干、右室双腔、肺静脉异位引流、主动脉弓离断、三房心 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率 4 计算器；Qp/Qs 已并入分流判读不计目录）', dirById('chd').items.length, 25, 0);
-  ['shd', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
+  check('先天性心脏病（含术后）26 条（22 判读：ASD / VSD / PDA 各一条，含冠状动脉瘘、冠脉异常起源、大动脉转位、共同动脉干、右室双腔、肺静脉异位引流、主动脉弓离断、三房心 + McGoon / CoA 压差 / 主动脉 Z 值 / 主动脉增长率 4 计算器）', dirById('chd').items.length, 26, 0);
+  ['asd', 'vsd', 'pda', 'pht-rev', 'tof-pr', 'ebstein', 'dorv'].forEach(id => {
     check('先天性心脏病含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('v1.12.8：先心组目录第一条是先心病分流判读',
-    (dirById('chd').items[0] && dirById('chd').items[0].id) === 'shd' ? 1 : 0, 1, 0);
+  check('v1.13.10：先心组目录前三条依次为 ASD / VSD / PDA',
+    dirById('chd').items.slice(0, 3).map(i => i.id).join(',') === 'asd,vsd,pda' ? 1 : 0, 1, 0);
   check('先心病合并术后 3 条（Mustard / Fontan / ASO）',
     ['mustard', 'fontan', 'as-switch'].filter(id => dirById('chd').items.some(i => i.id === id)).length, 3, 0);
   ['mustard', 'fontan', 'as-switch'].forEach(id => {
@@ -957,7 +957,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('报告与质控 2 条（已并入切面图像组）',
     dirById('views-atlas').items.filter(i => ['report-std', 'critical'].indexOf(i.id) !== -1).length, 2, 0);
   check('v1.3.18 新增 6 条均已进入目录',
-    ['dse', 'asd-close', 'coa-echo', 'ppcm', 'mimic', 'critical'].every(function (id) {
+    ['dse', 'asd', 'coa-echo', 'ppcm', 'mimic', 'critical'].every(function (id) {
       return dirs.some(s => s.items.some(i => i.id === id));
     }) ? 1 : 0, 1, 0);
   check('条目均带一句话说明', dirs.every(s => s.items.every(i => i.sub)) ? 1 : 0, 1, 0);
@@ -1397,30 +1397,30 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('RAR 0.48 → 不支持心尖保留',
     /不支持心尖保留/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
-  pgF.onLoad({ id: 'shd' });
+  pgF.onLoad({ id: 'asd' });
   pgF.onShow();
   // v1.12.8：fields 改为两段（直径/VTI 优先），实填改按 key 定位，不再依赖下标
   const setShd = function (k, val) {
     const it = pgF.data.inputs.filter(function (x) { return x.key === k; })[0];
   if (it) it.value = val;
   };
-  setShd('shqp', '6.0');
-  setShd('shqs', '3.0');
+  setShd('aqp', '6.0');
+  setShd('aqs', '3.0');
   pgF.refresh();
   check('Qp/Qs 2.0 → 大量分流',
     /Qp\/Qs = 2\.00/.test(pgF.data.out) && /大量分流/.test(pgF.data.out) ? 1 : 0, 1, 0);
-  setShd('shqp', '2.4');
+  setShd('aqp', '2.4');
   pgF.refresh();
   check('Qp/Qs 0.8 → 警惕艾森曼格',
     /艾森曼格/.test(pgF.data.out) ? 1 : 0, 1, 0);
 
-  // v1.12.8：流出道直径与 VTI 直算路径（Qp/Qs 计算器已并入 shd 条目）
-  setShd('shqp', '');
-  setShd('shqs', '');
-  setShd('rd', '2.0');
-  setShd('rvti', '40');
-  setShd('ld', '2.0');
-  setShd('lvti', '20');
+  // v1.13.10：流出道直径与 VTI 直算路径（ASD 条目，键带 a 前缀）
+  setShd('aqp', '');
+  setShd('aqs', '');
+  setShd('ard', '2.0');
+  setShd('arvti', '40');
+  setShd('ald', '2.0');
+  setShd('alvti', '20');
   pgF.refresh();
   check('Qp/Qs 直径/VTI 路径（RVOT 2.0×40 / LVOT 2.0×20）→ 2.00 大量分流，含 Qp/Qs 每搏量',
     /Qp\/Qs = 2\.00/.test(pgF.data.out) && /大量分流/.test(pgF.data.out)
@@ -1895,8 +1895,8 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('calculators 页有中英对照折叠卡（g-enalias + aliasOpen）',
     pgWxml8.indexOf('g-enalias') !== -1 && pgWxml8.indexOf('aliasOpen') !== -1 ? 1 : 0, 1, 0);
   const pgJs8 = require('fs').readFileSync(__dirname + '/miniprogram/pages/calculators/calculators.js', 'utf8');
-  check('chd 组 shd 置顶（headItems）',
-    pgJs8.indexOf("headItems(sections, 'chd', ['shd'])") !== -1 ? 1 : 0, 1, 0);
+  check('chd 组 ASD / VSD / PDA 置顶（headItems）',
+    pgJs8.indexOf("headItems(sections, 'chd', ['asd', 'vsd', 'pda'])") !== -1 ? 1 : 0, 1, 0);
   check('搜索命中自动展开中英对照（applySearch 写 aliasOpen）',
     pgJs8.indexOf('aliasOpen: aliasHit.length > 0') !== -1 ? 1 : 0, 1, 0);
   // v1.13.1：五个页面统一免责声明（formula 是核心判读页，之前反而缺）

@@ -166,8 +166,8 @@ function buildSections() {
   moveSectionFirst(sections, 'valve');
   headItems(sections, 'valve', ['mitral', 'aortic']);
 
-  // ★ v1.12.8：先心组「先心病分流判读」置顶（用户指定；sec:'chd' 的计算器排其后）
-  headItems(sections, 'chd', ['shd']);
+  // ★ v1.13.10：先心组「ASD / VSD / PDA」三条置顶（用户指定；sec:'chd' 的计算器排其后）
+  headItems(sections, 'chd', ['asd', 'vsd', 'pda']);
 
   // ★ v1.7.7：收藏组置顶（没有收藏时不出现），每条目也记一个 fav 标记给星标用
   const favs = readFavs();

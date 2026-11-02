@@ -718,18 +718,20 @@ Page({
           (r.gradLost ? ' · 梯度消失（支持浸润性病变）' : ' · 梯度保留'));
       }
       out = parts.join('；');
-    } else if (gid === 'shd') {
-      // —— 先心病分流：Qp/Qs 分级（v1.12.8：直径/VTI 直算优先，每搏量直填仍可用）——
-      if (valid(v.rd, v.rvti, v.ld, v.lvti)) {
-        const qs2 = calc.strokeVolume(v.ld, v.lvti);
-        const qp2 = calc.strokeVolume(v.rd, v.rvti);
+    } else if (gid === 'asd' || gid === 'vsd' || gid === 'pda') {
+      // —— 先心病分流：Qp/Qs 分级（三条目同一算法，字段键按条目前缀区分）——
+      //   ★ 网页的 calcVal 是全局对象，三条目若共用 rd / lvti 会互相串值，故用 a/v/p 前缀
+      const pre = gid === 'asd' ? 'a' : (gid === 'vsd' ? 'v' : 'p');
+      if (valid(v[pre + 'rd'], v[pre + 'rvti'], v[pre + 'ld'], v[pre + 'lvti'])) {
+        const qs2 = calc.strokeVolume(v[pre + 'ld'], v[pre + 'lvti']);
+        const qp2 = calc.strokeVolume(v[pre + 'rd'], v[pre + 'rvti']);
         if (qs2 > 0) {
           const r = calc.shuntGrade(qp2, qs2);
           out = r.text ? 'Qp/Qs = ' + calc.fmt(r.ratio) + ' · ' + r.text +
             '（Qp ' + calc.fmt(qp2, 1) + ' / Qs ' + calc.fmt(qs2, 1) + ' mL）' : '';
         }
-      } else if (valid(v.shqp, v.shqs)) {
-        const r = calc.shuntGrade(v.shqp, v.shqs);
+      } else if (valid(v[pre + 'qp'], v[pre + 'qs'])) {
+        const r = calc.shuntGrade(v[pre + 'qp'], v[pre + 'qs']);
         out = r.text ? 'Qp/Qs = ' + calc.fmt(r.ratio) + ' · ' + r.text : '';
       }
     } else if (gid === 'pht-rev') {
