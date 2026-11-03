@@ -195,7 +195,7 @@ const EX = require(exPath);
 if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（图像质控与规范 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rvfun,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,dse,hcm,infiltr,dcm,nc-lv,athlete,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,asd,vsd,pda,caf,aca,alt,pht-rev,tof-pr,ebstein,dorv,dbv,pvai,iaa,pa-origin,cor-tri,bubble,coa-echo,tga,mustard,fontan,as-switch,truncus,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 82 条（5 个分组；ASD / VSD / PDA 已拆为三条）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,rvfun,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,dse,hcm,infiltr,dcm,nc-lv,athlete,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,asd,vsd,pda,ped-base,caf,aca,alt,pht-rev,tof-pr,ebstein,dorv,dbv,pvai,iaa,pa-origin,cor-tri,bubble,coa-echo,tga,mustard,fontan,as-switch,truncus,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lung-us,lvad') ok('评估条目 = 83 条（5 个分组；ASD / VSD / PDA 已拆为三条；新增 ped-base 儿童超声基础）');
 
 else bad('评估条目异常: ' + briefIds.join(','));
 
@@ -248,7 +248,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 92) ok('参考文献 92 条（新增 R91《超声心动图学》第5版专著、R92 2–6 kg 婴儿 PDA 封堵队列）');
+if (EX.REFS.length === 103) ok('参考文献 103 条（新增 R91《超声心动图学》第5版专著、R92 2–6 kg 婴儿 PDA 封堵队列、R93–R103 ACC/KSE 三尖瓣决策路径、TEER 中国路径与 ASE 术中成像、TOF/DORV 共识、人工瓣多模态、儿童 TTE）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -802,8 +802,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
       }
     });
   });
-  (bridged.length === 82) ? ok('82 个判读条目全部挂上「相关计算」桥接')
-    : bad('桥接条目数 ' + bridged.length + '（期望 82）');
+  (bridged.length === 83) ? ok('83 个判读条目全部挂上「相关计算」桥接（含 v1.14.0 新增 ped-base）')
+    : bad('桥接条目数 ' + bridged.length + '（期望 83）');
   bridged.every(function (b) { return b.text.indexOf('公式集 → ') !== -1; })
     ? ok('桥接文案统一指向「公式集 → 组 · 计算器」')
     : bad('桥接文案格式不一致');
@@ -1084,7 +1084,7 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   const calcIds160 = CG160.GROUPS.map(g => g.id).concat(briefs160.map(b => b.id));
   const links160 = EX160.CALC_LINKS || {};
   const missingLinks = briefs160.filter(b => !(links160[b.id] || []).length).map(b => b.id);
-  if (!missingLinks.length) ok('81 条判读全部带「相关计算」跳转目标');
+  if (!missingLinks.length) ok('83 条判读全部带「相关计算」跳转目标');
   else bad('缺相关计算的条目：' + missingLinks.join(','));
   const badTarget = [];
   Object.keys(links160).forEach(function (k) {

@@ -631,8 +631,8 @@ function dukeScore(o) {
  * 三尖瓣反流五级分级（Hahn / TVARC）
  *
  * 按 EROA 与 RVol 各自归档后取较重的一档：
- *   轻度 <20 mm² / <30 mL；中度 20–29 / 30–44；重度 30–39 / 45–59；
- *   极重（massive）40–59 / 60–89；瀑布型（torrential）≥60 / ≥90。
+ *   轻度 <20 mm² / <30 mL；中度 20–39 / 30–44；重度 40–59 / 45–59；
+ *   极重（massive）60–79 / 60–89；瀑布型（torrential）≥80 / ≥90。
  *
  * @param {number} eroa 有效反流口面积，mm²
  * @param {number} rvol 反流量，mL
@@ -643,7 +643,7 @@ function trGrade(eroa, rvol) {
     for (let i = 0; i < cuts.length; i += 1) if (v < cuts[i]) return i;
     return cuts.length;
   };
-  const a = band(eroa, [20, 30, 40, 60]);
+  const a = band(eroa, [20, 40, 60, 80]);
   const b = band(rvol, [30, 45, 60, 90]);
   const g = Math.max(a, b);
   if (g < 0) return {};
