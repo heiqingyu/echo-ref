@@ -248,7 +248,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 106) ok('参考文献 106 条（R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性）');
+if (EX.REFS.length === 107) ok('参考文献 107 条（R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -1249,6 +1249,61 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   });
   (!dangle.length) ? ok('桥接不再指向不存在的「右房压（IVC 法）」计算器')
     : bad('桥接仍指向不存在的计算器：' + dangle.join(','));
+
+  // ── v1.14.7：R107（2026 呼吸床旁超声共识）落地的四处新增内容 ──
+  // 这几条都是从 R107 原文抄下来的具体数字，删掉就等于丢了出处，锁定。
+  const ivcTxt = JSON.stringify(ivcIt.blocks || []);
+  const rvTxt = JSON.stringify(rvIt.blocks || []);
+  const must = [
+    [ivcTxt, '3 个呼吸周期', 'IVC 测量条件含「连测 3 个呼吸周期取平均」（R107）'],
+    [ivcTxt, '1.2–1.5', 'IVC 含小潮气量下呼气末 IVCd <1.2–1.5 cm 判前负荷不足（R107）'],
+    [ivcTxt, '12–18', 'IVC 含 dIVC 分通气状态阈值 12–18% / 18%（R107）'],
+    [ivcTxt, '25 cm/s', 'IVC 含肝静脉 AR 波 >25 cm/s 提示 CVP ≥15（R107）'],
+    [rvTxt, 'D 字', '右心评估含舒张期 / 收缩期 D 字征（R107）'],
+    [rvTxt, 'LBBB', '右心评估含 D 字征的 LBBB 禁忌（R107）'],
+    [rvTxt, 'Ⅱa，C', '右心评估含机械通气只做定性目测（Ⅱa，C）'],
+  ];
+  must.forEach(function (m) {
+    m[0].indexOf(m[1]) !== -1 ? ok(m[2]) : bad('内容缺失：' + m[2]);
+  });
+  // 2×2 四格表必须完整（少一行就等于换了一套口径）
+  const grid = (ivcIt.blocks || []).filter(function (b) {
+    return b.kind === 'table' && b.heads && b.heads[0] === 'IVC 内径' && b.heads[1].indexOf('cIVC') === 0;
+  })[0];
+  const gridOk = grid && grid.rows.length === 4 && grid.rows.every(function (r) { return r.length === 3; });
+  gridOk ? ok('IVC 估 RAP 的 2×2 四格表完整（4 行 × 3 列，R107 表 3）')
+    : bad('IVC 四格表缺失或列数不对');
+  // 四格必须与引擎判法一致（不能表里写 8、引擎给 15）
+  if (gridOk) {
+    const Calc = require(path.join(MP, 'utils', 'echo-calc.js'));
+    const expect = [[21, 10, '3'], [21, 20, '8'], [24, 12, '8'], [24, 20, '15']];
+    const mism = expect.filter(function (e) {
+      const r = Calc.ivcVariation(e[0], e[1]);
+      return r.rap !== Number(e[2]);
+    });
+    (!mism.length) ? ok('四格表与 ivcVariation 判法逐格一致')
+      : bad('四格表与引擎不一致：' + JSON.stringify(mism));
+  }
+  // R107 题录：双刊发表，首发刊与转载刊都要在
+  const r107 = EX.REFS.filter(function (r) { return r.id === 'R107'; })[0];
+  (r107 && /国际呼吸杂志/.test(r107.where) && /河北医科大学学报/.test(r107.where))
+    ? ok('R107 题录含首发刊（国际呼吸杂志）与转载刊（河北医科大学学报）')
+    : bad('R107 题录不完整：' + JSON.stringify(r107 && r107.where));
+
+  // 行内解析器（web 的 mdInline / mp 的 parseInline）都不处理反引号代码标记，
+  // 写了会原样漏出——v1.14.7 曾在「四格表」说明里踩过一次。
+  const bt = String.fromCharCode(96);
+  const tick = [];
+  briefAll.forEach(function (it) {
+    (it.blocks || []).forEach(function (b) {
+      const arr = [b.text].concat(b.heads || []).concat.apply([b.text], b.rows || []);
+      arr.forEach(function (t) {
+        if (typeof t === 'string' && t.indexOf(bt) !== -1) tick.push(it.id);
+      });
+    });
+  });
+  (!tick.length) ? ok('正文无未解析的反引号（三端都不支持行内代码标记）')
+    : bad('正文出现反引号会原样显示：' + tick.join(','));
 }
 
 console.log('\n' + '='.repeat(50));
