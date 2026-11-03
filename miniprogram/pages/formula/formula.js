@@ -96,6 +96,19 @@ function toBlocks(blocks) {
     const o = { kind: b.kind, text: b.text, warn: !!b.warn };
     // 行内标记：**加粗** 拆成片段，渲染时用 <text class="fx-b"> 包裹
     o.segs = MD.parseInline(b.text);
+    // ★ v1.14.2：长段落自动切段（与网页/APK 共用 EX.paraSplit）。
+    //   此前 100–560 字的正文一次性连排，手机上就是一堵墙（用户 2026-11-03 反馈）。
+    if (b.kind === 'text' && EX.paraSplit) {
+      o.paras = EX.paraSplit(b.text).map(function (p) {
+        return { segs: MD.parseInline(p), hang: EX.isHangPara ? EX.isHangPara(p) : false };
+      });
+    }
+    // ★ v1.14.2：长 note 同样切段（色块里的长段落比正文更闷）
+    if (b.kind === 'note' && EX.paraSplit) {
+      o.paras = EX.paraSplit(b.text).map(function (p) {
+        return { segs: MD.parseInline(p), hang: false };
+      });
+    }
     // 小节标题带锚点序号，供小节导航跳转（id="sec-N"）
     if (b.kind === 'h') {
       secIdx += 1;
@@ -129,7 +142,10 @@ function buildToc(blocks) {
   const hs = (blocks || []).filter(function (b) { return b.kind === 'h'; });
   if (hs.length < 2) return [];
   return hs.map(function (b, i) {
-    return { id: 'sec-' + i, t: String(b.text || '').replace(/\*\*/g, '') };
+    const full = String(b.text || '').replace(/\*\*/g, '');
+    // ★ v1.14.2：胶囊只显示「序号 + 主标题」，冒号后的副标题剪掉（与网页同策略）。
+    //   16 节的条目原来每个胶囊折两行，整块占掉半屏。
+    return { id: 'sec-' + i, t: full.split(/[：:]/)[0] || full };
   });
 }
 

@@ -45,8 +45,16 @@
 
         <block wx:elif="{{b.kind === 'note'}}">
           <view class="fx-note">
-            <text wx:for="{{b.segs}}" wx:key="index" wx:for-item="sg"
-                  class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
+            <block wx:if="{{b.paras.length}}">
+              <view wx:for="{{b.paras}}" wx:key="index" wx:for-item="p" class="fx-np">
+                <text wx:for="{{p.segs}}" wx:key="index" wx:for-item="sg"
+                      class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
+              </view>
+            </block>
+            <block wx:else>
+              <text wx:for="{{b.segs}}" wx:key="index" wx:for-item="sg"
+                    class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
+            </block>
           </view>
           <!-- 相关计算：点了直接进对应计算器，性别与 BSA 由 profile 自带 -->
           <view wx:if="{{b.links.length}}" class="chiprow">
@@ -59,8 +67,17 @@
                 class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
         </view>
         <view wx:else class="fx-text">
-          <text wx:for="{{b.segs}}" wx:key="index" wx:for-item="sg"
-                class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
+          <block wx:if="{{b.paras.length}}">
+            <view wx:for="{{b.paras}}" wx:key="index" wx:for-item="p"
+                  class="fx-p {{p.hang ? 'fx-p--hang' : ''}}">
+              <text wx:for="{{p.segs}}" wx:key="index" wx:for-item="sg"
+                    class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
+            </view>
+          </block>
+          <block wx:else>
+            <text wx:for="{{b.segs}}" wx:key="index" wx:for-item="sg"
+                  class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
+          </block>
         </view>
       </block>
     </block>

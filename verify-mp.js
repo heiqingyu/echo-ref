@@ -998,8 +998,12 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     fxWxss.indexOf('.fx-nav--scroll {') === -1 ? 1 : 0, 1, 0);
   const mpNavAt = fxWxss.indexOf('.fx-nav__c {');
   const mpNavCss = mpNavAt === -1 ? '' : fxWxss.slice(mpNavAt, fxWxss.indexOf('}', mpNavAt));
-  check('小节胶囊允许折行（white-space: normal，不撑出横向滚动）',
-    mpNavCss.indexOf('white-space: normal') !== -1 ? 1 : 0, 1, 0);
+  // ★ v1.14.2：胶囊策略从「允许折行」改成「限宽 47% + 单行省略」。
+  //   两者都保证不撑出横向滚动，但后者让 16 节的条目不再占掉半屏。
+  check('小节胶囊限宽单行省略（max-width + overflow hidden，不撑出横向滚动）',
+    mpNavCss.indexOf('max-width: 47%') !== -1 &&
+    mpNavCss.indexOf('overflow: hidden') !== -1 &&
+    mpNavCss.indexOf('text-overflow: ellipsis') !== -1 ? 1 : 0, 1, 0);
 
   // 跳转
   pgA.onOpen({ currentTarget: { dataset: { kind: 'calc', id: 'bernoulli' } } });

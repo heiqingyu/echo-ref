@@ -99,7 +99,8 @@ check('缺 A 不算 E/A', d2.ea === undefined ? 'skip' : 'bad', 'skip');
 
 console.log('=== 12. PASP / RAP 分级 ===');
 check('PASP 4×3²+8 = 44', C.pasp(3.0, 8), 44, 1e-9);
-check('PASP 35 正常', C.paspGrade(35).level, 0);
+check('PASP 34 正常（2025 ASE 上限）', C.paspGrade(34).level, 0);
+check('PASP 35 轻度（2025 ASE 口径；传统 ≤36 算正常，只差 RAP 取 3 还是 5）', C.paspGrade(35).level, 1);
 check('PASP 45 轻度', C.paspGrade(45).level, 1);
 check('PASP 60 中度', C.paspGrade(60).level, 2);
 check('PASP 75 重度', C.paspGrade(75).level, 3);

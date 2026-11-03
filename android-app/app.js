@@ -598,7 +598,7 @@
       fields: [['pp_ivc', 'IVC 内径（估 RAP）', 'mm'], ['pp_rap', '右房压 RAP（可选，填了优先）', 'mmHg'],
         ['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pr', 'PR 舒张末期流速（可选）', 'm/s'],
         ['pp_rvotat', 'RVOT 加速时间（可选）', 'ms']],
-      note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
+      note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
     { id: 'shunt', dirHide: true, title: 'Qp/Qs 肺体循环血流比',
       // ★ v1.12.8：已并入「先心病分流判读」条目（同键输入互相同步），目录不再单列（硬坑 31）
       fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm'],
@@ -1089,7 +1089,12 @@
         return;
       }
       if (b.kind === 'note') {
-        h += '<div class="fx-note">' + mdInline(b.text) + '</div>';
+        // ★ v1.14.2：长 note 也切段（32 条超过 150 字，最长 251 字，压在色块里更难读）
+        const _NED = window.ExtraData || {};
+        const _nps = (_NED.paraSplit ? _NED.paraSplit(b.text) : [b.text]);
+        h += '<div class="fx-note">';
+        _nps.forEach(function (p) { h += '<div class="fx-np">' + mdInline(p) + '</div>'; });
+        h += '</div>';
         if (b.links && b.links.length) {
           h += '<div class="chiprow">';
           b.links.forEach(function (id) {
@@ -1119,7 +1124,16 @@
         h += '</div>';
         return;
       }
-      h += '<div class="fx-text">' + mdInline(b.text) + '</div>';
+      // ★ v1.14.2：长段落自动切段。此前 100–560 字的正文全部一次性连排，
+      //   手机上就是一堵墙（用户 2026-11-03 反馈「文字多的地方很挤」）。
+      const _ED = window.ExtraData || {};
+      const _paras = (_ED.paraSplit ? _ED.paraSplit(b.text) : [b.text]);
+      h += '<div class="fx-text">';
+      _paras.forEach(function (p) {
+        const hang = _ED.isHangPara ? _ED.isHangPara(p) : false;
+        h += '<div class="fx-p' + (hang ? ' fx-p--hang' : '') + '">' + mdInline(p) + '</div>';
+      });
+      h += '</div>';
     });
     return { html: h, toc: toc };
   }
@@ -1159,7 +1173,12 @@
       //   preventDefault 已经来不及 —— hashchange 被视图栈当成未知路由，
       //   parseHash 返回 null → leaveView()，界面被打回公式集目录。
       //   与 v1.6.6 组名跳转条踩的是同一个坑。
-      h += '<button type="button" class="fx-nav__c" data-sec="' + s.id + '">' + esc(s.t) + '</button>';
+      // ★ v1.14.2：胶囊只显示「序号 + 主标题」，冒号后的副标题剪掉。
+      //   完整标题在 title 里，正文顶部本来也有；不剪的话 16 节的条目
+      //   每个胶囊折两行、整块占掉半屏（用户 2026-11-03 反馈「排版很乱」）。
+      const full = String(s.t || '');
+      const short = full.split(/[：:]/)[0] || full;
+      h += '<button type="button" class="fx-nav__c" title="' + esc(full) + '" data-sec="' + s.id + '">' + esc(short) + '</button>';
     });
     return h + '</div>';
   }

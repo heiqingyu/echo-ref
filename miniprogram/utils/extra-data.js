@@ -965,11 +965,13 @@ const BRIEF_SECTIONS = [
           { kind: 'h', text: '室壁厚度与质量指数分级' },
           {
             kind: 'table',
-            heads: ['指标', '正常', '轻度', '中度', '重度', '极重度'],
+            // ★ 2026-11-03：原 6 列（正常/轻/中/重/极重）在手机上每列不足 60px，
+            //   挤成竖排单字。改为 3 列，异常四档按「轻 / 中 / 重 / 极重」顺序写在同格。
+            heads: ['指标', '正常', '异常分级（轻 / 中 / 重 / 极重）'],
             rows: [
-              ['LVMI 男（g/m²）', '≤115', '116–131', '132–149', '150–170', '>170'],
-              ['LVMI 女（g/m²）', '≤95', '96–108', '109–122', '123–139', '>139'],
-              ['室间隔（mm）', '≤11', '11–12', '12–13', '13–14', '≥15'],
+              ['LVMI 男（g/m²）', '≤115', '116–131 / 132–149 / 150–170 / >170'],
+              ['LVMI 女（g/m²）', '≤95', '96–108 / 109–122 / 123–139 / >139'],
+              ['室间隔（mm）', '≤11', '11–12 / 12–13 / 13–14 / ≥15'],
             ],
           },
           { kind: 'text', text: '相对室壁厚度 RWT =（室间隔厚度 + 后壁厚度）÷ 2 ÷ 左室舒张末内径。RWT > 0.42 提示向心性肥厚，≤0.42 提示离心性重构。' },
@@ -1112,7 +1114,7 @@ const BRIEF_SECTIONS = [
               ['≥3.4', '≥46', '≥54 mmHg（≥中度）'],
             ],
           },
-          { kind: 'text', text: '第三列按中等档 RAP 8 mmHg 折算：RAP 估 3 时每档减 5、估 15 时加 7——**先定 RAP 再定级**。正式分级按 sPAP 多普勒：≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重（以《肺动脉压 · 肺高压评估》为准）。' },
+          { kind: 'text', text: '第三列按中等档 RAP 8 mmHg 折算：RAP 估 3 时每档减 5、估 15 时加 7——**先定 RAP 再定级**。正式分级按 sPAP 多普勒（2025 ASE）：≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重；传统口径把正常上限写到 ≤36，差别只是 RAP 取 3 还是 5（以《肺动脉压 · 肺高压评估》为准）。' },
           { kind: 'text', text: '同样 2.8–3.4 m/s 的 TR 峰速，在活动、年轻、低流量人群中多属生理性；需结合是否存在右心扩大、功能下降等结构性改变再判定。' },
           { kind: 'note', text: '**别和「PASP >50 = 重度肺高压」混为一谈**：二尖瓣狭窄里常把 PASP >50 mmHg 单独作为「已达重度肺高压后果、介入理由强」的尺度，那是 MS 特异的介入指征尺度；而上面 sPAP 多普勒分级里 50–69 仍属「中度」。两个尺度用途不同，报告里写明用的是哪一种。', warn: true },
 
@@ -1965,10 +1967,12 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '典型存活心肌呈**双相反应**：小剂量时收缩改善，剂量继续加大会再次变差（因为真正缺血的区域被激发）。只有"持续改善"也提示存活；"始终不动"提示透壁瘢痕；"一开始就更差"是缺血反应而非存活证据。' },
           { kind: 'note', text: '瘢痕区旁的正常心肌在低剂量被过度牵拉时，也可能出现"看起来改善"的假象。判读存活心肌要在**同一节段、同一壁层**追踪，并优先看收缩期增厚率而不只是位移。', warn: true },
           { kind: 'h', text: '三、低流速低梯度 AS：DSE 的第二主战场' },
-          { kind: 'table', heads: ['类型', '静息 AVA', '平均压差', '每搏输出量指数', 'DSE 后 AVA'], rows: [
-            ['真性重度 AS', '≤1.0 cm²', '<40 mmHg', '<35 mL/m²', '仍 ≤1.0，压差随流量升高'],
-            ['假性重度 AS', '≤1.0 cm²', '<40 mmHg', '<35 mL/m²', '升至 >1.0（常 >1.2）'],
-            ['无收缩储备', '≤1.0 cm²', '<40 mmHg', '<35 mL/m²', '每搏输出量增加 <20%，预后差'],
+          { kind: 'text', text: '三类患者的**静息条件完全相同**：AVA ≤1.0 cm²、平均压差 <40 mmHg、每搏输出量指数 <35 mL/m²。区别只在负荷之后。' },
+          // ★ 2026-11-03：原 5 列里前三列三类取值完全一样（纯冗余），合并成 3 列，把版面留给结论。
+          { kind: 'table', heads: ['类型', 'DSE 后 AVA / 储备', '含义'], rows: [
+            ['真性重度 AS', '仍 ≤1.0，压差随流量升高', '瓣口确实固定，换瓣获益明确'],
+            ['假性重度 AS', '升至 >1.0（常 >1.2）', '狭窄被低流量夸大，换瓣获益有限'],
+            ['无收缩储备', '每搏输出量增加 <20%', '心肌本身已衰竭，预后差'],
           ] },
           { kind: 'text', text: '这一档患者的关键不是"瓣口多大"，而是**瓣口在流量增加时会不会扩张**：会扩张说明狭窄程度被低流量夸大了（假性重度），这类患者换瓣获益有限；不扩张、压差随流量上升才是真性重度。' },
           { kind: 'h', text: '四、终止指征与禁忌' },
@@ -5438,15 +5442,17 @@ const BRIEF_SECTIONS = [
 
           { kind: 'h', text: '二（补）、新解剖分型：3 对要素 + 8 亚型（中国超声共识 R100）' },
           { kind: 'text', text: '阜外提出按 3 对要素描述即可明确分型：① 主—肺动脉空间位置关系（AN 正常螺旋 / AA 异常平行）；② VSD 与两大动脉的位置关系（VSD‑C 动脉相关 / VSD‑N 不相关）；③ 是否合并肺动脉口梗阻（POTO 梗阻 / PH 高压）[R100]。' },
-          { kind: 'table', heads: ['型', '大动脉关系', 'VSD 与动脉关系', '肺动脉口', '国际对应', '主要术式[R100]'], rows: [
-            ['I', 'AN 正常', 'VSD‑C（主动脉瓣下）', 'PH 高压', '室间隔缺损型', 'IVT‑AO（室缺→主动脉内隧道）'],
-            ['II', 'AN 正常', 'VSD‑C（主动脉瓣下）', 'POTO 梗阻', '法洛四联症型', 'IVT‑AO + 疏通 POTO'],
-            ['III', 'AN 正常', 'VSD‑N（远离）', 'PH 高压', '远离型', 'Long IVT‑AO；约 1/3 无法连接，不能解剖根治'],
-            ['IV', 'AN 正常', 'VSD‑N（远离）', 'POTO 梗阻', '远离型', 'Long IVT‑AO + 疏通 POTO；无法连接则 Fontan'],
-            ['V', 'AA 异常', 'VSD‑C（肺动脉瓣下）', 'PH 高压', 'Taussig‑Bing', '大动脉调转 + IVT‑AO（调转后肺动脉）'],
-            ['VI', 'AA 异常', 'VSD‑C（肺动脉瓣下）', 'POTO 梗阻', '—', 'DRT/Nikaidoh；VSD 亦可连主动脉则 Rastelli/Rev'],
-            ['VII', 'AA 异常', 'VSD‑N（远离）', 'PH 高压', '—', '大动脉调转 + Long IVT‑AO；无法连接同 III 型'],
-            ['VIII', 'AA 异常', 'VSD‑N（远离）', 'POTO 梗阻', '—', 'DRT + Long IVT‑AO；可连主动脉则 Rastelli，否则 Fontan'],
+          // ★ 2026-11-03：原 6 列（型/大动脉/VSD/肺动脉口/国际对应/术式）在手机上挤到看不清，
+          //   把「国际对应」并入「型」列、「VSD」与「肺动脉口」合并，压到 4 列。
+          { kind: 'table', heads: ['型（国际对应）', '大动脉关系', 'VSD 与肺动脉口', '主要术式[R100]'], rows: [
+            ['Ⅰ（室间隔缺损型）', 'AN 正常', 'VSD‑C（主动脉瓣下）· PH 高压', 'IVT‑AO（室缺→主动脉内隧道）'],
+            ['Ⅱ（法洛四联症型）', 'AN 正常', 'VSD‑C（主动脉瓣下）· POTO 梗阻', 'IVT‑AO + 疏通 POTO'],
+            ['Ⅲ（远离型）', 'AN 正常', 'VSD‑N（远离）· PH 高压', 'Long IVT‑AO；约 1/3 无法连接，不能解剖根治'],
+            ['Ⅳ（远离型）', 'AN 正常', 'VSD‑N（远离）· POTO 梗阻', 'Long IVT‑AO + 疏通 POTO；无法连接则 Fontan'],
+            ['Ⅴ（Taussig‑Bing）', 'AA 异常', 'VSD‑C（肺动脉瓣下）· PH 高压', '大动脉调转 + IVT‑AO（调转后肺动脉）'],
+            ['Ⅵ', 'AA 异常', 'VSD‑C（肺动脉瓣下）· POTO 梗阻', 'DRT/Nikaidoh；VSD 亦可连主动脉则 Rastelli/Rev'],
+            ['Ⅶ', 'AA 异常', 'VSD‑N（远离）· PH 高压', '大动脉调转 + Long IVT‑AO；无法连接同 Ⅲ 型'],
+            ['Ⅷ', 'AA 异常', 'VSD‑N（远离）· POTO 梗阻', 'DRT + Long IVT‑AO；可连主动脉则 Rastelli，否则 Fontan'],
           ] },
           { kind: 'text', text: 'VSD‑C＝动脉相关型（缺损紧邻 / 靠近某大动脉，外科易经补片将该动脉连至左室）；VSD‑N＝不相关型（远离两大动脉，需重建长左室流出道，部分无法建立通畅连接）[R100]。双动脉下 VSD 归入 VSD‑C，再按 3 要素分 8 型即可，不单列[R100]。' },
           { kind: 'text', text: '能否双心室根治取决于 VSD 能否与两大动脉中任一支建立连接（VSD‑C 易；VSD‑N 需 Long IVT‑AO，部分不可行）[R100]。VSD 无法与主动脉建立连接者走 Fontan 类姑息；<6 个月患儿可肺动脉环缩降肺压、二期再评估[R100]。合并 POTO 且肺动脉发育差（McGoon 比 <1.2）者不能一期根治，先促肺发育姑息、待足够宽再二期根治[R100]。' },
@@ -9740,6 +9746,140 @@ function enAliasMatch(q) {
 }
 
 /**
+ * 长段落 → 短段落（v1.14.2，三端共用）
+ *
+ * ★ 起因：用户 2026-11-03 反馈「文字多的地方很挤，排版很乱」。
+ *   排查发现 775 个正文 text 块里，317 块在 120–249 字、14 块 250–399 字、
+ *   最长 563 字，全部**一次性连排**成一个 <div>（行高 1.65、无段间距）——
+ *   手机上就是一堵墙。数据本身没错，是**排版缺了分段的层次**。
+ *
+ * ★ 所以不逐条手改内容（会漏、会破坏医学术语），而是在渲染层统一切段：
+ *   ① 显式 `\n` 仍优先（作者手写的换行必须尊重）；
+ *   ② 出现 ≥2 个 ①②③ 枚举 → 每项独立成段（这类几乎都是并列清单）；
+ *   ③ 否则按「。」「！」「？」聚合成 55–80 字的自然段；
+ *   ④ 单句仍 >90 字 → 再按「；」拆（并列的定量口径适合一行一条）。
+ *
+ * ★ 安全约束：断点处**不加任何字符**，段间拼接后与原文完全一致（verify 的文本检索断言不受影响）；
+ *   且只在 `**` 计数为偶数的位置断，避免粗体标记被切到两段里各漏一半。
+ */
+var ENUM_MARKS = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
+
+/** 位置 pos 之前出现的 `**` 是否为奇数（奇数＝在粗体内部，不能断） */
+function boldOpenAt(s, pos) {
+  var n = 0;
+  for (var i = 0; i + 1 < pos; i++) {
+    if (s.charAt(i) === '*' && s.charAt(i + 1) === '*') { n++; i++; }
+  }
+  return n % 2 === 1;
+}
+
+/** 按分隔符切，但跳过粗体内部 / 括号内部的切点 */
+function safeSplit(s, sep) {
+  var out = [], last = 0, depth = 0;
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charAt(i);
+    if (c === '（' || c === '(') depth++;
+    else if ((c === '）' || c === ')') && depth > 0) depth--;
+    if (c !== sep) continue;
+    if (depth > 0) continue;
+    if (boldOpenAt(s, i)) continue;
+    var piece = s.slice(last, i + 1).trim();
+    if (piece) out.push(piece);
+    last = i + 1;
+  }
+  var tail = s.slice(last).trim();
+  if (tail) out.push(tail);
+  return out;
+}
+
+/** 把碎片聚合回 60–85 字的自然段（分号/逗号切出来的碎片太短，连着读更自然） */
+function reglue(pieces, limit) {
+  var out = [], acc = '';
+  for (var i = 0; i < pieces.length; i++) {
+    var x = pieces[i];
+    if (acc && (acc.length + x.length) > limit) { out.push(acc); acc = ''; }
+    acc += x;
+  }
+  if (acc) out.push(acc);
+  return out;
+}
+
+/** 该段是否以枚举符号起头（渲染时给悬挂缩进） */
+function isHangPara(s) {
+  if (!s) return false;
+  if (ENUM_MARKS.indexOf(s.charAt(0)) !== -1) return true;
+  return /^\d+[.、)）]/.test(s);
+}
+
+function paraSplit(t) {
+  var s = String(t == null ? '' : t);
+  if (!s) return [];
+  var out = [];
+
+  s.split(/\n/).forEach(function (line) {
+    var p = line.trim();
+    if (!p) return;
+    if (p.length <= 55) { out.push(p); return; }
+
+    // ② 枚举清单：从第二个序号起断开，每项一段（括号内的序号不切）
+    var idxs = [], dep = 0;
+    for (var i = 0; i < p.length; i++) {
+      var _c = p.charAt(i);
+      if (_c === '（' || _c === '(') dep++;
+      else if ((_c === '）' || _c === ')') && dep > 0) dep--;
+      if (ENUM_MARKS.indexOf(_c) !== -1 && dep === 0 && !boldOpenAt(p, i)) idxs.push(i);
+    }
+    if (idxs.length >= 2) {
+      var start = 0;
+      for (var k = 1; k < idxs.length; k++) {
+        out.push(p.slice(start, idxs[k]).trim());
+        start = idxs[k];
+      }
+      out.push(p.slice(start).trim());
+      return;
+    }
+
+    // ③ 按句末标点切句 → 聚合成自然段
+    var sents = [], buf = '';
+    for (var j = 0; j < p.length; j++) {
+      var ch = p.charAt(j);
+      buf += ch;
+      if (ch === '*' && p.charAt(j + 1) === '*') { buf += '*'; j++; continue; }
+      if ((ch === '。' || ch === '！' || ch === '？') && !boldOpenAt(p, j)) {
+        sents.push(buf); buf = '';
+      }
+    }
+    if (buf) sents.push(buf);
+
+    var cur = '';
+    for (var q = 0; q < sents.length; q++) {
+      var one = sents[q];
+      if (one.length > 90) {
+        if (cur) { out.push(cur); cur = ''; }
+        // 长主句（没有句号可断）→ 按分号拆，再聚合回 60–85 字；仍超长再退到逗号
+        var pieces = safeSplit(one, '；');
+        if (pieces.length === 1) pieces = safeSplit(one, '，');
+        reglue(pieces, 85).forEach(function (x) { out.push(x); });
+        continue;
+      }
+      if (cur && (cur.length + one.length) > 80) { out.push(cur); cur = ''; }
+      cur += one;
+    }
+    if (cur) out.push(cur);
+  });
+
+  // ④ 兜底：极少数「必须写明：A、B、C、D…」式长顿号列举，按顿号再切一层
+  var fin = [];
+  out.forEach(function (p) {
+    if (p.length <= 110) { fin.push(p); return; }
+    if ((p.match(/、/g) || []).length < 4) { fin.push(p); return; }
+    reglue(safeSplit(p, '、'), 62).forEach(function (x) { fin.push(x); });
+  });
+
+  return fin.filter(function (x) { return !!x; });
+}
+
+/**
  * 计算类条目 → 参考来源（v1.13.8）
  *
  * ★ 为什么单独一张表：计算器组（calc-groups.js）只有字段和公式、没有 source 字段，
@@ -9799,6 +9939,8 @@ module.exports = {
   ABBR: ABBR,
   EN_ALIAS: EN_ALIAS,
   enAliasMatch: enAliasMatch,
+  paraSplit: paraSplit,
+  isHangPara: isHangPara,
   SEARCH_KW: SEARCH_KW,
   kwOf: kwOf,
   abbrHits: abbrHits,

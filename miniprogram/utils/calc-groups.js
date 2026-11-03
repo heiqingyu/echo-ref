@@ -105,7 +105,7 @@ const GROUPS = [
       { k: 'pp_pr', n: 'PR 舒张末期流速（可选）', u: 'm/s', opt: true },
       { k: 'pp_rvotat', n: 'RVOT 加速时间（可选）', u: 'ms', opt: true },
     ],
-    note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5，>10 提示升高）。sPAP = 4 × TR Vmax² + RAP（≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）',
+    note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5，>10 提示升高）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）',
   },
   {
     id: 'shunt',

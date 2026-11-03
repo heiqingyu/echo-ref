@@ -680,11 +680,28 @@ html, body {
   line-height: 1.4;
 }
 
+/* ★ v1.14.2：正文按自然段切分后，行高与段间距决定「能不能读下去」。
+   旧版 13px/1.65 且整段连排，一屏 200 字没有换气点（用户 2026-11-03 反馈）。 */
 .fx-text {
-  font-size: 13px;
+  font-size: 13.5px;
   color: #374151;
-  line-height: 1.65;
-  margin: 7px 0;
+  line-height: 1.78;
+  margin: 9px 0 12px;
+}
+
+.fx-text .fx-p {
+  margin: 0 0 9px;
+  line-height: 1.78;
+}
+
+.fx-text .fx-p:last-child {
+  margin-bottom: 0;
+}
+
+/* ①②③ / 1. 这类并列项：首行顶格、续行缩进（悬挂缩进），一眼能看出是清单 */
+.fx-text .fx-p--hang {
+  padding-left: 1.5em;
+  text-indent: -1.5em;
 }
 
 .fx-note {
@@ -696,6 +713,16 @@ html, body {
   padding: 9px 11px;
   margin: 9px 0;
   line-height: 1.6;
+}
+
+/* ★ v1.14.2：色块里的长 note 也分段，段间距比正文略紧（色块本身已有边界） */
+.fx-note .fx-np {
+  margin: 0 0 6px;
+  line-height: 1.72;
+}
+
+.fx-note .fx-np:last-child {
+  margin-bottom: 0;
 }
 
 .fx-formula {
@@ -750,6 +777,29 @@ html, body {
 .fx-tbl--5 .fx-tbl__c:first-child {
   font-weight: 500;
   color: #374151;
+}
+
+/* ★ v1.14.2：5 列表格（如「心脏肿瘤鉴别」的 4 诊断矩阵）在 375px 屏上
+   每列只剩 ~70px，必须压字号 + 收首列，否则一格里只排得下 3 个字。 */
+.fx-tbl--5 .fx-tbl__c {
+  padding: 6px 6px;
+  font-size: 11.5px;
+  line-height: 1.42;
+}
+
+.fx-tbl--5 .fx-tbl__c:first-child {
+  flex: 0 0 17%;
+}
+
+/* 6 列只作兜底（内容已尽量压到 ≤4 列，正常不应出现） */
+.fx-tbl--6 .fx-tbl__c {
+  padding: 5px 5px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.fx-tbl--6 .fx-tbl__c:first-child {
+  flex: 0 0 14%;
 }
 
 /* ── 参考文献 ── */
@@ -1618,6 +1668,11 @@ button.fx-nav__c {
 
 .fx-nav__c {
   flex: none;
+  /* ★ v1.14.2：小节胶囊限宽 47% 单行显示。
+     二尖瓣 / 先心这类 16 节的条目，长标题会把胶囊折成两行、整块占掉半屏，
+     一眼看上去就是「一团标签」。截断后每行最多两个、每个一行，高度减半；
+     完整名称放在 title 里（桌面悬停可看），点进去正文也有完整小标题。 */
+  max-width: 47%;
   padding: 5px 11px;
   font-size: 11px;
   color: var(--sub);
@@ -1625,6 +1680,8 @@ button.fx-nav__c {
   border-radius: 999px;
   text-decoration: none;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fx-nav__c:active,
@@ -1656,11 +1713,13 @@ button.fx-nav__c {
   color: var(--brand);
   background: var(--brand-soft);
   border: 1px solid #dbe6ff;
-  /* 极长的小节名（如「十三、原发 MR 的干预时机：两层推荐」）在 360px 窄屏上放不下时
-     在胶囊内部折行，别撑出横向滚动条 */
-  white-space: normal;
-  word-break: break-word;
-  max-width: 100%;
+  /* ★ v1.14.2：限宽 47% + 单行省略（与 .fx-nav__c 同策略）。
+     以前这里是 white-space: normal 让超长小节名折行，结果 16 节的条目
+     整块胶囊区占掉半屏。现在每行最多两个、每个一行，高度减半。 */
+  max-width: 47%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fx-nav--sec .fx-nav__c:hover,
@@ -2180,7 +2239,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.14.1</div>
+    <div class="verline">心脏超声参考值 · v1.14.2</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2238,7 +2297,7 @@ button.fx-nav__c {
         <div id="aliasList" hidden></div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.14.1</div>
+      <div class="verline">心脏超声参考值 · v1.14.2</div>
       <div class="note note--warn">
         公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
@@ -5229,9 +5288,7 @@ function mpap(prv, rap) {
   const m = 4 * prv * prv + rap;
   return {
     mpap: m,
-    text: m > 25 ? '升高（>25 mmHg，符合肺高压）'
-      : m > 20 ? '轻度升高（20–25 mmHg，运动性肺高压区间）'
-        : '正常（≤20 mmHg）',
+    text: m > 20 ? '升高（>20 mmHg，符合肺高压）' : '正常（≤20 mmHg）',
   };
 }
 
@@ -5634,18 +5691,21 @@ function ebsteinIndex(disp, bsa) {
 /**
  * PASP 分级（mmHg）
  *
- * 切点取自 ASE 右心评估与 ESC/ERS 肺高压指南的常用分层：
- *   ≤36 正常（对应 TR Vmax ≤2.8 m/s）
- *   37–49 轻度升高
+ * ★ 2026-11-03 调整：切点改按 **2025 ASE 右心指南（R5）**，与旧版「≤36 正常」差 2 mmHg：
+ *   ≤34 正常（RVSP 正常上限）
+ *   35–49 轻度升高
  *   50–69 中度升高
  *   ≥70 重度升高
+ * 34 与 36 的差别只是 RAP 取 3 还是 5：4×2.8² = 31.4，+3 → 34、+5 → 36，
+ * 同一个公式的取整差异，不是两种病变。报告里注明用的是哪套口径即可。
+ * 中国指南与 ESC/ERS 2022 都不设 sPAP 轻中重，只给 mPAP >20 + PVR >2 WU 的诊断线。
  * 注意：PASP 依赖 TR 压差 + RAP 估算，TR 频谱不完整时误差大；
  * 肺动脉瓣狭窄 / RVOT 梗阻时 4V²+RAP 会高估。
  */
 function paspGrade(v) {
   if (!(v > 0)) return {};
-  if (v <= 36) return { level: 0, text: '正常（≤36 mmHg）' };
-  if (v < 50) return { level: 1, text: '轻度升高（37–49 mmHg）' };
+  if (v <= 34) return { level: 0, text: '正常（≤34 mmHg）' };
+  if (v < 50) return { level: 1, text: '轻度升高（35–49 mmHg）' };
   if (v < 70) return { level: 2, text: '中度升高（50–69 mmHg）' };
   return { level: 3, text: '重度升高（≥70 mmHg）' };
 }
@@ -10493,11 +10553,13 @@ const BRIEF_SECTIONS = [
           { kind: 'h', text: '室壁厚度与质量指数分级' },
           {
             kind: 'table',
-            heads: ['指标', '正常', '轻度', '中度', '重度', '极重度'],
+            // ★ 2026-11-03：原 6 列（正常/轻/中/重/极重）在手机上每列不足 60px，
+            //   挤成竖排单字。改为 3 列，异常四档按「轻 / 中 / 重 / 极重」顺序写在同格。
+            heads: ['指标', '正常', '异常分级（轻 / 中 / 重 / 极重）'],
             rows: [
-              ['LVMI 男（g/m²）', '≤115', '116–131', '132–149', '150–170', '>170'],
-              ['LVMI 女（g/m²）', '≤95', '96–108', '109–122', '123–139', '>139'],
-              ['室间隔（mm）', '≤11', '11–12', '12–13', '13–14', '≥15'],
+              ['LVMI 男（g/m²）', '≤115', '116–131 / 132–149 / 150–170 / >170'],
+              ['LVMI 女（g/m²）', '≤95', '96–108 / 109–122 / 123–139 / >139'],
+              ['室间隔（mm）', '≤11', '11–12 / 12–13 / 13–14 / ≥15'],
             ],
           },
           { kind: 'text', text: '相对室壁厚度 RWT =（室间隔厚度 + 后壁厚度）÷ 2 ÷ 左室舒张末内径。RWT > 0.42 提示向心性肥厚，≤0.42 提示离心性重构。' },
@@ -10640,7 +10702,7 @@ const BRIEF_SECTIONS = [
               ['≥3.4', '≥46', '≥54 mmHg（≥中度）'],
             ],
           },
-          { kind: 'text', text: '第三列按中等档 RAP 8 mmHg 折算：RAP 估 3 时每档减 5、估 15 时加 7——**先定 RAP 再定级**。正式分级按 sPAP 多普勒：≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重（以《肺动脉压 · 肺高压评估》为准）。' },
+          { kind: 'text', text: '第三列按中等档 RAP 8 mmHg 折算：RAP 估 3 时每档减 5、估 15 时加 7——**先定 RAP 再定级**。正式分级按 sPAP 多普勒（2025 ASE）：≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重；传统口径把正常上限写到 ≤36，差别只是 RAP 取 3 还是 5（以《肺动脉压 · 肺高压评估》为准）。' },
           { kind: 'text', text: '同样 2.8–3.4 m/s 的 TR 峰速，在活动、年轻、低流量人群中多属生理性；需结合是否存在右心扩大、功能下降等结构性改变再判定。' },
           { kind: 'note', text: '**别和「PASP >50 = 重度肺高压」混为一谈**：二尖瓣狭窄里常把 PASP >50 mmHg 单独作为「已达重度肺高压后果、介入理由强」的尺度，那是 MS 特异的介入指征尺度；而上面 sPAP 多普勒分级里 50–69 仍属「中度」。两个尺度用途不同，报告里写明用的是哪一种。', warn: true },
 
@@ -11493,10 +11555,12 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '典型存活心肌呈**双相反应**：小剂量时收缩改善，剂量继续加大会再次变差（因为真正缺血的区域被激发）。只有"持续改善"也提示存活；"始终不动"提示透壁瘢痕；"一开始就更差"是缺血反应而非存活证据。' },
           { kind: 'note', text: '瘢痕区旁的正常心肌在低剂量被过度牵拉时，也可能出现"看起来改善"的假象。判读存活心肌要在**同一节段、同一壁层**追踪，并优先看收缩期增厚率而不只是位移。', warn: true },
           { kind: 'h', text: '三、低流速低梯度 AS：DSE 的第二主战场' },
-          { kind: 'table', heads: ['类型', '静息 AVA', '平均压差', '每搏输出量指数', 'DSE 后 AVA'], rows: [
-            ['真性重度 AS', '≤1.0 cm²', '<40 mmHg', '<35 mL/m²', '仍 ≤1.0，压差随流量升高'],
-            ['假性重度 AS', '≤1.0 cm²', '<40 mmHg', '<35 mL/m²', '升至 >1.0（常 >1.2）'],
-            ['无收缩储备', '≤1.0 cm²', '<40 mmHg', '<35 mL/m²', '每搏输出量增加 <20%，预后差'],
+          { kind: 'text', text: '三类患者的**静息条件完全相同**：AVA ≤1.0 cm²、平均压差 <40 mmHg、每搏输出量指数 <35 mL/m²。区别只在负荷之后。' },
+          // ★ 2026-11-03：原 5 列里前三列三类取值完全一样（纯冗余），合并成 3 列，把版面留给结论。
+          { kind: 'table', heads: ['类型', 'DSE 后 AVA / 储备', '含义'], rows: [
+            ['真性重度 AS', '仍 ≤1.0，压差随流量升高', '瓣口确实固定，换瓣获益明确'],
+            ['假性重度 AS', '升至 >1.0（常 >1.2）', '狭窄被低流量夸大，换瓣获益有限'],
+            ['无收缩储备', '每搏输出量增加 <20%', '心肌本身已衰竭，预后差'],
           ] },
           { kind: 'text', text: '这一档患者的关键不是"瓣口多大"，而是**瓣口在流量增加时会不会扩张**：会扩张说明狭窄程度被低流量夸大了（假性重度），这类患者换瓣获益有限；不扩张、压差随流量上升才是真性重度。' },
           { kind: 'h', text: '四、终止指征与禁忌' },
@@ -14965,15 +15029,17 @@ const BRIEF_SECTIONS = [
 
           { kind: 'h', text: '二（补）、新解剖分型：3 对要素 + 8 亚型（中国超声共识 R100）' },
           { kind: 'text', text: '阜外提出按 3 对要素描述即可明确分型：① 主—肺动脉空间位置关系（AN 正常螺旋 / AA 异常平行）；② VSD 与两大动脉的位置关系（VSD‑C 动脉相关 / VSD‑N 不相关）；③ 是否合并肺动脉口梗阻（POTO 梗阻 / PH 高压）[R100]。' },
-          { kind: 'table', heads: ['型', '大动脉关系', 'VSD 与动脉关系', '肺动脉口', '国际对应', '主要术式[R100]'], rows: [
-            ['I', 'AN 正常', 'VSD‑C（主动脉瓣下）', 'PH 高压', '室间隔缺损型', 'IVT‑AO（室缺→主动脉内隧道）'],
-            ['II', 'AN 正常', 'VSD‑C（主动脉瓣下）', 'POTO 梗阻', '法洛四联症型', 'IVT‑AO + 疏通 POTO'],
-            ['III', 'AN 正常', 'VSD‑N（远离）', 'PH 高压', '远离型', 'Long IVT‑AO；约 1/3 无法连接，不能解剖根治'],
-            ['IV', 'AN 正常', 'VSD‑N（远离）', 'POTO 梗阻', '远离型', 'Long IVT‑AO + 疏通 POTO；无法连接则 Fontan'],
-            ['V', 'AA 异常', 'VSD‑C（肺动脉瓣下）', 'PH 高压', 'Taussig‑Bing', '大动脉调转 + IVT‑AO（调转后肺动脉）'],
-            ['VI', 'AA 异常', 'VSD‑C（肺动脉瓣下）', 'POTO 梗阻', '—', 'DRT/Nikaidoh；VSD 亦可连主动脉则 Rastelli/Rev'],
-            ['VII', 'AA 异常', 'VSD‑N（远离）', 'PH 高压', '—', '大动脉调转 + Long IVT‑AO；无法连接同 III 型'],
-            ['VIII', 'AA 异常', 'VSD‑N（远离）', 'POTO 梗阻', '—', 'DRT + Long IVT‑AO；可连主动脉则 Rastelli，否则 Fontan'],
+          // ★ 2026-11-03：原 6 列（型/大动脉/VSD/肺动脉口/国际对应/术式）在手机上挤到看不清，
+          //   把「国际对应」并入「型」列、「VSD」与「肺动脉口」合并，压到 4 列。
+          { kind: 'table', heads: ['型（国际对应）', '大动脉关系', 'VSD 与肺动脉口', '主要术式[R100]'], rows: [
+            ['Ⅰ（室间隔缺损型）', 'AN 正常', 'VSD‑C（主动脉瓣下）· PH 高压', 'IVT‑AO（室缺→主动脉内隧道）'],
+            ['Ⅱ（法洛四联症型）', 'AN 正常', 'VSD‑C（主动脉瓣下）· POTO 梗阻', 'IVT‑AO + 疏通 POTO'],
+            ['Ⅲ（远离型）', 'AN 正常', 'VSD‑N（远离）· PH 高压', 'Long IVT‑AO；约 1/3 无法连接，不能解剖根治'],
+            ['Ⅳ（远离型）', 'AN 正常', 'VSD‑N（远离）· POTO 梗阻', 'Long IVT‑AO + 疏通 POTO；无法连接则 Fontan'],
+            ['Ⅴ（Taussig‑Bing）', 'AA 异常', 'VSD‑C（肺动脉瓣下）· PH 高压', '大动脉调转 + IVT‑AO（调转后肺动脉）'],
+            ['Ⅵ', 'AA 异常', 'VSD‑C（肺动脉瓣下）· POTO 梗阻', 'DRT/Nikaidoh；VSD 亦可连主动脉则 Rastelli/Rev'],
+            ['Ⅶ', 'AA 异常', 'VSD‑N（远离）· PH 高压', '大动脉调转 + Long IVT‑AO；无法连接同 Ⅲ 型'],
+            ['Ⅷ', 'AA 异常', 'VSD‑N（远离）· POTO 梗阻', 'DRT + Long IVT‑AO；可连主动脉则 Rastelli，否则 Fontan'],
           ] },
           { kind: 'text', text: 'VSD‑C＝动脉相关型（缺损紧邻 / 靠近某大动脉，外科易经补片将该动脉连至左室）；VSD‑N＝不相关型（远离两大动脉，需重建长左室流出道，部分无法建立通畅连接）[R100]。双动脉下 VSD 归入 VSD‑C，再按 3 要素分 8 型即可，不单列[R100]。' },
           { kind: 'text', text: '能否双心室根治取决于 VSD 能否与两大动脉中任一支建立连接（VSD‑C 易；VSD‑N 需 Long IVT‑AO，部分不可行）[R100]。VSD 无法与主动脉建立连接者走 Fontan 类姑息；<6 个月患儿可肺动脉环缩降肺压、二期再评估[R100]。合并 POTO 且肺动脉发育差（McGoon 比 <1.2）者不能一期根治，先促肺发育姑息、待足够宽再二期根治[R100]。' },
@@ -19267,6 +19333,140 @@ function enAliasMatch(q) {
 }
 
 /**
+ * 长段落 → 短段落（v1.14.2，三端共用）
+ *
+ * ★ 起因：用户 2026-11-03 反馈「文字多的地方很挤，排版很乱」。
+ *   排查发现 775 个正文 text 块里，317 块在 120–249 字、14 块 250–399 字、
+ *   最长 563 字，全部**一次性连排**成一个 <div>（行高 1.65、无段间距）——
+ *   手机上就是一堵墙。数据本身没错，是**排版缺了分段的层次**。
+ *
+ * ★ 所以不逐条手改内容（会漏、会破坏医学术语），而是在渲染层统一切段：
+ *   ① 显式 `\n` 仍优先（作者手写的换行必须尊重）；
+ *   ② 出现 ≥2 个 ①②③ 枚举 → 每项独立成段（这类几乎都是并列清单）；
+ *   ③ 否则按「。」「！」「？」聚合成 55–80 字的自然段；
+ *   ④ 单句仍 >90 字 → 再按「；」拆（并列的定量口径适合一行一条）。
+ *
+ * ★ 安全约束：断点处**不加任何字符**，段间拼接后与原文完全一致（verify 的文本检索断言不受影响）；
+ *   且只在 `**` 计数为偶数的位置断，避免粗体标记被切到两段里各漏一半。
+ */
+var ENUM_MARKS = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
+
+/** 位置 pos 之前出现的 `**` 是否为奇数（奇数＝在粗体内部，不能断） */
+function boldOpenAt(s, pos) {
+  var n = 0;
+  for (var i = 0; i + 1 < pos; i++) {
+    if (s.charAt(i) === '*' && s.charAt(i + 1) === '*') { n++; i++; }
+  }
+  return n % 2 === 1;
+}
+
+/** 按分隔符切，但跳过粗体内部 / 括号内部的切点 */
+function safeSplit(s, sep) {
+  var out = [], last = 0, depth = 0;
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charAt(i);
+    if (c === '（' || c === '(') depth++;
+    else if ((c === '）' || c === ')') && depth > 0) depth--;
+    if (c !== sep) continue;
+    if (depth > 0) continue;
+    if (boldOpenAt(s, i)) continue;
+    var piece = s.slice(last, i + 1).trim();
+    if (piece) out.push(piece);
+    last = i + 1;
+  }
+  var tail = s.slice(last).trim();
+  if (tail) out.push(tail);
+  return out;
+}
+
+/** 把碎片聚合回 60–85 字的自然段（分号/逗号切出来的碎片太短，连着读更自然） */
+function reglue(pieces, limit) {
+  var out = [], acc = '';
+  for (var i = 0; i < pieces.length; i++) {
+    var x = pieces[i];
+    if (acc && (acc.length + x.length) > limit) { out.push(acc); acc = ''; }
+    acc += x;
+  }
+  if (acc) out.push(acc);
+  return out;
+}
+
+/** 该段是否以枚举符号起头（渲染时给悬挂缩进） */
+function isHangPara(s) {
+  if (!s) return false;
+  if (ENUM_MARKS.indexOf(s.charAt(0)) !== -1) return true;
+  return /^\d+[.、)）]/.test(s);
+}
+
+function paraSplit(t) {
+  var s = String(t == null ? '' : t);
+  if (!s) return [];
+  var out = [];
+
+  s.split(/\n/).forEach(function (line) {
+    var p = line.trim();
+    if (!p) return;
+    if (p.length <= 55) { out.push(p); return; }
+
+    // ② 枚举清单：从第二个序号起断开，每项一段（括号内的序号不切）
+    var idxs = [], dep = 0;
+    for (var i = 0; i < p.length; i++) {
+      var _c = p.charAt(i);
+      if (_c === '（' || _c === '(') dep++;
+      else if ((_c === '）' || _c === ')') && dep > 0) dep--;
+      if (ENUM_MARKS.indexOf(_c) !== -1 && dep === 0 && !boldOpenAt(p, i)) idxs.push(i);
+    }
+    if (idxs.length >= 2) {
+      var start = 0;
+      for (var k = 1; k < idxs.length; k++) {
+        out.push(p.slice(start, idxs[k]).trim());
+        start = idxs[k];
+      }
+      out.push(p.slice(start).trim());
+      return;
+    }
+
+    // ③ 按句末标点切句 → 聚合成自然段
+    var sents = [], buf = '';
+    for (var j = 0; j < p.length; j++) {
+      var ch = p.charAt(j);
+      buf += ch;
+      if (ch === '*' && p.charAt(j + 1) === '*') { buf += '*'; j++; continue; }
+      if ((ch === '。' || ch === '！' || ch === '？') && !boldOpenAt(p, j)) {
+        sents.push(buf); buf = '';
+      }
+    }
+    if (buf) sents.push(buf);
+
+    var cur = '';
+    for (var q = 0; q < sents.length; q++) {
+      var one = sents[q];
+      if (one.length > 90) {
+        if (cur) { out.push(cur); cur = ''; }
+        // 长主句（没有句号可断）→ 按分号拆，再聚合回 60–85 字；仍超长再退到逗号
+        var pieces = safeSplit(one, '；');
+        if (pieces.length === 1) pieces = safeSplit(one, '，');
+        reglue(pieces, 85).forEach(function (x) { out.push(x); });
+        continue;
+      }
+      if (cur && (cur.length + one.length) > 80) { out.push(cur); cur = ''; }
+      cur += one;
+    }
+    if (cur) out.push(cur);
+  });
+
+  // ④ 兜底：极少数「必须写明：A、B、C、D…」式长顿号列举，按顿号再切一层
+  var fin = [];
+  out.forEach(function (p) {
+    if (p.length <= 110) { fin.push(p); return; }
+    if ((p.match(/、/g) || []).length < 4) { fin.push(p); return; }
+    reglue(safeSplit(p, '、'), 62).forEach(function (x) { fin.push(x); });
+  });
+
+  return fin.filter(function (x) { return !!x; });
+}
+
+/**
  * 计算类条目 → 参考来源（v1.13.8）
  *
  * ★ 为什么单独一张表：计算器组（calc-groups.js）只有字段和公式、没有 source 字段，
@@ -19336,6 +19536,12 @@ const CALC_SRC = {
     SEARCH_KW: SEARCH_KW,
     kwOf: kwOf,
     enAliasMatch: enAliasMatch,
+    ENUM_MARKS: ENUM_MARKS,
+    boldOpenAt: boldOpenAt,
+    safeSplit: safeSplit,
+    reglue: reglue,
+    isHangPara: isHangPara,
+    paraSplit: paraSplit,
     CALC_SRC: CALC_SRC,
   };
 })();
@@ -19397,7 +19603,10 @@ const CALC_NOTES = {
   },
   mpap: {
     use: '肺高压的床旁数字一次给全：先用 IVC 估右房压，再算 sPAP / dPAP / mPAP 三个压，最后按 ESC/ERS 2022 三步法给「可能性」。肺高压筛查看 mPAP，右室负荷与 PAPi 看 sPAP，肺水肿与左房压传导看 dPAP——三者共用同一个 RAP，避免分开算时填得不一致。',
-    std: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3 mmHg；IVC >21 mm 且塌陷 ≤50% → 15 mmHg；其余 8 mmHg（正常 0–5，>10 提示升高）。sPAP ≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 mmHg 重度；dPAP 8–15 正常；mPAP ≤20 正常，**>20 即肺高压**（ESC/ERS 2022 取消 21–24 的「临界」档；确诊靠右心导管且 PVR >2 WU，不再分轻中重）。',
+    std: '**RAP**：IVC ≤21 mm 且吸气塌陷 >50% → 3 mmHg；IVC >21 mm 且塌陷 ≤50% → 15 mmHg；其余 8 mmHg（正常 0–5，>10 提示升高）。\n'
+      + '**sPAP**：正常上限没有全球统一值——2025 ASE 右心指南（R5）定 ≤34 mmHg，多数教科书 / 综述沿用 ≤35–36；异常三档各家一致：35–49 轻度、50–69 中度、≥70 重度。\n'
+      + '**dPAP**：8–15 mmHg 正常，>15 即升高，指南未再细分。\n'
+      + '**mPAP**：≤20 mmHg 正常，**>20 即肺高压**（ESC/ERS 2022 取消 21–24 的「临界」档；确诊靠右心导管且 PVR >2 WU，不再分轻中重）。',
     tip: 'RAP 估错 ±5 mmHg，三个压会同时平移；IVC 法只适用于自主呼吸，机械通气 / PEEP 时不可用。sPAP 在肺动脉瓣狭窄、RVOT 梗阻时高估，严重 TR 时右房压接近右室压、压差被压缩而低估；TR 包络只取到一半同样低估。超声永远只给「可能性」，确诊必须右心导管。',
     blocks: [
       { kind: 'h', text: '一、2022 新定义：门槛降了' },
@@ -19411,20 +19620,34 @@ const CALC_NOTES = {
         ],
       },
       { kind: 'note', text: '**超声测不出 mPAP，也不能确诊 PH**。超声只给「可能性」，确诊必须右心导管。把 PASP 直接当 PH 诊断依据，是超声报告里最常见的过度诊断。', warn: true },
-      { kind: 'h', text: '二、压力分度速查表（sPAP / dPAP / mPAP / RAP）' },
+      { kind: 'h', text: '二、sPAP 的分度：各家指南并不一致' },
+      { kind: 'text', text: '肺动脉收缩压的分级是**全篇最没有共识**的一处：正常上限在 30–36 mmHg 之间各家取值不同，轻 / 中 / 重的切点也有两套在流通。原因不是谁算错了，而是①「sPAP」本身是估测值（4 × TR Vmax² + RAP），RAP 取 3 还是 5 就差了 2 mmHg；②2022 之后 ESC/ERS 干脆不再用 sPAP 分级。\n下表的四套口径按「新 → 旧」排，新报告建议用第一套并在结论里注明口径。' },
+      {
+        kind: 'table',
+        heads: ['口径', '正常', '轻 / 中 / 重（mmHg）', '出处与用法'],
+        rows: [
+          ['2025 ASE 右心指南', '≤34', '35–49 / 50–69 / ≥70', 'R5；配套 TRV <2.8 / 2.8–3.1 / 3.2–3.5 / ≥3.6 m/s、RAP 0–4 / 5–9 / 10–14 / ≥15，四档一套，最完整'],
+          ['多数教科书与综述', '≤35–36', '36–49 / 50–69 / ≥70', '传统口径，与 ASE 只差正常上限 1–2 mmHg，异常三档完全相同'],
+          ['国内旧版（mPAP >25 时代）', '≤30', '36–45 / 46–60 / ≥60', '随 mPAP 定义下调而废弃，切点偏早、会把中度读成重度；别再写进新报告'],
+          ['ESC/ERS 2022', '不按 sPAP 分级', '—（只有 TRV 三档）', 'R11；用 TRV ≤2.8 / 2.9–3.4 / >3.4 m/s 加右心征象判「可能性」，确诊靠右心导管'],
+        ],
+      },
+      { kind: 'note', text: '**≤34 与 ≤36 不是两种病变，是同一个公式的取整差异**：4 × 2.8² = 31.4 mmHg，RAP 取 3 → 34（ASE 2025 口径）、取 5 → 36（旧习惯）。所以同一个患者换一套口径就从「正常」变「轻度升高」，报告必须写清用的是哪一套。', warn: true },
+      { kind: 'note', text: '**别把 sPAP 的「≥70 重度」当成「重度肺高压」**：前者是多普勒估测的收缩压分档，后者要按右心导管的 mPAP / PVR 分级。同一份报告里同时出现「sPAP 75 mmHg（重度）」与「肺高压待分级」，读的人会以为自相矛盾——写清口径即可。', warn: true },
+
+      { kind: 'h', text: '三、压力分度速查表（sPAP / dPAP / mPAP / RAP）' },
       {
         kind: 'table',
         heads: ['指标（中 / 英）', '正常', '分级阈值', '怎么算'],
         rows: [
-          ['肺动脉收缩压 sPAP（systolic pulmonary artery pressure）', '≤36', '37–49 轻 / 50–69 中 / ≥70 重', '4 × TR Vmax² + RAP'],
+          ['肺动脉收缩压 sPAP（systolic pulmonary artery pressure）', '≤34（ASE 2025）/ ≤35–36（传统）', '35–49 轻 / 50–69 中 / ≥70 重（见上节四套口径）', '4 × TR Vmax² + RAP'],
           ['肺动脉舒张压 dPAP（diastolic pulmonary artery pressure）', '8–15', '>15 即升高（不再细分）', '4 × PR 舒张末 V² + RAP'],
           ['肺动脉平均压 mPAP（mean pulmonary artery pressure）', '≤20', '>20 即肺高压；ESC/ERS 2022 不再分轻中重', '(sPAP + 2 × dPAP) ÷ 3；只有 TR 时 Mahan 0.61 × sPAP + 2'],
           ['右房压 RAP（right atrial pressure）', '0–5（取 3）', '8 中度 / 15 重度', 'IVC ≤21 mm 且塌陷 >50% → 3；>21 mm 且塌陷 ≤50% → 15；其余 8'],
         ],
       },
-      { kind: 'text', text: '单位均为 mmHg。**两套口径要分清**：sPAP 的「轻 / 中 / 重」四档来自 ASE 右心指南的多普勒估测口径，是**估测值**的分档；ESC/ERS 2022 的肺高压定义只用右心导管的 **mPAP >20 mmHg + PVR >2 WU**，并**不再给 mPAP 的轻中重分级**。两套并列摆在这里，报告里必须注明用的是哪一套。' },
-      { kind: 'note', text: '**别把 sPAP 的「≥70 重度」当成「肺高压重度」**：前者是多普勒估测的收缩压分档，后者要按右心导管的 mPAP / PVR 分级。同一份报告里同时出现「sPAP 75 mmHg（重度）」与「肺高压待分级」，读的人会以为自相矛盾——写清口径即可。', warn: true },
-      { kind: 'h', text: '三、超声三步法（2022 ESC/ERS）' },
+      { kind: 'text', text: '单位均为 mmHg。**两套口径要分清**：sPAP 的「轻 / 中 / 重」四档是多普勒**估测值**的分档（ASE 2025 配套 TRV / RAP 四档一套）；ESC/ERS 2022 的肺高压定义只用右心导管的 **mPAP >20 mmHg + PVR >2 WU**，并**不再给 mPAP 的轻中重分级**。两套并列摆在这里，报告里必须注明用的是哪一套。' },
+      { kind: 'h', text: '四、超声三步法（2022 ESC/ERS）' },
       {
         kind: 'table',
         heads: ['TR Vmax', '其他右心征象', '超声 PH 可能性'],
@@ -19437,7 +19660,7 @@ const CALC_NOTES = {
         ],
       },
       { kind: 'text', text: '「其他右心征象」（additional right-heart signs）：RV/LV 基底径比 >1、室间隔变平或矛盾运动（septal flattening / paradoxical motion）、RVOT 加速时间 AcT（acceleration time）<105 ms、右房面积 >18 cm²、IVC 内径 >21 mm 且不塌陷、肺动脉收缩中期切迹（mid-systolic notching）。' },
-      { kind: 'h', text: '四、毛细血管前 vs 后：超声能给的线索（pre- / post-capillary PH）' },
+      { kind: 'h', text: '五、毛细血管前 vs 后：超声能给的线索（pre- / post-capillary PH）' },
       {
         kind: 'table',
         heads: ['线索', '毛细血管前（PAH / CTEPH / 肺病）', '毛细血管后（左心相关）'],
@@ -19450,9 +19673,9 @@ const CALC_NOTES = {
         ],
       },
       { kind: 'note', text: '用 E/e′ 估 PAWP 在房颤、重度 MR、心包病变时不成立。分不清前后时写「需右心导管」，比硬判一个方向更有价值。', warn: true },
-      { kind: 'h', text: '五、PASP 估测的五个坑' },
+      { kind: 'h', text: '六、PASP 估测的五个坑' },
       { kind: 'text', text: '① TR 束不完整或偏心，包络只取到峰值一半 → 低估；② 右房压靠 IVC 估，误差可达 ±5 mmHg；③ 血容量、麻醉、机械通气都影响；④ 严重 TR 时右房压接近右室压，压差被压缩；⑤ 高动力状态（贫血、甲亢、分流）压差虚高但阻力不高。' },
-      { kind: 'h', text: '六、随访看哪几个数' },
+      { kind: 'h', text: '七、随访看哪几个数' },
       { kind: 'text', text: '**TAPSE/PASP（RV-PA 耦联）** 比单看 PASP 更有预后价值：<0.55 mm/mmHg 提示失耦联。再加 RVFWS（>−20% 为异常，即绝对值 <20%）、右房面积、IVC、NT-proBNP 与 6 分钟步行。若 PASP 下降但 TAPSE/PASP 未改善，说明右室本身在恶化，别被「压差降了」误导。' },
       { kind: 'note', text: '分流相关肺高压（ASD / VSD / PDA）看「先天性心脏病」组的可手术性判读，那套标准与本页不同，不要混用。' },
     ],
@@ -19674,11 +19897,12 @@ const CALC_NOTES = {
       { kind: 'h', text: '第二步：按 E/A 与异常项数分级' },
       {
         kind: 'table',
-        heads: ['分级', 'E/A', 'E 峰', '其他指标', '含义'],
+        // ★ 2026-11-03：原 5 列在手机上每列不足 60px，把「其他指标」与「含义」并成一列。
+        heads: ['分级', 'E/A', 'E 峰', '异常项数 → 左房压'],
         rows: [
-          ['Ⅰ 级 松弛受损', '≤0.8', '≤50 cm/s', '≤1 项异常', '左房压正常'],
-          ['Ⅱ 级 假性正常', '0.8–2.0', '>50 cm/s', '2–3 项异常', '左房压升高'],
-          ['Ⅲ 级 限制性', '≥2.0', '—', '直接归此级', '左房压明显升高，预后差'],
+          ['Ⅰ 级 松弛受损', '≤0.8', '≤50 cm/s', '≤1 项 → 正常'],
+          ['Ⅱ 级 假性正常', '0.8–2.0', '>50 cm/s', '2–3 项 → 升高'],
+          ['Ⅲ 级 限制性', '≥2.0', '—', '直接归此级 → 明显升高，预后差'],
         ],
       },
       { kind: 'note', text: '**E/A 0.8–2.0 且只有 1 项异常 = 灰区，不能定级**。此时看 LARS、TR 速度，或做负荷超声（运动后 E/e′ 仍 >14 支持 HFpEF）。写「舒张功能不能定级」是合法且更诚实的结论。', warn: true },
@@ -20933,7 +21157,7 @@ const MATERIALS = [];
       fields: [['pp_ivc', 'IVC 内径（估 RAP）', 'mm'], ['pp_rap', '右房压 RAP（可选，填了优先）', 'mmHg'],
         ['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pr', 'PR 舒张末期流速（可选）', 'm/s'],
         ['pp_rvotat', 'RVOT 加速时间（可选）', 'ms']],
-      note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤36 正常 / 37–49 轻 / 50–69 中 / ≥70 重度）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
+      note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
     { id: 'shunt', dirHide: true, title: 'Qp/Qs 肺体循环血流比',
       // ★ v1.12.8：已并入「先心病分流判读」条目（同键输入互相同步），目录不再单列（硬坑 31）
       fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm'],
@@ -21424,7 +21648,12 @@ const MATERIALS = [];
         return;
       }
       if (b.kind === 'note') {
-        h += '<div class="fx-note">' + mdInline(b.text) + '</div>';
+        // ★ v1.14.2：长 note 也切段（32 条超过 150 字，最长 251 字，压在色块里更难读）
+        const _NED = window.ExtraData || {};
+        const _nps = (_NED.paraSplit ? _NED.paraSplit(b.text) : [b.text]);
+        h += '<div class="fx-note">';
+        _nps.forEach(function (p) { h += '<div class="fx-np">' + mdInline(p) + '</div>'; });
+        h += '</div>';
         if (b.links && b.links.length) {
           h += '<div class="chiprow">';
           b.links.forEach(function (id) {
@@ -21454,7 +21683,16 @@ const MATERIALS = [];
         h += '</div>';
         return;
       }
-      h += '<div class="fx-text">' + mdInline(b.text) + '</div>';
+      // ★ v1.14.2：长段落自动切段。此前 100–560 字的正文全部一次性连排，
+      //   手机上就是一堵墙（用户 2026-11-03 反馈「文字多的地方很挤」）。
+      const _ED = window.ExtraData || {};
+      const _paras = (_ED.paraSplit ? _ED.paraSplit(b.text) : [b.text]);
+      h += '<div class="fx-text">';
+      _paras.forEach(function (p) {
+        const hang = _ED.isHangPara ? _ED.isHangPara(p) : false;
+        h += '<div class="fx-p' + (hang ? ' fx-p--hang' : '') + '">' + mdInline(p) + '</div>';
+      });
+      h += '</div>';
     });
     return { html: h, toc: toc };
   }
@@ -21494,7 +21732,12 @@ const MATERIALS = [];
       //   preventDefault 已经来不及 —— hashchange 被视图栈当成未知路由，
       //   parseHash 返回 null → leaveView()，界面被打回公式集目录。
       //   与 v1.6.6 组名跳转条踩的是同一个坑。
-      h += '<button type="button" class="fx-nav__c" data-sec="' + s.id + '">' + esc(s.t) + '</button>';
+      // ★ v1.14.2：胶囊只显示「序号 + 主标题」，冒号后的副标题剪掉。
+      //   完整标题在 title 里，正文顶部本来也有；不剪的话 16 节的条目
+      //   每个胶囊折两行、整块占掉半屏（用户 2026-11-03 反馈「排版很乱」）。
+      const full = String(s.t || '');
+      const short = full.split(/[：:]/)[0] || full;
+      h += '<button type="button" class="fx-nav__c" title="' + esc(full) + '" data-sec="' + s.id + '">' + esc(short) + '</button>';
     });
     return h + '</div>';
   }

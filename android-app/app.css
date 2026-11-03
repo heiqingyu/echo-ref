@@ -669,11 +669,28 @@ html, body {
   line-height: 1.4;
 }
 
+/* ★ v1.14.2：正文按自然段切分后，行高与段间距决定「能不能读下去」。
+   旧版 13px/1.65 且整段连排，一屏 200 字没有换气点（用户 2026-11-03 反馈）。 */
 .fx-text {
-  font-size: 13px;
+  font-size: 13.5px;
   color: #374151;
-  line-height: 1.65;
-  margin: 7px 0;
+  line-height: 1.78;
+  margin: 9px 0 12px;
+}
+
+.fx-text .fx-p {
+  margin: 0 0 9px;
+  line-height: 1.78;
+}
+
+.fx-text .fx-p:last-child {
+  margin-bottom: 0;
+}
+
+/* ①②③ / 1. 这类并列项：首行顶格、续行缩进（悬挂缩进），一眼能看出是清单 */
+.fx-text .fx-p--hang {
+  padding-left: 1.5em;
+  text-indent: -1.5em;
 }
 
 .fx-note {
@@ -685,6 +702,16 @@ html, body {
   padding: 9px 11px;
   margin: 9px 0;
   line-height: 1.6;
+}
+
+/* ★ v1.14.2：色块里的长 note 也分段，段间距比正文略紧（色块本身已有边界） */
+.fx-note .fx-np {
+  margin: 0 0 6px;
+  line-height: 1.72;
+}
+
+.fx-note .fx-np:last-child {
+  margin-bottom: 0;
 }
 
 .fx-formula {
@@ -739,6 +766,29 @@ html, body {
 .fx-tbl--5 .fx-tbl__c:first-child {
   font-weight: 500;
   color: #374151;
+}
+
+/* ★ v1.14.2：5 列表格（如「心脏肿瘤鉴别」的 4 诊断矩阵）在 375px 屏上
+   每列只剩 ~70px，必须压字号 + 收首列，否则一格里只排得下 3 个字。 */
+.fx-tbl--5 .fx-tbl__c {
+  padding: 6px 6px;
+  font-size: 11.5px;
+  line-height: 1.42;
+}
+
+.fx-tbl--5 .fx-tbl__c:first-child {
+  flex: 0 0 17%;
+}
+
+/* 6 列只作兜底（内容已尽量压到 ≤4 列，正常不应出现） */
+.fx-tbl--6 .fx-tbl__c {
+  padding: 5px 5px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.fx-tbl--6 .fx-tbl__c:first-child {
+  flex: 0 0 14%;
 }
 
 /* ── 参考文献 ── */
@@ -1607,6 +1657,11 @@ button.fx-nav__c {
 
 .fx-nav__c {
   flex: none;
+  /* ★ v1.14.2：小节胶囊限宽 47% 单行显示。
+     二尖瓣 / 先心这类 16 节的条目，长标题会把胶囊折成两行、整块占掉半屏，
+     一眼看上去就是「一团标签」。截断后每行最多两个、每个一行，高度减半；
+     完整名称放在 title 里（桌面悬停可看），点进去正文也有完整小标题。 */
+  max-width: 47%;
   padding: 5px 11px;
   font-size: 11px;
   color: var(--sub);
@@ -1614,6 +1669,8 @@ button.fx-nav__c {
   border-radius: 999px;
   text-decoration: none;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fx-nav__c:active,
@@ -1645,11 +1702,13 @@ button.fx-nav__c {
   color: var(--brand);
   background: var(--brand-soft);
   border: 1px solid #dbe6ff;
-  /* 极长的小节名（如「十三、原发 MR 的干预时机：两层推荐」）在 360px 窄屏上放不下时
-     在胶囊内部折行，别撑出横向滚动条 */
-  white-space: normal;
-  word-break: break-word;
-  max-width: 100%;
+  /* ★ v1.14.2：限宽 47% + 单行省略（与 .fx-nav__c 同策略）。
+     以前这里是 white-space: normal 让超长小节名折行，结果 16 节的条目
+     整块胶囊区占掉半屏。现在每行最多两个、每个一行，高度减半。 */
+  max-width: 47%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fx-nav--sec .fx-nav__c:hover,

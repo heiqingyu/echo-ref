@@ -143,16 +143,18 @@
 }
 
 .fx-nav__c {
-  max-width: 100%;
+  /* ★ v1.14.2：限宽 47% + 单行省略。16 节的条目原来长标题折两行、胶囊占掉半屏。
+     有 max-width 兜底，不会撑出横向滚动（v1.13.6 的顾虑已覆盖）。 */
+  max-width: 47%;
   padding: 8rpx 18rpx;
   font-size: 22rpx;
   line-height: 1.35;
   color: #6b7280;
   background: #f1f3f6;
   border-radius: 999rpx;
-  /* v1.13.6：超长小节名在胶囊内折行，别把页面撑出横向滚动 */
-  white-space: normal;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fx-nav__c--on {
@@ -165,11 +167,27 @@
   color: #2563eb;
 }
 
+/* ★ v1.14.2：正文按自然段切分（js 里 EX.paraSplit），行高与段间距同步放大 */
 .fx-text {
-  font-size: 25rpx;
+  font-size: 26rpx;
   color: #374151;
-  line-height: 1.65;
-  margin: 10rpx 0;
+  line-height: 1.8;
+  margin: 12rpx 0 14rpx;
+}
+
+.fx-p {
+  margin: 0 0 16rpx;
+  line-height: 1.8;
+}
+
+.fx-p:last-child {
+  margin-bottom: 0;
+}
+
+/* ①②③ / 1. 这类并列项：首行顶格、续行缩进（悬挂缩进） */
+.fx-p--hang {
+  padding-left: 1.5em;
+  text-indent: -1.5em;
 }
 
 .fx-note {
@@ -181,6 +199,16 @@
   padding: 14rpx 16rpx;
   margin: 12rpx 0;
   line-height: 1.6;
+}
+
+/* ★ v1.14.2：色块里的长 note 也分段 */
+.fx-note .fx-np {
+  margin: 0 0 12rpx;
+  line-height: 1.72;
+}
+
+.fx-note .fx-np:last-child {
+  margin-bottom: 0;
 }
 
 .fx-formula {
@@ -237,6 +265,28 @@
 .vtbl--5 .vtbl__c:first-child {
   font-weight: 500;
   color: #374151;
+}
+
+/* ★ v1.14.2：5 列表格在 375px 屏上每列仅 ~70px，压字号 + 收首列 */
+.vtbl--5 .vtbl__c {
+  padding: 10rpx 8rpx;
+  font-size: 21rpx;
+  line-height: 1.42;
+}
+
+.vtbl--5 .vtbl__c:first-child {
+  flex: 0 0 17%;
+}
+
+/* 6 列仅作兜底（内容已尽量压到 ≤4 列） */
+.vtbl--6 .vtbl__c {
+  padding: 8rpx 6rpx;
+  font-size: 20rpx;
+  line-height: 1.4;
+}
+
+.vtbl--6 .vtbl__c:first-child {
+  flex: 0 0 14%;
 }
 
 /* ── 本条目引用 ── */
