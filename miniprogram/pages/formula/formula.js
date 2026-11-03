@@ -1236,6 +1236,16 @@ Page({
         const r = calc.pulmonaryPulseIndex(v.pispap, v.pidpap, v.pirap);
         out = r.error ? r.error : 'PAPi = ' + calc.fmt(r.papi, 2) + ' · ' + r.text;
       }
+    } else if (gid === 'ivc') {
+      // —— 下腔静脉（塌陷指数 / 扩张指数 + RAP 档）——
+      if (valid(v.ivcDmax, v.ivcDmin)) {
+        const r = calc.ivcVariation(v.ivcDmax, v.ivcDmin);
+        if (r.error) out = r.error;
+        else if (r.cIVC !== undefined) {
+          out = 'cIVC ' + calc.fmt(r.cIVC, 1) + '% · dIVC ' + calc.fmt(r.dIVC, 1) +
+            '% · RAP ≈ ' + calc.fmt(r.rap, 0) + ' mmHg · ' + r.rapText;
+        }
+      }
     } else if (gid === 'residx') {
       // —— 阻力指数 ——
       if (valid(v.ripvr) || valid(v.risvr)) {

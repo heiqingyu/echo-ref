@@ -112,6 +112,34 @@ check('IVC 24 + 塌陷差 → RAP 15', C.rapEstimate(24, 'no').rap, 15);
 check('IVC 18 + 塌陷差 → RAP 8', C.rapEstimate(18, 'no').rap, 8);
 check('IVC 24 + 塌陷充分 → RAP 8', C.rapEstimate(24, 'yes').rap, 8);
 
+// ── v1.14.5 下腔静脉变异度（塌陷指数 / 扩张指数）
+// cIVC = (Dmax−Dmin)/Dmax；dIVC = (Dmax−Dmin)/Dmin
+const v1 = C.ivcVariation(22, 10);
+check('IVC 22/10 → cIVC 54.5%', C.round(v1.cIVC, 1), 54.5, 0.05);
+check('IVC 22/10 → dIVC 120%', C.round(v1.dIVC, 1), 120, 0.05);
+check('IVC 22/10 → 增宽但塌陷充分，取中间值 8', v1.rap, 8);
+const v2 = C.ivcVariation(18, 9);
+check('IVC 18/9 → cIVC 50% 且内径正常 → RAP 3', v2.rap, 3);
+const v3 = C.ivcVariation(26, 25);
+check('IVC 26/25 → 几乎不塌陷 → 可考虑 20', v3.rap, 20);
+const v4 = C.ivcVariation(24, 20);
+check('IVC 24/20 → 增宽且塌陷 <50% → RAP 15', v4.rap, 15);
+check('IVC 最小>最大 报错', C.ivcVariation(20, 24).error ? 'ok' : 'bad', 'ok');
+
+// ── v1.14.5 锁住 RAP 口径的出处（用户 2026-11-03 反馈「5/10/15 是按反流量分」）
+// 真相：5/10/15 是旧版 IVC 吸气塌陷三档（完全 5 / 部分 10 / 不塌陷 15），
+// 上海中山队列（R105）用的正是这套，配 PH 定义 PASP ≥40；3/8/15 配 ≤34。
+const NOTES = require('./miniprogram/utils/calc-notes.js').CALC_NOTES;
+const mpapTxt = JSON.stringify(NOTES.mpap);
+check('mpap 条目写明 5/10/15 按 IVC 塌陷程度分档', mpapTxt.indexOf('按 **IVC 吸气塌陷程度**分三档') !== -1 ? 'ok' : 'bad', 'ok');
+check('mpap 条目已无「按 TR 反流程度取 5/10/15」的误传', mpapTxt.indexOf('按 TR 反流程度取') === -1 ? 'ok' : 'bad', 'ok');
+check('mpap 条目引用 R104（JCS 2017：固定值 5/10 → IVC 法）', mpapTxt.indexOf('R104') !== -1 ? 'ok' : 'bad', 'ok');
+check('mpap 条目引用 R105（PASP ≥40 的近年队列依据）', mpapTxt.indexOf('R105') !== -1 ? 'ok' : 'bad', 'ok');
+check('mpap 条目写明「5/10/15 配 ≥40、3/8/15 配 ≤34」不能拆开',
+  mpapTxt.indexOf('口径是成套的，不能拆开混用') !== -1 ? 'ok' : 'bad', 'ok');
+const rapvTxt = JSON.stringify(NOTES.rapv);
+check('rapv 条目同步纠偏（5/10/15 非 TR 反流程度）', rapvTxt.indexOf('按 IVC 塌陷程度分档') !== -1 ? 'ok' : 'bad', 'ok');
+
 console.log('=== 13. PVR / SVR ===');
 // (45−12)/5 = 6.6 WU；dyn = 33×80/5 = 528
 const pvr = C.pvrResistance(45, 12, 5);

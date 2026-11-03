@@ -447,7 +447,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 103 条（新增 R93–R103：ACC/KSE 三尖瓣决策、TEER 中国路径与 ASE 术中成像、TOF/DORV 共识、人工瓣多模态、儿童 TTE）', EXD.REFS.length, 103, 0);
+  check('参考文献 106 条（R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数）', EXD.REFS.length, 106, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
@@ -604,7 +604,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 120 条（计算 40 + 判读 80；v1.13.10 先心分流拆为 ASD / VSD / PDA 三条；v1.14.0 新增 ped-base 儿童超声基础）', nItems, 120, 0);
+  check('目录共 121 条（计算 40 + 判读 81；v1.14.5 新增「下腔静脉」判读条目，计算器内嵌其中）', nItems, 121, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -848,7 +848,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segSim.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
   check('血流动力学、舒张与心功能 12 条（v1.12.8 Qp/Qs 并入先心病分流判读；M 型三合一 / 快速比值 / Ea / VTI 比 / 舒张功能 / CRT 前）', dirById('hemo').items.length, 12, 0);
-  check('右心与肺循环 6 条（v1.8.3 合并后：mpap / rvvol / papi / resist / rvsyst / tapse）',
+  check('右心与肺循环 6 条（v1.8.3 合并后：mpap / rvvol / papi / resist / rvsyst / tapse；IVC 已并入判读条目）',
     dirById('right').items.length, 6, 0);
   check('右心组条目齐全，且被合并的旧条目不再单独出现',
     ['mpap', 'rvvol', 'papi', 'resist', 'rvsyst', 'tapse']
@@ -869,7 +869,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) &&
       !['lvmih', 'rwsv', 'spher', 'volidx'].some(id => dirById('recon').items.some(i => i.id === id))
       ? 1 : 0, 1, 0);
-  check('计算类条目 3 个计算组合计 30 条（v1.12.8 Qp/Qs 并入 shd；另并入瓣膜 4 / 先心 4 / 心腔 2，合计 40；lvnc 已内嵌 LVNC 条目）',
+  check('计算类条目 3 个计算组合计 30 条（v1.12.8 Qp/Qs 并入 shd；另并入瓣膜 4 / 先心 4 / 心腔 2，合计 40）',
     ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 30, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
@@ -890,7 +890,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('器械与介入组已拆散：CRT / LAD 进心腔组、LVAD 进急症组',
     ['crt', 'la'].every(id => dirById('chamber').items.some(i => i.id === id)) &&
     dirById('vascular').items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
-  check('心腔、心肌与应变 24 条（v1.8.4 四组合并后 −5；v1.10.10 新增 LVNC +1）', dirById('chamber').items.length, 24, 0);
+  check('心腔、心肌与应变 25 条（v1.8.4 四组合并后 −5；v1.10.10 新增 LVNC +1；v1.14.5 新增下腔静脉 +1）', dirById('chamber').items.length, 25, 0);
   ['lv', 'rv', 'rvfun', 'strain', 'la-strain', 'peri', 'cp-rm', 'ctrcd'].forEach(id => {
     check('心腔、应变与负荷含 ' + id,
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);

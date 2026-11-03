@@ -3101,6 +3101,16 @@
       put('papi', r.error ? r.error : 'PAPi = ' + Calc.fmt(r.papi, 2) + ' · ' + r.text);
     } else put('papi');
 
+    // 下腔静脉（v1.14.5：塌陷指数 / 扩张指数 + RAP 档）—— 并进「下腔静脉」判读条目
+    if (has('ivcDmax', 'ivcDmin')) {
+      const r = Calc.ivcVariation(v.ivcDmax, v.ivcDmin);
+      if (r.error) put('ivc', r.error);
+      else if (r.cIVC !== undefined) {
+        put('ivc', 'cIVC ' + Calc.fmt(r.cIVC, 1) + '% · dIVC ' + Calc.fmt(r.dIVC, 1) +
+          '% · RAP ≈ ' + Calc.fmt(r.rap, 0) + ' mmHg · ' + r.rapText);
+      }
+    } else put('ivc');
+
     // TAPSE 与 RV-PA 耦联（v1.8.3）
     if (has('tapse')) {
       const parts = ['TAPSE ' + Calc.fmt(v.tapse, 1) + ' mm'];

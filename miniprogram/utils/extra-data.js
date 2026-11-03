@@ -1101,7 +1101,7 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'text', text: '三档 3 / 8 / 15 是 ASE 与 ESC/ERS 2022 的统一口径，公式集里所有用 RAP 的计算器（PASP / PADP / mPAP / PAPi / SVR）都用它。有的教材把同一件事写成四档（0 / 5 / 10 / 15，按内径与塌陷交叉取值），两套差 5 mmHg 上下——**别混用**，RAP 平移多少，PASP 就跟着平移多少。' },
-          { kind: 'note', text: '另有一套旧习惯**按 TR 反流程度取 RAP：轻度 5 / 中度 10 / 重度 15 mmHg**。三者与 IVC 法最多差 4 mmHg，且会把「TR 严重度 → RAP → sPAP → 又反推 TR 严重度」绕成一个环，因此不推荐单独用；科室若沿用，请在计算器里手填 RAP 并在报告注明口径。详见公式集《肺动脉压 · 肺高压评估》第四节。', warn: true },
+          { kind: 'note', text: '**「5 / 10 / 15」的原始出处是旧版 IVC 三档：完全塌陷 5 / 部分塌陷 10 / 不塌陷 15**（上海中山 910 例队列 R105 用的正是这套），更早还有一律取固定值 5 或 10 的做法（JCS 2017 R104 已弃用）。中文二手资料里常被记成「按 TR 反流轻 / 中 / 重取 5 / 10 / 15」——指南体系里没有用 TR 严重度反推右房压的写法，照那样做会把「TR 严重度 → RAP → sPAP → 又反推 TR 严重度」绕成一个环。**5 / 10 / 15 要配 PASP ≥40 的判读线，3 / 8 / 15 配 ≤34，两套不能拆开混用**；科室若沿用旧版，请在计算器里手填 RAP 并在报告注明口径。详见公式集《肺动脉压 · 肺高压评估》第五节。', warn: true },
           { kind: 'note', text: 'RAP 估算仅适用自主呼吸且无显著三尖瓣狭窄；机械通气与容量状态会显著影响结果。', warn: true },
 
           { kind: 'h', text: '二、肺动脉收缩压 PASP' },
@@ -1228,6 +1228,71 @@ const BRIEF_SECTIONS = [
         ],
         calc: 'rv',
         note: '已合并右心压力、PH 概率、右室功能与 TAPSE/PASP 耦联：PASP = 4V² + RAP（RAP 由 IVC 内径与塌陷程度决定），PVR/PADP 由 PR 速度估测；填了 TAPSE 就直接给耦联比值。',
+      },
+      {
+        id: 'ivc',
+        ab: 'IVC',
+        title: '下腔静脉：内径 · 变异度 · 各状态下的写法',
+        sub: '量法三细节 · cIVC / dIVC 两个公式 · 九种状态的报告句式 · ICU 退路',
+        source: ['R5', 'R104', 'R105', 'R106'],
+        rel: ['rv', 'rvfun'],
+        fields: [
+          { k: 'ivcDmax', n: '最大内径 Dmax（呼气末）', u: 'mm' },
+          { k: 'ivcDmin', n: '最小内径 Dmin（吸气末）', u: 'mm' },
+        ],
+        calc: 'ivc',
+        note: 'cIVC = (Dmax − Dmin) ÷ Dmax（自主呼吸）；dIVC = (Dmax − Dmin) ÷ Dmin（机械通气）。同一对内径顺带给 RAP 档：≤21 mm 且 cIVC ≥50% → 3；>21 mm 且 <50% → 15；>25 mm 且 <10% → 可考虑 20；其余取 8。',
+        blocks: [
+          { kind: 'h', text: '一、先量对：三个细节决定数值，九成的「变异异常」都出在这里' },
+          {
+            kind: 'table',
+            heads: ['细节', '正确做法', '错了会怎样'],
+            rows: [
+              ['位置', '剑突下，右房开口近端 0.5–3.0 cm、**肝静脉汇入处以远**', '取到肝静脉汇入处：内径被高估，塌陷被低估'],
+              ['时相', '呼气末取 Dmax、吸气末取 Dmin；同一呼吸周期内的最大 / 最小', '取错时相：Dmax 与 Dmin 都偏一处，指数直接失真'],
+              ['方法', '**M 型**优先（时间分辨率高），2D 只作定位', '2D 目测：Dmin 抓不住，塌陷指数普遍偏小'],
+            ],
+          },
+          { kind: 'note', text: '**最常见的假变异是「探头移位」**：呼吸时探头跟着腹壁起伏，IVC 从一个成像平面滑到另一个平面，看起来像在塌陷。R5 原文专门提醒要核实这一点——正确做法是让图像里同时留住 IVC 长轴与右房开口，塌陷时管壁自身在动，而不是整幅图在平移。', warn: true },
+
+          { kind: 'h', text: '二、两个公式：分母不同，用途也不同' },
+          { kind: 'formula', text: '塌陷指数 cIVC（自主呼吸）= (Dmax − Dmin) ÷ Dmax × 100%' },
+          { kind: 'formula', text: '扩张指数 dIVC（机械通气）= (Dmax − Dmin) ÷ Dmin × 100%' },
+          {
+            kind: 'table',
+            heads: ['指数', '阈值', '用在哪'],
+            rows: [
+              ['cIVC', '≥50% 提示右房压不高（RAP 3）', '右房压、低容量；自主呼吸患者'],
+              ['dIVC', '≥18% 提示容量反应性（R106）', '机械通气患者的补液试验替代；只作旁证'],
+              ['RAP 档', '3 / 8 / 15 / 可考虑 20', '给 sPAP、dPAP、mPAP、PAPi 当加数'],
+            ],
+          },
+          { kind: 'note', text: '**两个分母不能互换**：同一对内径，dIVC 恒大于 cIVC（Dmin 更小）。报「IVC 变异 42%」而不写分母，读的人会拿错阈值——写「cIVC 42%」或「dIVC 42%」。', warn: true },
+
+          { kind: 'h', text: '三、不同状态下的表现与报告写法' },
+          {
+            kind: 'table',
+            heads: ['状态', 'IVC 与呼吸变异', '报告怎么写', '别写错'],
+            rows: [
+              ['正常自主呼吸', '≤21 mm，sniff 塌陷 ≥50%', '「IVC 18 mm，吸气塌陷约 60%，估 RAP 3 mmHg」', '别只写「IVC 正常」，RAP 要给数字（R5 要求报具体值）'],
+              ['右心压高（肺高压 / 右心衰）', '>21 mm，塌陷 <50%，常伴右房增大', '「IVC 22 mm，吸气塌陷约 30%，估 RAP 15 mmHg；右房增大」', '别用 sPAP 反推 RAP，也别只写「下腔增宽」'],
+              ['低容量 / 失血 / 脓毒症早期', '细小（可 <10 mm）、塌陷 >50%，甚至「空虚」', '「IVC 10 mm，吸气完全塌陷，估 RAP <3 mmHg，提示容量不足」', 'R5 单列了「RAP <3」这一档，别硬套 3'],
+              ['不确定（内径正常却不塌 / 增宽却仍塌）', '两种「不匹配」组合', '「RAP 不确定，暂取 8 mmHg」+ 二级指标', '别在两者之间二选一硬判'],
+              ['机械通气 / PEEP', '增宽、塌陷变小（正压所致）', '「正压通气，IVC 塌陷度不用于估 RAP；IVC 20 mm，提示 RAP <10 mmHg」', '别用 cIVC 判 RAP（R5 明确禁止）'],
+              ['心包填塞', '增宽、不塌陷，右室舒张期塌陷、肝静脉舒张期逆转', '「IVC 24 mm 不塌陷，肝静脉舒张期血流逆转，符合心包填塞」', '别把 IVC 增宽当成右心衰的唯一证据'],
+              ['缩窄性心包炎', '增宽，呼吸相室间隔抖动、房室瓣流入随呼吸显著变化', '「IVC 23 mm，室间隔呼吸相抖动，符合缩窄」', '缩窄的 IVC 可以塌陷尚可，别只凭 IVC 排除'],
+              ['腹压增高 / 腹腔间隔室综合征', '增宽、塌陷小，肝静脉亦宽', '「IVC 25 mm 不塌陷；腹内压 XX mmHg，右房压评估受限」', '不测腹压就下「右房压高」结论'],
+              ['年轻健康人 / 运动员 / 妊娠', '轻–中度增宽，塌陷正常', '「IVC 22 mm，塌陷正常，考虑生理性增宽」', '别报右房压升高；妊娠血容量增加属正常'],
+            ],
+          },
+
+          { kind: 'h', text: '四、ICU 里做不出深吸气：三步退（R5）' },
+          { kind: 'text', text: '① 改看**安静呼吸**下的内径变化——可操作性最好，但它与右房压的对应关系不如 sniff 稳；② 配合二级指标（见下节）；③ 仍不确定就取**中间值 8 mmHg（5–10）**，报告写「RAP 不确定」。插管患者另有规则：塌陷度不能估 RAP，但 **IVC ≤21 mm 识别 RAP <10 mmHg 是可靠的**。' },
+
+          { kind: 'h', text: '五、二级指标（R5）：把 8 往上或往下推' },
+          { kind: 'text', text: 'R5 给的清单：**右房增大**、**房间隔全程凸向左房**、**右室限制性舒张充盈**、**三尖瓣 E/e′ >6**、**肝静脉 HVs 充盈分数 <55%**（= HVs ÷（HVs + HVd）；右房压升高时 HVs 优势消失、HVs/HVd <1）。判法：五项都没有 → RAP 降回 3；有阳性 → 升到 15；仍不确定 → 8。肝静脉在机械通气下同样可用，但要**连续 ≥5 个心动周期、覆盖至少一个呼吸周期**再取平均。' },
+          { kind: 'note', text: '**随访别只报内径**：IVC 内径随容量、体位、腹压天天变，单次增宽没有趋势价值。要看「同体位、同呼吸相下的内径 + 塌陷指数」两条一起变，并结合 TAPSE/PASP、右房面积与 NT-proBNP。', warn: true },
+        ],
       },
       {
         id: 'rvfun',
@@ -8146,11 +8211,12 @@ const REFS = [
   {
     id: 'R5',
     zh: '成人右心超声心动图评估指南（ASE 2025）',
-    en: 'Mukherjee M, Rudski LG, Addetia K, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults and Special Considerations for Special Populations.',
-    where: 'J Am Soc Echocardiogr, 2025, 38(3): 141–186',
-    use: 'TAPSE、FAC、RV S′、右房面积等右心定量',
+    en: 'Mukherjee M, Rudski LG, Addetia K, et al. Guidelines for the Echocardiographic Assessment of the Right Heart in Adults and Special Considerations in Pulmonary Hypertension: Recommendations from the American Society of Echocardiography. J Am Soc Echocardiogr, 2025, 38(3): 141–186.',
+    where: 'J Am Soc Echocardiogr, 2025, 38(3): 141–186. DOI: 10.1016/j.echo.2025.01.006',
+    use: 'TAPSE、FAC、RV S′、右房面积等右心定量；RAP 四档（0–4 / 5–9 / 10–14 / ≥15）与 IVC 判读；肺高压右心评估',
     dl: [
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2026/08/ASE-Right-Heart-Guidelines-May-2025.pdf' },
+      { t: 'DOI', u: 'https://doi.org/10.1016/j.echo.2025.01.006' },
     ],
   },
   {
@@ -9191,6 +9257,39 @@ const REFS = [
       { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/38309834/' },
     ],
   },
+  {
+    id: 'R104',
+    zh: '肺动脉高压治疗指南（JCS 2017/JPCPHS 2017，日本循环学会与日本肺循环·肺高血压学会）',
+    en: 'Fukuda K, Date H, Doi S, et al. Guidelines for the Treatment of Pulmonary Hypertension (JCS 2017/JPCPHS 2017). Circ J, 2019, 83(4): 842–945.',
+    where: 'Circulation Journal, 2019, 83(4): 842–945. DOI: 10.1253/circj.CJ-66-0158',
+    use: '肺高压定义沿革与 RAP 估法演变：mPAP ≥25 时代定义、健康人 14±3（上限 20）、21–24 意义未明；RAP 由「固定值 5 或 10」改为按 IVC 直径与呼吸变化三档估（3 / 8 / 15）',
+    dl: [
+      { t: '免费全文', u: 'https://www.jstage.jst.go.jp/article/circj/83/4/83_CJ-66-0158/_pdf' },
+      { t: 'DOI', u: 'https://doi.org/10.1253/circj.CJ-66-0158' },
+    ],
+  },
+  {
+    id: 'R105',
+    zh: '超声轻度肺动脉收缩压升高门诊患者的长期随访（上海中山医院单中心队列，BMJ Open 2024）',
+    en: 'Weng Z, Zhang L, Lin D, et al. Long-term follow-up in outpatients with mildly elevated pulmonary artery systolic pressure on echocardiography: a single-centre retrospective cohort study in Shanghai, China. BMJ Open, 2024, 14(7): e086516.',
+    where: 'BMJ Open, 2024, 14(7): e086516. DOI: 10.1136/bmjopen-2024-086516',
+    use: '超声侧 PH 定义为 PASP ≥40 mmHg（40–49 轻 / 50–69 中 / ≥70 重），RAP 按 IVC 吸气塌陷三档取 5 / 10 / 15；910 例随访 5–6 年：无器质性心脏病者轻度升高不预测全因死亡',
+    dl: [
+      { t: 'DOI', u: 'https://doi.org/10.1136/bmjopen-2024-086516' },
+      { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/39025813/' },
+    ],
+  },
+  {
+    id: 'R106',
+    zh: '下腔静脉直径呼吸变异预测机械通气脓毒症患者的容量反应性（Barbier 2004）',
+    en: 'Barbier C, Loubières Y, Schmit C, et al. Respiratory changes in inferior vena cava diameter are helpful in predicting fluid responsiveness in ventilated septic patients. Intensive Care Med, 2004, 30(9): 1740–1746.',
+    where: 'Intensive Care Medicine, 2004, 30(9): 1740–1746. DOI: 10.1007/s00134-004-2259-8',
+    use: '机械通气患者用 IVC 扩张指数 dIVC = (Dmax − Dmin) ÷ Dmin 预测容量反应性，经典切点 18%',
+    dl: [
+      { t: 'DOI', u: 'https://doi.org/10.1007/s00134-004-2259-8' },
+      { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/15034650/' },
+    ],
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════
@@ -9218,6 +9317,7 @@ var CALC_HINTS = {
   /* 心腔与应变 */
   lv: '血流动力学与心功能 · 左室容积与射血分数；LVOT 每搏量与心排量；M 型三合一',
   rv: '右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP）；PAPi 肺动脉搏动指数；右室容积指数 RVEDVi/RVESVi；快速比值 RV/LV',
+  ivc: '右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP，RAP 由 IVC 取值）；右心评估',
   rvfun: '右心与肺循环 · 右室收缩功能三合一；右室容积指数 RVEDVi / RVESVi',
   strain: '重构与心肌功能 · 应变离散度 MDS；左室重构四联',
   'la-strain': '重构与心肌功能 · 左房应变三值；左房排空分数 LAEF',
@@ -9310,6 +9410,7 @@ var CALC_LINKS = {
   /* 心腔与应变 */
   lv: ['ef', 'flow', 'mtype'],
   rv: ['rvvol', 'quickratio', 'mpap', 'papi'],
+  ivc: ['mpap', 'rv'],
   rvfun: ['rvsyst', 'rvvol'],
   strain: ['mdsv', 'lvgeom'],
   'la-strain': ['lastrain', 'laef'],
@@ -9894,7 +9995,8 @@ const CALC_SRC = {
   lvmass: ['R2', 'R1'],            // Devereux 公式 + 中国成人正常值
   mapse: ['R2'],                   // 长轴缩短
   tei: ['R2', 'R12'],              // Tei 指数（左心 / 右心）
-  mpap: ['R11', 'R68', 'R12'],     // 肺动脉压与 PH 概率（ESC/ERS + 中国指南 + 右心指南）
+  mpap: ['R11', 'R68', 'R12', 'R104', 'R105'],  // 肺动脉压与 PH 概率（ESC/ERS + 中国指南 + 右心指南 + JCS 2017 + 上海轻度 PASP 队列）
+  ivc: ['R5', 'R104', 'R105', 'R106'],    // 下腔静脉（ASE 2025 判读 + JCS 2017 沿革 + 上海队列 + 容量反应性）
   bernoulli: ['R2'],               // 简化伯努利方程
   atrial: ['R2', 'R1'],            // LAVI / RAVI
   rvvol: ['R5'],                   // 右室容积指数（ASE 2025 右心）

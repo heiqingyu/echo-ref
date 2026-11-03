@@ -1234,6 +1234,44 @@ function paspGrade(v) {
  * @param {number} ivcMm IVC 内径 mm
  * @param {string} collapse 'yes' >50% | 'no' ≤50% | '' 未知
  */
+/**
+ * 下腔静脉变异度（IVC variability）
+ *
+ *   自主呼吸 → 塌陷指数 cIVC = (Dmax − Dmin) / Dmax × 100%
+ *   机械通气 → 扩张指数 dIVC = (Dmax − Dmin) / Dmin × 100%
+ * 同一组 Dmax / Dmin 两个公式一起给出，报告按通气方式取用。
+ *
+ * 顺带按 2025 ASE 右心指南（R5）的算法给出对应 RAP：
+ *   Dmax ≤21 mm 且塌陷 ≥50% → 3（0–5）
+ *   Dmax >25 mm 且几乎不塌陷（<10%）→ 可考虑 20（须有自发性显影或彩色往返）
+ *   Dmax >21 mm 且塌陷 <50% → 15（10–20）
+ *   其余（内径正常却不塌、或增宽却仍塌）→ 8（5–10）为不确定档
+ * 容量反应性阈值（机械通气 dIVC ≥18%，Barbier 2004 R106）只作旁证，
+ * 不能单独据此补液。
+ */
+function ivcVariation(dmax, dmin) {
+  if (!(dmax > 0) || !(dmin > 0)) return {};
+  if (dmin > dmax) return { error: 'IVC 最小内径不能大于最大内径，请核对' };
+  const diff = dmax - dmin;
+  const cIVC = diff / dmax * 100;
+  const dIVC = diff / dmin * 100;
+  let rap = 8;
+  let rapText;
+  if (dmax <= 21 && cIVC >= 50) {
+    rap = 3; rapText = '右房压正常（3 mmHg，0–5）';
+  } else if (dmax > 25 && cIVC < 10) {
+    rap = 20; rapText = '右房压明显升高（可考虑 20 mmHg），需有自发性显影或彩色血流往返支持';
+  } else if (dmax > 21 && cIVC < 50) {
+    rap = 15; rapText = '右房压升高（15 mmHg，10–20）';
+  } else {
+    rapText = '不确定档，取中间值 8 mmHg（5–10）';
+  }
+  return {
+    dmax: dmax, dmin: dmin, diff: diff, cIVC: cIVC, dIVC: dIVC,
+    rap: rap, rapText: rapText,
+  };
+}
+
 function rapEstimate(ivcMm, collapse) {
   if (!(ivcMm > 0)) return {};
   const rap = rapFromIvc(ivcMm, collapse);
@@ -2821,6 +2859,7 @@ module.exports = {
   // —— v1.2.4 新增：右心 / 阻力 / 瓣膜定量 / 重构 / 做功 ——
   paspGrade,
   rapEstimate,
+  ivcVariation: ivcVariation,
   pvrResistance,
   svrResistance,
   eoaPpm,

@@ -793,7 +793,7 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 120 条（计算 40 + 评估判读 80；v1.13.10 先心分流拆为 ASD / VSD / PDA 三条；v1.14.0 新增 ped-base 儿童超声基础）', d.items === 120, d.items);
+    check('条目 121 条（计算 40 + 评估判读 81；v1.14.5 新增「下腔静脉」判读条目）', d.items === 121, d.items);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
       d.resistOuts + ' / ' + d.lvgeomOuts);
@@ -806,7 +806,7 @@ function check(name, ok, detail) {
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
-    check('参考文献 103 条', d.refs === 103, d.refs);
+    check('参考文献 106 条', d.refs === 106, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
 
@@ -1888,7 +1888,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 103 条', /103/.test(ri.cnt), refsInit);
+  check('折叠头显示 106 条', /106/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -1907,7 +1907,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 103 条', ro.hidden === false && ro.n === 103 && ro.h > 0, refsOpen);
+  check('点击后展开全部 106 条', ro.hidden === false && ro.n === 106 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 
@@ -2009,8 +2009,8 @@ function check(name, ok, detail) {
   const cr = JSON.parse(calcRefs);
   check('计算条目详情带「本条目引用」：flow / mpap / dfun / tapse / tr',
     cr.cs.every(function (x) { return x.found && x.head === '本条目引用' && x.n >= 1; }), calcRefs);
-  check('mpap 引用 3 条（ESC/ERS + 中国 PH + 右心指南）',
-    cr.cs.filter(function (x) { return x.id === 'mpap'; })[0].n === 3, calcRefs);
+  check('mpap 引用 5 条（ESC/ERS + 中国 PH + 右心指南 + JCS 2017 + 上海轻度 PASP 队列）',
+    cr.cs.filter(function (x) { return x.id === 'mpap'; })[0].n === 5, calcRefs);
   // v1.13.8：用户要求撤掉「被引用于」反向胶囊（显得乱），这里锁定不再出现
   check('文献卡不再渲染「被引用于」反向胶囊', cr.citedLeft === 0, calcRefs);
 
