@@ -545,14 +545,14 @@ Page({
       if (r.hasResult) {
         parts.push(r.rapText);
         if (r.spap !== undefined) {
-          parts.push('sPAP ' + calc.fmt(r.spap, 1) + ' mmHg（' + r.spapText + '）');
+          parts.push('sPAP ' + calc.fmt(r.spap, 1) + ' mmHg · ' + r.spapText);
         }
         if (r.dpap !== undefined) {
           parts.push('dPAP ' + calc.fmt(r.dpap, 1) + ' mmHg');
         }
         if (r.mpap !== undefined) {
-          parts.push('mPAP ' + calc.fmt(r.mpap, 1) + ' mmHg（' + r.mpapText +
-            (r.mode === 'mahan' ? '，Mahan 近似' : '') + '）');
+          parts.push('mPAP ' + calc.fmt(r.mpap, 1) + ' mmHg · ' + r.mpapText +
+            (r.mode === 'mahan' ? '，Mahan 近似' : ''));
         }
       }
       if (valid(v.pp_tr) || valid(v.pp_rvotat) || signs === true) {

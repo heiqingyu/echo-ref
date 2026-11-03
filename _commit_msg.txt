@@ -1,20 +1,9 @@
-v1.13.15：BSA 从公式集目录页移到需要它的条目内
+v1.14.3：补第三套 sPAP 口径（≥40 起算）与 RAP 的 TR 反流程度法（5/10/15）
 
-- 目录页顶部去掉「· BSA 1.75 m²（来自「EF·参考值」页）」，只留条目数与一句提示；
-  用户反馈 119 条里绝大多数用不到 BSA，却长期占着首屏
-- 新增 calc-groups.js 的 BSA_GROUPS（22 条）：flow / atrial / ef / lvmass / la / svrv /
-  avav / asload / ppm / volidx / aortaidx / swv / pvfu / rvvol / residx / tr / mitral /
-  aortic / paidx / aortaz / resist / lvgeom；ebstein 不收（它本来就有 ebbsa 手填字段）
-- 小程序 formula 页：这些条目在输入区最前多两行「身高 / 体重」，填了就按 Mosteller 现算，
-  不填沿用「EF·参考值」页；小标题同步显示「1.75 m² · Mosteller（170 cm / 65 kg）」。
-  这两行独立成 bsaH / bsaW，不进 data.inputs —— 否则 verify-mp 几十条按索引填值、
-  按长度断言的用例全要重编号
-- 网页 / APK：fieldsHtml 按 gid 插同款两行（data-ck="gid~h" / "gid~w"），
-  renderCalc 逐条改用 bsaOf(gid) 取自己的 BSA，不再共用一个全局值
-- 校验新增：verify-project 6 条（BSA_GROUPS 22 项、关键条目在列、ebstein 不在列、
-  web 内联副本与小程序逐一相同、目录页无 BSA 文案）；verify-mp 8 条（含实填 170/65 →
-  SVi 出现、身高体重落缓存、shunt 不出这两行）；verify-docs 4 条（430px 实测：
-  小标题 + 两行输入存在、填 170/65 出 1.75 m²、SVi 参与计算、目录说明无 BSA）
-- 430px 实截：目录页与 flow 详情均无溢出（overflow 430 / cardW 402）
-- 七项校验：293 / 625 / 427 / 373 / 206 / 39 / 385 全绿；APK v1.13.15（1.66 MB），
-  小程序开发版已传 v1.13.15
+1. sPAP 分度表扩到五套，新增「以 40 为起算线（<40 正常偏高，40–49 才轻度）」；
+   35–39 是唯一结论相反的区间，paspGrade 文案同时写出两种判定。
+2. 新增「四、RAP 怎么估：IVC 法 vs TR 反流程度法」——ASE 2025 四档 / ASE 2015 三分级
+   3·8·15 / TR 反流轻中重 5·10·15 三套并列，讲清 5/10/15 会绕成循环且最多差 4 mmHg。
+3. 修正 pulmonaryPressures 里 mPAP「>25 / 20–25 轻度」的旧文案，统一为 >20 即肺高压。
+4. 结果文案由「值（分级）」改「值 · 分级」；速查表 4 列→3 列、RAP 表 4 列→3 列。
+5. verify-calc 加两条断言锁死 35–39 双口径文案；版本 1.14.3 / 155。

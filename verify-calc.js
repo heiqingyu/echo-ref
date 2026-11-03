@@ -104,6 +104,9 @@ check('PASP 35 轻度（2025 ASE 口径；传统 ≤36 算正常，只差 RAP �
 check('PASP 45 轻度', C.paspGrade(45).level, 1);
 check('PASP 60 中度', C.paspGrade(60).level, 2);
 check('PASP 75 重度', C.paspGrade(75).level, 3);
+// 35–39 是唯一「两套口径结论相反」的区间：必须同时写出两种判定
+check('PASP 36 文案同时给出 ≥40 起算口径', C.paspGrade(36).text.indexOf('40 起算') !== -1 ? 'ok' : 'bad', 'ok');
+check('PASP 42 已是两套口径都判轻度，不再提 40 口径', C.paspGrade(42).text.indexOf('起算') === -1 ? 'ok' : 'bad', 'ok');
 check('IVC 18 + 塌陷充分 → RAP 3', C.rapEstimate(18, 'yes').rap, 3);
 check('IVC 24 + 塌陷差 → RAP 15', C.rapEstimate(24, 'no').rap, 15);
 check('IVC 18 + 塌陷差 → RAP 8', C.rapEstimate(18, 'no').rap, 8);

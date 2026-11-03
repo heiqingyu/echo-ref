@@ -2678,11 +2678,11 @@
       const parts = [];
       if (r.hasResult) {
         parts.push(r.rapText);
-        if (r.spap !== undefined) parts.push('sPAP ' + Calc.fmt(r.spap, 1) + ' mmHg（' + r.spapText + '）');
+        if (r.spap !== undefined) parts.push('sPAP ' + Calc.fmt(r.spap, 1) + ' mmHg · ' + r.spapText);
         if (r.dpap !== undefined) parts.push('dPAP ' + Calc.fmt(r.dpap, 1) + ' mmHg');
         if (r.mpap !== undefined) {
-          parts.push('mPAP ' + Calc.fmt(r.mpap, 1) + ' mmHg（' + r.mpapText +
-            (r.mode === 'mahan' ? '，Mahan 近似' : '') + '）');
+          parts.push('mPAP ' + Calc.fmt(r.mpap, 1) + ' mmHg · ' + r.mpapText +
+            (r.mode === 'mahan' ? '，Mahan 近似' : ''));
         }
       }
       if (has('pp_tr') || has('pp_rvotat') || signs === true) {

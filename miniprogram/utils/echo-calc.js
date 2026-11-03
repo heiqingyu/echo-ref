@@ -1208,16 +1208,19 @@ function ebsteinIndex(disp, bsa) {
  *   ≥70 重度升高
  * 34 与 36 的差别只是 RAP 取 3 还是 5：4×2.8² = 31.4，+3 → 34、+5 → 36，
  * 同一个公式的取整差异，不是两种病变。报告里注明用的是哪套口径即可。
+ * ★ 2026-11-03 补：还有一套把起算线放在 40 mmHg（<40 视为正常，30–39 记「正常偏高」），
+ *   35–39 这一段因此两套口径结论相反 → 35–39 的 text 明确写出两种判定，避免报告被质疑。
  * 中国指南与 ESC/ERS 2022 都不设 sPAP 轻中重，只给 mPAP >20 + PVR >2 WU 的诊断线。
  * 注意：PASP 依赖 TR 压差 + RAP 估算，TR 频谱不完整时误差大；
  * 肺动脉瓣狭窄 / RVOT 梗阻时 4V²+RAP 会高估。
  */
 function paspGrade(v) {
   if (!(v > 0)) return {};
-  if (v <= 34) return { level: 0, text: '正常（≤34 mmHg）' };
-  if (v < 50) return { level: 1, text: '轻度升高（35–49 mmHg）' };
-  if (v < 70) return { level: 2, text: '中度升高（50–69 mmHg）' };
-  return { level: 3, text: '重度升高（≥70 mmHg）' };
+  if (v <= 34) return { level: 0, text: '正常，≤34 mmHg（按 ≥40 起算口径同为正常）' };
+  if (v < 40) return { level: 1, text: '轻度升高，35–39 mmHg（按 ≥40 起算口径为正常）' };
+  if (v < 50) return { level: 1, text: '轻度升高，40–49 mmHg' };
+  if (v < 70) return { level: 2, text: '中度升高，50–69 mmHg' };
+  return { level: 3, text: '重度升高，≥70 mmHg' };
 }
 
 /**
@@ -2613,8 +2616,8 @@ function pulmonaryPressures(o) {
     out.mode = 'mahan';
   }
   if (out.mpap !== undefined) {
-    out.mpapText = out.mpap > 25 ? '升高（>25 mmHg）'
-      : out.mpap > 20 ? '轻度升高（20–25 mmHg）' : '正常（≤20 mmHg）';
+    out.mpapText = out.mpap > 20 ? '升高，>20 mmHg 即肺高压（ESC/ERS 2022）'
+      : '正常，≤20 mmHg';
   }
   return out;
 }
