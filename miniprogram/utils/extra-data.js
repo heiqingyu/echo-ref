@@ -8757,7 +8757,7 @@ const REFS = [
   },
   {
     id: 'R64',
-    zh: '经胸超声心动图检查规范化应用中国专家共识',
+    zh: '经胸超声心动图检查规范化应用中国专家共识（2024 版）',
     en: '中华医学会超声医学分会超声心动图学组, 国家超声诊断专业医疗质量控制中心专家委员会. 经胸超声心动图检查规范化应用中国专家共识（2024 版）.',
     where: '中华超声影像学杂志, 2024, 33(1): 1–13',
     use: 'TTE 测量切面、规范化操作与报告要素',
@@ -8768,7 +8768,7 @@ const REFS = [
   },
   {
     id: 'R65',
-    zh: '肥厚型心肌病激发负荷超声心动图临床应用指南（2024 版）',
+    zh: '肥厚型心肌病激发/负荷超声心动图临床应用指南（2024 版）',
     en: '中国超声心动图学会, 中华医学会超声医学分会, 国家超声诊断专业质控中心, 等. 肥厚型心肌病激发/负荷超声心动图临床应用指南（2024 版）.',
     where: '中华超声影像学杂志, 2024, 33(8): 645–658',
     use: 'HCM 激发试验适应证、简易激发（Valsalva 与 20 次蹲起）、餐后与体位对压差的影响、运动/药物负荷的阳性判断与终止标准、SAM 与隐匿性梗阻判读',
@@ -8962,7 +8962,7 @@ const REFS = [
   },
   {
     id: 'R83',
-    zh: '儿童冠状动脉经胸超声心动图规范化检查中国专家共识',
+    zh: '儿童冠状动脉经胸超声心动图规范化检查中国专家共识（2025 版）',
     en: 'Chinese Expert Consensus on Standardized Transthoracic Echocardiographic Examination of the Coronary Arteries in Children.',
     where: '中华超声影像学杂志, 2025, 34(11): 921–931',
     dl: [
@@ -9119,10 +9119,10 @@ const REFS = [
   },
   {
     id: 'R98',
-    zh: '三尖瓣反流的治疗（JAMA Insights 译文）',
+    zh: '三尖瓣反流的治疗（Management of Tricuspid Regurgitation，JAMA 2025）',
     en: 'Asgar AW. Management of Tricuspid Regurgitation. JAMA, 2025, 334(14): 1292–1293.',
     where: 'JAMA, 2025, 334(14): 1292–1293',
-    use: 'JAMA Insights 三尖瓣反流治疗综述中文译文：药物与介入管理路径、TR 五级分度、原发/继发/CIED 相关分类',
+    use: 'JAMA Insights 三尖瓣反流治疗综述（库内为英文原件）：药物与介入管理路径、TR 五级分度、原发/继发/CIED 相关分类',
     dl: [
       { t: 'DOI', u: 'https://doi.org/10.1001/jama.2025.12946' },
       { t: '官网', u: 'https://jamanetwork.com/journals/jama/article-abstract/2838191' },
@@ -9130,7 +9130,7 @@ const REFS = [
   },
   {
     id: 'R99',
-    zh: '法洛四联症外科治疗中国专家共识（十）',
+    zh: '先天性心脏病外科治疗中国专家共识（十）：法洛四联症',
     en: '国家心血管疾病临床医学研究中心 先心病专业委员会, 王辉山, 李守军. 先天性心脏病外科治疗中国专家共识（十）：法洛四联症. 中国胸心血管外科临床杂志, 2020, 27(11): 1247–1254.',
     where: '中国胸心血管外科临床杂志, 2020, 27(11): 1247–1254. DOI: 10.7507/1007-4848.202007065',
     use: 'TOF 外科治疗共识：手术时机与术式、术后 PR 处理及肺动脉瓣置换（PVR）指征、RVOT 解除标准与随访',
@@ -9141,7 +9141,7 @@ const REFS = [
   },
   {
     id: 'R100',
-    zh: '右室双出口新解剖分型超声诊断专家共识',
+    zh: '先天性右室双出口新解剖分型超声心动图诊断规范专家共识',
     en: '中国超声医学工程学会超声心动图专业委员会, 逄坤静, 李守军. 先天性右室双出口新解剖分型超声心动图诊断规范专家共识. 中国超声医学杂志, 2022, 38(7): 721–729.',
     where: '中国超声医学杂志, 2022, 38(7): 721–729',
     use: 'DORV 新解剖分型（3 要素 8 型）的超声诊断规范、骑跨率判定阈值与每型对应术式',
@@ -9673,14 +9673,66 @@ var EN_ALIAS = [
   ['RVFWS', 'right ventricular free wall strain', '右室游离壁应变', 'rvfun', '/raɪt vɛnˈtrɪkjələr friː wɔl streɪn/'],
 ];
 
+/**
+ * 搜索关键词补充表（v1.14.1）
+ *
+ * ★ 为什么需要：公式集目录只按「标题 + 一句话说明」匹配，而临床口语与标题常对不上
+ *   ——用户搜「平均压」时，条目叫「肺动脉压 · 肺高压评估」，一个字都不重合，结果 0 条
+ *   （2026-11-03 用户反馈）。这里给每条补一行同义词/口语别名，只参与搜索，不进目录、不影响计数。
+ * ★ 键 = calc 组 id 或 brief 条目 id；值 = 空格分隔的关键词（小写，含中文与英文缩写）。
+ */
+var SEARCH_KW = {
+  /* ── 右心与肺循环：压力/阻力类，口语叫法最多 ── */
+  mpap: '平均压 平均压差 平均肺动脉压 肺动脉平均压 肺动脉压 收缩压 舒张压 肺高压 肺动脉高压 压力分度 压力分级',
+  pvrv: '肺血管阻力 肺阻力 阻力指数 肺高压 手术可根治性',
+  residx: '阻力 体循环阻力 肺循环阻力',
+  papi: '肺动脉搏动指数 搏动指数 失耦联 右室 肺高压',
+  rapv: '右房压 中心静脉压 cvp 右房压力',
+  rvvol: '右室容积 右室扩大 容积指数',
+  rvfacv: '右室面积变化分数 右室收缩功能',
+  rvfws: '右室游离壁应变 右室应变',
+  quickratio: '右室左室比 右室扩大 比值',
+  svrv: '右室每搏量 每搏输出量',
+  tr: '三尖瓣反流 反流定量 缩流颈',
+  paidx: '肺动脉指数 肺动脉发育',
+  /* ── 瓣膜：狭窄/反流的口语说法 ── */
+  as: '主动脉瓣狭窄 平均压差 瓣口面积 跨瓣压差',
+  ar: '主动脉瓣反流 反流分数 缩流颈',
+  ms: '二尖瓣狭窄 瓣口面积 平均压差',
+  mr: '二尖瓣反流 反流定量 缩流颈',
+  dfun: '舒张功能 e/a 舒张性心衰',
+  laasz: '左房僵硬 左房应变',
+  /* ── 判读条目：疾病/术式别名 ── */
+  rv: '右心 右室 右心功能 肺高压 肺动脉压',
+  'pht-rev': '肺高压 肺动脉高压 肺血管阻力 可手术性 靶向药',
+  'zh-ph': '中国肺高血压指南 肺高压 肺动脉高压',
+  critical: '危急值 急诊 床旁 肺高压',
+  osa: '睡眠呼吸暂停 肺高压',
+  rheumatic: '风湿性 二尖瓣狭窄 介入',
+  'ped-base': '儿童 z 值 节段分析 situs 剑下',
+};
+
+/** 取某条目的补充搜索词（小写；无则空串） */
+function kwOf(id) {
+  var s = SEARCH_KW[id];
+  return s ? s.toLowerCase() : '';
+}
+
 /** 中英对照搜索匹配：返回 [{ab, en, zh, to}]；q 为空返回 [] */
 function enAliasMatch(q) {
   q = (q || '').trim().toLowerCase();
   if (!q) return [];
   var out = [];
+  // ★ v1.14.1：中文也能搜（「平均压」→ 肺动脉平均压 mPAP）。
+  //   只对含中文的关键词启用，否则 'as' 这类两字英文会命中 zh 里的 PASP 等缩写。
+  var hasCJK = /[\u4e00-\u9fff]/.test(q);
   for (var i = 0; i < EN_ALIAS.length; i++) {
     var a = EN_ALIAS[i];
-    if (a[0].toLowerCase() === q || (q.length >= 3 && a[1].toLowerCase().indexOf(q) !== -1)) {
+    var hitAb = a[0].toLowerCase() === q;
+    // 英文全称包含匹配只在关键词 ≥3 字符时启用，防止「as / pe」这类短词过度命中
+    var hitEn = q.length >= 3 && a[1].toLowerCase().indexOf(q) !== -1;
+    var hitZh = hasCJK && q.length >= 2 && a[2].toLowerCase().indexOf(q) !== -1;
+    if (hitAb || hitEn || hitZh) {
       out.push({ ab: a[0], en: a[1], zh: a[2], to: a[3] || '' });
     }
   }
@@ -9747,6 +9799,8 @@ module.exports = {
   ABBR: ABBR,
   EN_ALIAS: EN_ALIAS,
   enAliasMatch: enAliasMatch,
+  SEARCH_KW: SEARCH_KW,
+  kwOf: kwOf,
   abbrHits: abbrHits,
   blockText: blockText,
 };

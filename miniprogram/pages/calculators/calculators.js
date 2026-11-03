@@ -213,9 +213,12 @@ function albumChildren(secId, itemId) {
   return (alb && alb.children) || [];
 }
 
-/** 条目是否命中关键词（标题 + 说明） */
+/** 条目是否命中关键词（标题 + 说明 + 补充同义词）
+ *  ★ v1.14.1：补上 SEARCH_KW——搜「平均压」要能命中「肺动脉压 · 肺高压评估」，
+ *    只匹配标题/说明时一个字都不重合，结果 0 条（用户 2026-11-03 反馈）。 */
 function hit(it, q) {
-  return ((it.title || '') + ' ' + (it.sub || '')).toLowerCase().indexOf(q) !== -1;
+  const extra = (EX.kwOf ? EX.kwOf(it.id) : '') || '';
+  return ((it.title || '') + ' ' + (it.sub || '') + ' ' + extra).toLowerCase().indexOf(q) !== -1;
 }
 
 /**

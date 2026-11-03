@@ -169,6 +169,7 @@
       <view class="ref-item__id">{{item.id}}</view>
       <view class="ref-item__body">
         <view class="ref-item__zh">{{item.zh}}</view>
+        <view class="ref-item__en">{{item.en}}</view>
         <view class="ref-item__where">{{item.where}}</view>
       </view>
       <view class="ref-item__go">跳转 ›</view>

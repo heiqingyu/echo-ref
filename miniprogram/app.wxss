@@ -642,10 +642,12 @@ page {
   padding: 28rpx 0 8rpx;
 }
 
-/* 品牌水印（与网页/APK 同款：固定角落、低透明度、不拦截点击，2026-11-01） */
+/* 品牌水印（与网页/APK 同款：固定右下角、低透明度、不拦截点击，2026-11-01）
+   ★ v1.14.1：网页/APK 一直是右下，小程序这边写成了左下，三端不一致 →
+     统一到右下（用户 2026-11-03 明确要求）。 */
 .wmark {
   position: fixed;
-  left: 12rpx;
+  right: 12rpx;
   bottom: 120rpx;
   z-index: 4;
   font-size: 18rpx;
@@ -663,5 +665,5 @@ page {
   margin-top: 3rpx;
   font-size: 16rpx;
   letter-spacing: .2px;
-  text-align: left;
+  text-align: right;
 }

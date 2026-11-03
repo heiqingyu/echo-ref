@@ -60,7 +60,9 @@ function findBrief(id) {
 function refsOf(ids) {
   return (ids || []).map(function (rid) {
     const r = EX.REFS.filter(function (x) { return x.id === rid; })[0];
-    return r ? { id: r.id, zh: r.zh, where: r.where } : null;
+    // ★ v1.14.1：条目内引用也带上完整题录（en）——只给中文简称时，
+    //   回查原文全称会对不上（用户 2026-11-03 要求「标题写全」）。
+    return r ? { id: r.id, zh: r.zh, en: r.en, where: r.where } : null;
   }).filter(Boolean);
 }
 

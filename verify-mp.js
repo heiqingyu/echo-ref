@@ -1908,6 +1908,11 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('enAliasMatch 空词返回空数组', EXA.enAliasMatch('').length, 0, 0);
   check('enAliasMatch 短词（<3 字符）不做英文包含匹配，只命中缩写',
     EXA.enAliasMatch('as').every(function (a) { return a.ab.toLowerCase() === 'as'; }) ? 1 : 0, 1, 0);
+  // ── v1.14.1：中文关键词也要能搜（用户 2026-11-03 报「搜平均压 0 条」）──
+  const zhHit = EXA.enAliasMatch('平均压');
+  check('enAliasMatch 中文命中：「平均压」→ 肺动脉平均压 mPAP',
+    (zhHit[0] && zhHit[0].ab === 'mPAP') ? 1 : 0, 1, 0);
+  check('补充搜索词表：mpap 含「平均压」', (EXA.kwOf('mpap') || '').indexOf('平均压') !== -1 ? 1 : 0, 1, 0);
   // ── v1.12.8：中英对照升格为参考文献后的折叠卡 ──
   check('中英对照 125 条全部带音标（第 5 列，/ 开头）',
     AL.every(function (a) { return a.length === 5 && typeof a[4] === 'string' && a[4].charAt(0) === '/'; }) ? 1 : 0, 1, 0);

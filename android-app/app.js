@@ -989,6 +989,8 @@
   const CALC_SRC = (window.ExtraData && window.ExtraData.CALC_SRC) || {};
   /** 中英对照（v1.12.5）：搜索时单列一组「缩写 / 英文 → 中文」，不进目录 */
   const enAliasMatch = (window.ExtraData && window.ExtraData.enAliasMatch) || function () { return []; };
+  // ★ v1.14.1：条目补充搜索词（口语/同义词），与小程序同一张表
+  const extraKwOf = (window.ExtraData && window.ExtraData.kwOf) || function () { return ''; };
 
   /** 当前打开的条目（详情视图） */
   let curCalcGroup = 'flow';
@@ -1195,6 +1197,8 @@
         '<div class="ref-item__id">' + esc(r.id) + '</div>' +
         '<div class="ref-item__body">' +
         '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
+        // ★ v1.14.1：带上完整题录——只给中文简称时回查全称会对不上（用户 2026-11-03）
+        '<div class="ref-item__en">' + esc(r.en) + '</div>' +
         '<div class="ref-item__where">' + esc(r.where) + '</div>' +
         '</div></div>';
     });
@@ -1894,7 +1898,10 @@
 
   /** 条目是否命中关键词（标题 + 说明，忽略大小写） */
   function hitKw(it, q) {
-    return ((it.title || '') + ' ' + (it.sub || '')).toLowerCase().indexOf(q) !== -1;
+    // ★ v1.14.1：除了标题与说明，还把补充同义词（SEARCH_KW）算进来——
+    //   否则搜「平均压」找不到「肺动脉压 · 肺高压评估」（用户 2026-11-03 反馈 0 条）。
+    return ((it.title || '') + ' ' + (it.sub || '') + ' ' + extraKwOf(it.id))
+      .toLowerCase().indexOf(q) !== -1;
   }
 
   /** 按 id 取专辑条目（含 children） */
