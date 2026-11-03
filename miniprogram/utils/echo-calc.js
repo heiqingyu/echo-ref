@@ -2765,6 +2765,66 @@ function mechDyssynchrony(o) {
 }
 
 /**
+ * R108（ACC/AHA/ASE 等 2025 ICD / CRT / 起搏适用标准）的 A / M / R 三级
+ *
+ * 与指南的 Ⅰ / Ⅱa / Ⅱb 不是一套：AUC 由评分组给每个临床情形打 1–9 分，
+ * 7–9 = 适用（Appropriate）、4–6 = 可能适用（May Be Appropriate）、1–3 = 很少适用（Rarely Appropriate）。
+ *
+ * 口径来源：
+ *   表 7.2 非缺血性心肌病、LVEF ≤35%、窦性心律（含 LVEF 31%–35% 子表，两段逐格相同）
+ *   表 7.2 下半 房颤分支（只有 QRS 维度，无 NYHA 分层）
+ *   表 7.3 LVEF 36%–50%（已具备 ICD 指征）
+ *   表 7.1 缺血性心肌病与表 7.2 仅三格不同，故默认走 7.2 —— 差异写在 crt 条目注里。
+ *
+ * 注意分界：AUC 用 120 ms，ESC 2021 指南用 130 ms，QRS 120–129 ms 这一段两家不一致。
+ *
+ * @param {number} lvef LVEF（%）
+ * @param {number} qrs QRS 时限（ms）
+ * @param {boolean} lbbb 是否 LBBB
+ * @param {number} nyha 1–4，缺省按 2 处理
+ * @param {boolean} af 是否房颤 / 持续房性心律失常
+ * @return {object|null} {tier, score, label} 或 null（LVEF >50% 不在 AUC 表内）
+ */
+function crtAucTier(lvef, qrs, lbbb, nyha, af) {
+  if (!(lvef > 0) || !(qrs > 0)) return null;
+  const n = (nyha >= 1 && nyha <= 4) ? Math.round(nyha) : 2;
+  const wide = qrs >= 150;
+  const mid = qrs >= 120 && qrs < 150;
+  const mk = function (tier, score) {
+    const label = tier === 'A' ? '适用' : tier === 'M' ? '可能适用' : '很少适用';
+    return { tier: tier, score: score, label: label };
+  };
+
+  if (lvef <= 35) {
+    // 房颤分支：表内只有「<120 / 120–149 / ≥150」维度，不分 NYHA
+    if (af) {
+      if (lbbb) return wide ? mk('A', 8) : (mid ? mk('M', 6) : mk('R', 1));
+      return wide ? mk('M', 6) : (mid ? mk('M', 4) : mk('R', 1));
+    }
+    if (qrs < 120) return mk('R', 1);
+    if (lbbb) {
+      if (wide) return mk('A', n === 1 ? 7 : 9);
+      return mk(n === 1 ? 'M' : 'A', n === 1 ? 4 : 7);
+    }
+    if (mid) return (n <= 2) ? mk('R', 3) : mk('M', 6);
+    return (n === 1) ? mk('M', 4) : (n === 2 ? mk('M', 6) : mk('A', 7));
+  }
+
+  if (lvef <= 50) {
+    // 表 7.3：窦性心律与房颤两栏逐格相同
+    if (qrs < 120) return mk('R', 1);
+    if (lbbb) {
+      if (wide) return mk('M', n <= 2 ? 4 : 6);
+      return mid ? (n <= 2 ? mk('R', 3) : mk('M', 4)) : mk('R', 1);
+    }
+    if (mid) return (n <= 2) ? mk('R', 2) : mk('R', 3);
+    return (n <= 2) ? mk('R', 3) : mk('M', 4);
+  }
+
+  return null;
+}
+
+/**
  * CRT 适应证分层（ESC 2021 / AHA-ACC-HFSA 2022 口径）
  *
  *   LVEF ≤35%：LBBB + QRS ≥150 → Ⅰ；LBBB 130–149 或非 LBBB ≥150 → Ⅱa；
@@ -2808,10 +2868,13 @@ function crtIndication(o) {
     'Ⅱb': 'Ⅱb（可以考虑）',
     'Ⅲ': 'Ⅲ 类（不推荐）',
   };
+  const auc = crtAucTier(lvef, qrs, lbbb, o.nyha, !!o.af);
   return {
     cls: cls,
     grade: grades[cls],
     why: why,
+    auc: auc,
+    aucText: auc ? ('AUC 2025 ' + auc.label + '（' + auc.score + ' 分）') : '',
     afNote: o.af ? '房颤：须保证近 100% 双室起搏（常需房室结消融），否则获益低于窦性心律' : '',
   };
 }
@@ -2910,6 +2973,7 @@ module.exports = {
   pulmonaryScreen,
   mechDyssynchrony,
   crtIndication,
+  crtAucTier,
   laStiffness,
   vtiRatio,
   lvncRatio,

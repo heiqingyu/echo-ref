@@ -580,16 +580,18 @@ Page({
       if (r.text) parts.push('→ ' + r.text);
       out = parts.join('；');
     } else if (gid === 'crt') {
-      // —— CRT 适应证分层（2021 ESC / 2022 AHA）——
+      // —— CRT 适应证分层（2021 ESC / 2022 AHA）+ AUC 2025 三级（R108）——
       const r = calc.crtIndication({
         lvef: v.cr_lvef,
         qrs: v.cr_qrs,
         lbbb: v.cr_lbbb === 1,
         nyha: v.cr_nyha,
+        af: v.cr_af === 1,
       });
       if (r.error) out = r.error;
       else {
         const parts = ['推荐 ' + r.grade, '依据 ' + r.why];
+        if (r.aucText) parts.push(r.aucText);
         out = parts.join('；') + '。机械不同步旁证见「心脏同步化」条目';
       }
     } else if (gid === 'la') {

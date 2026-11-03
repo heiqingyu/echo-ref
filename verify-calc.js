@@ -700,5 +700,27 @@ const mrOnly = V.valveCalc('mr', { mvD: 3.4, mvVti: 12, lvotD: 2.0, lvotVti: 20,
 check('只填容积法时 RVol 行计入综合提示（不被 noSum 静默）',
   mrOnly.summary.indexOf('中度') >= 0 ? 'ok' : 'bad', 'ok');
 
+// ── v1.14.8：crtAucTier 对齐 R108 表 7.1 / 7.2 / 7.3 ──
+// 这些格子是逐条抄原表的，改引擎前先回原文对一遍；表里的 15 格另有 verify-project 交叉校验。
+const auc = C.crtAucTier;
+check('AUC 30% + ≥150 LBBB + NYHA Ⅱ → A 9', (auc(30, 160, true, 2, false) || {}).score, 9);
+check('AUC 30% + ≥150 LBBB + NYHA Ⅰ → A 7', (auc(30, 160, true, 1, false) || {}).tier, 'A');
+check('AUC 30% + 120–149 LBBB + NYHA Ⅱ → A 7（非缺血）', (auc(30, 130, true, 2, false) || {}).score, 7);
+check('AUC 30% + 120–149 LBBB + NYHA Ⅰ → M 4', (auc(30, 130, true, 1, false) || {}).tier, 'M');
+check('AUC 30% + 120–149 非 LBBB + NYHA Ⅳ → M 6', (auc(30, 130, false, 4, false) || {}).tier, 'M');
+check('AUC 30% + 120–149 非 LBBB + NYHA Ⅱ → R 3', (auc(30, 130, false, 2, false) || {}).tier, 'R');
+check('AUC 30% + ≥150 非 LBBB + NYHA Ⅳ → A 7', (auc(30, 160, false, 4, false) || {}).tier, 'A');
+check('AUC 30% + QRS<120 → R 1（窄 QRS 一律很少适用）', (auc(30, 100, true, 3, false) || {}).tier, 'R');
+check('AUC 房颤 + ≥150 LBBB → A 8（比窦性低 1 分）', (auc(30, 160, true, 2, true) || {}).score, 8);
+check('AUC 房颤 + 120–149 非 LBBB → M 4', (auc(30, 130, false, 2, true) || {}).score, 4);
+check('AUC 45% + ≥150 LBBB + NYHA Ⅳ → M 6（表 7.3）', (auc(45, 160, true, 4, false) || {}).tier, 'M');
+check('AUC 45% + 120–149 非 LBBB → R 2', (auc(45, 130, false, 1, false) || {}).score, 2);
+check('AUC LVEF >50% 不给评级（表外）', auc(55, 160, true, 2, false), null);
+check('AUC QRS 130 + LBBB：AUC 判 A、ESC 指南判 Ⅱa（两套口径分歧区）',
+  (C.crtIndication({ lvef: 30, qrs: 130, lbbb: true, nyha: 2 }).cls === 'Ⅱa' &&
+   auc(30, 130, true, 2, false).tier === 'A') ? 'ok' : 'bad', 'ok');
+check('crtIndication 带出 aucText',
+  C.crtIndication({ lvef: 30, qrs: 160, lbbb: true, nyha: 2 }).aucText.indexOf('AUC 2025 适用') === 0 ? 'ok' : 'bad', 'ok');
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);

@@ -447,7 +447,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 107 条（R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识）', EXD.REFS.length, 107, 0);
+  check('参考文献 108 条（R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准）', EXD.REFS.length, 108, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');

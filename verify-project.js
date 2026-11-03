@@ -248,7 +248,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 107) ok('参考文献 107 条（R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识）');
+if (EX.REFS.length === 108) ok('参考文献 108 条（R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -1304,6 +1304,70 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   });
   (!tick.length) ? ok('正文无未解析的反引号（三端都不支持行内代码标记）')
     : bad('正文出现反引号会原样显示：' + tick.join(','));
+
+  // ── v1.14.8：R108（2025 ICD / CRT / 起搏适用标准）落地的内容 ──
+  const crtIt = briefAll.filter(function (i) { return i.id === 'crt'; })[0];
+  const crtTxt = JSON.stringify(crtIt.blocks || []);
+  [
+    ['AUC 2025', 'CRT 条目含 AUC 2025 三级评级'],
+    ['≥3 个月优化 GDMT', 'CRT 条目含「≥3 个月 GDMT 后才评 LVEF」'],
+    ['70% 患者 LVEF 升 ≥10', 'CRT 条目含新发 LBBB 等 3 个月的 McNamara 数据'],
+    ['>40%', 'CRT 条目含预期右室起搏负荷 >40% 的条件'],
+    ['≥98%', 'CRT 条目含房颤需维持 ≥98% 起搏'],
+    ['120 ms 分段', 'CRT 条目点明 AUC 用 120 ms、ESC 用 130 ms 的分歧'],
+  ].forEach(function (m) {
+    crtTxt.indexOf(m[0]) !== -1 ? ok(m[1]) : bad('内容缺失：' + m[1]);
+  });
+  (crtIt.source.indexOf('R108') !== -1) ? ok('CRT 条目已引用 R108')
+    : bad('CRT 条目 source 缺 R108');
+  (crtIt.fields && crtIt.fields.length === 5) ? ok('CRT 条目输入框 5 个（含房颤）')
+    : bad('CRT 条目输入框数异常：' + (crtIt.fields || []).length);
+
+  // AUC 表与引擎必须逐格一致：表里改了数字、或引擎改了判法，都要当场报错
+  const aucTbl = (crtIt.blocks || []).filter(function (b) {
+    return b.kind === 'table' && b.heads && b.heads[0].indexOf('情形（LVEF') === 0;
+  })[0];
+  if (!aucTbl || aucTbl.rows.length !== 5) {
+    bad('AUC 表 7.2 缺失或行数不是 5');
+  } else {
+    const Calc2 = require(path.join(MP, 'utils', 'echo-calc.js'));
+    const zh = { '很少': 'R', '可能': 'M', '适用': 'A' };
+    const cases = [[100, false], [130, true], [160, true], [130, false], [160, false]];
+    const mism = [];
+    aucTbl.rows.forEach(function (r, i) {
+      for (let col = 1; col <= 3; col++) {
+        const cell = String(r[col]).trim();
+        const m = cell.match(/^(很少|可能|适用)\s*(\d+)$/);
+        if (!m) { mism.push('r' + i + 'c' + col + ' 格式:' + cell); continue; }
+        const got = Calc2.crtAucTier(30, cases[i][0], cases[i][1], col, false);
+        if (!got || got.tier !== zh[m[1]] || got.score !== Number(m[2])) {
+          mism.push('r' + i + 'c' + col + ' 表=' + cell + ' 引擎=' + JSON.stringify(got));
+        }
+      }
+    });
+    (!mism.length) ? ok('AUC 表 7.2 五档 15 格与 crtAucTier 逐格一致')
+      : bad('AUC 表与引擎不一致：' + mism.slice(0, 3).join(' / '));
+  }
+
+  // 起搏负荷表（表 7.5）四行三列
+  const rvTbl = (crtIt.blocks || []).filter(function (b) {
+    return b.kind === 'table' && b.heads && b.heads[1] === '预期 RV 起搏';
+  })[0];
+  (rvTbl && rvTbl.rows.length === 4 && rvTbl.rows.every(function (r) { return r.length === 3; }))
+    ? ok('预期右室起搏负荷表完整（4 行 × 3 列，R108 表 7.5）')
+    : bad('右室起搏负荷表缺失或列数不对');
+
+  // 题录：JACC 85(11) 1213–1285 + DOI
+  const r108 = EX.REFS.filter(function (r) { return r.id === 'R108'; })[0];
+  (r108 && /85\(11\): 1213–1285/.test(r108.where) && /10\.1016\/j\.jacc\.2024\.11\.023/.test(r108.where))
+    ? ok('R108 题录含 JACC 85(11): 1213–1285 与 DOI')
+    : bad('R108 题录不完整：' + JSON.stringify(r108 && r108.where));
+
+  // 机械不同步 → CRT 条目 的反向桥接
+  const syncG = CG.GROUPS.filter(function (g) { return g.id === 'sync'; })[0];
+  (syncG && (syncG.rel || []).indexOf('crt') !== -1)
+    ? ok('「心脏同步化」可反查 CRT 同步化条目（sync.rel）')
+    : bad('sync 计算器缺 rel: crt');
 }
 
 console.log('\n' + '='.repeat(50));

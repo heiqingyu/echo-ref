@@ -698,12 +698,12 @@
         ['dfvp', 'Vp 血流传播速度（可选）', 'cm/s']],
       note: '2016 ASE/EACVI 简化路径：E/A ≥2，或 E/A ≤0.8 结合平均 E/e′ >14、LAVi >34、TR Vmax >2.8 三指标，分 Ⅰ/Ⅱ/Ⅲ 级。同屏给平均 E/e′（<8 正常、>14 升高）与 E/Vp（≤1.5 正常，>2.5 约 PCWP >18）；Vp 四腔彩色 M 型测（正常 ≥45 cm/s）' },
 
-    { id: 'sync', sec: 'recon', title: '心脏同步化（机械不同步）',
+    { id: 'sync', sec: 'recon', title: '心脏同步化（机械不同步）', rel: ['crt'],
       opts: [{ k: 'sy_flash', n: '室间隔闪动', list: [['n', '无'], ['y', '有']] },
         { k: 'sy_rock', n: '心尖摇摆', list: [['n', '无'], ['y', '有']] }],
       fields: [['sy_spwmd', 'SPWMD 室间隔-后壁延迟', 'ms'], ['sy_ivmd', 'IVMD 主-肺动脉射血前间期差', 'ms'],
         ['sy_tssd', 'Ts-SD-12 应变达峰时间标准差', 'ms']],
-      note: '阈值：SPWMD ≥130 ms、IVMD ≥40 ms、Ts-SD-12 ≥33 ms；室间隔闪动与心尖摇摆出现即记阳性。数值可只填测到的，≥2 项阳性才算证据较充分。PROSPECT 研究：没有单项超声指标能优于 ECG 预测 CRT 反应，本条目只作旁证，不能单独决定是否植入' },
+      note: '阈值：SPWMD ≥130 ms、IVMD ≥40 ms、Ts-SD-12 ≥33 ms；室间隔闪动与心尖摇摆出现即记阳性。数值可只填测到的，≥2 项阳性才算证据较充分。PROSPECT 研究：没有单项超声指标能优于 ECG 预测 CRT 反应，本条目只作旁证，不能单独决定是否植入。AUC 2025（R108）的 A / M / R 分级不含机械不同步指标' },
 
     /* ── 重构与心肌功能（sec: recon） ── */
     { id: 'volidx', partOnly: true, sec: 'recon', title: '容积指数与重构分级',
@@ -3287,10 +3287,12 @@
     {
       const r = Calc.crtIndication({
         lvef: v.cr_lvef, qrs: v.cr_qrs, lbbb: v.cr_lbbb === 1, nyha: v.cr_nyha,
+        af: v.cr_af === 1,
       });
       if (r.error) put('crt', r.error);
       else {
         const parts = ['推荐 ' + r.grade, '依据 ' + r.why];
+        if (r.aucText) parts.push(r.aucText);
         put('crt', partsOf(parts));
       }
     }

@@ -2239,7 +2239,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.14.7</div>
+    <div class="verline">心脏超声参考值 · v1.14.8</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2297,7 +2297,7 @@ button.fx-nav__c {
         <div id="aliasList" hidden></div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.14.7</div>
+      <div class="verline">心脏超声参考值 · v1.14.8</div>
       <div class="note note--warn">
         公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
@@ -7255,6 +7255,66 @@ function mechDyssynchrony(o) {
 }
 
 /**
+ * R108（ACC/AHA/ASE 等 2025 ICD / CRT / 起搏适用标准）的 A / M / R 三级
+ *
+ * 与指南的 Ⅰ / Ⅱa / Ⅱb 不是一套：AUC 由评分组给每个临床情形打 1–9 分，
+ * 7–9 = 适用（Appropriate）、4–6 = 可能适用（May Be Appropriate）、1–3 = 很少适用（Rarely Appropriate）。
+ *
+ * 口径来源：
+ *   表 7.2 非缺血性心肌病、LVEF ≤35%、窦性心律（含 LVEF 31%–35% 子表，两段逐格相同）
+ *   表 7.2 下半 房颤分支（只有 QRS 维度，无 NYHA 分层）
+ *   表 7.3 LVEF 36%–50%（已具备 ICD 指征）
+ *   表 7.1 缺血性心肌病与表 7.2 仅三格不同，故默认走 7.2 —— 差异写在 crt 条目注里。
+ *
+ * 注意分界：AUC 用 120 ms，ESC 2021 指南用 130 ms，QRS 120–129 ms 这一段两家不一致。
+ *
+ * @param {number} lvef LVEF（%）
+ * @param {number} qrs QRS 时限（ms）
+ * @param {boolean} lbbb 是否 LBBB
+ * @param {number} nyha 1–4，缺省按 2 处理
+ * @param {boolean} af 是否房颤 / 持续房性心律失常
+ * @return {object|null} {tier, score, label} 或 null（LVEF >50% 不在 AUC 表内）
+ */
+function crtAucTier(lvef, qrs, lbbb, nyha, af) {
+  if (!(lvef > 0) || !(qrs > 0)) return null;
+  const n = (nyha >= 1 && nyha <= 4) ? Math.round(nyha) : 2;
+  const wide = qrs >= 150;
+  const mid = qrs >= 120 && qrs < 150;
+  const mk = function (tier, score) {
+    const label = tier === 'A' ? '适用' : tier === 'M' ? '可能适用' : '很少适用';
+    return { tier: tier, score: score, label: label };
+  };
+
+  if (lvef <= 35) {
+    // 房颤分支：表内只有「<120 / 120–149 / ≥150」维度，不分 NYHA
+    if (af) {
+      if (lbbb) return wide ? mk('A', 8) : (mid ? mk('M', 6) : mk('R', 1));
+      return wide ? mk('M', 6) : (mid ? mk('M', 4) : mk('R', 1));
+    }
+    if (qrs < 120) return mk('R', 1);
+    if (lbbb) {
+      if (wide) return mk('A', n === 1 ? 7 : 9);
+      return mk(n === 1 ? 'M' : 'A', n === 1 ? 4 : 7);
+    }
+    if (mid) return (n <= 2) ? mk('R', 3) : mk('M', 6);
+    return (n === 1) ? mk('M', 4) : (n === 2 ? mk('M', 6) : mk('A', 7));
+  }
+
+  if (lvef <= 50) {
+    // 表 7.3：窦性心律与房颤两栏逐格相同
+    if (qrs < 120) return mk('R', 1);
+    if (lbbb) {
+      if (wide) return mk('M', n <= 2 ? 4 : 6);
+      return mid ? (n <= 2 ? mk('R', 3) : mk('M', 4)) : mk('R', 1);
+    }
+    if (mid) return (n <= 2) ? mk('R', 2) : mk('R', 3);
+    return (n <= 2) ? mk('R', 3) : mk('M', 4);
+  }
+
+  return null;
+}
+
+/**
  * CRT 适应证分层（ESC 2021 / AHA-ACC-HFSA 2022 口径）
  *
  *   LVEF ≤35%：LBBB + QRS ≥150 → Ⅰ；LBBB 130–149 或非 LBBB ≥150 → Ⅱa；
@@ -7298,10 +7358,13 @@ function crtIndication(o) {
     'Ⅱb': 'Ⅱb（可以考虑）',
     'Ⅲ': 'Ⅲ 类（不推荐）',
   };
+  const auc = crtAucTier(lvef, qrs, lbbb, o.nyha, !!o.af);
   return {
     cls: cls,
     grade: grades[cls],
     why: why,
+    auc: auc,
+    aucText: auc ? ('AUC 2025 ' + auc.label + '（' + auc.score + ' 分）') : '',
     afNote: o.af ? '房颤：须保证近 100% 双室起搏（常需房室结消融），否则获益低于窦性心律' : '',
   };
 }
@@ -7412,6 +7475,7 @@ function crtIndication(o) {
     pulmonaryPressures: pulmonaryPressures,
     pulmonaryScreen: pulmonaryScreen,
     mechDyssynchrony: mechDyssynchrony,
+    crtAucTier: crtAucTier,
     crtIndication: crtIndication,
   };
 })();
@@ -12460,10 +12524,10 @@ const BRIEF_SECTIONS = [
         ab: 'CRT',
         title: 'CRT 同步化',
         sub: 'CRT 起搏 · QRS 指征 · 超声随访',
-        source: ['R6', 'R2'],
+        source: ['R6', 'R2', 'R108'],
         rel: ['strain', 'dcm', 'lv'],
         blocks: [
-          { kind: 'h', text: '一、适应证（核心看 LVEF、NYHA 心功能、QRS 形态与时限）' },
+          { kind: 'h', text: '一、适应证（LVEF · NYHA · QRS）' },
           {
             kind: 'table',
             heads: ['LVEF', 'QRS 形态', 'QRS 时限', '推荐等级'],
@@ -12475,12 +12539,48 @@ const BRIEF_SECTIONS = [
               ['≥50%（HFpEF）', 'LBBB', '≥130 ms', '可以考虑（IIb）'],
             ],
           },
-          { kind: 'note', text: '房颤患者需保证接近 100% 的心室起搏率（常需房室结消融）才能获得与窦性心律相近的获益。', warn: true },
-          { kind: 'h', text: '超声在 CRT 里的三个角色' },
+          { kind: 'note', text: '房颤患者需保证接近 100% 的心室起搏率（常需房室结消融）才能获得与窦性心律相近的获益；AUC 2025 把这条量化为**维持 ≥98%**。', warn: true },
+
+          { kind: 'h', text: '二、AUC 2025 的 A / M / R 三级' },
+          { kind: 'text', text: '2025 年 ACC/AHA/ASE 等八家学会的联合文件（R108）换了写法：不由指南给推荐类别，而让评分组对每个临床情形打 **1–9 分**——**7–9 分 = 适用（A）、4–6 分 = 可能适用（M）、1–3 分 = 很少适用（R）**。所以同一个病人可能同时是「指南 Ⅱa」和「AUC 适用」，这不矛盾，是两把标尺。' },
+          { kind: 'text', text: '两把标尺的分界也不同：**AUC 用 QRS 120 ms 分段，ESC 2021 指南用 130 ms**（2022 AHA/ACC/HFSA 与 AUC 一致，用 120 ms）。QRS 120–129 ms 这一段两家结论确实不同，报告写「处于口径分歧区」比硬给一个类别更诚实。' },
+          {
+            kind: 'table',
+            heads: ['情形（LVEF ≤35%）', 'NYHA Ⅰ', 'NYHA Ⅱ', 'NYHA Ⅲ–Ⅳ'],
+            rows: [
+              ['QRS <120', '很少 1', '很少 1', '很少 1'],
+              ['120–149 LBBB', '可能 4', '适用 7', '适用 7'],
+              ['≥150 LBBB', '适用 7', '适用 9', '适用 9'],
+              ['120–149 非LBBB', '很少 3', '很少 3', '可能 6'],
+              ['≥150 非LBBB', '可能 4', '可能 6', '适用 7'],
+            ],
+          },
+          { kind: 'text', text: '上表是 R108 **表 7.2**（非缺血性心肌病、窦性心律）的原表；LVEF ≤30% 与 31%–35% 两张子表逐格相同，已合并成一张。数字是原始评分。' },
+          { kind: 'note', text: '**房颤分支（表 7.2 下半）不分 NYHA**：LBBB + QRS ≥150 → 适用（8 分）；LBBB 120–149 → 可能（6 分）；非 LBBB ≥150 → 可能（6 分）；非 LBBB 120–149 → 可能（4 分）。前提是起搏能维持 ≥98%，达不到就别按这套评级谈获益。', warn: true },
+          { kind: 'note', text: '**缺血性心肌病（表 7.1）只在三格上与上表不同**：① LVEF ≤30% + NYHA Ⅰ + LBBB 120–149 为 5 分（非缺血 4 分）；② 房颤 + 非 LBBB + QRS 120–149 为很少适用（3 分，非缺血为可能 4 分）；③ 房颤 + LBBB ≥150 为 7 分（非缺血 8 分）。其余逐格相同，不必分病因写两遍。', warn: true },
+
+          { kind: 'h', text: '三、起搏负荷（RV 起搏 >40%）' },
+          {
+            kind: 'table',
+            heads: ['内在 QRS 窄', '预期 RV 起搏', 'NYHA Ⅰ–Ⅱ / Ⅲ–Ⅳ'],
+            rows: [
+              ['LVEF ≤35%', '≤40%', '可能 4 / 可能 5'],
+              ['LVEF ≤35%', '>40%', '适用 7 / 适用 8'],
+              ['LVEF >35%', '≤40%', '很少 2 / 可能 4'],
+              ['LVEF >35%', '>40%', '可能 5 / 可能 6'],
+            ],
+          },
+          { kind: 'text', text: '这条对超声格外实用：不必等 QRS 变宽，只要预计**以后右室起搏会占掉超过 40% 的心动周期**，LVEF ≤35% 者 CRT 就够「适用」。反过来 LVEF >35% 时，即使 >40% 也只到「可能」。所以起搏负荷要写进报告，不能只报 EF。' },
+
+          { kind: 'h', text: '四、LVEF 的测量时机' },
+          { kind: 'text', text: 'AUC 要求所有评级都建立在「**≥3 个月优化 GDMT 之后**」的 LVEF 上。原文理由是：只靠药物就能获益的人，**前 3–6 个月常有临床改善**；若 LVEF 已回升到不再符合一级预防指征，就不该装。GDMT 指 ACEI/ARB/ARNI + β 阻滞剂 + MRA + SGLT2i 滴定到可耐受的靶剂量。' },
+          { kind: 'text', text: '新发 LBBB 更该等：**新诊断扩张型心肌病 6 个月内，70% 患者 LVEF 升 ≥10 个单位、39% 升 ≥20 个单位、25% 完全恢复**（McNamara 等，R108 引用）。所以新发 LBBB 先给 3 个月 GDMT、复查 LVEF 再谈 CRT——这也是超声复查最该卡的时间点。' },
+          { kind: 'note', text: 'AUC 的分期口径：**急性 MI = 症状发作 ≤48 小时**、**近期 MI = ≤40 天**。报告写「近期心梗」时按 40 天算，别默认成一个月内。', warn: true },
+          { kind: 'h', text: '五、超声在 CRT 里的三个角色' },
           { kind: 'text', text: '① 术前排除假性失同步：房间隔缺损修补、先心病手术等造成室间隔变长者，室间隔提前收缩并非真失同步。' },
           { kind: 'text', text: '② 术后疗效随访：左室容积缩小、LVEF 上升、二尖瓣反流减少、术前隐匿性反流与室壁瘤样改变。' },
           { kind: 'text', text: '③ 心肌应变：CRT 后 GLS 绝对值改善 ≥15%（相对改善 ≥20%）是常用的有效反应指标。' },
-          { kind: 'h', text: '机械不同步指标：仅作辅助描述' },
+          { kind: 'h', text: '六、机械不同步指标：仅作辅助描述' },
           {
             kind: 'table',
             heads: ['指标', '含义', '常见提示阈值'],
@@ -12493,25 +12593,26 @@ const BRIEF_SECTIONS = [
           },
           { kind: 'note', text: 'PROSPECT 研究已系统比较十余项超声不同步指标：没有任何单一指标能优于体表 ECG 来预测 CRT 反应。指标不应用于单独决定是否植入 CRT。', warn: true },
         
-          { kind: 'h', text: '四、术前超声优化：让起搏更同步' },
+          { kind: 'h', text: '七、术前超声优化：让起搏更同步' },
           { kind: 'text', text: 'CRT 反应很大程度取决于左室电极落在最晚激动、且存活心肌最多的节段。术前用斑点追踪标测左室最延迟节段与瘢痕分布，引导导线放置；术后优化 AV 间期（保证舒张期充盈又不截断收缩），使左室充盈时间最大化、二尖瓣反流最小。' },
-          { kind: 'h', text: '五、无反应者的超声排查清单' },
+          { kind: 'h', text: '八、无反应者的超声排查清单' },
           { kind: 'table', heads: ['原因', '超声所见', '对策'], rows: [
             ['电极位置不佳', '落在早已瘢痕 / 提前激动区', '考虑 LV 电极重置或再同步化优化'],
             ['持续房颤 / 低起搏率', '双室起搏比例 < 95%', '房室结消融 + 提高起搏比例'],
             ['重度二尖瓣反流未纠正', 'MR 大量、左房巨大', '评估二尖瓣介入'],
             ['心肌广泛纤维化', 'GLS 弥漫极低、无存活心肌', '优化药物，CRT 获益有限'],
           ] },
-          { kind: 'h', text: '六、CRT-D 与 CRT-P 的随访重点' },
+          { kind: 'h', text: '九、CRT-D / CRT-P 随访' },
           { kind: 'text', text: '带除颤功能者（CRT-D）除同步化评估外，还要看室速 / 室颤放电记录、电击后心功能变化；非除颤者（CRT-P）重点在心衰症状与容量。无论哪种，随访都记录 LVEF、左室容积、GLS 相对改善（≥ 15% 绝对值改善为有效反应）与二尖瓣反流变化。' }],
         fields: [
           { k: 'cr_lvef', n: 'LVEF', u: '%' },
           { k: 'cr_qrs', n: 'QRS 时限', u: 'ms' },
           { k: 'cr_lbbb', n: 'LBBB（1 = 有 / 0 = 无）', u: '' },
           { k: 'cr_nyha', n: 'NYHA（1–4，可选）', u: '' },
+          { k: 'cr_af', n: '房颤（1 = 有 / 0 = 无）', u: '' },
         ],
         calc: 'crt',
-        note: '按 2021 ESC / 2022 AHA-ACC-HFSA 给推荐等级：LVEF ≤35% 时 LBBB + QRS ≥150 为 Ⅰ 类，LBBB 130–149 与非 LBBB ≥150 为 Ⅱa，非 LBBB 130–149 为 Ⅱb，QRS <130 不推荐；LVEF 36–50% 仅 LBBB + QRS ≥150 可考虑。房颤须保证近 100% 双室起搏。机械不同步三项旁证用公式集「心脏同步化」条目。',
+        note: '同时给两把标尺：① 指南推荐类别（2021 ESC / 2022 AHA-ACC-HFSA）——LVEF ≤35% 时 LBBB + QRS ≥150 为 Ⅰ 类，LBBB 130–149 与非 LBBB ≥150 为 Ⅱa，非 LBBB 130–149 为 Ⅱb，QRS <130 不推荐；LVEF 36–50% 仅 LBBB + QRS ≥150 可考虑；② AUC 2025 的 A / M / R 三级（7–9 适用、4–6 可能适用、1–3 很少适用，按表 7.2 非缺血性心肌病、窦性心律；房颤走另一分支）。两者分界不同——AUC 用 QRS 120 ms、ESC 用 130 ms，**并列给出，不合并成一句**。房颤须保证 ≥98% 双室起搏。机械不同步三项旁证用公式集「心脏同步化」条目。',
       },
       {
         id: 'la',
@@ -18959,6 +19060,13 @@ const REFS = [
       { t: 'DOI', u: 'https://doi.org/10.3760/cma.j.cn131368-20251117-00657' },
     ],
   },
+  {
+    id: 'R108',
+    zh: '2025 ACC/AHA/ASE/HFSA/HRS/SCAI/SCCT/SCMR 植入式心律转复除颤器、心脏再同步治疗与起搏适用标准',
+    en: 'Russo AM, Desai MY, Do MM, Butler J, et al. ACC/AHA/ASE/HFSA/HRS/SCAI/SCCT/SCMR 2025 Appropriate Use Criteria for Implantable Cardioverter-Defibrillators, Cardiac Resynchronization Therapy, and Pacing. J Am Coll Cardiol, 2025, 85(11): 1213–1285.',
+    where: 'Journal of the American College of Cardiology, 2025, 85(11): 1213–1285（2025-03-25 期）. DOI: 10.1016/j.jacc.2024.11.023',
+    use: 'CRT 的 A / M / R 三级评级（表 7.1 缺血性、表 7.2 非缺血性、表 7.3 LVEF 36%–50%、表 7.5 预期右室起搏负荷、表 7.6 血运重建 / GDMT 不满 3 个月）；「≥3 个月优化 GDMT 后再评 LVEF」与「新发 LBBB 先等 3 个月」的时机依据；房颤需维持 ≥98% 起搏',
+  },
 ];
 
 /* ══════════════════════════════════════════════════════════════
@@ -19682,7 +19790,7 @@ const CALC_SRC = {
   vtir: ['R32', 'R33'],            // RVOT/LVOT VTI 比替代分流
   ppm: ['R15'],                    // EOAi 与 PPM（人工瓣 2024）
   dfun: ['R14', 'R39'],            // 舒张功能四步法 + 2025 更新
-  sync: ['R6', 'R2'],              // CRT 与机械不同步
+  sync: ['R6', 'R2', 'R108'],              // CRT 与机械不同步
   lastrain: ['R4', 'R24', 'R40'],  // 左房应变三时相
   aortaidx: ['R27', 'R1'],         // 升主动脉直径指数
   mdsv: ['R40', 'R3'],             // 应变离散度
@@ -20196,7 +20304,7 @@ const CALC_NOTES = {
   sync: {
     use: 'CRT 术前把「机械不同步」量化成可复核的数字：SPWMD 看室间隔与后壁的收缩时差，IVMD 看左右室射血起始差，Ts-SD-12 看 12 段纵向应变达峰时间的离散度，再叠加室间隔闪动、心尖摇摆两个肉眼征象。用来回答「这个宽 QRS 的心衰患者，超声上到底能不能看到不同步」。',
     std: 'SPWMD ≥130 ms、IVMD ≥40 ms、Ts-SD-12 ≥33 ms 为阳性阈值；室间隔闪动与心尖摇摆出现即记阳性。三项数值可只填测到的，≥2 项阳性才算证据较充分。',
-    tip: 'PROSPECT 研究系统比较过十余项指标：没有任何单项超声不同步指标能优于体表 ECG 预测 CRT 反应。所以本条只写「阳性条数」与描述，不能拿它决定是否植入——适应证仍按 LVEF、QRS 形态与时限。另外先排除「假性失同步」：先心术后室间隔变长、右室容量负荷过重都会让室间隔提前收缩。',
+    tip: 'PROSPECT 研究系统比较过十余项指标：没有任何单项超声不同步指标能优于体表 ECG 预测 CRT 反应。所以本条只写「阳性条数」与描述，不能拿它决定是否植入——适应证仍按 LVEF、QRS 形态与时限。AUC 2025（R108）把 CRT 的 A / M / R 三档按 QRS（120 ms 分段）× 形态 × NYHA 逐格打分，全表没有一格用到机械不同步指标，这也从侧面印证了它们只是旁证。另外先排除「假性失同步」：先心术后室间隔变长、右室容量负荷过重都会让室间隔提前收缩。',
   },
   volidx: {
     use: '按性别给出左室容积指数（EDVi、ESVi、SVi），比绝对值更能反映体型差异下的心脏重构程度。',
@@ -21523,12 +21631,12 @@ const MATERIALS = [];
         ['dfvp', 'Vp 血流传播速度（可选）', 'cm/s']],
       note: '2016 ASE/EACVI 简化路径：E/A ≥2，或 E/A ≤0.8 结合平均 E/e′ >14、LAVi >34、TR Vmax >2.8 三指标，分 Ⅰ/Ⅱ/Ⅲ 级。同屏给平均 E/e′（<8 正常、>14 升高）与 E/Vp（≤1.5 正常，>2.5 约 PCWP >18）；Vp 四腔彩色 M 型测（正常 ≥45 cm/s）' },
 
-    { id: 'sync', sec: 'recon', title: '心脏同步化（机械不同步）',
+    { id: 'sync', sec: 'recon', title: '心脏同步化（机械不同步）', rel: ['crt'],
       opts: [{ k: 'sy_flash', n: '室间隔闪动', list: [['n', '无'], ['y', '有']] },
         { k: 'sy_rock', n: '心尖摇摆', list: [['n', '无'], ['y', '有']] }],
       fields: [['sy_spwmd', 'SPWMD 室间隔-后壁延迟', 'ms'], ['sy_ivmd', 'IVMD 主-肺动脉射血前间期差', 'ms'],
         ['sy_tssd', 'Ts-SD-12 应变达峰时间标准差', 'ms']],
-      note: '阈值：SPWMD ≥130 ms、IVMD ≥40 ms、Ts-SD-12 ≥33 ms；室间隔闪动与心尖摇摆出现即记阳性。数值可只填测到的，≥2 项阳性才算证据较充分。PROSPECT 研究：没有单项超声指标能优于 ECG 预测 CRT 反应，本条目只作旁证，不能单独决定是否植入' },
+      note: '阈值：SPWMD ≥130 ms、IVMD ≥40 ms、Ts-SD-12 ≥33 ms；室间隔闪动与心尖摇摆出现即记阳性。数值可只填测到的，≥2 项阳性才算证据较充分。PROSPECT 研究：没有单项超声指标能优于 ECG 预测 CRT 反应，本条目只作旁证，不能单独决定是否植入。AUC 2025（R108）的 A / M / R 分级不含机械不同步指标' },
 
     /* ── 重构与心肌功能（sec: recon） ── */
     { id: 'volidx', partOnly: true, sec: 'recon', title: '容积指数与重构分级',
@@ -24112,10 +24220,12 @@ const MATERIALS = [];
     {
       const r = Calc.crtIndication({
         lvef: v.cr_lvef, qrs: v.cr_qrs, lbbb: v.cr_lbbb === 1, nyha: v.cr_nyha,
+        af: v.cr_af === 1,
       });
       if (r.error) put('crt', r.error);
       else {
         const parts = ['推荐 ' + r.grade, '依据 ' + r.why];
+        if (r.aucText) parts.push(r.aucText);
         put('crt', partsOf(parts));
       }
     }
