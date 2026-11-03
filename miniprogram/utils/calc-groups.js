@@ -98,6 +98,9 @@ const GROUPS = [
     sec: 'right',
     title: '肺动脉压 · 肺高压评估',
     sub: 'IVC 估 RAP · sPAP / dPAP / mPAP · ESC/ERS 可能性',
+    // ★ v1.14.6：RAP 由 IVC 取值 → 反向链到「下腔静脉」条目与「右心评估」，
+    //   与 ivc 条目里的 rel（rv / rvfun）构成双向引用
+    rel: ['ivc', 'rv'],
     fields: [
       { k: 'pp_ivc', n: 'IVC 内径（估 RAP）', u: 'mm', opt: true },
       { k: 'pp_rap', n: '右房压 RAP（可选，填了优先）', u: 'mmHg', opt: true },
@@ -105,7 +108,7 @@ const GROUPS = [
       { k: 'pp_pr', n: 'PR 舒张末期流速（可选）', u: 'm/s', opt: true },
       { k: 'pp_rvotat', n: 'RVOT 加速时间（可选）', u: 'ms', opt: true },
     ],
-    note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5，>10 提示升高）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）',
+    note: 'RAP（IVC 法，须先选吸气塌陷度）：IVC ≤21 mm 且塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；IVC >25 mm 且塌陷 <10% → 可考虑 20（要有自发性显影或彩色血流往返支持）；其余 8 mmHg（正常 0–5，>10 提示升高）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）',
   },
   {
     id: 'shunt',
@@ -736,9 +739,10 @@ const CALC_SECTIONS = [
 
 /** IVC 塌陷选项 */
 const COLLAPSE = [
-  { v: '', n: '未知' },
-  { v: 'yes', n: '吸气塌陷 >50%' },
-  { v: 'no', n: '吸气塌陷 ≤50%' },
+  { v: '', n: '未测' },
+  { v: 'yes', n: '>50%' },
+  { v: 'no', n: '≤50%' },
+  { v: 'none', n: '<10%' },
 ];
 
 /** PH 支持征象选项 */

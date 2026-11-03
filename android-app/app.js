@@ -595,10 +595,12 @@
       fields: [['ivct', '等容收缩时间 IVCT', 'ms'], ['ivrt', '等容舒张时间 IVRT', 'ms'], ['et', '射血时间 ET', 'ms'], ['tside', '侧别（右室填 2，留空按左室）', '']],
       note: 'MPI = (IVCT + IVRT) / ET；左室 >0.40、右室 >0.55 为异常。心率与负荷会影响测值' },
     { id: 'mpap', sec: 'right', title: '肺动脉压 · 肺高压评估',
+      // ★ v1.14.6：RAP 由 IVC 取值 → 反链「下腔静脉」与「右心评估」（与小程序 calc-groups 同）
+      rel: ['ivc', 'rv'],
       fields: [['pp_ivc', 'IVC 内径（估 RAP）', 'mm'], ['pp_rap', '右房压 RAP（可选，填了优先）', 'mmHg'],
         ['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pr', 'PR 舒张末期流速（可选）', 'm/s'],
         ['pp_rvotat', 'RVOT 加速时间（可选）', 'ms']],
-      note: 'RAP：IVC ≤21 mm 且吸气塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
+      note: 'RAP（IVC 法，须先选吸气塌陷度）：IVC ≤21 mm 且塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；IVC >25 mm 且塌陷 <10% → 可考虑 20（要有自发性显影或彩色血流往返支持）；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
     { id: 'shunt', dirHide: true, title: 'Qp/Qs 肺体循环血流比',
       // ★ v1.12.8：已并入「先心病分流判读」条目（同键输入互相同步），目录不再单列（硬坑 31）
       fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm'],
@@ -819,7 +821,8 @@
     { id: 'recon', title: '重构、室壁运动与心肌功能' },
   ];
 
-  const CALC_COLLAPSE = [['', 'IVC 塌陷未知'], ['yes', '吸气塌陷 >50%'], ['no', '吸气塌陷 ≤50%']];
+  // ★ v1.14.6：塌陷度多一档「几乎不塌陷 <10%」——ASE 2025 只在 >25 mm 且 <10% 时才给 20 mmHg
+  const CALC_COLLAPSE = [['', '未测'], ['yes', '>50%'], ['no', '≤50%'], ['none', '<10%']];
   const CALC_SIGNS = [['', 'PH 征象未评估'], ['yes', '有（≥2 类）'], ['no', '无']];
 
   const calcVal = {};
@@ -2353,7 +2356,8 @@
           '<span class="calc-out__v">等待输入</span></div>';
       });
       // ★ v1.13.8：计算条目也挂「本条目引用」（此前只有判读条目有）
-      html += briefRefsHtml(CALC_SRC[g.id]) + '</div>';
+      // ★ v1.14.6：计算条目也能挂「相关内容」（g.rel），如肺动脉压 → 下腔静脉 / 右心评估
+      html += briefRelHtml(g.rel) + briefRefsHtml(CALC_SRC[g.id]) + '</div>';
     });
 
     BRIEF.forEach(function (sec) {

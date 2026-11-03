@@ -1065,7 +1065,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgF.onLoad({ id: 'rv' });
   check('右心评估为 brief 模式', pgF.data.mode === 'brief' ? 1 : 0, 1, 0);
   check('右心评估输入项 8 个（tr/ivc/prend/rvti2/eda/esa/rvs/tapse）', pgF.data.inputs.length, 8, 0);
-  check('右心评估含 IVC 塌陷选项', pgF.data.collapse.length, 3, 0);
+  check('右心评估含 IVC 塌陷选项 4 档（含几乎不塌陷 <10%）', pgF.data.collapse.length, 4, 0);
+  check('右心评估「相关内容」含下腔静脉',
+    (pgF.data.rels || []).some(function (r) { return r.id === 'ivc'; }) ? 1 : 0, 1, 0);
   check('右心评估含 PH 征象选项', pgF.data.signs.length, 3, 0);
   // 设 TR=3.0, IVC=22 不塌陷 → RAP 15, PASP≈51 中重度
   pgF.data.inputs[0].value = '3.0';
@@ -1075,6 +1077,13 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('右心结果含 RAP 与 PASP',
     /RAP/.test(pgF.data.out) && /PASP/.test(pgF.data.out) ? 1 : 0, 1, 0);
   check('右心结果含 PH 超声概率', /PH 超声概率/.test(pgF.data.out) ? 1 : 0, 1, 0);
+
+  // ★ v1.14.6：肺动脉压计算器也要能反查到「下腔静脉」（RAP 由 IVC 取值）
+  pgF.onLoad({ id: 'mpap' });
+  check('肺动脉压「相关内容」含下腔静脉',
+    (pgF.data.rels || []).some(function (r) { return r.id === 'ivc'; }) ? 1 : 0, 1, 0);
+  check('肺动脉压「相关内容」含右心评估',
+    (pgF.data.rels || []).some(function (r) { return r.id === 'rv'; }) ? 1 : 0, 1, 0);
 
   // ★ v1.9.6：合并页（resist / rvsyst / lvgeom）的 { g: '① …' } 必须转成小标题；
   //   calc 分支曾漏转，被当普通字段渲染成「 / 」空标签（v1.8.3–v1.9.5 一直存在）

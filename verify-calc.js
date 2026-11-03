@@ -126,6 +126,21 @@ const v4 = C.ivcVariation(24, 20);
 check('IVC 24/20 → 增宽且塌陷 <50% → RAP 15', v4.rap, 15);
 check('IVC 最小>最大 报错', C.ivcVariation(20, 24).error ? 'ok' : 'bad', 'ok');
 
+// ── v1.14.6 三处 RAP 口径必须一致：ivc 条目 / 肺动脉压 / 右心评估
+// 同一组「内径 + 塌陷度」从哪个入口算都要给同一个数，否则报告会自相矛盾。
+check('rapFromIvc 18 + >50% → 3', C.rapFromIvc(18, 'yes'), 3);
+check('rapFromIvc 24 + ≤50% → 15', C.rapFromIvc(24, 'no'), 15);
+check('rapFromIvc 26 + <10% → 20（ASE 2025 追加档）', C.rapFromIvc(26, 'none'), 20);
+check('rapFromIvc 22 + <10% → 15（内径未过 25 不升 20）', C.rapFromIvc(22, 'none'), 15);
+check('rapFromIvc 20 + <10% → 8（内径正常不给 15）', C.rapFromIvc(20, 'none'), 8);
+check('rapFromIvc 未选塌陷 → 8', C.rapFromIvc(22, ''), 8);
+// 与 ivcVariation 的交叉一致性：>25 且 <10% 这一档两边必须都判 20
+check('两条 RAP 路径 26/25 同为 20',
+  C.ivcVariation(26, 25).rap === C.rapFromIvc(26, 'none') ? 'same' : 'diff', 'same');
+check('两条 RAP 路径 24/20 同为 15',
+  C.ivcVariation(24, 20).rap === C.rapFromIvc(24, 'no') ? 'same' : 'diff', 'same');
+
+
 // ── v1.14.5 锁住 RAP 口径的出处（用户 2026-11-03 反馈「5/10/15 是按反流量分」）
 // 真相：5/10/15 是旧版 IVC 吸气塌陷三档（完全 5 / 部分 10 / 不塌陷 15），
 // 上海中山队列（R105）用的正是这套，配 PH 定义 PASP ≥40；3/8/15 配 ≤34。

@@ -268,6 +268,12 @@ Page({
         blocks: toBlocks(calcBlocks),
         toc: buildToc(calcBlocks),
         refs: refsOf((EX.CALC_SRC || {})[g.id]),
+        // ★ v1.14.6：计算条目也能挂「相关内容」——如肺动脉压 → 下腔静脉 / 右心评估，
+        //   与判读条目共用同一张卡片，点击进 onRel。id 找不到就跳过，不阻断渲染。
+        rels: (g.rel || []).map(function (rid) {
+          const r = findBrief(rid);
+          return r ? { id: r.id, t: r.title } : null;
+        }).filter(Boolean),
         inputs: inputs,
         needBsa: bs.needBsa,
         bsaH: bs.bsaH,

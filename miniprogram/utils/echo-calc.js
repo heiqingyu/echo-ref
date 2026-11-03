@@ -292,12 +292,18 @@ function atrialIndex(volMl, bsa) {
 }
 
 /**
- * RAP 估算（ASE 三分级，仅自主呼吸）
- * ivcMm：IVC 内径 mm；collapse：'yes'(>50%) | 'no'(≤50%) | ''(未知)
+ * RAP 估算（ASE 2015 三分级 3 / 8 / 15 为默认；ASE 2025 追加「>25 mm 且几乎不塌陷」的 20 档）
+ * ivcMm：IVC 内径 mm
+ * collapse：'yes'(吸气塌陷 >50%) | 'no'(≤50%) | 'none'(几乎不塌陷，<10%) | ''(未知)
+ *
+ * ★ v1.14.6：口径必须与 ivcVariation() 一致 —— 同一组「内径 + 塌陷度」，
+ *   从「下腔静脉」条目算和从「肺动脉压 / 右心评估」算，给出的 RAP 必须相同。
+ *   'none' 是 'no' 的加强档：内径 >25 才升到 20，其余仍按 15。
  */
 function rapFromIvc(ivcMm, collapse) {
+  if (ivcMm > 25 && collapse === 'none') return 20;
   if (ivcMm <= 21 && collapse === 'yes') return 3;
-  if (ivcMm > 21 && collapse === 'no') return 15;
+  if (ivcMm > 21 && (collapse === 'no' || collapse === 'none')) return 15;
   return 8;
 }
 
@@ -1277,6 +1283,7 @@ function rapEstimate(ivcMm, collapse) {
   const rap = rapFromIvc(ivcMm, collapse);
   let text;
   if (rap === 3) text = '右房压正常（IVC 不宽且塌陷充分）';
+  else if (rap === 20) text = '右房压明显升高（IVC >25 mm 且几乎不塌陷，需有自发性显影或彩色血流往返支持）';
   else if (rap === 15) text = '右房压明显升高（IVC 增宽且塌陷减少）';
   else text = '右房压中间档（需结合 IVC 形态与其他右心指标）';
   return { rap: rap, text: text, ivc: ivcMm, collapse: collapse || '' };
@@ -2687,10 +2694,13 @@ function pulmonaryScreen(o) {
     out.rapSource = 'ivc';
     out.ivc = o.ivc;
     const lbl = rap === 3 ? '右房压正常'
-      : rap === 15 ? '右房压明显升高' : '中间档，需结合 IVC 形态与其他右心指标';
+      : rap === 20 ? '右房压明显升高'
+        : rap === 15 ? '右房压明显升高' : '中间档，需结合 IVC 形态与其他右心指标';
+    const cvTxt = o.collapse === 'yes' ? '塌陷 >50%'
+      : o.collapse === 'none' ? '几乎不塌陷 <10%'
+        : o.collapse === 'no' ? '塌陷 ≤50%' : '塌陷未评估';
     out.rapText = 'RAP ≈ ' + rap + ' mmHg（IVC ' + Math.round(o.ivc) + ' mm，' +
-      (o.collapse === 'yes' ? '塌陷 >50%' : o.collapse === 'no' ? '塌陷 ≤50%' : '塌陷未评估') +
-      ' → ' + lbl + '；正常 0–5，>10 提示升高）';
+      cvTxt + ' → ' + lbl + '；正常 0–5，>10 提示升高）';
   } else {
     out.rapSource = 'none';
     out.rapText = 'RAP 未填（按 0 计，sPAP / dPAP 会偏低 3–8 mmHg）';

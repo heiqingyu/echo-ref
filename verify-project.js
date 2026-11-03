@@ -1200,6 +1200,57 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   } else bad('web 目录说明仍带「BSA — m²」');
 }
 
+// ── 12. 条目 ↔ 条目互相关联（rel）与 RAP 三入口一致性（v1.14.6）──
+{
+  const briefAll = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items || []), []);
+  const briefIds = briefAll.map(i => i.id);
+  const badRel = [];
+  CG.GROUPS.forEach(function (g) {
+    (g.rel || []).forEach(function (id) {
+      if (briefIds.indexOf(id) === -1) badRel.push(g.id + '→' + id);
+    });
+  });
+  briefAll.forEach(function (it) {
+    (it.rel || []).forEach(function (id) {
+      if (briefIds.indexOf(id) === -1) badRel.push(it.id + '→' + id);
+    });
+  });
+  (!badRel.length) ? ok('「相关内容」引用的条目 id 全部存在')
+    : bad('「相关内容」引用了不存在的条目：' + badRel.join(' / '));
+
+  // RAP 由 IVC 取值 → 右心评估 / 肺动脉压 / 下腔静脉 三处必须能互跳
+  const byId = {};
+  briefAll.forEach(function (i) { byId[i.id] = i; });
+  const rvIt = byId.rv, ivcIt = byId.ivc;
+  const mpapG = CG.GROUPS.filter(g => g.id === 'mpap')[0];
+  ((rvIt.rel || []).indexOf('ivc') !== -1 && (ivcIt.rel || []).indexOf('rv') !== -1)
+    ? ok('右心评估 ↔ 下腔静脉 双向「相关内容」')
+    : bad('右心评估与下腔静脉未双向关联（rv.rel 或 ivc.rel 缺对方）');
+  (mpapG && (mpapG.rel || []).indexOf('ivc') !== -1)
+    ? ok('肺动脉压计算器可反查下腔静脉（mpap.rel）')
+    : bad('肺动脉压计算器缺 rel: ivc');
+  (ivcIt.fields && ivcIt.fields.length === 2 && ivcIt.calc === 'ivc')
+    ? ok('下腔静脉条目内嵌 Dmax / Dmin 计算器')
+    : bad('下腔静脉条目缺内嵌计算器');
+  // rv 条目既然用 IVC 内径估 RAP，就必须带塌陷选项的入口（三端按 gid 判定）
+  ['rv', 'mpap'].forEach(function (gid) {
+    const js = fs.readFileSync(path.join(MP, 'pages', 'formula', 'formula.wxml'), 'utf8');
+    (js.indexOf("gid === 'rv' || gid === 'mpap'") !== -1)
+      ? ok('IVC 塌陷选项挂在 ' + gid + ' 上（按 gid 判定）')
+      : bad('IVC 塌陷选项的 gid 判定被改动，' + gid + ' 会丢选项');
+  });
+
+  // 桥接文字不许再指向不存在的「右房压（IVC 法）」计算器（曾遗留在 7 条里）
+  const dangle = [];
+  briefAll.forEach(function (it) {
+    const last = (it.blocks || [])[(it.blocks || []).length - 1];
+    const t = (last && last.text) || '';
+    if (/右房压（IVC 法）|IVC 估右房压/.test(t)) dangle.push(it.id);
+  });
+  (!dangle.length) ? ok('桥接不再指向不存在的「右房压（IVC 法）」计算器')
+    : bad('桥接仍指向不存在的计算器：' + dangle.join(','));
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {
