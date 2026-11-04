@@ -4979,8 +4979,8 @@ const BRIEF_SECTIONS = [
         id: 'ped-base',
         ab: 'Peds',
         title: '儿童超声基础：Z 值与节段分析',
-        sub: 'Z 值方法学 · 上限为何超成人 · 肥胖陷阱 · 剑下 situs 与节段分析法入门',
-        source: ['R103', 'R8', 'R1'],
+        sub: 'Z 值方法学 · 上限为何超成人 · 肥胖陷阱 · 剑下 situs · 报告该写什么 · 心衰分级',
+        source: ['R103', 'R8', 'R1', 'R109', 'R110', 'R111'],
         rel: ['tga', 'as-switch', 'dorv'],
         blocks: [
           { kind: 'h', text: '一、儿童 Z 值方法学总原则' },
@@ -4999,6 +4999,17 @@ const BRIEF_SECTIONS = [
           { kind: 'h', text: '四、剑下（subcostal）situs 与节段分析法入门' },
           { kind: 'text', text: '先天性心脏病评估按节段顺序进行（situs/静脉/心房 → 房室瓣 → 心室 → 半月瓣 → 大血管）。剑下视图是判定内脏/心房 situs 的起点，标准 protocol 如下[R103]：' },
           { kind: 'text', text: '1. **剑下冠状位 situs 视图**（探头标志朝 3 点，剑突与脐之间）：判定**腹腔内脏 situs**——IVC、降主动脉（DAo）、脊柱、肝脏、胃的相对位置；彩色评估肝静脉→IVC→右房连接[R103]。\n2. **剑下矢状位 IVC/DAo 视图**：显示 IVC 肝段与右房连接；若下腔静脉肝段未显示而见明显奇静脉/半奇静脉（脊柱前、向上回流），提示**下腔静脉离断**；彩色+PW 评估腹主动脉搏动与血流[R103]。\n3. **剑下冠状（长轴）视图**：IVC→右室流出道、房间隔、房室连接、左室/右室流出道、前侧肌性室间隔、**心室–动脉连接**[R103]。\n4. **剑下矢状（短轴）双腔静脉视图**：SVC 与肝段 IVC 连于右房、房间隔；右上肺静脉；右室流出道[R103]。\n5. 依序完成**节段分析**：situs/静脉/心房 → 房室瓣 → 心室（**心室袢**、室间隔） → 半月瓣 → 大血管（**大动脉关系**、主动脉弓侧别与分支）[R103]。' },
+
+          { kind: 'h', text: '五、儿童报告该写什么（EACVI / AEPC 2024）' },
+          { kind: 'text', text: '报告的顺序不是排版问题。这份共识把**节段分析法（segmental approach）明确列为先心评估的金标准**，报告要素按同一顺序固定下来，才能既不漏项、又能在随访间逐项比对[R109]。八项原则（表 1）：一致性（有固定结构与术语）、灵活性（可增删条目、允许自由文本）、完整性、简洁、可重复（适用于不同设备、病种与操作者水平）、实用、可随时间演进、数字兼容（能进电子病历系统）[R109]。' },
+          { kind: 'note', text: '**每条测量都要写清三件事**：边缘约定（内缘对内缘 i2i / 前缘对前缘 L2L）、时相（舒张末 / 收缩末）、Z 值用的是哪一套数据集[R111]。BSE 的做法是把这三项与绝对值写在同一行，并另给身高指数（mm/m，舒张末）与 BSA 校正（cm/m²）作并列索引[R111]。' },
+          { kind: 'text', text: '表 4 把每个结构的测量分「基础」与「高级」两档，基础档是每次检查都该有、高级档按病种与随访需要加做[R109]：\n1. **左室**：基础 = M 型 LVIDd / LVIDs / IVSd / LVPWd（各带 Z 值）与 EF；高级 = 双平面容积、质量、GLS、3D 容积与 SV。\n2. **左房 / 右房**：基础 = 前后径、左右径、面积（均带 Z 值）；高级 = 容积（mL/m²）、EF、应变、3D。\n3. **右室**：基础 = 舒张末 / 收缩末面积与长径、FAC、TAPSE、TDI s′；高级 = 纵向应变、3D 容积。\n4. **房室瓣**：基础 = 跨瓣压差、瓣环径（Z 值）、反流 VC / PISA 半径 / PHT；高级 = EROa、3D VC、流入道 VTI、TDI e′ 与 E/e′。\n5. **半月瓣与大动脉**：基础 = Vmax、最大 / 平均压差、瓣环 / 窦部 / 窦管交界 / 升主动脉（Z 值）；高级 = 瓣口面积、反流 PHT、LVEDV Z 值与 LVEDV/BSA。' },
+          { kind: 'note', text: '**共识自己承认三处「儿童未验证」**：① 成人的瓣膜病变定量参数在儿童未完全验证；② 室间隔缺损这类**分流的分级参数尚未完全确定**；③ 儿童舒张功能**分型尚未清楚定义**，成人标准在新生儿与婴儿不适用（E/A 可生理性倒置，心率快时 E/A 融合）[R109]。所以儿童报告优先写「测值 + Z 值 + 数据集」，不要只抄轻 / 中 / 重度分级；另，新生儿与婴幼儿**不推荐做 3D 定量**[R109]。', warn: true },
+
+          { kind: 'h', text: '六、儿童心衰的分级用哪套（ISHLT 2025）' },
+          { kind: 'text', text: '分期用 ACC/AHA 的 **A–D 期**，不按「当下有没有症状」临时判：A 期有危险因素、无结构病与生物标志物升高；B 期有结构病或充盈压升高证据但从未有症状；C 期有现在或既往症状；D 期优化治疗后仍反复住院[R110]。功能分级上**婴幼儿不能用 NYHA，要用 Ross 分级**（表 2）——保留 NYHA 的简洁，同时纳入了婴幼儿常见的心衰表现[R110]。' },
+          { kind: 'note', text: '**写「EF」，不要写「LVEF」**：先心的体循环心室形态不一定是左室，ISHLT 2025 明确把 LVEF 改为 EF，并删掉了「EF 改善」这一档[R110]。EF 分类（表 3）：HFrEF ≤ 40%、HFmrEF 41%–49%、HFpEF ≥ 50% 且需有充盈压升高证据。但「按体循环心室 EF 分类」只是 **Ⅱb / C**，原文写明这套分级是否成立仍需进一步研究[R110]。', warn: true },
+          { kind: 'text', text: '能直接落地的两条：**心衰严重度与分期的记录是 Ⅰ / C**（不是选填）；**BNP / NT-proBNP 是 Ⅰ / B**，用于已知心衰的综合评估与随访，但原文强调它只是**辅助指标、不能单独诊断**[R110]。因此先心患者报 EF 时应注明测的是哪一侧心室、用什么方法（2D 双平面还是 3D），否则跨随访的趋势没有可比性。' },
         ],
       },
       {
@@ -9383,6 +9394,54 @@ const REFS = [
       { t: 'PMC PDF', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11998028/pdf/' },
     ],
     use: 'CRT 的 A / M / R 三级评级（表 7.1 缺血性、表 7.2 非缺血性、表 7.3 LVEF 36%–50%、表 7.5 预期右室起搏负荷、表 7.6 血运重建 / GDMT 不满 3 个月）；「≥3 个月优化 GDMT 后再评 LVEF」与「新发 LBBB 先等 3 个月」的时机依据；房颤需维持 ≥98% 起搏',
+  },
+  {
+    id: 'R109',
+    zh: '儿童超声心动图报告标准化与测量解读（EACVI / AEPC 临床共识声明）',
+    en: 'Cantinotti M, Di Salvo G, Voges I, et al. Standardization in paediatric echocardiographic reporting and critical interpretation of measurements, functional parameters, and prediction scores: a clinical consensus statement of the European Association of Cardiovascular Imaging of the European Society of Cardiology and the Association for European Paediatric and Congenital Cardiology. Eur Heart J Cardiovasc Imaging, 2024, 25(8): 1029–1050.',
+    where: 'European Heart Journal - Cardiovascular Imaging, 2024, 25(8): 1029–1050. DOI: 10.1093/ehjci/jeae147',
+    use: '节段分析法被列为先心评估金标准；报告应「一致性 / 灵活性 / 完整性 / 简洁 / 可重复 / 实用 / 可演进 / 数字兼容」八项（表 1）；表 4 按「基础 / 高级」列出每个腔室与瓣膜该测什么，并逐项标 (mm; Z-score)。同时承认三处未验证：成人瓣膜定量参数在儿童未完全验证、分流（ASD/VSD）分级参数尚未完全确定、儿童舒张功能分型未清楚定义（新生儿婴儿成人定义不适用，E/A 可生理性倒置）；新生儿与婴幼儿不推荐 3D 定量；复杂先心 prediction scores 仍有争议',
+    dl: [
+      { t: 'DOI', u: 'https://doi.org/10.1093/ehjci/jeae147' },
+      { t: '文章页', u: 'https://academic.oup.com/ehjcimaging/article/25/8/1029/7687697' },
+      { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/38833586/' },
+    ],
+  },
+  {
+    id: 'R110',
+    zh: '儿童心力衰竭管理指南（ISHLT 2025，2014 版更新）',
+    en: 'Irving C, Azeka E, Adorisio R, et al. The International Society for Heart and Lung Transplantation Guidelines for the Management of Pediatric Heart Failure (Update From 2014). J Heart Lung Transplant, 2025, 44(10): e21–e71.',
+    where: 'The Journal of Heart and Lung Transplantation, 2025, 44(10): e21–e71. DOI: 10.1016/j.healun.2025.06.003',
+    use: '儿童心衰分级用哪套：ACC/AHA 的 A–D 期（表 1），婴幼儿用 Ross 分级替代 NYHA（表 2）；按 EF 分类改称 EF 不写 LVEF——原文理由是先心体循环心室形态变异，并去掉了「EF 改善」一档（表 3：HFrEF ≤40%、HFmrEF 41%–49%、HFpEF ≥50% 且有充盈压升高证据）；「按体循环心室 EF 分类」仅为 Ⅱb/C，属探索性；严重度与分期的记录为 Ⅰ/C',
+    dl: [
+      { t: 'DOI', u: 'https://doi.org/10.1016/j.healun.2025.06.003' },
+      { t: '文章页', u: 'https://www.jhltonline.org/article/S1053-2498(25)02030-3/fulltext' },
+      { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/40838915/' },
+    ],
+  },
+  {
+    id: 'R111',
+    zh: '先天性心脏病完整经胸超声心动图操作指南（BSE 共识建议）',
+    en: 'Corbett L, Forster J, Gamlin W, et al. A practical guideline for performing a comprehensive transthoracic echocardiogram in the congenital heart disease patient: consensus recommendations from the British Society of Echocardiography. Echo Res Pract, 2022, 9(1): 10.',
+    where: 'Echo Research & Practice, 2022, 9(1): 10. DOI: 10.1186/s44156-022-00006-5；PMCID: PMC9578224',
+    use: '先心 TTE 的顺序与测量纪律：未确立诊断者「不建议从胸骨旁起手」，应先剑下由腹腔内脏 situs 推心房 arrangement（TTE 看不到心耳，静脉回流侧与心房位置都不定义心房形态）；每项测量必须同时写明边缘约定（i2i 内缘对內缘 / L2L 前缘对前缘）、时相（舒张末 / 收缩末）与所用 Z 值数据集；并列给出 BSE 身高指数（mm/m，舒张末）与 BSA 校正（cm/m²）；房室间隔缺损等病变「瓣膜定量方法常不适用」',
+    dl: [
+      { t: 'PDF 直链', u: 'https://link.springer.com/content/pdf/10.1186/s44156-022-00006-5.pdf' },
+      { t: '第三方全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9578224/' },
+      { t: 'PMC PDF', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9578224/pdf/' },
+      { t: 'DOI', u: 'https://doi.org/10.1186/s44156-022-00006-5' },
+    ],
+  },
+  {
+    id: 'R112',
+    zh: '负荷超声心动图指南（巴西心科学会 DIC/SBC 与 SISIAC 2026）',
+    en: 'Camarozano AC, Spina SV, Matos Souza JR, et al. Guideline on Stress Echocardiography – 2026. Arq Bras Cardiol, 2026, 123(4): e20260223.',
+    where: 'Arquivos Brasileiros de Cardiologia, 2026, 123(4): e20260223. DOI: 10.36660/abc.20260223i',
+    use: '国家学会级指南，只作补充与对照：补齐本库缺的四种负荷方式——腺苷 / 瑞加腺苷加冠脉血流储备（CFR）、麦角新碱与过度通气（冠脉痉挛激发）、起搏负荷（不能运动又不能用药时）、舒张期负荷（HFpEF 看运动时 E/e′ 与 TRV 反应）；DSE 与低剂量方案、阳性标准与 ASE 2020（R26）同向，数值一律以 R26 为准',
+    dl: [
+      { t: '文章页', u: 'https://abccardiol.org/en/article/guideline-on-stress-echocardiography-2026/' },
+      { t: 'DOI', u: 'https://doi.org/10.36660/abc.20260223i' },
+    ],
   },
 ];
 

@@ -447,7 +447,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 108 条（R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准）', EXD.REFS.length, 108, 0);
+  check('参考文献 112 条（R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 儿童心衰、R111 BSE 先心 TTE、R112 巴西负荷超声）', EXD.REFS.length, 112, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
@@ -1987,7 +1987,7 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('CALC_SRC 引用的文献 id 全部真实存在', badSrc8.length === 0 ? 1 : 0, 1, 0);
   check('calculators 页不再渲染「被引用于」反向胶囊（v1.13.8 用户要求撤掉）',
     pgWxml8.indexOf('ref-cited') === -1 && pgWxml8.indexOf('被引用于') === -1 ? 1 : 0, 1, 0);
-  // 数据源里不许留 U+FFFD（曾出现「需置胸管的���胸」「心包穿刺成功��」两处乱码）
+  // 数据源里不许留 U+FFFD（曾出现过两处乱码字符，已修）
   const extraRaw = require('fs').readFileSync(__dirname + '/miniprogram/utils/extra-data.js', 'utf8');
   check('extra-data.js 无 U+FFFD 乱码字符', extraRaw.indexOf('\uFFFD') === -1 ? 1 : 0, 1, 0);
   // ── v1.13.9：赞赏改「代码接入」<reward />，发版后不必再去开发者助手重新智能接入 ──

@@ -248,7 +248,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 108) ok('参考文献 108 条（R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准）');
+if (EX.REFS.length === 112) ok('参考文献 112 条（R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -1368,6 +1368,77 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   (syncG && (syncG.rel || []).indexOf('crt') !== -1)
     ? ok('「心脏同步化」可反查 CRT 同步化条目（sync.rel）')
     : bad('sync 计算器缺 rel: crt');
+}
+
+/* ── v1.15.1：R109–R112 入库 + ped-base 两节（EACVI 报告要素 / ISHLT 心衰分级）── */
+{
+  const ids = EX.REFS.slice(-4).map(function (r) { return r.id; }).join(',');
+  (ids === 'R109,R110,R111,R112')
+    ? ok('R109–R112 四条按序排在文献表末尾')
+    : bad('文献表末尾不是 R109–R112：' + ids);
+
+  const byId = {};
+  EX.REFS.forEach(function (r) { byId[r.id] = r; });
+
+  const wantWhere = {
+    R109: ['25(8): 1029–1050', '10.1093/ehjci/jeae147'],
+    R110: ['44(10): e21–e71', '10.1016/j.healun.2025.06.003'],
+    R111: ['9(1): 10', '10.1186/s44156-022-00006-5', 'PMC9578224'],
+    R112: ['123(4): e20260223', '10.36660/abc.20260223i'],
+  };
+  Object.keys(wantWhere).forEach(function (rid) {
+    const r = byId[rid];
+    if (!r) { bad(rid + ' 缺失'); return; }
+    const miss = wantWhere[rid].filter(function (k) { return (r.where || '').indexOf(k) === -1; });
+    miss.length ? bad(rid + ' 题录缺：' + miss.join(' / ')) : ok(rid + ' 题录卷期页与 DOI 完整');
+  });
+
+  // 每条都要有 ≥2 个 https 链接，且 R111 必须有 PDF 直链（BMC/Springer 实测 application/pdf）
+  [['R109', 3], ['R110', 3], ['R111', 4], ['R112', 2]].forEach(function (pair) {
+    const r = byId[pair[0]] || { dl: [] };
+    const dl = r.dl || [];
+    const badUrl = dl.filter(function (d) { return (d.u || '').indexOf('https://') !== 0; });
+    (dl.length >= pair[1] && badUrl.length === 0)
+      ? ok(pair[0] + ' 有 ' + dl.length + ' 条 https 链接')
+      : bad(pair[0] + ' 链接数或格式异常：' + JSON.stringify(dl));
+  });
+  const r111dl = (byId.R111 && byId.R111.dl || []).map(function (d) { return d.t; }).join('|');
+  (r111dl.indexOf('PDF 直链') !== -1 && r111dl.indexOf('PMC PDF') !== -1)
+    ? ok('R111 含 PDF 直链与 PMC PDF（开放获取，唯一能下全文的一份）')
+    : bad('R111 缺 PDF 直链：' + r111dl);
+
+  // use 字段不能空（新条目必须写清「用在哪」）
+  ['R109', 'R110', 'R111', 'R112'].forEach(function (rid) {
+    const u = (byId[rid] && byId[rid].use) || '';
+    (u.length >= 40) ? ok(rid + ' use 已写明用途（' + u.length + ' 字）') : bad(rid + ' use 过短或缺失');
+  });
+
+  // ped-base 新增第五、六节
+  const pedAll = EX.BRIEF_SECTIONS.reduce(function (a, s2) { return a.concat(s2.items || []); }, []);
+  const ped = pedAll.filter(function (i) { return i.id === 'ped-base'; })[0];
+  const pedHeads = (ped.blocks || []).filter(function (b) { return b.kind === 'h'; }).map(function (b) { return b.text; });
+  const pedTxt = JSON.stringify(ped.blocks || []);
+  (pedHeads.length === 6 && pedHeads[4].indexOf('五、') === 0 && pedHeads[5].indexOf('六、') === 0)
+    ? ok('ped-base 由 4 节扩为 6 节（五、报告该写什么；六、心衰分级用哪套）')
+    : bad('ped-base 节数不对：' + pedHeads.join(' / '));
+
+  [
+    ['EACVI 三处未验证', '未完全验证'],
+    ['分流分级参数未确定', '分流的分级参数尚未完全确定'],
+    ['测量三声明（i2i / L2L）', '前缘对前缘 L2L'],
+    ['Ross 替代 NYHA', 'Ross 分级'],
+    ['EF 不写 LVEF', 'LVEF 改为 EF'],
+    ['HFmrEF 41%–49%', '41%–49%'],
+    ['EF 分类仅 Ⅱb/C', 'Ⅱb / C'],
+    ['BNP Ⅰ/B', 'Ⅰ / B'],
+  ].forEach(function (pair) {
+    (pedTxt.indexOf(pair[1]) !== -1) ? ok('ped-base 含' + pair[0]) : bad('ped-base 缺' + pair[0] + '：' + pair[1]);
+  });
+
+  const pedSrc = (ped.source || []).join(',');
+  (pedSrc.indexOf('R109') !== -1 && pedSrc.indexOf('R110') !== -1 && pedSrc.indexOf('R111') !== -1)
+    ? ok('ped-base source 已挂 R109 / R110 / R111')
+    : bad('ped-base source 缺新文献：' + pedSrc);
 }
 
 console.log('\n' + '='.repeat(50));

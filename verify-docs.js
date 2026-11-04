@@ -806,7 +806,7 @@ function check(name, ok, detail) {
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
-    check('参考文献 108 条', d.refs === 108, d.refs);
+    check('参考文献 112 条', d.refs === 112, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
 
@@ -1896,7 +1896,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 108 条', /108/.test(ri.cnt), refsInit);
+  check('折叠头显示 112 条', /112/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -1915,7 +1915,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 108 条', ro.hidden === false && ro.n === 108 && ro.h > 0, refsOpen);
+  check('点击后展开全部 112 条', ro.hidden === false && ro.n === 112 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 
