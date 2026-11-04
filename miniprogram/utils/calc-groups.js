@@ -44,7 +44,7 @@ const GROUPS = [
       { k: 'lvti', n: 'LVOT VTI', u: 'cm' },
       { k: 'hr', n: '心率', u: '次/min' },
     ],
-    note: 'SV = πd²/4 × VTI；CO = SV × HR ÷ 1000',
+    note: 'SV = πd²/4 × VTI；CO = SV × HR ÷ 1000。**LVOT VTI 本身就是一个可以单读的数**：成人静息 18–22 cm（部分文献 17–23），<15 cm 提示每搏量偏低；指南的低流量口径是 SVi ≤35 mL/m²，带体表面积，条件允许时以 SVi 为准。该式在明显 AR（LVOT 每搏量含反流量，高估净心排量）、瓣下梗阻（取样处流速已加速）、房颤或频发早搏（逐搏差可达 20%）时失真',
   },
   {
     id: 'ef',
@@ -105,10 +105,11 @@ const GROUPS = [
       { k: 'pp_ivc', n: 'IVC 内径（估 RAP）', u: 'mm', opt: true },
       { k: 'pp_rap', n: '右房压 RAP（可选，填了优先）', u: 'mmHg', opt: true },
       { k: 'pp_tr', n: 'TR 峰速 Vmax', u: 'm/s' },
-      { k: 'pp_pr', n: 'PR 舒张末期流速（可选）', u: 'm/s', opt: true },
+      { k: 'pp_pre', n: 'PR 舒张早期峰速（→ mPAP）', u: 'm/s', opt: true },
+      { k: 'pp_pr', n: 'PR 舒张末流速（→ dPAP）', u: 'm/s', opt: true },
       { k: 'pp_rvotat', n: 'RVOT 加速时间（可选）', u: 'ms', opt: true },
     ],
-    note: 'RAP（IVC 法，须先选吸气塌陷度）：IVC ≤21 mm 且塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；IVC >25 mm 且塌陷 <10% → 可考虑 20（要有自发性显影或彩色血流往返支持）；其余 8 mmHg（正常 0–5，>10 提示升高）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）',
+    note: 'RAP（IVC 法，须先选吸气塌陷度）：IVC ≤21 mm 且塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；IVC >25 mm 且塌陷 <10% → 可考虑 20（要有自发性显影或彩色血流往返支持）；其余 8 mmHg（正常 0–5，>10 提示升高）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR **舒张末** V² + RAP（正常 8–15）；mPAP 有两条路：**PR 舒张早期峰速** 4 × V² + RAP 直接得平均压，或用 (sPAP + 2 × dPAP) / 3；都没有时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。★ PR 两个取点别填反——同一频谱，早期峰速给平均压、舒张末给舒张压，同一条频谱两种填法能差 10–15 mmHg。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）',
   },
   {
     id: 'shunt',

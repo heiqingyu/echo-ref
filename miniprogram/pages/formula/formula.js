@@ -544,7 +544,7 @@ Page({
       const signs = this.data.signsV === '' ? null : this.data.signsV === 'yes';
       const r = calc.pulmonaryScreen({
         ivc: v.pp_ivc, collapse: this.data.collapseV, rap: v.pp_rap,
-        trv: v.pp_tr, prv: v.pp_pr, rvotAt: v.pp_rvotat, signs: signs,
+        trv: v.pp_tr, prv: v.pp_pr, prev: v.pp_pre, rvotAt: v.pp_rvotat, signs: signs,
       });
       // 只有 RVOT AT / 征象、没有任何压力输入时不给压力结论，但仍报可能性
       const parts = [];
@@ -554,11 +554,16 @@ Page({
           parts.push('sPAP ' + calc.fmt(r.spap, 1) + ' mmHg · ' + r.spapText);
         }
         if (r.dpap !== undefined) {
-          parts.push('dPAP ' + calc.fmt(r.dpap, 1) + ' mmHg');
+          parts.push('dPAP ' + calc.fmt(r.dpap, 1) + ' mmHg（PR 舒张末法）');
+        }
+        if (r.mpapPR !== undefined) {
+          parts.push('mPAP ' + calc.fmt(r.mpapPR, 1) + ' mmHg（PR 舒张早期峰速法）· ' +
+            r.mpapPRText);
         }
         if (r.mpap !== undefined) {
-          parts.push('mPAP ' + calc.fmt(r.mpap, 1) + ' mmHg · ' + r.mpapText +
-            (r.mode === 'mahan' ? '，Mahan 近似' : ''));
+          parts.push('mPAP ' + calc.fmt(r.mpap, 1) + ' mmHg' +
+            (r.mode === 'mahan' ? '（Mahan 近似）' : '（(sPAP+2×dPAP)/3）') +
+            ' · ' + r.mpapText);
         }
       }
       if (valid(v.pp_tr) || valid(v.pp_rvotat) || signs === true) {

@@ -2634,9 +2634,12 @@ function coronaryFlowReserve(distal, proximal) {
  *
  *   sPAP = 4 × TR Vmax² + RAP          （TR 峰速）
  *   dPAP = 4 × PR(舒张末)² + RAP        （肺动脉瓣反流舒张末速度）
+ *   mPAP = 4 × PR(舒张早期峰速)² + RAP  （v1.14.9：直接取平均压，ASE 2010 图 13）
  *   mPAP = (sPAP + 2 × dPAP) / 3        （两压齐全时）
- *   mPAP ≈ 0.61 × sPAP + 2              （只有 TR 时的 Mahan 近似）
+ *   mPAP ≈ 0.61 × sPAP + 2              （没有 PR 时的 Mahan 近似）
  *
+ * ★ PR 的「舒张早期峰速」与「舒张末速度」是同一频谱上的两个取点，都套 4V²+RAP，
+ *   但一个给平均压、一个给舒张压——填错点会差 10–15 mmHg。
  * ★ 肺动脉瓣狭窄 / RVOT 梗阻时 sPAP 会被高估，改看 RVOT VTI 与 PR 速度。
  */
 function pulmonaryPressures(o) {
@@ -2652,7 +2655,15 @@ function pulmonaryPressures(o) {
     const d = pulmonaryDiastolicPressure(o.prv, rap);
     if (d && d.padp !== undefined) out.dpap = d.padp;
   }
-  if (out.spap === undefined && out.dpap === undefined) return {};
+  // ★ v1.14.9：PR「舒张早期峰速」直接出 mPAP = 4V² + RAP，与上面「舒张末 → dPAP」并列。
+  //   同一条 PR 频谱，取点不同结论不同：早期峰速 → 平均压；舒张末 → 舒张压（ASE 2010 图 13）。
+  //   两种错法都要防：拿舒张末速度套平均压式会低估，拿早期峰速套舒张压式会高估。
+  if (o.prev > 0) {
+    out.mpapPR = 4 * o.prev * o.prev + rap;
+    out.mpapPRText = out.mpapPR > 20 ? '升高，>20 mmHg 即肺高压（ESC/ERS 2022）'
+      : '正常，≤20 mmHg';
+  }
+  if (out.spap === undefined && out.dpap === undefined && out.mpapPR === undefined) return {};
   if (out.spap !== undefined && out.dpap !== undefined) {
     out.mpap = (out.spap + 2 * out.dpap) / 3;
     out.mode = 'mean';
@@ -2670,10 +2681,12 @@ function pulmonaryPressures(o) {
 /**
  * 肺动脉压 · 肺高压 一站式（v1.7.7 三合一）
  *
- * o = { ivc, collapse, rap, trv, prv, rvotAt, signs }
+ * o = { ivc, collapse, rap, trv, prv, prev, rvotAt, signs }
  *   rap      手填右房压，填了优先（>0 生效）
  *   ivc      下腔静脉内径 mm；没填 rap 时用它 + collapse 估（ASE 三分级）
  *   collapse 'yes'(>50%) | 'no'(≤50%) | ''(未评估)
+ *   prv      PR 舒张末速度 → dPAP
+ *   prev     PR 舒张早期峰速 → mPAP（v1.14.9 新增，与 prv 并列）
  *   signs     true 有 / false 无 / null 未评估
  *
  * 顺序：RAP → sPAP / dPAP / mPAP（同一个 RAP，避免分开算时填不一致）→ 可能性。
@@ -2707,9 +2720,13 @@ function pulmonaryScreen(o) {
   }
   out.rap = rap;
 
-  const pp = pulmonaryPressures({ trv: o.trv, prv: o.prv, rap: rap });
+  const pp = pulmonaryPressures({ trv: o.trv, prv: o.prv, prev: o.prev, rap: rap });
   if (pp.spap !== undefined) { out.spap = pp.spap; out.spapText = pp.spapText; }
   if (pp.dpap !== undefined) out.dpap = pp.dpap;
+  if (pp.mpapPR !== undefined) {
+    out.mpapPR = pp.mpapPR;
+    out.mpapPRText = pp.mpapPRText;
+  }
   if (pp.mpap !== undefined) {
     out.mpap = pp.mpap;
     out.mpapText = pp.mpapText;
@@ -2723,7 +2740,8 @@ function pulmonaryScreen(o) {
   out.probText = ph.text + (signsUnset ? '（右心征象未评估：若有征象，档次还会更高）' : '');
   if (ph.atText) out.atText = ph.atText;
 
-  out.hasResult = (out.spap !== undefined || out.dpap !== undefined);
+  out.hasResult = (out.spap !== undefined || out.dpap !== undefined
+    || out.mpapPR !== undefined);
   return out;
 }
 

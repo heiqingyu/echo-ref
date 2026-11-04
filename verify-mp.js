@@ -1203,6 +1203,22 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   mpCalc('mpap', { pp_tr: 3.0, pp_pr: 1.5, pp_rap: 8 }, /dPAP 17\.0 mmHg/,
     '肺动脉压三合一：PR 1.5 → dPAP 17');
   mpCalc('mpap', { pp_pr: 1.5, pp_rap: 8 }, /dPAP 17\.0 mmHg/, '只填 PR 也算 dPAP');
+  // v1.14.9：PR「舒张早期峰速」直接出 mPAP，与「舒张末 → dPAP」是两条并列路径
+  mpCalc('mpap', { pp_pre: 2.8, pp_rap: 5 }, /mPAP 36\.4 mmHg（PR 舒张早期峰速法）/,
+    'PR 舒张早期峰速 2.8 + RAP 5 → mPAP 36.4（不靠 TR）');
+  mpCalc('mpap', { pp_tr: 3.0, pp_pre: 2.8, pp_pr: 2.0, pp_rap: 5 },
+    /dPAP 21\.0 mmHg.*mPAP 36\.4 mmHg.*mPAP 27\.7 mmHg/,
+    '同一频谱两取点：dPAP 21 / mPAP 36.4（早期法）/ mPAP 27.7（派生）并列');
+  (function () {
+    pgF.onLoad({ id: 'mpap' });
+    pgF.onShow();
+    const vals = { pp_tr: '3.0', pp_pre: '2.8', pp_pr: '2.0', pp_rap: '5' };
+    pgF.data.inputs.forEach(function (r) { r.value = (vals[r.key] || ''); });
+    pgF.refresh();
+    const o = pgF.data.out || '';
+    check('mPAP 每条结果都标明取点（早期峰速法 / (sPAP+2×dPAP)/3）',
+      (o.indexOf('PR 舒张早期峰速法') !== -1 && o.indexOf('(sPAP+2×dPAP)/3') !== -1) ? 1 : 0, 1, 0);
+  })();
   mpCalc('sync', { sy_spwmd: 60, sy_tssd: 45 }, /2 项阳性|1 项阳性/,
     '心脏同步化：SPWMD 60 + Ts-SD 45 → 阳性计数');
   mpCalc('sync', { sy_spwmd: 60 }, /未见机械不同步证据/, '心脏同步化：仅 SPWMD 60 → 阴性');

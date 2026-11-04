@@ -1447,6 +1447,14 @@ function check(name, ok, detail) {
   check('肺动脉压三合一：TR 3.0 + PR 1.5 + RAP 8 → sPAP 44 / dPAP 17 / mPAP 26',
     /sPAP 44/.test(o) && /dPAP 17/.test(o) && /mPAP 26/.test(o), o);
 
+  // v1.14.9：PR 舒张早期峰速 → 直接得 mPAP，与舒张末 → dPAP 并列（网页端实填断言）
+  await fillCalc('mpap', 'pp_pre', '2.8');
+  await fillCalc('mpap', 'pp_rap', '5');
+  await new Promise((r) => setTimeout(r, 300));
+  o = await outOf('mpap');
+  check('网页 肺动脉压：PR 早期峰速 2.8 + RAP 5 → mPAP 36.4 且标明取点',
+    /mPAP 36\.4/.test(o) && o.indexOf('PR 舒张早期峰速法') !== -1, o);
+
   // —— v1.3.12：随访与术中评估 ——
   await openCalc('aortagrow');
   await fillCalc('aortagrow', 'd1', '3.0');

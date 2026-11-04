@@ -581,7 +581,7 @@
   const CALC_GROUPS = [
     { id: 'flow', title: 'LVOT · 每搏量与心排量',
       fields: [['ld', 'LVOT 直径', 'cm'], ['lvti', 'LVOT VTI', 'cm'], ['hr', '心率', '次/min']],
-      note: 'SV = πd²/4 × VTI；CO = SV × HR ÷ 1000' },
+      note: 'SV = πd²/4 × VTI；CO = SV × HR ÷ 1000。LVOT VTI 本身就是一个可以单读的数：成人静息 18–22 cm（部分文献 17–23），<15 cm 提示每搏量偏低；指南的低流量口径是 SVi ≤35 mL/m²，带体表面积，条件允许时以 SVi 为准。该式在明显 AR（LVOT 每搏量含反流量，高估净心排量）、瓣下梗阻（取样处流速已加速）、房颤或频发早搏（逐搏差可达 20%）时失真' },
     { id: 'ef', title: '左室容积与射血分数',
       fields: [['edv', '舒张末容积 EDV', 'mL'], ['esv', '收缩末容积 ESV', 'mL']],
       note: 'EF = (EDV − ESV) / EDV；SV = EDV − ESV。有 BSA 时同出 SVi 与 ESVi（ESVi 决定 ICD 指征）' },
@@ -598,9 +598,10 @@
       // ★ v1.14.6：RAP 由 IVC 取值 → 反链「下腔静脉」与「右心评估」（与小程序 calc-groups 同）
       rel: ['ivc', 'rv'],
       fields: [['pp_ivc', 'IVC 内径（估 RAP）', 'mm'], ['pp_rap', '右房压 RAP（可选，填了优先）', 'mmHg'],
-        ['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pr', 'PR 舒张末期流速（可选）', 'm/s'],
+        ['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pre', 'PR 舒张早期峰速（→ mPAP）', 'm/s'],
+        ['pp_pr', 'PR 舒张末流速（→ dPAP）', 'm/s'],
         ['pp_rvotat', 'RVOT 加速时间（可选）', 'ms']],
-      note: 'RAP（IVC 法，须先选吸气塌陷度）：IVC ≤21 mm 且塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；IVC >25 mm 且塌陷 <10% → 可考虑 20（要有自发性显影或彩色血流往返支持）；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
+      note: 'RAP（IVC 法，须先选吸气塌陷度）：IVC ≤21 mm 且塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；IVC >25 mm 且塌陷 <10% → 可考虑 20（要有自发性显影或彩色血流往返支持）；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP 有两条路：PR 舒张早期峰速 4 × V² + RAP 直接得平均压，或用 (sPAP + 2 × dPAP) / 3；都没有时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。★ PR 两个取点别填反——同一频谱，早期峰速给平均压、舒张末给舒张压，两种填法能差 10–15 mmHg。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
     { id: 'shunt', dirHide: true, title: 'Qp/Qs 肺体循环血流比',
       // ★ v1.12.8：已并入「先心病分流判读」条目（同键输入互相同步），目录不再单列（硬坑 31）
       fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm'],
@@ -2677,16 +2678,21 @@
       const signs = calcSigns === '' ? null : calcSigns === 'yes';
       const r = Calc.pulmonaryScreen({
         ivc: v.pp_ivc, collapse: calcCollapse, rap: v.pp_rap,
-        trv: v.pp_tr, prv: v.pp_pr, rvotAt: v.pp_rvotat, signs: signs,
+        trv: v.pp_tr, prv: v.pp_pr, prev: v.pp_pre, rvotAt: v.pp_rvotat, signs: signs,
       });
       const parts = [];
       if (r.hasResult) {
         parts.push(r.rapText);
         if (r.spap !== undefined) parts.push('sPAP ' + Calc.fmt(r.spap, 1) + ' mmHg · ' + r.spapText);
-        if (r.dpap !== undefined) parts.push('dPAP ' + Calc.fmt(r.dpap, 1) + ' mmHg');
+        if (r.dpap !== undefined) parts.push('dPAP ' + Calc.fmt(r.dpap, 1) + ' mmHg（PR 舒张末法）');
+        if (r.mpapPR !== undefined) {
+          parts.push('mPAP ' + Calc.fmt(r.mpapPR, 1) + ' mmHg（PR 舒张早期峰速法）· ' +
+            r.mpapPRText);
+        }
         if (r.mpap !== undefined) {
-          parts.push('mPAP ' + Calc.fmt(r.mpap, 1) + ' mmHg · ' + r.mpapText +
-            (r.mode === 'mahan' ? '，Mahan 近似' : ''));
+          parts.push('mPAP ' + Calc.fmt(r.mpap, 1) + ' mmHg' +
+            (r.mode === 'mahan' ? '（Mahan 近似）' : '（(sPAP+2×dPAP)/3）') +
+            ' · ' + r.mpapText);
         }
       }
       if (has('pp_tr') || has('pp_rvotat') || signs === true) {

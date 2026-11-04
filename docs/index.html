@@ -2239,7 +2239,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.14.8</div>
+    <div class="verline">心脏超声参考值 · v1.14.9</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2297,7 +2297,7 @@ button.fx-nav__c {
         <div id="aliasList" hidden></div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.14.8</div>
+      <div class="verline">心脏超声参考值 · v1.14.9</div>
       <div class="note note--warn">
         公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
@@ -7124,9 +7124,12 @@ function coronaryFlowReserve(distal, proximal) {
  *
  *   sPAP = 4 × TR Vmax² + RAP          （TR 峰速）
  *   dPAP = 4 × PR(舒张末)² + RAP        （肺动脉瓣反流舒张末速度）
+ *   mPAP = 4 × PR(舒张早期峰速)² + RAP  （v1.14.9：直接取平均压，ASE 2010 图 13）
  *   mPAP = (sPAP + 2 × dPAP) / 3        （两压齐全时）
- *   mPAP ≈ 0.61 × sPAP + 2              （只有 TR 时的 Mahan 近似）
+ *   mPAP ≈ 0.61 × sPAP + 2              （没有 PR 时的 Mahan 近似）
  *
+ * ★ PR 的「舒张早期峰速」与「舒张末速度」是同一频谱上的两个取点，都套 4V²+RAP，
+ *   但一个给平均压、一个给舒张压——填错点会差 10–15 mmHg。
  * ★ 肺动脉瓣狭窄 / RVOT 梗阻时 sPAP 会被高估，改看 RVOT VTI 与 PR 速度。
  */
 function pulmonaryPressures(o) {
@@ -7142,7 +7145,15 @@ function pulmonaryPressures(o) {
     const d = pulmonaryDiastolicPressure(o.prv, rap);
     if (d && d.padp !== undefined) out.dpap = d.padp;
   }
-  if (out.spap === undefined && out.dpap === undefined) return {};
+  // ★ v1.14.9：PR「舒张早期峰速」直接出 mPAP = 4V² + RAP，与上面「舒张末 → dPAP」并列。
+  //   同一条 PR 频谱，取点不同结论不同：早期峰速 → 平均压；舒张末 → 舒张压（ASE 2010 图 13）。
+  //   两种错法都要防：拿舒张末速度套平均压式会低估，拿早期峰速套舒张压式会高估。
+  if (o.prev > 0) {
+    out.mpapPR = 4 * o.prev * o.prev + rap;
+    out.mpapPRText = out.mpapPR > 20 ? '升高，>20 mmHg 即肺高压（ESC/ERS 2022）'
+      : '正常，≤20 mmHg';
+  }
+  if (out.spap === undefined && out.dpap === undefined && out.mpapPR === undefined) return {};
   if (out.spap !== undefined && out.dpap !== undefined) {
     out.mpap = (out.spap + 2 * out.dpap) / 3;
     out.mode = 'mean';
@@ -7160,10 +7171,12 @@ function pulmonaryPressures(o) {
 /**
  * 肺动脉压 · 肺高压 一站式（v1.7.7 三合一）
  *
- * o = { ivc, collapse, rap, trv, prv, rvotAt, signs }
+ * o = { ivc, collapse, rap, trv, prv, prev, rvotAt, signs }
  *   rap      手填右房压，填了优先（>0 生效）
  *   ivc      下腔静脉内径 mm；没填 rap 时用它 + collapse 估（ASE 三分级）
  *   collapse 'yes'(>50%) | 'no'(≤50%) | ''(未评估)
+ *   prv      PR 舒张末速度 → dPAP
+ *   prev     PR 舒张早期峰速 → mPAP（v1.14.9 新增，与 prv 并列）
  *   signs     true 有 / false 无 / null 未评估
  *
  * 顺序：RAP → sPAP / dPAP / mPAP（同一个 RAP，避免分开算时填不一致）→ 可能性。
@@ -7197,9 +7210,13 @@ function pulmonaryScreen(o) {
   }
   out.rap = rap;
 
-  const pp = pulmonaryPressures({ trv: o.trv, prv: o.prv, rap: rap });
+  const pp = pulmonaryPressures({ trv: o.trv, prv: o.prv, prev: o.prev, rap: rap });
   if (pp.spap !== undefined) { out.spap = pp.spap; out.spapText = pp.spapText; }
   if (pp.dpap !== undefined) out.dpap = pp.dpap;
+  if (pp.mpapPR !== undefined) {
+    out.mpapPR = pp.mpapPR;
+    out.mpapPRText = pp.mpapPRText;
+  }
   if (pp.mpap !== undefined) {
     out.mpap = pp.mpap;
     out.mpapText = pp.mpapText;
@@ -7213,7 +7230,8 @@ function pulmonaryScreen(o) {
   out.probText = ph.text + (signsUnset ? '（右心征象未评估：若有征象，档次还会更高）' : '');
   if (ph.atText) out.atText = ph.atText;
 
-  out.hasResult = (out.spap !== undefined || out.dpap !== undefined);
+  out.hasResult = (out.spap !== undefined || out.dpap !== undefined
+    || out.mpapPR !== undefined);
   return out;
 }
 
@@ -10435,7 +10453,7 @@ const BRIEF_SECTIONS = [
         ab: '多普勒',
         title: '多普勒定量：五种最常见的错',
         sub: '角度误差 · 增益与壁滤波 · 混叠 · 压差与 VTI · 流量计算',
-        source: ['R7', 'R9'],
+        source: ['R7', 'R9', 'R43'],
         rel: ['asload', 'aortic'],
         blocks: [
           { kind: 'h', text: '一、角度：误差不是线性的，是余弦' },
@@ -10502,6 +10520,9 @@ const BRIEF_SECTIONS = [
             ],
           },
           { kind: 'text', text: '**心率不稳时不要硬算流量**：房颤患者的 LVOT VTI 逐搏差异可达 20%，此时应取 5–10 个周期的平均，并在报告里注明心律。用单搏 VTI 算出的 SV，误差可能超过 15%。' },
+          { kind: 'text', text: '**LVOT VTI 自己就是一个可以单读的指标**。成人静息 **18–22 cm**（部分文献写 17–23）；**<15 cm 提示每搏量偏低**。指南里「低流量」的正式口径是 **SVi ≤35 mL/m²**[R43]，两者互相换算会随 LVOT 直径摆动——取 BSA 1.73 m²、直径 2.0–2.2 cm（面积 3.1–3.8 cm²），SVi 35 mL/m² 大约落在 VTI 16–19 cm。所以别把两个数当同一个门槛：VTI 是「不测直径也能看」的粗筛，SVi 是带体表面积的正式口径，能算 SVi 时以 SVi 为准。' },
+          { kind: 'text', text: '**随访时只比 VTI 往往更稳**：VTI 是描一条包络，误差与测值同量级（线性）；LVOT 直径差 2 mm 就是约 10% 的径差，面积按平方放大成约 20% 的 SV 误差——而同一患者两次检查的直径常常就差这么多。所以同一患者、同一操作者的纵向趋势，用 VTI 比用算出来的 SV 更可靠；前提是**取样位置与角度两次一致**（都在瓣环、都 ≤20°）。' },
+          { kind: 'note', text: '**这个式子在哪几种情况下不能用**：① **明显 AR**——LVOT 每搏量里含反流量，会高估净心排量；② **瓣下梗阻**（HOCM、主动脉瓣下隔膜）——瓣环取样处流速已被加速，VTI 升高不等于每搏量升高；③ **房颤 / 频发早搏**——单搏误差可达 15–20%，必须多周期平均。另外在主动脉瓣狭窄里，LVOT 直径的误差会原样传进连续性方程算出的 AVA，而 AVA 里直径是平方项，**同一处错在两处放大**。', warn: true },
         ],
         note: '五个错按「杀伤力」排序：**角度 > 混叠 > 平均压差写成最大压差 > 直径测错位置 > 增益**。前三项每个都能让结论错一档，而它们都不需要特殊设备，只要操作时多看一眼。',
       },
@@ -12692,7 +12713,7 @@ const BRIEF_SECTIONS = [
         ab: 'MS/MR',
         title: '二尖瓣疾病评估',
         sub: 'MS：MVA 三法 · 压差 · Wilkins｜MR：PISA · 容积法 · VC｜脱垂：Barlow / FED · MAD 与室早｜继发 MR 两型',
-        source: ['R42', 'R43', 'R20', 'R23', 'R75', 'R95', 'R96', 'R97', 'R102'],
+        source: ['R42', 'R43', 'R44', 'R20', 'R23', 'R75', 'R95', 'R96', 'R97', 'R102'],
         rel: ['mv-interv', 'rheumatic', 'prosthetic', 'ie'],
         // ★ v1.4.4 合并：原公式集里独立的「MS 二尖瓣狭窄定量」「MR 二尖瓣反流定量」
         //   两条并入本页，输入框按「① 形态 / ② 狭窄 / ③ 反流」分三段，一次填完出全套结果。
@@ -12838,6 +12859,10 @@ const BRIEF_SECTIONS = [
           { kind: 'formula', text: 'EROA = 2π × r² × Va ÷ 反流峰速　　RVol = EROA × 反流 VTI　　RF = RVol ÷ 前向每搏量　　dP/dt = 32000 ÷ Δt（1→3 m/s，ms）　　RVol（容积法）= SV二尖瓣 − SV左室流出道' },
           { kind: 'text', text: 'PISA 的三个前提必须写进报告：半球形假设（偏心束会低估）、Nyquist 速度与实际标尺一致（本页默认 40 cm/s）、反流峰速与 VTI 取自同一束血流。前提不成立时用 VC 与容积法交叉印证，并以 3D VCA 为仲裁——它不依赖任何几何假设。' },
           { kind: 'text', text: '**四法不一致怎么处理**：PISA 与容积法的 EROA 相差 >25%，说明至少一法的前提破了（半径取到一半、LVOT 直径偏大、取样位置不对），回到图像找原因而不是取平均；VC 与 EROA 落在不同档时，报告写区间并注明哪一条更可靠。可靠度顺序：3D VCA > 容积法 > PISA（2D）> 单看 VC。' },
+          { kind: 'note', text: '**为什么不再用「彩色反流面积」定级**：90 年代 MR 常用「反流束面积 ÷ 左房面积」（<20% / 20–40% / >40%）作分级依据，2000 年代后被弃用；ASE 2017 自体瓣膜反流评估建议明确：**不应仅凭彩色反流束面积（肉眼估计或描记）判断反流严重度**[R44]。', warn: true },
+          { kind: 'text', text: '三条物理原因：① 彩色面积反映的是射流在这一帧里「占了多大一片」，它取决于**驱动压差与仪器设置**——同一个瓣口，血压 176/95 时面积比 100/64 时大得多，反流本身没变；② **偏心束贴壁（Coanda 效应）**只在壁侧显一条细边，连枷、瓣叶穿孔这类最重的反流面积反而小，而中央束向四周卷吸、看着最大——**方向比严重度更决定面积**；③ 边界由**彩色增益、Nyquist 量程、帧率、探头频率**共同决定，换台机器、换个操作者就不可比。' },
+          { kind: 'text', text: '关于「面积重复性更好」这个直觉：面积好描是真的，但边界是主观的（彩色溢边算到哪一圈），观察者间差异反而大；缩流颈量的是一个**物理缩窄的宽度**，轴向分辨率高、位置固定。不过缩流颈的重复性完全取决于规范——放大、长轴且垂直于瓣口、标尺 50–60 cm/s、取最窄处、3 个周期平均；做不规范时它确实不如「看面积」稳，**这是操作问题，不是指标问题**。' },
+          { kind: 'text', text: '彩色面积现在只剩两个可用场合：**中央小束**且面积 <4 cm²（或占左房 <20%）基本可判轻度；反流束明确**射入肺静脉**且几乎占满收缩期，基本可判重度。中间地带必须走 VC / PISA / 容积法。' },
           { kind: 'note', text: '**继发 MR 不能套用原发阈值**：低流量、椭圆或新月形反流口、负荷下动态变化会让 PISA 低估。ESC/EACTS 2025 明确 EROA ≥0.30 cm² 和/或 RVol ≥45 mL 已可具有重要预后与治疗意义，别用原发的 0.40 / 60 把这类患者排除在外。', warn: true },
           { kind: 'note', text: '**分级体系版本差异**：ASE 2017 把过去含糊的「中度偏重」单列为 **III 级（中重度）**（EROA 0.30–0.39 / RVol 45–59 / RF 40–49%）；ESC/EACTS 仍是**三级制**，把这一档并入「中度」并常写作「中度偏重」。同一患者按美标可能报「中重度」、按欧标报「中度」——数值没变，只是分档边界不同，别当成测量误差。', warn: true },
           { kind: 'note', text: '**MR 报告的最小完整句**：严重度 + 三个数 + 方法，例如「重度 MR（EROA 0.42 cm²、RVol 68 mL、RF 52%，PISA 与容积法一致）」。只写「重度」而不给数，外科与介入团队没法判断该不该夹、夹完降到多少算成功；只给一个数（比如只有 VC 7 mm），在偏心束上很容易错一档。', warn: true },
@@ -13196,6 +13221,7 @@ const BRIEF_SECTIONS = [
           { kind: 'formula', text: 'EROA = PISA 流量 ÷ 反流峰速　　RVol = EROA × 反流 VTI　　RF = RVol ÷ 前向每搏量　　ΔP = 4 × Vmax²' },
           { kind: 'text', text: '测量要点：**VC 在瓣下 5–10 mm 的最窄处**量，彩色标尺 50–60 cm/s（本页 Va 默认 40，标尺改了要同步改）；反流束宽度比在 PLAX 测；CW 取样与反流束平行，偏心束必须多切面确认最高且完整的频谱。' },
           { kind: 'note', text: '**PHT 受主动脉与左室顺应性、血压影响**，只有在频谱致密、形态完整时才有分级意义。另外：**急性重度 AR（夹层、心内膜炎）可以没有左室扩大**——用「左室必须大」当重度门槛会漏掉最需要急诊手术的那一批。', warn: true },
+          { kind: 'note', text: '**这里也不用彩色反流面积定级**：面积取决于驱动压差、彩色增益与 Nyquist 量程，偏心束贴壁只显一条细边，理由与二尖瓣完全相同[R44]。AR 常用的二维粗判是**反流束宽度 ÷ LVOT 直径**——它至少是宽度比而不是面积，受标尺与增益影响小得多，<25% / 25–64% / ≥65% 与 VC 方向一致，但仍只是半定量。真正定级以 VC、PHT、RVol / RF 为准。', warn: true },
           { kind: 'h', text: '十、重度 AR 的辅助征象与手术时机' },
           {
             kind: 'table',
@@ -14674,8 +14700,8 @@ const BRIEF_SECTIONS = [
         id: 'ped-base',
         ab: 'Peds',
         title: '儿童超声基础：Z 值与节段分析',
-        sub: 'Z 值方法学 · 肥胖陷阱 · 剑下 situs 与节段分析法入门',
-        source: ['R103'],
+        sub: 'Z 值方法学 · 上限为何超成人 · 肥胖陷阱 · 剑下 situs 与节段分析法入门',
+        source: ['R103', 'R8', 'R1'],
         rel: ['tga', 'as-switch', 'dorv'],
         blocks: [
           { kind: 'h', text: '一、儿童 Z 值方法学总原则' },
@@ -14683,10 +14709,15 @@ const BRIEF_SECTIONS = [
           { kind: 'text', text: '**Z 值**＝测量值距离正常儿童人群均值的 SD 数；**+2 / −2**（高于/低于均值 2 个 SD）通常作为儿童「正常」的阈值[R103]。多种 Z 值模型已发表，因测量性能与统计方法不同，同一患者在不同模型下 Z 值可差异很大；最常用模型多来自单中心数据，而 **PHN（Pediatric Heart Network）**基于 2010 ASE 儿科定量指南，用 19 个中心 3,215 名北美儿童建立常模（按性别/种族均分），与常用模型相关性良好[R103]。常用模型（表 12）：PHN、Boston、Italy、Detroit，回归分别基于 BSA（PHN、Boston）或 ln(BSA)（Italy）等[R103]。' },
           { kind: 'note', text: '**关键原则：在同一患者随访趋势判断、或某一人群风险/预后评估时，必须使用同一 Z 值模型**——换模型会使 Z 值不可比[R103]。', warn: true },
 
-          { kind: 'h', text: '二、肥胖儿童的 Z 值陷阱' },
+          { kind: 'h', text: '二、为什么儿童「正常上限」会超过成人参考值' },
+          { kind: 'text', text: '本库儿童页的「正常范围」一律按 **Z = ±2** 给出，也就是**同龄、同体型儿童的第 2.5–97.5 百分位**；而成人参考值（中国 2016 指南）是**成人总人群的正常值界**。两者人群不同、取的分位数也不同，**不能横向比毫米数**。' },
+          { kind: 'text', text: '以 PHN 的 LVEDD 为例（α = 0.45、mean = 3.89、SD = 0.33，按 BSA 幂律）[R8]：BSA 1.73 m² 时 +2SD 约 **5.8 cm**，BSA 1.9 约 **6.1 cm**，BSA 2.1 约 **6.4 cm**；而中国成人指南的 LVEDD 上限是男性 **54 mm**、女性 **49.7 mm**[R1]。也就是说，一个体型已接近成人的大龄儿童，Z 值判「正常」的绝对毫米数会超过成人上限。' },
+          { kind: 'note', text: '**这不是数值抄错，是三个因素叠加**：① Z = +2 是第 97.5 百分位，不是「均值往上一点」；② PHN 队列是 0–18 岁北美非肥胖儿童，BSA 上端样本最少，幂律回归在那里本来就是外推，区间自然宽；③ 中国成人常模的均值本身低于北美青少年队列。**判读原则：≥18 岁或已达成人体型者，直接换成人标准；同一患者随访固定同一模型，绝不跨人群比毫米数。**', warn: true },
+
+          { kind: 'h', text: '三、肥胖儿童的 Z 值陷阱' },
           { kind: 'text', text: '将「正常」参考值外推至异常人群（早产儿、肥胖儿童、CHD 患儿）存在局限；**肥胖尤为突出**——过多脂肪组织破坏了 BSA 与心血管结构尺寸之间的通常关系，故肥胖状态下**不能依赖常规（BSA/体重为基础）的 Z 值**[R103]。即 BSA/体重为基础的 Z 值在肥胖儿童中可能误导，判读须谨慎、必要时结合其他指标[R103]。' },
 
-          { kind: 'h', text: '三、剑下（subcostal）situs 与节段分析法入门' },
+          { kind: 'h', text: '四、剑下（subcostal）situs 与节段分析法入门' },
           { kind: 'text', text: '先天性心脏病评估按节段顺序进行（situs/静脉/心房 → 房室瓣 → 心室 → 半月瓣 → 大血管）。剑下视图是判定内脏/心房 situs 的起点，标准 protocol 如下[R103]：' },
           { kind: 'text', text: '1. **剑下冠状位 situs 视图**（探头标志朝 3 点，剑突与脐之间）：判定**腹腔内脏 situs**——IVC、降主动脉（DAo）、脊柱、肝脏、胃的相对位置；彩色评估肝静脉→IVC→右房连接[R103]。\n2. **剑下矢状位 IVC/DAo 视图**：显示 IVC 肝段与右房连接；若下腔静脉肝段未显示而见明显奇静脉/半奇静脉（脊柱前、向上回流），提示**下腔静脉离断**；彩色+PW 评估腹主动脉搏动与血流[R103]。\n3. **剑下冠状（长轴）视图**：IVC→右室流出道、房间隔、房室连接、左室/右室流出道、前侧肌性室间隔、**心室–动脉连接**[R103]。\n4. **剑下矢状（短轴）双腔静脉视图**：SVC 与肝段 IVC 连于右房、房间隔；右上肺静脉；右室流出道[R103]。\n5. 依序完成**节段分析**：situs/静脉/心房 → 房室瓣 → 心室（**心室袢**、室间隔） → 半月瓣 → 大血管（**大动脉关系**、主动脉弓侧别与分支）[R103]。' },
         ],
@@ -21521,7 +21552,7 @@ const MATERIALS = [];
   const CALC_GROUPS = [
     { id: 'flow', title: 'LVOT · 每搏量与心排量',
       fields: [['ld', 'LVOT 直径', 'cm'], ['lvti', 'LVOT VTI', 'cm'], ['hr', '心率', '次/min']],
-      note: 'SV = πd²/4 × VTI；CO = SV × HR ÷ 1000' },
+      note: 'SV = πd²/4 × VTI；CO = SV × HR ÷ 1000。LVOT VTI 本身就是一个可以单读的数：成人静息 18–22 cm（部分文献 17–23），<15 cm 提示每搏量偏低；指南的低流量口径是 SVi ≤35 mL/m²，带体表面积，条件允许时以 SVi 为准。该式在明显 AR（LVOT 每搏量含反流量，高估净心排量）、瓣下梗阻（取样处流速已加速）、房颤或频发早搏（逐搏差可达 20%）时失真' },
     { id: 'ef', title: '左室容积与射血分数',
       fields: [['edv', '舒张末容积 EDV', 'mL'], ['esv', '收缩末容积 ESV', 'mL']],
       note: 'EF = (EDV − ESV) / EDV；SV = EDV − ESV。有 BSA 时同出 SVi 与 ESVi（ESVi 决定 ICD 指征）' },
@@ -21538,9 +21569,10 @@ const MATERIALS = [];
       // ★ v1.14.6：RAP 由 IVC 取值 → 反链「下腔静脉」与「右心评估」（与小程序 calc-groups 同）
       rel: ['ivc', 'rv'],
       fields: [['pp_ivc', 'IVC 内径（估 RAP）', 'mm'], ['pp_rap', '右房压 RAP（可选，填了优先）', 'mmHg'],
-        ['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pr', 'PR 舒张末期流速（可选）', 'm/s'],
+        ['pp_tr', 'TR 峰速 Vmax', 'm/s'], ['pp_pre', 'PR 舒张早期峰速（→ mPAP）', 'm/s'],
+        ['pp_pr', 'PR 舒张末流速（→ dPAP）', 'm/s'],
         ['pp_rvotat', 'RVOT 加速时间（可选）', 'ms']],
-      note: 'RAP（IVC 法，须先选吸气塌陷度）：IVC ≤21 mm 且塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；IVC >25 mm 且塌陷 <10% → 可考虑 20（要有自发性显影或彩色血流往返支持）；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP = (sPAP + 2 × dPAP) / 3，只有 TR 时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
+      note: 'RAP（IVC 法，须先选吸气塌陷度）：IVC ≤21 mm 且塌陷 >50% → 3；IVC >21 mm 且塌陷 ≤50% → 15；IVC >25 mm 且塌陷 <10% → 可考虑 20（要有自发性显影或彩色血流往返支持）；其余 8 mmHg（正常 0–5）。sPAP = 4 × TR Vmax² + RAP（≤34 正常 / 35–49 轻 / 50–69 中 / ≥70 重，2025 ASE 口径；传统口径正常上限写 ≤36，只差 RAP 取 3 还是 5）；dPAP = 4 × PR 舒张末 V² + RAP（正常 8–15）；mPAP 有两条路：PR 舒张早期峰速 4 × V² + RAP 直接得平均压，或用 (sPAP + 2 × dPAP) / 3；都没有时退回 Mahan 0.61 × sPAP + 2（正常 ≤20）。★ PR 两个取点别填反——同一频谱，早期峰速给平均压、舒张末给舒张压，两种填法能差 10–15 mmHg。可能性按 ESC/ERS 2022：TR ≤2.8 无征象低、2.9–3.4 或伴征象中、>3.4 或 2.9–3.4 伴征象高。超声只给「可能性」，确诊要右心导管（mPAP >20 mmHg、PVR >2 WU）' },
     { id: 'shunt', dirHide: true, title: 'Qp/Qs 肺体循环血流比',
       // ★ v1.12.8：已并入「先心病分流判读」条目（同键输入互相同步），目录不再单列（硬坑 31）
       fields: [['rd', 'RVOT 直径', 'cm'], ['rvti', 'RVOT VTI', 'cm'],
@@ -23617,16 +23649,21 @@ const MATERIALS = [];
       const signs = calcSigns === '' ? null : calcSigns === 'yes';
       const r = Calc.pulmonaryScreen({
         ivc: v.pp_ivc, collapse: calcCollapse, rap: v.pp_rap,
-        trv: v.pp_tr, prv: v.pp_pr, rvotAt: v.pp_rvotat, signs: signs,
+        trv: v.pp_tr, prv: v.pp_pr, prev: v.pp_pre, rvotAt: v.pp_rvotat, signs: signs,
       });
       const parts = [];
       if (r.hasResult) {
         parts.push(r.rapText);
         if (r.spap !== undefined) parts.push('sPAP ' + Calc.fmt(r.spap, 1) + ' mmHg · ' + r.spapText);
-        if (r.dpap !== undefined) parts.push('dPAP ' + Calc.fmt(r.dpap, 1) + ' mmHg');
+        if (r.dpap !== undefined) parts.push('dPAP ' + Calc.fmt(r.dpap, 1) + ' mmHg（PR 舒张末法）');
+        if (r.mpapPR !== undefined) {
+          parts.push('mPAP ' + Calc.fmt(r.mpapPR, 1) + ' mmHg（PR 舒张早期峰速法）· ' +
+            r.mpapPRText);
+        }
         if (r.mpap !== undefined) {
-          parts.push('mPAP ' + Calc.fmt(r.mpap, 1) + ' mmHg · ' + r.mpapText +
-            (r.mode === 'mahan' ? '，Mahan 近似' : ''));
+          parts.push('mPAP ' + Calc.fmt(r.mpap, 1) + ' mmHg' +
+            (r.mode === 'mahan' ? '（Mahan 近似）' : '（(sPAP+2×dPAP)/3）') +
+            ' · ' + r.mpapText);
         }
       }
       if (has('pp_tr') || has('pp_rvotat') || signs === true) {
