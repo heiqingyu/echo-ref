@@ -1983,8 +1983,8 @@ function check(name, ok, detail) {
   check('「需订阅」用虚线灰边与免费直链区分', sd.border === 'dashed', subDl);
   // v1.13.5：口径从「免费直链」改为「原文链接」——有 17 条只挂出版商 PDF（官网 PDF），不宜再叫免费
   check('折叠头同时给出附原文链接的条数', /条附原文链接/.test(sd.cnt) && /\d+ 条 · \d+ 条/.test(sd.cnt), subDl);
-  check('R1 标为「免费页面」且指向中华医学期刊网（进页面点 PDF 可下）',
-    sd.r1txt === '免费页面' && /^https:\/\/rs\.yiigle\.com\/cmaid\//.test(sd.r1href), subDl);
+  check('R1 标为阅读页／免费页面且指向中华医学期刊网（页内可读全文）',
+    /^(免费页面|全文阅读页)/.test(sd.r1txt) && /^https:\/\/rs\.yiigle\.com\/cmaid\//.test(sd.r1href), subDl);
 
   await c.evalJs('(function(){document.getElementById("refsToggle").click();return 1;})()');
   const refsAgain = await c.evalJs(

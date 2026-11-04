@@ -8226,8 +8226,8 @@ const REFS = [
     en: '中华医学会超声医学分会超声心动图学组. 中国成年人超声心动图检查测量指南.',
     where: '中华超声影像学杂志, 2016, 25(8): 645–666',
     dl: [
-      { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/908663' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx201608001' },
+      { t: '全文阅读页（不可下载）', u: 'https://rs.yiigle.com/cmaid/908663' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx201608001' },
     ],
 
     use: '成人径线 / 面积 / 容积参考范围、瓣膜环与大动脉内径；EMINCA 中国人群正常值来源',
@@ -8338,7 +8338,7 @@ const REFS = [
     use: 'PH 血流动力学分型、超声概率与右心导管定义',
     dl: [
       { t: '免费页面', u: 'https://publications.ersnet.org/content/erj/61/1/2200879' },
-      { t: '需订阅（DOI）', u: 'https://doi.org/10.1183/13993003.00879-2022' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1183/13993003.00879-2022' },
     ],
   },
   {
@@ -8389,7 +8389,7 @@ const REFS = [
     en: 'Guazzi M, Bandera F, Pelissero G, et al. Tricuspid Annular Plane Systolic Excursion and Pulmonary Arterial Systolic Pressure Relationship in Heart Failure: An Index of Right Ventricular Contractile Function and Prognosis.',
     where: 'Am J Physiol Heart Circ Physiol, 2013, 305(9): H1373–H1381',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1152/ajpheart.00157.2013' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1152/ajpheart.00157.2013' },
     ],
 
     use: '右室-肺动脉耦联比值 0.55 / 0.36 切点与预后意义',
@@ -8545,7 +8545,7 @@ const REFS = [
     en: 'Phelan D, Collier P, Thavendiranathan P, et al. Relative Apical Sparing of Longitudinal Strain Using Two-Dimensional Speckle-Tracking Echocardiography Is Both Sensitive and Specific for the Diagnosis of Cardiac Amyloidosis.',
     where: 'Heart, 2012, 98(19): 1442–1448',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1136/heartjnl-2012-302353' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1136/heartjnl-2012-302353' },
     ],
 
     use: '心尖保留比值（RAR）的算法与 0.94 阈值',
@@ -8757,7 +8757,7 @@ const REFS = [
     en: 'Hachicha Z, Dumesnil JG, Bogaty P, Pibarot P. Usefulness of the Valvuloarterial Impedance to Predict Adverse Outcome in Asymptomatic Aortic Stenosis.',
     where: 'J Am Coll Cardiol, 2009, 54(11): 1003–1011',
     dl: [
-      { t: '官网 PDF', u: 'https://www.sciencedirect.com/science/article/pii/S0735109709020592/pdf' },
+      { t: '需订阅（ScienceDirect）', u: 'https://www.sciencedirect.com/science/article/pii/S0735109709020592/pdf' },
     ],
 
     use: 'asload 判读页：Zva =（收缩压 + 平均跨瓣压差）/ 每搏量指数；Zva > 3.5 提示总负荷（瓣膜 + 动脉）升高，> 4.5 组心血管死亡风险约为低 Zva 组的 3.7 倍',
@@ -8779,7 +8779,7 @@ const REFS = [
     where: 'Eur Heart J, 2025, 46(43): 4462–4568',
     use: 'pregnancy-echo 判读页：mWHO 2.0 风险分级与随访强度（I 级 1–2 次 / II–III 级每季度 / IV 级劝阻妊娠）、妊娠 Heart Team 职责、围产期心肌病章节、主动脉病与妊娠',
     dl: [
-      { t: '官网 PDF', u: 'https://www.escardio.org/static-file/Escardio/Guidelines/Products/Essential%20Messages/2025%20Gls/2025%20Essential%20Messages_Pregnancy.pdf' },
+      { t: 'ESC 指南页', u: 'https://www.escardio.org/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/cardiovascular-diseases-during-pregnancy-management-of/' },
     ],
   },
   {
@@ -8799,7 +8799,7 @@ const REFS = [
     en: 'Somers VK, White DP, Amin R, et al. Sleep Apnea and Cardiovascular Disease: An American Heart Association/American College of Cardiology Foundation Scientific Statement.',
     where: 'Circulation, 2008, 118(10): 1080–1111',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1161/circulationaha.107.189420' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1161/circulationaha.107.189420' },
     ],
 
     use: 'osa 判读页：OSA 造成右心后负荷升高与慢性容量负荷的机制、右心负荷与容量过重的超声线索、把 OSA 相关肺高压误当原发性 PAH 的陷阱、CPAP 依从性对心衰结局的影响',
@@ -8810,7 +8810,7 @@ const REFS = [
     en: 'Smiseth OA, Donal E, Penicka M, Sletten OJ. How to Measure Left Ventricular Myocardial Work by Pressure-Strain Loops.',
     where: 'Eur Heart J Cardiovasc Imaging, 2021, 22(3): 259–261',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1093/ehjci/jeaa301' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1093/ehjci/jeaa301' },
     ],
 
     use: 'myowork 判读页：GWI / GCW / GWE 的定义与正常参考值、压力 - 应变环对软件与血压测量的依赖性、无法获得做功时的替代负荷评估（每搏功 + RWS）',
@@ -8821,7 +8821,7 @@ const REFS = [
     en: 'Platts DG, Sedgwick JF, Burstow DJ, et al. The Role of Echocardiography in the Management of Patients Supported by Extracorporeal Membrane Oxygenation.',
     where: 'J Am Soc Echocardiogr, 2012, 25(2): 131–141',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1016/j.echo.2011.11.009' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1016/j.echo.2011.11.009' },
     ],
 
     use: 'ecmo 判读页：心室卸载过度（室间隔运动异常、左室被抽空）、主动脉瓣不开放与根部血栓倾向、插管贴壁与心包积液的鉴别、减流量撤机前的超声评估要点',
@@ -8837,7 +8837,7 @@ const REFS = [
     dl: [
       { t: 'DOI 官方页', u: 'https://doi.org/10.3969/j.issn.1004-8812.2025.12.002' },
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/2512%2B%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%B8%89%E5%B0%96%E7%93%A3%E7%8E%AF%E6%88%90%E5%BD%A2%E6%9C%AF%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86%EF%BC%88%E8%AF%95%E8%A1%8C%E7%89%88%EF%BC%89.pdf' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zgjrxzbxzz202512002' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zgjrxzbxzz202512002' },
     ],
   },
   {
@@ -8848,7 +8848,7 @@ const REFS = [
     use: 'TEE 适应证、禁忌与 20 个标准切面的操作规范',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E6%B5%99%E6%B1%9F%E7%9C%81%E7%BB%8F%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%AE%9E%E8%B7%B5%E5%BA%94%E7%94%A8%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86(%E4%B8%80).pdf' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/xdxzz202401002' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/xdxzz202401002' },
     ],
   },
   {
@@ -8859,7 +8859,7 @@ const REFS = [
     use: 'TEE 术中监测、并发症识别与围术期评估',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E6%B5%99%E6%B1%9F%E7%9C%81%E7%BB%8F%E9%A3%9F%E7%AE%A1%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E5%AE%9E%E8%B7%B5%E5%BA%94%E7%94%A8%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86(%E4%BA%8C).pdf' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/xdxzz202402001' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/xdxzz202402001' },
     ],
   },
   {
@@ -8882,7 +8882,7 @@ const REFS = [
     dl: [
       
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%BA%8C%E5%B0%96%E7%93%A3%E4%BB%8B%E5%85%A5%E4%BF%AE%E5%A4%8D%E6%8A%80%E6%9C%AF%E4%B8%B4%E5%BA%8A%E5%AE%9E%E8%B7%B5%E6%8C%87%E5%8D%97.pdf' },
-          { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zgxhzz202512002' },
+          { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zgxhzz202512002' },
     ],
   },
   {
@@ -8893,7 +8893,7 @@ const REFS = [
     use: 'TTE 测量切面、规范化操作与报告要素',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E8%83%B8%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E6%A3%80%E6%9F%A5%E8%A7%84%E8%8C%83%E5%8C%96%E5%BA%94%E7%94%A8%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6.pdf' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202401001' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202401001' },
     ],
   },
   {
@@ -8904,7 +8904,7 @@ const REFS = [
     use: 'HCM 激发试验适应证、简易激发（Valsalva 与 20 次蹲起）、餐后与体位对压差的影响、运动/药物负荷的阳性判断与终止标准、SAM 与隐匿性梗阻判读',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E8%82%A5%E5%8E%9A%E5%9E%8B%E5%BF%83%E8%82%8C%E7%97%85%E6%BF%80%E5%8F%91%E8%B4%9F%E8%8D%B7%E8%B6%85%E5%A3%B0%E5%BF%83%E5%8A%A8%E5%9B%BE%E4%B8%B4%E5%BA%8A%E5%BA%94%E7%94%A8%E6%8C%87%E5%8D%97(2024%E7%89%88).pdf' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202408001' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202408001' },
     ],
   },
   {
@@ -8936,8 +8936,8 @@ const REFS = [
     where: '中华医学杂志, 2021, 101(1): 11–51',
     use: 'PH 的超声可能性三档分层（TRV + 支持指标）、右心功能与预后、病因分类的超声线索',
     dl: [
-      { t: '中文全文', u: 'https://video.yiigle.com/uploads/guide_html/%E4%B8%AD%E5%9B%BD%E8%82%BA%E5%8A%A8%E8%84%89%E9%AB%98%E5%8E%8B%E8%AF%8A%E6%96%AD%E4%B8%8E%E6%B2%BB%E7%96%97%E6%8C%87%E5%8D%97%EF%BC%882021%E7%89%88%EF%BC%89.html' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhyx202101002' },
+      { t: '全文阅读页（不可下载）', u: 'https://video.yiigle.com/uploads/guide_html/%E4%B8%AD%E5%9B%BD%E8%82%BA%E5%8A%A8%E8%84%89%E9%AB%98%E5%8E%8B%E8%AF%8A%E6%96%AD%E4%B8%8E%E6%B2%BB%E7%96%97%E6%8C%87%E5%8D%97%EF%BC%882021%E7%89%88%EF%BC%89.html' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhyx202101002' },
     ],
   },
   {
@@ -8946,8 +8946,8 @@ const REFS = [
     en: '中华医学会心血管病学分会, 中华心血管病杂志编辑委员会. 急性 ST 段抬高型心肌梗死诊断和治疗指南（2019）.',
     where: '中华心血管病杂志, 2019, 47(10): 766–783',
     dl: [
-      { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/1166130' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhxxgb201910005' },
+      { t: '全文阅读页（不可下载）', u: 'https://rs.yiigle.com/cmaid/1166130' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhxxgb201910005' },
     ],
 
     use: '再灌注策略与机械并发症（乳头肌断裂 / 室间隔穿孔 / 游离壁破裂）的识别与外科时机',
@@ -8958,8 +8958,8 @@ const REFS = [
     en: '中华医学会心血管病学分会精准医学学组, 中华心血管病杂志编辑委员会, 成人暴发性心肌炎工作组. 成人暴发性心肌炎诊断与治疗中国专家共识.',
     where: '中华心血管病杂志, 2017, 45(9): 742–752',
     dl: [
-      { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/1006823' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhxxgb201709004' },
+      { t: '全文阅读页（不可下载）', u: 'https://rs.yiigle.com/cmaid/1006823' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhxxgb201709004' },
     ],
 
     use: '暴发性心肌炎的早期识别、机械循环支持时机与超声随访节点',
@@ -8971,8 +8971,8 @@ const REFS = [
     where: '中华全科医师杂志, 2024, 23(1): 7–18',
     use: '心衰 A / B 阶段的超声筛查指标、瓣膜病与心肌病家系的随访要点',
     dl: [
-      { t: '中文全文', u: 'https://gpedu.yiigle.com/uploads/guide_html/6020.html' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhqkyszz202401001' },
+      { t: '全文阅读页（不可下载）', u: 'https://gpedu.yiigle.com/uploads/guide_html/6020.html' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhqkyszz202401001' },
     ],
   },
   {
@@ -8982,8 +8982,8 @@ const REFS = [
     where: '中华胸心血管外科杂志, 2019, 35(12): 705–716',
     use: 'PH-LHD 的超声一线评估（ⅠC）、容量负荷与右心充盈压判断、移植 / LVAD 前评估',
     dl: [
-      { t: '中文全文', u: 'https://medphy.yiigle.com/uploads/guide_html/%E7%BB%88%E6%9C%AB%E6%9C%9F%E5%B7%A6%E5%BF%83%E7%96%BE%E7%97%85%E7%9B%B8%E5%85%B3%E8%82%BA%E9%AB%98%E8%A1%80%E5%8E%8B%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86.html' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhxxxgwk201912001' },
+      { t: '全文阅读页（不可下载）', u: 'https://medphy.yiigle.com/uploads/guide_html/%E7%BB%88%E6%9C%AB%E6%9C%9F%E5%B7%A6%E5%BF%83%E7%96%BE%E7%97%85%E7%9B%B8%E5%85%B3%E8%82%BA%E9%AB%98%E8%A1%80%E5%8E%8B%E4%B8%AD%E5%9B%BD%E4%B8%93%E5%AE%B6%E5%85%B1%E8%AF%86.html' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhxxxgwk201912001' },
     ],
   },
   {
@@ -8992,7 +8992,9 @@ const REFS = [
     en: 'Evans L, Rhodes A, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021.',
     where: 'Crit Care Med, 2021, 49(11): e1063–e1143',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1097/CCM.0000000000005337' },
+      { t: 'SCCM 官网指南页', u: 'https://www.sccm.org/clinical-resources/guidelines/guidelines/surviving-sepsis-guidelines-2021' },
+      { t: '第三方全文', u: 'https://pure.amsterdamumc.nl/files/142155987/Surviving-sepsis-campaign.pdf' },
+      { t: '需订阅（DOI）', u: 'https://doi.org/10.1097/CCM.0000000000005337' },
     ],
 
     use: '感染性休克的液体复苏策略、容量反应性评估的地位、去甲肾上腺素与强心药的时机',
@@ -9003,7 +9005,7 @@ const REFS = [
     en: 'Birnie DH, Sauer WH, Bogun F, et al. HRS Expert Consensus Statement on the Diagnosis and Management of Arrhythmias Associated with Cardiac Sarcoidosis.',
     where: 'Heart Rhythm, 2014, 11(7): 1304–1323',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1016/j.hrthm.2014.03.043' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1016/j.hrthm.2014.03.043' },
     ],
 
     use: '心脏结节病的诊断标准（超声 / CMR / PET / 活检）、ICD 适应证与免疫抑制治疗后的随访',
@@ -9015,7 +9017,7 @@ const REFS = [
     where: '中国循环杂志, 2021, 36(2): 109–125',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/valve-echo-consensus-2021.pdf' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zgxhzz202102002' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zgxhzz202102002' },
     ],
     use: '国内成人瓣膜病超声规范化检查与严重程度评估的权威共识；MS 按 MVA <1.0 cm² 为重度（与 ESC/EACTS 2021 一致），AS 按 AVA <1.0 cm² 或 Vmax ≥4.0 m/s 或平均压差 ≥40 mmHg 提示重度',
   },
@@ -9035,7 +9037,7 @@ const REFS = [
     en: 'Wang SS, Hong WJ, Zhang YQ, et al. Regression Equations for Calculation of z Scores for Echocardiographic Measurements of Left Heart Structures in Healthy Han Chinese Children.',
     where: 'J Clin Ultrasound, 2018, 46(5): 328–333',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1002/jcu.22579' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1002/jcu.22579' },
     ],
     use: '儿童左房左右径（心尖四腔）按 BSA 的三次多项式 Z 值方程（n=545，上海儿童医学中心多中心），用于「儿童 Z 值」页「左房与右心」组',
   },
@@ -9045,7 +9047,7 @@ const REFS = [
     en: 'Wang SS, Zhang YQ, Chen SB, et al. Regression Equations for Calculation of z Scores for Echocardiographic Measurements of Right Heart Structures in Healthy Han Chinese Children.',
     where: 'J Clin Ultrasound, 2017, 45(5): 293–303',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.1002/jcu.22436' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1002/jcu.22436' },
     ],
     use: '儿童右房左右径、右室流入道内径按 BSA 的三次多项式 Z 值方程（n=515，与 R77 同一多中心队列），用于「儿童 Z 值」页「左房与右心」组',
   },
@@ -9065,8 +9067,8 @@ const REFS = [
     en: 'Lin Z, Xia B, Xu N, et al. The Reference Values and Z Scores Regression Equations of Normal Newborns Undergoing Echocardiography.',
     where: '中华医学超声杂志(电子版), 2014, 11(2): 142–154',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.3877/cma.j.issn.1672-6448.2014.02.012' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhyxcszz201402012' },
+      { t: '需订阅（万方核验）', u: 'https://doi.org/10.3877/cma.j.issn.1672-6448.2014.02.012' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhyxcszz201402012' },
     ],
     use: '新生儿 17 项按体重的一次三次多项式 Z 值方程（n=288，0–28 d）；用于「儿童 Z 值」页「新生儿（0–28 天）· 体重法」区块',
   },
@@ -9086,7 +9088,7 @@ const REFS = [
     en: 'Guideline for Perioperative Echocardiographic Evaluation of Left Ventricular Assist Device Therapy in End-Stage Heart Failure.',
     where: '中华超声影像学杂志, 2025',
     dl: [
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202501001' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202501001' },
     ],
     use: 'LVAD 术前右心功能与瓣膜反流评估、术中入血道 / 出血道确认、术后泵速优化与抽吸事件的国内口径；与 R45（ASE 2024）并用，用于「LVAD」条目',
   },
@@ -9096,8 +9098,8 @@ const REFS = [
     en: 'Chinese Expert Consensus on Standardized Transthoracic Echocardiographic Examination of the Coronary Arteries in Children.',
     where: '中华超声影像学杂志, 2025, 34(11): 921–931',
     dl: [
-      { t: '需订阅', u: 'https://doi.org/10.3760/cma.j.cn131148-20250919-00508' },
-      { t: '免费页面', u: 'https://rs.yiigle.com/cmaid/1608694' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.3760/cma.j.cn131148-20250919-00508' },
+      { t: '全文阅读页（不可下载）', u: 'https://rs.yiigle.com/cmaid/1608694' },
     ],
     use: '儿童冠脉 AHA 15 分段法与可显示的 9 段、舒张早期（T 波终点）测量、内膜至内膜、图像放大 2–4 倍、BSA 校正 Z 值、AHA 2017 川崎病冠脉分级口径；用于「儿童 Z 值」页冠脉组说明与判读',
   },
@@ -9118,9 +9120,9 @@ const REFS = [
     en: '中华医学会超声医学分会超声心动图学组, 中国医师协会心血管分会超声心动图专业委员会.',
     where: '中华超声影像学杂志, 2020, 29(6): 461–477',
     dl: [
-      { t: '中文全文', u: 'https://rs.yiigle.com/cmaid/1206166' },
-      { t: '需订阅（DOI）', u: 'https://doi.org/10.3760/cma.j.cn131148-20200227-00115' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202006001' },
+      { t: '全文阅读页（不可下载）', u: 'https://rs.yiigle.com/cmaid/1206166' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.3760/cma.j.cn131148-20200227-00115' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202006001' },
     ],
     use: '国内采用 17 节段模式的依据：局部功能评估用 17 节段法，但室壁运动只观察 16 节段、不含心尖帽（该处正常无运动）；五级定性描述与 WMSI 记分。用于节段页「17 与 16 的关系」及室壁运动评分',
   },
@@ -9131,8 +9133,8 @@ const REFS = [
     where: '中华超声影像学杂志, 2023, 32(11): 921–945',
     dl: [
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/ccs-stress-echo-2023.pdf' },
-      { t: '需订阅（DOI）', u: 'https://doi.org/10.3760/cma.j.cn131148-20230511-00267' },
-      { t: '万方', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202311001' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.3760/cma.j.cn131148-20230511-00267' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202311001' },
     ],
     use: '负荷超声采用 17 节段（含心尖帽）评估局部功能；缺血判读为 ≥2 个相邻节段新出现或加重的室壁运动异常；WMSI 与五级评分口径。★ 该指南正文附有 17 节段中文名称表（1 前壁基底段 … 5 下侧壁基底段 … 16 侧壁心尖段 … 17 心尖）与心尖四腔/两腔/长轴示意图，节段页的中文名称、A3C 显示 5-11-16 与 2-8-14 的读图依据均取自此（2026-10-28 核对）',
   },
@@ -9142,8 +9144,8 @@ const REFS = [
     en: 'Genereux P, Piazza N, Alu MC, et al. Valve Academic Research Consortium 3: Updated Endpoint Definitions for Aortic Valve Clinical Research.',
     where: 'Eur Heart J, 2021, 42(19): 1825–1857（同时发表于 J Am Coll Cardiol 2021; 77(21): 2717–2746）',
     dl: [
-      { t: '需订阅（DOI）', u: 'https://doi.org/10.1093/eurheartj/ehaa799' },
-      { t: '需订阅（DOI）', u: 'https://doi.org/10.1016/j.jacc.2021.02.038' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1093/eurheartj/ehaa799' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1016/j.jacc.2021.02.038' },
     ],
     use: '生物瓣结构衰败（SVD）的三级定义：Stage 1 形态学 SVD，Stage 2 / 3 为中度 / 重度血流动力学 SVD，判定用与术后基线的 Δ平均压差、ΔEOA、ΔDVI 门槛；瓣周漏与瓣膜血栓的终点定义。用于「人工瓣膜评估」的 SVD 分期表',
   },
@@ -9153,7 +9155,7 @@ const REFS = [
     en: 'Arbelo E, Protonotarios A, Gimeno JR, et al. 2023 ESC Guidelines for the management of cardiomyopathies.',
     where: 'Eur Heart J, 2023, 44(37): 3503–3626',
     dl: [
-      { t: '需订阅（DOI）', u: 'https://doi.org/10.1093/eurheartj/ehad194' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1093/eurheartj/ehad194' },
     ],
     use: '心肌病的形态功能表型分类（HCM / DCM / NDLVC / ARVC / RCM）；把左室心肌致密化不全定为「左室小梁化表型」而非独立心肌病，以及小梁化表型的诊断、家族筛查与随访口径',
   },
@@ -9163,7 +9165,8 @@ const REFS = [
     en: 'Jenni R, Oechslin E, Schneider J, et al. Echocardiographic and pathoanatomical characteristics of isolated left ventricular non-compaction: a step towards classification as a distinct cardiomyopathy.',
     where: 'Heart, 2001, 86(6): 666–671',
     dl: [
-      { t: '需订阅（DOI）', u: 'https://doi.org/10.1136/heart.86.6.666' },
+      { t: '免费页面（PMC）', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC1730012/' },
+      { t: '免费全文（BMJ）', u: 'https://heart.bmj.com/content/heartjnl/86/6/666.full.pdf' },
     ],
     use: '超声 NC/C > 2.0（收缩末期、短轴）的原始出处，以及「两层结构分明 + 深陷隐窝与左室腔血流相通」两条附加条件',
   },
@@ -9171,9 +9174,9 @@ const REFS = [
     id: 'R90',
     zh: '左室心肌致密化不全的心血管磁共振特征（Petersen 标准）',
     en: 'Petersen SE, Selvanayagam JB, Wiesmann F, et al. Left ventricular non-compaction: insights from cardiovascular magnetic resonance imaging.',
-    where: 'J Am Coll Cardiol, 2004, 44(1): 101–105',
+    where: 'J Am Coll Cardiol, 2005, 46(1): 101–105',
     dl: [
-      { t: '需订阅（DOI）', u: 'https://doi.org/10.1016/j.jacc.2004.03.045' },
+      { t: '免费页面', u: 'https://doi.org/10.1016/j.jacc.2005.03.045' },
     ],
     use: 'CMR 舒张末期 NC/C > 2.3 的原始出处；该阈值特异度偏低、健康人群亦可符合，是「过度诊断」讨论的主要依据',
   },
@@ -9212,7 +9215,7 @@ const REFS = [
     where: 'J Cardiovasc Imaging, 2024, 32: 10',
     use: '韩国超声学会 2023 立场文件第二部分，二尖瓣与三尖瓣疾病诊治（东亚数据，TR 定量与继发 TR 处理）',
     dl: [
-      { t: '免费全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11218416/' },
+      { t: '第三方全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11218416/' },
       { t: 'DOI', u: 'https://doi.org/10.1186/s44348-024-00021-6' },
     ],
   },
@@ -9223,7 +9226,7 @@ const REFS = [
     where: '中国循环杂志, 2023, 38(3): 272–283. DOI: 10.3969/j.issn.1000-3614.2023.03.002',
     use: '中国 TEER 临床路径：MR 分级阈值、PMR/SMR 适应证禁忌、解剖绿/黄/红区、股静脉+心尖流程、随访',
     dl: [
-      { t: 'DOI', u: 'https://doi.org/10.3969/j.issn.1000-3614.2023.03.002' },
+      { t: '需订阅（万方核验）', u: 'https://doi.org/10.3969/j.issn.1000-3614.2023.03.002' },
     ],
   },
   {
@@ -9233,8 +9236,8 @@ const REFS = [
     where: '中华超声影像学杂志, 2019, 28(1): 1–6. DOI: 10.3760/cma.j.issn.1004-4477.2019.01.001',
     use: 'MR 介入超声评价：六分法(0+~5+)定量、VCW 为主指标、Carpentier 分型、MitraClip 术中切面',
     dl: [
-      { t: '官网', u: 'https://rs.yiigle.com/cmaid/1115196' },
-      { t: 'DOI', u: 'https://doi.org/10.3760/cma.j.issn.1004-4477.2019.01.001' },
+      { t: '全文阅读页（不可下载）', u: 'https://rs.yiigle.com/cmaid/1115196' },
+      { t: '需订阅', u: 'https://doi.org/10.3760/cma.j.issn.1004-4477.2019.01.001' },
     ],
   },
   {
@@ -9244,7 +9247,7 @@ const REFS = [
     where: '中国介入心脏病学杂志, 2022, 30(10): 721–733. DOI: 10.3969/j.issn.1004-8812.2022.10.001',
     use: 'TEER 术中超声操作规范：解剖/功能(Ⅳ型)分型、准入三区、房间隔穿刺高度、X-plane/工作三切面、随访',
     dl: [
-      { t: 'DOI', u: 'https://doi.org/10.3969/j.issn.1004-8812.2022.10.001' },
+      { t: '需订阅（万方核验）', u: 'https://doi.org/10.3969/j.issn.1004-8812.2022.10.001' },
     ],
   },
   {
@@ -9265,7 +9268,7 @@ const REFS = [
     where: '中国胸心血管外科临床杂志, 2020, 27(11): 1247–1254. DOI: 10.7507/1007-4848.202007065',
     use: 'TOF 外科治疗共识：手术时机与术式、术后 PR 处理及肺动脉瓣置换（PVR）指征、RVOT 解除标准与随访',
     dl: [
-      { t: 'DOI', u: 'https://doi.org/10.7507/1007-4848.202007065' },
+      { t: '需订阅', u: 'https://doi.org/10.7507/1007-4848.202007065' },
       { t: '免费全文', u: 'https://www.cjebm.com/article/10.7507/1007-4848.202007065' },
     ],
   },
@@ -9276,7 +9279,7 @@ const REFS = [
     where: '中国超声医学杂志, 2022, 38(7): 721–729',
     use: 'DORV 新解剖分型（3 要素 8 型）的超声诊断规范、骑跨率判定阈值与每型对应术式',
     dl: [
-      { t: '检索', u: 'https://pubnr.napstic.cn/periodicalArticle/010zgcsyxzz202207001' },
+      { t: '仓储详情页', u: 'https://pubnr.napstic.cn/periodicalArticle/010zgcsyxzz202207001' },
     ],
   },
   {
@@ -9287,7 +9290,7 @@ const REFS = [
     use: '人工瓣（机械/生物/经导管）功能评估多模态指南：正常跨瓣压差、PPM(EOAi)、瓣周漏分级、梗阻与正常高跨瓣压差鉴别、CMR/CT 角色',
     dl: [
       { t: 'DOI', u: 'https://doi.org/10.1016/j.echo.2023.10.004' },
-      { t: '需订阅（DOI）', u: 'https://doi.org/10.1016/j.echo.2023.10.004' },
+      { t: '文章页（看订阅）', u: 'https://doi.org/10.1016/j.echo.2023.10.004' },
       { t: '官网', u: 'https://www.asecho.org/' },
     ],
   },
@@ -9309,7 +9312,7 @@ const REFS = [
     where: 'J Am Soc Echocardiogr, 2024, 37(2): 119–170. DOI: 10.1016/j.echo.2023.11.015',
     use: '儿童经胸超声完整检查规范：标准切面、Z 值方法（PHN 模型、±2 SD）、年龄/BSA 标化、节段性先心协议、报告与质控',
     dl: [
-      { t: '免费全文', u: 'https://www.asecho.org/wp-content/uploads/2024/02/2024-Peds-TTE_PIIS0894731723006223.pdf' },
+      { t: 'PDF 直链', u: 'https://www.asecho.org/wp-content/uploads/2024/02/2024-Peds-TTE_PIIS0894731723006223.pdf' },
       { t: 'DOI', u: 'https://doi.org/10.1016/j.echo.2023.11.015' },
       { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/38309834/' },
     ],
@@ -9321,7 +9324,7 @@ const REFS = [
     where: 'Circulation Journal, 2019, 83(4): 842–945. DOI: 10.1253/circj.CJ-66-0158',
     use: '肺高压定义沿革与 RAP 估法演变：mPAP ≥25 时代定义、健康人 14±3（上限 20）、21–24 意义未明；RAP 由「固定值 5 或 10」改为按 IVC 直径与呼吸变化三档估（3 / 8 / 15）',
     dl: [
-      { t: '免费全文', u: 'https://www.jstage.jst.go.jp/article/circj/83/4/83_CJ-66-0158/_pdf' },
+      { t: 'PDF 直链', u: 'https://www.jstage.jst.go.jp/article/circj/83/4/83_CJ-66-0158/_pdf' },
       { t: 'DOI', u: 'https://doi.org/10.1253/circj.CJ-66-0158' },
     ],
   },
@@ -9362,6 +9365,10 @@ const REFS = [
     zh: '2025 ACC/AHA/ASE/HFSA/HRS/SCAI/SCCT/SCMR 植入式心律转复除颤器、心脏再同步治疗与起搏适用标准',
     en: 'Russo AM, Desai MY, Do MM, Butler J, et al. ACC/AHA/ASE/HFSA/HRS/SCAI/SCCT/SCMR 2025 Appropriate Use Criteria for Implantable Cardioverter-Defibrillators, Cardiac Resynchronization Therapy, and Pacing. J Am Coll Cardiol, 2025, 85(11): 1213–1285.',
     where: 'Journal of the American College of Cardiology, 2025, 85(11): 1213–1285（2025-03-25 期）. DOI: 10.1016/j.jacc.2024.11.023',
+    dl: [
+      { t: '第三方全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11998028/' },
+      { t: 'PMC PDF', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11998028/pdf/' },
+    ],
     use: 'CRT 的 A / M / R 三级评级（表 7.1 缺血性、表 7.2 非缺血性、表 7.3 LVEF 36%–50%、表 7.5 预期右室起搏负荷、表 7.6 血运重建 / GDMT 不满 3 个月）；「≥3 个月优化 GDMT 后再评 LVEF」与「新发 LBBB 先等 3 个月」的时机依据；房颤需维持 ≥98% 起搏',
   },
 ];

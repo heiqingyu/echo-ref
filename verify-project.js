@@ -254,12 +254,12 @@ else bad('参考文献条数异常: ' + EX.REFS.length);
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
 if (dlAll.length >= 80) ok('文献直链 ' + dlAll.length + ' 条（官方 PDF / 免费全文 / 需订阅地址）');
 else bad('文献直链过少: ' + dlAll.length);
-if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文|需订阅|官网|免费页面|检索|DOI|万方/.test(d.t)))
+if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文|需订阅|官网|免费页面|检索|DOI|万方|文章页|指南页|详情页/.test(d.t)))
   ok('每条直链含 https 地址与类型标注');
-else bad('存在不合规的文献直链: ' + dlAll.filter(d => !/PDF|全文|需订阅|官网|免费页面|检索|DOI|万方/.test(d.t)).map(d => d.t).join(' '));
+else bad('存在不合规的文献直链: ' + dlAll.filter(d => !/PDF|全文|需订阅|官网|免费页面|检索|DOI|万方|文章页|指南页|详情页/.test(d.t)).map(d => d.t).join(' '));
 // v1.13.2：中文文献从「万方搜索页」改为「万方文章详情页」——用户要求点一下直接到文章
 const wfRe = /^https:\/\/d\.wanfangdata\.com\.cn\/periodical\/[a-z]+\d{9}$/;
-const wfDl = dlAll.filter(d => d.t === '万方');
+const wfDl = dlAll.filter(d => /^万方/.test(d.t));
 if (wfDl.length >= 17 && wfDl.every(d => wfRe.test(d.u)))
   ok('万方文章详情页 ' + wfDl.length + ' 条（d.wanfangdata 直链，非搜索页）');
 else bad('万方详情页不合规: ' + wfDl.filter(d => !wfRe.test(d.u)).map(d => d.u).join(' '));
@@ -283,9 +283,9 @@ const doiDl = dlAll.filter(d => /DOI/.test(d.t));
 if (doiDl.length >= 3 && doiDl.every(d => /^https:\/\/doi\.org\/10\./.test(d.u)))
   ok('DOI 入口 ' + doiDl.length + ' 条均指向 doi.org');
 else bad('DOI 入口不合规: ' + doiDl.map(d => d.u).join(' '));
-const subDl = dlAll.filter(d => d.t === '需订阅');
+const subDl = dlAll.filter(d => /^需订阅/.test(d.t));
 if (subDl.length >= 5 && subDl.length <= 12 &&
-    subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\//.test(d.u)))
+    subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\/|^https:\/\/www\.sciencedirect\.com\//.test(d.u)))
   ok('需订阅地址 ' + subDl.length + ' 条均为 DOI 解析页或中华医学期刊网页面（无死链、无自造地址）');
 else bad('需订阅地址不合规: ' + subDl.map(d => d.u).join(' '));
 // v1.6.6：R75 原来挂中国循环杂志官网首页，点进去站内搜不到这篇文章 → 改挂公开 PDF 全文
