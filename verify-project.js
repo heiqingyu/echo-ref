@@ -1441,6 +1441,58 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     : bad('ped-base source 缺新文献：' + pedSrc);
 }
 
+/* ── v1.15.2：P2–P4（ASD/VSD/PDA 儿童限定语、负荷四模式、身高指数 mm/m）── */
+{
+  const allItems = EX.BRIEF_SECTIONS.reduce(function (a, s2) { return a.concat(s2.items || []); }, []);
+  const getIt = function (id) { return allItems.filter(function (i) { return i.id === id; })[0] || { blocks: [] }; };
+  const txtOf = function (id) { return JSON.stringify(getIt(id).blocks || []); };
+
+  [['asd', 'ASD'], ['vsd', 'VSD'], ['pda', 'PDA']].forEach(function (pair) {
+    const t = txtOf(pair[0]);
+    const hasKid = t.indexOf('未完全验证') !== -1 || t.indexOf('尚未完全确定') !== -1;
+    const hasRef = t.indexOf('[R109]') !== -1;
+    (hasKid && hasRef)
+      ? ok(pair[1] + ' 有「儿童不套成人切点」限定语并引 R109')
+      : bad(pair[1] + ' 缺儿童限定语：' + (hasKid ? '' : '无未验证表述 ') + (hasRef ? '' : '无 [R109]'));
+  });
+
+  const se = getIt('stress-echo');
+  const seTxt = JSON.stringify(se.blocks || []);
+  const seHeads = (se.blocks || []).filter(function (b) { return b.kind === 'h'; }).map(function (b) { return b.text; });
+  (seHeads.length === 8 && seHeads[7].indexOf('八、') === 0)
+    ? ok('stress-echo 增第八节（另外四种负荷方式）')
+    : bad('stress-echo 节数不对：' + seHeads.length + ' → ' + seHeads.join(' / '));
+  ['冠脉血流储备', '麦角新碱', '起搏负荷', '舒张期负荷'].forEach(function (k) {
+    (seTxt.indexOf(k) !== -1) ? ok('stress-echo 含' + k) : bad('stress-echo 缺' + k);
+  });
+  ((se.source || []).indexOf('R112') !== -1)
+    ? ok('stress-echo source 挂 R112（只作补充对照）')
+    : bad('stress-echo source 缺 R112');
+  (seTxt.indexOf('以 ASE 2020（R26）为准') !== -1)
+    ? ok('stress-echo 明确「切点仍以 R26 为准」')
+    : bad('stress-echo 未标明数值归属');
+
+  ['bav', 'aortic-root'].forEach(function (id) {
+    const t = txtOf(id);
+    (t.indexOf('身高指数（mm/m') !== -1 && t.indexOf('[R111]') !== -1)
+      ? ok(id + ' 补身高指数 mm/m 并引 R111')
+      : bad(id + ' 缺身高指数 mm/m 或未引 R111');
+    ((getIt(id).source || []).indexOf('R111') !== -1)
+      ? ok(id + ' source 挂 R111')
+      : bad(id + ' source 缺 R111');
+  });
+
+  // 顺手修掉 aortic-root 两个「四、」重复编号
+  const arHeads = (getIt('aortic-root').blocks || [])
+    .filter(function (b) { return b.kind === 'h'; })
+    .map(function (b) { return b.text; });
+  const nums = arHeads.map(function (h) { return h.slice(0, 1); });
+  const dup = nums.filter(function (n, i) { return nums.indexOf(n) !== i; });
+  (arHeads.length === 7 && dup.length === 0 && nums.join('') === '一二三四五六七')
+    ? ok('aortic-root 七节编号一–七无重复')
+    : bad('aortic-root 编号异常：' + nums.join(' / '));
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {
