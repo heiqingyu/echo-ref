@@ -54,7 +54,7 @@ const REFERENCE = {
   CN: {
     key: 'CN',
     label: '中国成人（中华医学会，n=1394）',
-    note: '《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围（多年龄段合并）',
+    note: '《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围（多年龄段合并）· 64 项，含瓣口流速与组织多普勒',
     /**
      * ★ 数值直接取自该指南表 2～表 9 的「总人群」列（男 678 / 女 716，95% 参考范围）。
      *   表 6～表 9 是血流与组织多普勒（v1.7.3 起收录）：单位 m/s、ms、cm/s、无量纲比值。
@@ -220,7 +220,7 @@ const REFERENCE = {
   ASE: {
     key: 'ASE',
     label: 'ASE/EACVI 2015 国际标准',
-    note: 'Reference limits for cardiac chamber quantification in adults',
+    note: 'ASE/EACVI 2015 心腔定量指南 · 22 项（内径/容积/质量/EF/右心/IVC）。瓣口流速与组织多普勒不在此指南，需切回中国标准（64 项）',
     /**
      * ASE 采用分区值（正常 / 轻度 / 中度 / 重度异常）
      *
@@ -307,9 +307,9 @@ const PARAM_UNIT_ASE = {
 
 /** 参数元信息：中文名、界面显示单位、小数位 */
 const PARAM_META = {
-  'LA-ap':    { name: '左房前后径',             unit: 'mm',    dec: 1 },
-  'LA-l':     { name: '左房长径',               unit: 'mm',    dec: 1 },
-  'LVOT':     { name: '左室流出道内径',         unit: 'mm',    dec: 1 },
+  'LA-ap':    { name: '左房前后径（收缩末）',             unit: 'mm',    dec: 1 },
+  'LA-l':     { name: '左房长径（收缩末）',               unit: 'mm',    dec: 1 },
+  'LVOT':     { name: '左室流出道内径（收缩期）',         unit: 'mm',    dec: 1 },
   'IVSd':     { name: '室间隔舒张末期厚度',      unit: 'mm',    dec: 1 },
   'LVPWd':    { name: '左室后壁舒张末期厚度',    unit: 'mm',    dec: 1 },
   'LVEDD':    { name: '左室舒张末期内径',        unit: 'mm',    dec: 1 },
@@ -327,36 +327,36 @@ const PARAM_META = {
   'LVEDV/BSA':{ name: '左室舒张末容积指数',      unit: 'mL/m²', dec: 1 },
   'LVESV/BSA':{ name: '左室收缩末容积指数',      unit: 'mL/m²', dec: 1 },
   'LVRWT':    { name: '左室相对室壁厚度',        unit: '',      dec: 2 },
-  'LAV':      { name: '左房容积',               unit: 'mL',    dec: 1 },
+  'LAV':      { name: '左房容积（收缩末）',               unit: 'mL',    dec: 1 },
   'LAV/BSA':  { name: '左房容积指数',           unit: 'mL/m²', dec: 1 },
-  'RA-l':     { name: '右房长径',               unit: 'mm',    dec: 1 },
-  'RA-t':     { name: '右房横径',               unit: 'mm',    dec: 1 },
-  'RV-ap':    { name: '右室前后径',             unit: 'mm',    dec: 1 },
-  'RV-l':     { name: '右室长径',               unit: 'mm',    dec: 1 },
-  'RVOT':     { name: '右室流出道内径',          unit: 'mm',    dec: 1 },
-  'RVOT-plax':{ name: '右室流出道(胸骨旁长轴)',   unit: 'mm',    dec: 1 },
-  'TAPSE':    { name: '三尖瓣环收缩期位移',      unit: 'mm',    dec: 1 },
-  'IVC-d':    { name: '下腔静脉内径',           unit: 'mm',    dec: 1 },
+  'RA-l':     { name: '右房长径（收缩末）',               unit: 'mm',    dec: 1 },
+  'RA-t':     { name: '右房横径（收缩末）',               unit: 'mm',    dec: 1 },
+  'RV-ap':    { name: '右室前后径（舒张末）',             unit: 'mm',    dec: 1 },
+  'RV-l':     { name: '右室长径（舒张末）',               unit: 'mm',    dec: 1 },
+  'RVOT':     { name: '右室流出道内径（收缩期）',          unit: 'mm',    dec: 1 },
+  'RVOT-plax':{ name: '右室流出道(胸骨旁长轴)（舒张末）',   unit: 'mm',    dec: 1 },
+  'TAPSE':    { name: '三尖瓣环收缩期位移（收缩末）',      unit: 'mm',    dec: 1 },
+  'IVC-d':    { name: '下腔静脉内径（呼气末）',           unit: 'mm',    dec: 1 },
   // ── 2016 中国指南新增参数 ──
-  'LA-t':     { name: '左房横径',               unit: 'mm',    dec: 1 },
+  'LA-t':     { name: '左房横径（收缩末）',               unit: 'mm',    dec: 1 },
   'IVSs':     { name: '室间隔收缩末期厚度',      unit: 'mm',    dec: 1 },
   'LVPWs':    { name: '左室后壁收缩末期厚度',     unit: 'mm',    dec: 1 },
-  'RVAW':     { name: '右室前壁厚度',           unit: 'mm',    dec: 1 },
-  'RVFW':     { name: '右室游离壁厚度',         unit: 'mm',    dec: 1 },
-  'RV-tb':    { name: '右室基底横径',           unit: 'mm',    dec: 1 },
-  'RV-tm':    { name: '右室中部横径',           unit: 'mm',    dec: 1 },
-  'ANN':      { name: '主动脉瓣环内径',         unit: 'mm',    dec: 1 },
-  'ROOT':     { name: '主动脉窦部内径',         unit: 'mm',    dec: 1 },
-  'AAO':      { name: '近端升主动脉内径',        unit: 'mm',    dec: 1 },
-  'ARCH':     { name: '主动脉弓内径',           unit: 'mm',    dec: 1 },
-  'DAO':      { name: '降主动脉内径',           unit: 'mm',    dec: 1 },
-  'PVANN':    { name: '肺动脉瓣环内径',         unit: 'mm',    dec: 1 },
-  'MPA':      { name: '主肺动脉内径',           unit: 'mm',    dec: 1 },
-  'RPA':      { name: '右肺动脉内径',           unit: 'mm',    dec: 1 },
-  'LPA':      { name: '左肺动脉内径',           unit: 'mm',    dec: 1 },
+  'RVAW':     { name: '右室前壁厚度（舒张末）',           unit: 'mm',    dec: 1 },
+  'RVFW':     { name: '右室游离壁厚度（舒张末）',         unit: 'mm',    dec: 1 },
+  'RV-tb':    { name: '右室基底横径（舒张末）',           unit: 'mm',    dec: 1 },
+  'RV-tm':    { name: '右室中部横径（舒张末）',           unit: 'mm',    dec: 1 },
+  'ANN':      { name: '主动脉瓣环内径（舒张末/收缩中）',         unit: 'mm',    dec: 1 },
+  'ROOT':     { name: '主动脉窦部内径（舒张末）',         unit: 'mm',    dec: 1 },
+  'AAO':      { name: '近端升主动脉内径（舒张末）',        unit: 'mm',    dec: 1 },
+  'ARCH':     { name: '主动脉弓内径（舒张末）',           unit: 'mm',    dec: 1 },
+  'DAO':      { name: '降主动脉内径（舒张末）',           unit: 'mm',    dec: 1 },
+  'PVANN':    { name: '肺动脉瓣环内径（舒张末）',         unit: 'mm',    dec: 1 },
+  'MPA':      { name: '主肺动脉内径（舒张末）',           unit: 'mm',    dec: 1 },
+  'RPA':      { name: '右肺动脉内径（舒张末）',           unit: 'mm',    dec: 1 },
+  'LPA':      { name: '左肺动脉内径（舒张末）',           unit: 'mm',    dec: 1 },
 
   // ── 表 6～表 9 血流与组织多普勒（v1.7.3）──
-  'LAA':          { name: '左房面积', unit: 'cm²', dec: 1 },
+  'LAA':          { name: '左房面积（收缩末）', unit: 'cm²', dec: 1 },
   'MV-E':         { name: '二尖瓣E峰流速', unit: 'm/s', dec: 2 },
   'MV-A':         { name: '二尖瓣A峰流速', unit: 'm/s', dec: 2 },
   'MV-E/A':       { name: '二尖瓣E/A比值', unit: '', dec: 2 },
@@ -384,6 +384,24 @@ const PARAM_META = {
   'TDI-s-lat':    { name: '二尖瓣环侧壁s′', unit: 'cm/s', dec: 1 },
   'TDI-e-lat':    { name: '二尖瓣环侧壁e′', unit: 'cm/s', dec: 1 },
 };
+
+/**
+ * 参考值表的测量时相说明（两端共用一份文案，改这里即可）
+ *
+ * ★ 参考值都是「规定时相下」的测值，不是心动周期里的最大或最小值。
+ *   最容易搞反的是主动脉窦：舒张末期的测值反而比收缩期小 —— 标准化优先于取极值。
+ * ★ 主动脉瓣环时相两说：2016 中国指南正文写舒张末期；ASE/EACVI 2015 与
+ *   2024《经胸超声心动图检查规范化应用中国专家共识》按收缩中期。两者差约 1–2 mm，
+ *   同一患者随访必须固定同一时相，否则会把技术差异读成病情变化。
+ */
+const PHASE_NOTE =
+  '测量时相 · 表内数值都是规定时相下的测值，不是心动周期中的最大或最小值。'
+  + '左房各径与容积、右房长径/横径取心室收缩末期（此时房腔最大）；'
+  + '左室与右室的内径、室壁厚度、主动脉窦部/升主动脉/主动脉弓/降主动脉/主肺动脉及左右肺动脉取舒张末期；'
+  + '左室流出道与右室流出道取收缩期（LVOT 在瓣环下 0.3–1.0 cm 处）；TAPSE 取收缩末期；下腔静脉取呼气末。'
+  + '★ 主动脉窦在舒张末期的测值反而小于收缩期，这是为了标准化，不是取极值。'
+  + '★ 主动脉瓣环时相两说：2016 中国指南正文写在舒张末期测量，ASE/EACVI 2015 与 2024 中国经胸超声共识按收缩中期测量，'
+  + '两者相差约 1–2 mm —— 同一患者随访请固定同一时相。';
 
 /* ── 参考值分组的唯一真相源：顺序即界面顺序，每组首行渲染组标题 ── */
 const CN_GROUPS = [
@@ -804,6 +822,7 @@ module.exports = {
   // 数据
   REFERENCE,
   PARAM_META,
+  PHASE_NOTE,
   PARAM_UNIT_ASE,
   CN_FIELDS,
   CN_GROUPS,

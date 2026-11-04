@@ -398,8 +398,8 @@
   /* 四、Tab2 参考值 */
 
   const STD_NOTE = {
-    CN: '《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围（多年龄段合并）',
-    ASE: 'ASE/EACVI 2015 Reference limits for cardiac chamber quantification in adults',
+    CN: '《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围（多年龄段合并）· 64 项，含瓣口流速与组织多普勒',
+    ASE: 'ASE/EACVI 2015 心腔定量指南 · 22 项（内径/容积/质量/EF/右心/IVC）。瓣口流速与组织多普勒不在此指南，需切回中国标准（64 项）',
   };
 
   const STD_SOURCE = {
@@ -410,6 +410,7 @@
   function renderReference() {
     // 同步到顶栏下的说明
     $('stdNote').textContent = STD_NOTE[state.standard];
+    $('phaseNote').textContent = Core.PHASE_NOTE;
 
     $('aseUnitNote').hidden = state.standard !== 'ASE';
 

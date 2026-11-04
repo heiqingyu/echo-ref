@@ -406,6 +406,7 @@ const html = `<!DOCTYPE html>
 
     <!-- ══ 参考值列表 ══ -->
     <div id="refBlock">
+      <div class="note note--warn" id="phaseNote"></div>
       <div class="note note--warn" id="aseUnitNote" hidden>
         ASE 指南原文以 <b>cm</b> 表示内径。本表已统一换算为 <b>mm</b> 显示，可直接与你的测量值对照。
       </div>

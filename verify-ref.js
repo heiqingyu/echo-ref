@@ -211,6 +211,32 @@ Object.keys(REF).forEach(function (k) {
 });
 is('除三尖瓣 E/e′ 外，男女区间不完全相同', same.length === 0, same.join(',') || '全部有差异');
 
+console.log('\n=== 10. 测量时相标注（v1.15.0 新增）===');
+const M = C.PARAM_META;
+is('PHASE_NOTE 已导出且非空', typeof C.PHASE_NOTE === 'string' && C.PHASE_NOTE.length > 120,
+  (C.PHASE_NOTE || '').length + ' 字');
+is('时相说明点名「不是最大或最小值」', C.PHASE_NOTE.indexOf('不是心动周期中的最大或最小值') >= 0);
+is('时相说明交代瓣环两说', C.PHASE_NOTE.indexOf('主动脉瓣环时相两说') >= 0);
+
+// 大动脉：全部必须标时相（这是本轮用户提出的核心问题）
+const ART = ['ANN', 'ROOT', 'AAO', 'ARCH', 'DAO', 'PVANN', 'MPA', 'RPA', 'LPA'];
+const noPhase = ART.filter(function (k) {
+  return !/(舒张末|收缩|\/)/.test(M[k].name);
+});
+is('大动脉 9 项均标注测量时相', noPhase.length === 0, noPhase.join(',') || '全部已标');
+
+// 房腔：左房收缩末、右房收缩末
+const LA = ['LA-ap', 'LA-l', 'LA-t', 'LAA', 'LAV'];
+const raBad = ['RA-l', 'RA-t'].filter(function (k) { return M[k].name.indexOf('收缩末') < 0; });
+const laBad = LA.filter(function (k) { return M[k].name.indexOf('收缩末') < 0; });
+is('左房 5 项标「收缩末」', laBad.length === 0, laBad.join(',') || '已标');
+is('右房长径/横径标「收缩末」', raBad.length === 0, raBad.join(',') || '已标');
+
+// 流出道：LVOT / RVOT 取收缩期
+['LVOT', 'RVOT'].forEach(function (k) {
+  is(k + ' 标「收缩期」', M[k].name.indexOf('收缩期') >= 0, M[k].name);
+});
+
 console.log('\n' + '='.repeat(46));
 console.log('结果： ' + pass + ' 通过 / ' + fail + ' 失败');
 console.log('='.repeat(46) + '\n');

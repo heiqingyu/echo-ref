@@ -307,6 +307,7 @@ Page({
       refDesc: hasM
         ? '已关联上方 EF 计算的测量值，实测列显示对照判定'
         : (sex === 'male' ? '男性' : '女性') + ' · ' + std.note,
+      phaseNote: core.PHASE_NOTE,
       sourceText: standard === 'CN'
         ? '中华医学会超声医学分会《中国成年人超声心动图检查测量指南》（2016，男 678 / 女 716，表 2～表 9 共 64 项 95% 参考范围；LVM/身高^2.7、内径/身高两行为派生值）'
         : 'ASE/EACVI 2015《Recommendations for Cardiac Chamber Quantification in Adults》',

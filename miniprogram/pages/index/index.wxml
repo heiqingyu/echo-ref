@@ -180,6 +180,8 @@
   <!-- ══════ 参考值列表 ══════ -->
   <view class="ref-block">
 
+    <view class="note note--strong">{{phaseNote}}</view>
+
     <view wx:if="{{standard === 'ASE'}}" class="note note--strong">
       ASE 指南原文以 cm 表示内径，本表已统一换算为 mm 显示，可直接与测量值对照。
     </view>
