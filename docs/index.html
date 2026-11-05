@@ -9901,28 +9901,13 @@ function inlineHtml(text, esc) {
 /* ── 引擎：extra-data.js（由小程序源码自动抽取，勿手改）── */
 (function () {
 /**
- * 公式集 · 评估类内容数据（切面与图像 / 心腔应变与负荷 / 器械与介入 / …）
+ * 判读条目数据 · 视图图谱 + 心腔
  *
- * 本文件是**纯数据**，被小程序与网页/APK 共用：
- *   - 小程序：pages/calculators（目录）、pages/formula（详情）
- *   - 网页/APK：build-www.js 通过 wrapEngine 抽取后挂到 window.ExtraData
- *
- * blocks 的 kind：
- *   h       小节标题
- *   table   表格（heads / rows，cols 取自 heads 长度）
- *   text    正文
- *   note    提示；warn: true 时渲染为醒目提示
- *   formula 公式行
- *
- * 每条内容的 source 指向 REFS 编号，展示在详情页底部，
- * 全部参考文献在公式集目录页底部统一列出。
- *
- * ★ 新增条目：往 BRIEF_SECTIONS 对应分组里加一条即可，
- *   目录会自动出现并可跳转；引用新文献往 REFS 加一条。
+ * 由 extra-data.js 的 BRIEF_SECTIONS 拆出：单文件超过 500KB 时，
+ * 微信开发者工具会跳过 ES6 转译与代码压缩，真机上可能加载失败。
+ * 只放数据，不要在此文件里引用其他模块。
  */
-
-/** 分组 → 条目（目录顺序即本文件顺序） */
-const BRIEF_SECTIONS = [
+const SECTIONS_A = [
   {
     id: 'views-atlas',
     title: '图像质控与规范',
@@ -12958,6 +12943,16 @@ const BRIEF_SECTIONS = [
       },
     ],
   },
+];
+
+/**
+ * 判读条目数据 · 瓣膜 + 先心
+ *
+ * 由 extra-data.js 的 BRIEF_SECTIONS 拆出：单文件超过 500KB 时，
+ * 微信开发者工具会跳过 ES6 转译与代码压缩，真机上可能加载失败。
+ * 只放数据，不要在此文件里引用其他模块。
+ */
+const SECTIONS_B = [
   {
     id: 'valve',
     title: '瓣膜评估',
@@ -16402,6 +16397,16 @@ const BRIEF_SECTIONS = [
       },
     ],
   },
+];
+
+/**
+ * 判读条目数据 · 血管
+ *
+ * 由 extra-data.js 的 BRIEF_SECTIONS 拆出：单文件超过 500KB 时，
+ * 微信开发者工具会跳过 ES6 转译与代码压缩，真机上可能加载失败。
+ * 只放数据，不要在此文件里引用其他模块。
+ */
+const SECTIONS_C = [
   {
     id: 'vascular',
     title: '急症与特殊场景',
@@ -17383,6 +17388,35 @@ const BRIEF_SECTIONS = [
     ],
   },
 ];
+
+/**
+ * 公式集 · 评估类内容数据（切面与图像 / 心腔应变与负荷 / 器械与介入 / …）
+ *
+ * 本文件是**纯数据**，被小程序与网页/APK 共用：
+ *   - 小程序：pages/calculators（目录）、pages/formula（详情）
+ *   - 网页/APK：build-www.js 通过 wrapEngine 抽取后挂到 window.ExtraData
+ *
+ * blocks 的 kind：
+ *   h       小节标题
+ *   table   表格（heads / rows，cols 取自 heads 长度）
+ *   text    正文
+ *   note    提示；warn: true 时渲染为醒目提示
+ *   formula 公式行
+ *
+ * 每条内容的 source 指向 REFS 编号，展示在详情页底部，
+ * 全部参考文献在公式集目录页底部统一列出。
+ *
+ * ★ 新增条目：往 BRIEF_SECTIONS 对应分组里加一条即可，
+ *   目录会自动出现并可跳转；引用新文献往 REFS 加一条。
+ */
+
+/** 分组 → 条目（目录顺序即本文件顺序） */
+/* 判读条目 5 组数据分 3 个文件存放（见 utils/brief-a/b/c.js）
+ * 原因：单文件超过 500KB 时开发者工具跳过 ES6 转译与压缩，真机上会加载失败 */
+const BRIEF_A = SECTIONS_A;
+const BRIEF_B = SECTIONS_B;
+const BRIEF_C = SECTIONS_C;
+const BRIEF_SECTIONS = BRIEF_A.concat(BRIEF_B, BRIEF_C);
 
 /**
  * 切面学习与在线演示：**纯链接条目**（kind: 'link'）
@@ -20236,6 +20270,12 @@ const CALC_SRC = {
 };
 
   window.ExtraData = {
+    SECTIONS_A: SECTIONS_A,
+    SECTIONS_B: SECTIONS_B,
+    SECTIONS_C: SECTIONS_C,
+    BRIEF_A: BRIEF_A,
+    BRIEF_B: BRIEF_B,
+    BRIEF_C: BRIEF_C,
     BRIEF_SECTIONS: BRIEF_SECTIONS,
     BV_BASE: BV_BASE,
     PHILIPS_PISA: PHILIPS_PISA,

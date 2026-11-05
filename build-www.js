@@ -58,19 +58,22 @@ const APP_VERSION = (function () {
 
 /** 把 CommonJS 模块转成浏览器可用的 IIFE，挂到 window[globalName] */
 function wrapEngine(file, globalName) {
-  let src = fs.readFileSync(file, 'utf8');
+  return wrapEngineSource(fs.readFileSync(file, 'utf8'), path.basename(file), globalName);
+}
 
+/** 同上，但接收源码字符串（用于把多个数据文件合成一份再包装） */
+function wrapEngineSource(src, label, globalName) {
   // 去掉导出语句整块（含多行）。用 lastIndexOf：引擎头部注释里可能出现同一串文字，
   // 只截最后一次真正的导出语句，避免注释把它带偏。
   const idx = src.lastIndexOf('module.exports');
-  if (idx === -1) throw new Error(file + ' 未找到 module.exports');
+  if (idx === -1) throw new Error(label + ' 未找到 module.exports');
   src = src.slice(0, idx).trimEnd();
 
   // 去掉结尾可能残留的注释尾部
   src = src.replace(/\/\*[\s\S]*?\*\/\s*$/, '').trimEnd();
 
   return [
-    '/* ── 引擎：' + path.basename(file) + '（由小程序源码自动抽取，勿手改）── */',
+    '/* ── 引擎：' + label + '（由小程序源码自动抽取，勿手改）── */',
     '(function () {',
     src,
     '',
@@ -107,7 +110,25 @@ const valveSrc = wrapEngine(path.join(MP, 'utils', 'valve-calc.js'), 'ValveCalc'
 // 行内标记解析（**加粗**）—— 小程序与网页共用同一份，避免两端表现不一致
 const mdSrc = wrapEngine(path.join(MP, 'utils', 'inline-md.js'), 'InlineMd');
 // 公式集「评估类内容 + 参考文献」数据（纯数据，与小程序同源）
-const extraSrc = wrapEngine(path.join(MP, 'utils', 'extra-data.js'), 'ExtraData');
+// ★ 判读条目数据拆在 brief-a/b/c.js：单文件超过 500KB 时，微信开发者工具会跳过
+//   ES6 转译与代码压缩，真机上可能加载失败（v1.15.7 真机白屏即由此引起）。
+//   浏览器端没有 require，这里把三份数据源码与主文件合成一份再包装。
+const extraSrc = (function buildExtraSource() {
+  const briefFiles = ['brief-a.js', 'brief-b.js', 'brief-c.js'];
+  let pre = '';
+  briefFiles.forEach(function (f) {
+    let s = fs.readFileSync(path.join(MP, 'utils', f), 'utf8');
+    const i = s.lastIndexOf('module.exports');
+    if (i !== -1) s = s.slice(0, i);
+    pre += s.trimEnd() + '\n\n';
+  });
+  let main = fs.readFileSync(path.join(MP, 'utils', 'extra-data.js'), 'utf8');
+  main = main
+    .replace(/require\(['"]\.\/brief-a\.js['"]\)\.SECTIONS/g, 'SECTIONS_A')
+    .replace(/require\(['"]\.\/brief-b\.js['"]\)\.SECTIONS/g, 'SECTIONS_B')
+    .replace(/require\(['"]\.\/brief-c\.js['"]\)\.SECTIONS/g, 'SECTIONS_C');
+  return wrapEngineSource(pre + main, 'extra-data.js', 'ExtraData');
+})();
 // 计算器说明（临床意义 / 参考标准 / 判读要点），与小程序同源
 const notesSrc = wrapEngine(path.join(MP, 'utils', 'calc-notes.js'), 'CalcNotes');
 // 本地资料清单（docs/materials/ 扫描生成）：只存 URL，不影响体积
