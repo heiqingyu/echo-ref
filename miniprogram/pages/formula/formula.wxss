@@ -135,11 +135,13 @@
 
 /* ── 悬浮小节目录（v1.15.4）──
    默认只是一个圆点贴右侧，不占首屏高度；点开是带序号的小节列表，当前节高亮。
-   bottom 留出 tabBar 高度 + 安全区，避免压在底部页签上。 */
+   ★ 2026-11-05 位置重排：原来 bottom 180rpx，与「回到顶部」(.totop, 140rpx + 88rpx)
+     整整重叠 48rpx，两个圆叠成一团（用户截图反馈）。现在目录圆点固定排在回顶上方：
+     回顶 140rpx → 目录 264rpx（间隙 36rpx）。 */
 .ftoc {
   position: fixed;
   right: 24rpx;
-  bottom: calc(180rpx + env(safe-area-inset-bottom));
+  bottom: calc(264rpx + env(safe-area-inset-bottom));
   z-index: 60;
 }
 

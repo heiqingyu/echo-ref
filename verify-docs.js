@@ -2249,6 +2249,23 @@ function check(name, ok, detail) {
   const ftocOpen = String(await c.evalJs('(function(){var p=document.querySelector("#calcGroups .ftoc__panel");' +
     'return p ? getComputedStyle(p).display : "no";})()'));
   check('点圆点展开小节列表', ftocOpen === 'flex', ftocOpen);
+  // ── v1.15.5：目录圆点 / 回顶按钮 / 底部页签栏三者不许叠在一起 ──
+  //    用户 2026-11-05 反馈：桌面宽度下圆点被 @media 压到 bottom:32px，
+  //    正好落进 56px 高的页签栏，和「公式集」页签重影；回顶按钮又和圆点几乎同点。
+  const stack = String(await c.evalJs('(function(){' +
+    'function fv(s){var a=[].slice.call(document.querySelectorAll(s));' +
+    'for(var i=0;i<a.length;i++){var r=a[i].getBoundingClientRect();if(r.width>0&&r.height>0)return a[i];}return null;}' +
+    'var d=fv("#calcGroups .ftoc__dot"), t=fv(".totop"), tb=document.querySelector(".tabbar");' +
+    'if(!d||!tb) return "no-dot";' +
+    'var db=d.getBoundingClientRect().bottom, tt=tb.getBoundingClientRect().top;' +
+    'var g1=Math.round(tt-db), g2="na", ov=0;' +
+    'if(t){var tr=t.getBoundingClientRect(); g2=String(Math.round(tr.bottom-tt));' +
+    'if(tr.top<db-2 && tr.bottom>db-46) ov=1;}' +
+    'return g1+"/"+g2+"/"+ov;})()'));
+  const sp2 = stack.split('/');
+  check('目录圆点、回顶按钮都让开底部页签栏（v1.15.5）',
+    sp2[0] !== 'no-dot' && Number(sp2[0]) >= 8 && Number(sp2[2]) === 0 ? 1 : 0, 1, 0);
+
   await c.evalJs('(function(){var l=document.querySelectorAll("#calcGroups .ftoc .ftoc__i"); if(l[1]) l[1].click(); return 1;})()');
   await new Promise((r) => setTimeout(r, 500));
   const afterToc = String(await c.evalJs('JSON.stringify({h:location.hash,card:!!document.querySelector("#calcGroups .card[data-g=asd]"),y:Math.round(window.scrollY)})'));

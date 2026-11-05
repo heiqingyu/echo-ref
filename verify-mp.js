@@ -1013,6 +1013,20 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('圆点固定在右侧不随滚动（position: fixed + safe-area）',
     mpFtocCss.indexOf('position: fixed') !== -1 &&
     mpFtocCss.indexOf('env(safe-area-inset-bottom)') !== -1 ? 1 : 0, 1, 0);
+  // ── v1.15.5：小程序端目录圆点与「回到顶部」原来只差 40rpx（两个 88rpx 圆叠 48rpx）──
+  const bottomOf = (css, sel) => {
+    const at = css.indexOf(sel + ' {');
+    if (at === -1) return NaN;
+    const blk = css.slice(at, css.indexOf('}', at));
+    const m = /bottom:\s*calc\((\d+)rpx/.exec(blk) || /bottom:\s*(\d+)rpx/.exec(blk);
+    return m ? Number(m[1]) : NaN;
+  };
+  const mpFtocB = bottomOf(fxWxss, '.ftoc');
+  const mpTotopB = bottomOf(fxWxss, '.totop');
+  check('详情页目录圆点排在回顶按钮上方且不重叠（v1.15.5）',
+    Number.isFinite(mpFtocB) && Number.isFinite(mpTotopB) && mpFtocB - mpTotopB >= 96 ? 1 : 0,
+    1, 0);
+
   check('点圆点展开 / 点小节跳转且自动收起',
     fxWxml.indexOf('catchtap="onTocToggle"') !== -1 &&
     fxWxml.indexOf('catchtap="onJumpSec"') !== -1 &&

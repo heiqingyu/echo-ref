@@ -1731,11 +1731,13 @@ button.fx-nav__c {
 /* ── 悬浮小节目录（v1.15.4）──
    用户 2026-11-05：长条目的胶囊条一直占着首屏，要「默认一个小点，点开才看分组」。
    默认只有右侧一个圆点（不占正文高度），点开是带序号的小节列表，当前节高亮。
-   位置贴在右下偏上：避开 iOS 底部手势区与浏览器工具栏，单手拇指可达。 */
+   ★ 2026-11-05 位置重排：底部有 56px 页签栏，圆点必须落在页签栏「之上」，
+     否则会压住右起第二个页签（用户截图反馈：和「公式集」页签重影）。
+     现在从下往上依次是：页签栏 → 回顶按钮(.totop, +12px) → 目录圆点(+68px)。 */
 .ftoc {
   position: fixed;
   right: max(14px, env(safe-area-inset-right, 0px));
-  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(var(--tabbar-h) + var(--safe-b) + 68px);
   z-index: 60;
 }
 .ftoc__dot {
@@ -1810,9 +1812,11 @@ button.fx-nav__c {
 }
 .ftoc__i--on .ftoc__no { color: var(--brand); }
 .ftoc__t { flex: 1; }
-/* 桌面端：条目很长时圆点会挡住正文右侧，往里收一点、并降低不透明度 */
+/* 桌面端：条目很长时圆点会挡住正文右侧，往里收一点、并降低不透明度
+   ★ 2026-11-05：这里原来还把 bottom 覆盖成 32px，直接掉进 56px 高的页签栏里，
+     与「公式集」页签重叠。bottom 一律继承上面的 calc()，别再单独改。 */
 @media (min-width: 720px) {
-  .ftoc { right: 22px; bottom: 32px; }
+  .ftoc { right: 22px; }
   .ftoc__dot { opacity: .72; }
   .ftoc__dot:hover { opacity: 1; }
 }
@@ -1902,11 +1906,13 @@ button.fx-nav__c {
   background: #e6d9ff;
 }
 
-/* ══════════════ 回到顶部（公式集等长页面，2026-10-21） ══════════════ */
+/* ══════════════ 回到顶部（公式集等长页面，2026-10-21） ══════════════
+   ★ 2026-11-05：原来 bottom:86px 与目录圆点(bottom:84px)几乎完全重合，
+     两个 44px 圆叠在一起。现在固定在页签栏之上 12px，目录圆点再往上 56px。 */
 .totop {
   position: fixed;
   right: 18px;
-  bottom: 86px;
+  bottom: calc(var(--tabbar-h) + var(--safe-b) + 12px);
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -2329,7 +2335,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.15.4</div>
+    <div class="verline">心脏超声参考值 · v1.15.5</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2387,7 +2393,7 @@ button.fx-nav__c {
         <div id="aliasList" hidden></div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.15.4</div>
+      <div class="verline">心脏超声参考值 · v1.15.5</div>
       <div class="note note--warn">
         公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
