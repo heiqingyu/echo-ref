@@ -1493,6 +1493,43 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     : bad('aortic-root 编号异常：' + nums.join(' / '));
 }
 
+/* ── v1.15.3：hcm 第八节补 SAM 分级（指南三度 + 口径差异 + 分级≠梗阻）── */
+{
+  const allItems = EX.BRIEF_SECTIONS.reduce(function (a, s2) { return a.concat(s2.items || []); }, []);
+  const hcm = allItems.filter(function (i) { return i.id === 'hcm'; })[0] || { blocks: [] };
+  const blocks = hcm.blocks || [];
+  const heads = blocks.filter(function (b) { return b.kind === 'h'; }).map(function (b) { return b.text; });
+  const txt = JSON.stringify(blocks);
+
+  (heads.indexOf('8.1 分几度：指南原文的 M 型三度') !== -1 && heads.indexOf('8.2 判读要看三件事') !== -1)
+    ? ok('hcm 第八节拆出 8.1 分级 / 8.2 判读')
+    : bad('hcm 缺 8.1 或 8.2 小节');
+
+  const t8 = blocks.filter(function (b) {
+    return b.kind === 'table' && b.heads && b.heads[0] === '分级' &&
+      (b.rows || []).some(function (r) { return String(r[1]).indexOf('室间隔') !== -1; });
+  })[0];
+  (t8 && t8.rows.length === 3 && t8.rows[2][1].indexOf('触及室间隔') !== -1)
+    ? ok('hcm SAM 分级表三档，重度为「触及室间隔」')
+    : bad('hcm SAM 分级表缺失或重度定义不对');
+
+  (txt.indexOf('>1 cm') !== -1 && txt.indexOf('<1 cm') !== -1)
+    ? ok('hcm SAM 分级含 1 cm 分界（指南口径）')
+    : bad('hcm SAM 分级缺 1 cm 分界');
+
+  (txt.indexOf('Ⅰ,B 级推荐') !== -1 || txt.indexOf('Ⅰ,B') !== -1)
+    ? ok('hcm SAM 分级标注指南推荐级别')
+    : bad('hcm SAM 分级未标推荐级别');
+
+  (txt.indexOf('30%') !== -1 && txt.indexOf('3 级') !== -1 || txt.indexOf('全收缩期') !== -1)
+    ? ok('hcm SAM 分级并列写明另外两套口径')
+    : bad('hcm SAM 分级未并列其他口径（教材 30% / 时间分级）');
+
+  (txt.indexOf('SAM 分级 ≠ 梗阻分级') !== -1)
+    ? ok('hcm 明确「SAM 分级 ≠ 梗阻分级」')
+    : bad('hcm 缺「分级≠梗阻」的区分说明');
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {
