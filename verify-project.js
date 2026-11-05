@@ -1573,6 +1573,57 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     : bad('hcm 缺「分级≠梗阻」的区分说明');
 }
 
+
+/* ── 2026-11-05：小节标题编号「全有或全无」回归守卫（MEMORY-rules #14）── */
+{
+  const CN_HEAD = require('./miniprogram/utils/calc-notes.js');
+  const DIG = '一二三四五六七八九十';
+  const MAP = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
+  // 取标题的中文编号数值；非「中文数字 + 、」前缀返回 0。不用正则（历史转义坑 #22）。
+  function headNum(t) {
+    const d = t.indexOf('、');
+    if (d <= 0) return 0;
+    const pre = t.slice(0, d);
+    for (let i = 0; i < pre.length; i++) if (DIG.indexOf(pre.charAt(i)) === -1) return 0;
+    if (pre === '十') return 10;
+    if (pre.length === 1) return MAP[pre] || 0;
+    if (pre.charAt(0) === '十') return 10 + (MAP[pre.charAt(1)] || 0);
+    if (pre.charAt(1) === '十') return (MAP[pre.charAt(0)] || 0) * 10 + (MAP[pre.charAt(2)] || 0);
+    return 0;
+  }
+  // ① 计算器详情页：notesBlocks 自动三段 + 右侧目录自动编号，正文标题不得再写「一、」
+  let calcHeads = 0, calcNumbered = 0;
+  const calcIds = Object.keys(CN_HEAD.CALC_NOTES);
+  calcIds.forEach(function (id) {
+    CN_HEAD.notesBlocks(id).forEach(function (b) {
+      if (b.kind !== 'h') return;
+      calcHeads++;
+      if (headNum(b.text || '') > 0) calcNumbered++;
+    });
+  });
+  (calcIds.length === 68 && calcHeads >= 204 && calcNumbered === 0)
+    ? ok('计算器详情 ' + calcIds.length + ' 条 / ' + calcHeads + ' 个小节标题全部无「一、」编号')
+    : bad('计算器详情小节标题仍有中文编号残留（带编号 ' + calcNumbered + ' 个）');
+
+  // ② 判读条目：允许「主编号 + 无编号子级小标题」并存，但主编号必须从 1 开始且严格连续
+  let briefItems = 0, briefSeqBad = 0;
+  EX.BRIEF_SECTIONS.forEach(function (s2) {
+    (s2.items || []).forEach(function (it) {
+      const hs = (it.blocks || []).filter(function (b) { return b.kind === 'h'; });
+      if (!hs.length) return;
+      briefItems++;
+      const seq = hs.map(function (b) { return headNum(b.text || ''); })
+        .filter(function (n2) { return n2 > 0; });
+      if (!seq.length) return;
+      if (seq[0] !== 1) { briefSeqBad++; return; }
+      for (let i = 1; i < seq.length; i++) if (seq[i] !== seq[i - 1] + 1) briefSeqBad++;
+    });
+  });
+  (briefItems > 0 && briefSeqBad === 0)
+    ? ok('判读条目 ' + briefItems + ' 条主编号连续、无跳号重号（子级小标题除外）')
+    : bad('判读条目编号跳号 / 重号 / 不从一开始：' + briefSeqBad + ' 处');
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {
