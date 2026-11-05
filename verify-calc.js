@@ -97,6 +97,19 @@ check('E/e′ 10 灰区', C.gradeEe(10).text, '灰区');
 const d2 = C.diastolicRatios(80, null, null, 14);
 check('缺 A 不算 E/A', d2.ea === undefined ? 'skip' : 'bad', 'skip');
 
+console.log('=== 11b. ASE 2025 舒张功能（R39 Figure 3）===');
+const d25a = C.lvFilling2025({ e: 50, a: 90, es: 8, el: 9, trv: 2.7, lavi: 35 });
+check('三项全正常 → LAP 正常、舒张功能正常', d25a.text.indexOf('LAP 正常、舒张功能正常') !== -1 ? 'ok' : 'bad', 'ok');
+check('该例 2016 与 2025 结论不同（防止被单版覆盖）', C.lvFilling({ e: 50, a: 90, es: 8, el: 9, lavi: 35, trv: 2.7 }).grade, 1);
+const d25b = C.lvFilling2025({ e: 100, a: 50, es: 5, el: 5, trv: 3.1, lavi: 40 });
+check('三项同满足且 E/A >=2 → Ⅲ 级', d25b.text.indexOf('Ⅲ 级') !== -1 ? 'ok' : 'bad', 'ok');
+const d25c = C.lvFilling2025({ e: 60, a: 100, es: 5, el: 6, trv: 2.4, lavi: 30 });
+check('e′ 减低 + E/A <=0.8 → Ⅰ 级', d25c.text.indexOf('Ⅰ 级') !== -1 ? 'ok' : 'bad', 'ok');
+const d25d = C.lvFilling2025({ e: 50, a: 90, es: 8, el: 9 });
+check('缺 TR Vmax → 数据不足，不误判正常', d25d.lap, 'unknown');
+const d25e = C.lvFilling2025({ e: 70, a: 90, es: 6, el: 7, trv: 3.0, lavi: 30 });
+check('三条里满足 2 条 → 不确定', d25e.lap, 'indeterminate');
+
 console.log('=== 12. PASP / RAP 分级 ===');
 check('PASP 4×3²+8 = 44', C.pasp(3.0, 8), 44, 1e-9);
 check('PASP 34 正常（2025 ASE 上限）', C.paspGrade(34).level, 0);

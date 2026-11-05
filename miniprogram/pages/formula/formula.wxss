@@ -65,6 +65,8 @@
   /* ★ v1.8.3：break-all 会把「（>1200）」从数字中间劈开，改用放不下时才断词 */
   overflow-wrap: break-word;
   word-break: normal;
+  /* v1.15.6：并列两套结论的结果串按换行分行 */
+  white-space: pre-line;
 }
 
 .calc-out--idle .calc-out__v {

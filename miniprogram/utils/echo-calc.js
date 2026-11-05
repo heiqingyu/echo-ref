@@ -423,6 +423,68 @@ function lvFilling(o) {
 }
 
 /**
+ * 左室充盈压与舒张功能分级（ASE 2025 更新 · R39 Figure 3）
+ *
+ * 与 2016 简化路径并列使用，两套结论不互相覆盖。
+ * 三条主判据（原文 Figure 3）：
+ *   ① e′ 减低：间隔 ≤6 或侧壁 ≤7 或平均 ≤6.5 cm/s
+ *   ② E/e′ 升高：间隔 ≥15 或侧壁 ≥13 或平均 ≥14
+ *   ③ TR Vmax ≥2.8 m/s（若已估 RAP，PASP ≥35 mmHg 等效）
+ * 三条同满足 → LAP 升高，E/A <2 为 Ⅱ 级、E/A ≥2 为 Ⅲ 级；
+ * 三条全正常 → LAP 正常、舒张功能正常；
+ * e′ 减低且余两项正常、E/A ≤0.8 → Ⅰ 级；
+ * 其余 → 不确定，须补 LARS / 肺静脉 S/D / IVRT / LAVi 或做舒张负荷超声。
+ * 原文算法图用 ≤ / ≥，正文 Key Points 用 < / >，边界值按算法图并结合临床。
+ * LAVi 在 R39 里降为二线补充变量，且须排除运动员、贫血、房颤/flutter、二尖瓣病。
+ *
+ * @param {object} o {e,a,es,el,trv,lavi} 缺省传 null 或 undefined
+ */
+function lvFilling2025(o) {
+  const r = { missing: [] };
+  const n = (x) => (x === null || x === undefined || !isFinite(Number(x)) ? null : Number(x));
+  const e = n(o.e), a = n(o.a), es = n(o.es), el = n(o.el), trv = n(o.trv), lavi = n(o.lavi);
+  if (e !== null && a !== null && a > 0) r.ea = e / a;
+  const eAvg = (es !== null && el !== null) ? (es + el) / 2 : null;
+  const eeSep = (e !== null && es > 0) ? e / es : null;
+  const eeLat = (e !== null && el > 0) ? e / el : null;
+  const eeAvg = (e !== null && eAvg !== null && eAvg > 0) ? e / eAvg : null;
+  r.eAvg = eAvg; r.eeSep = eeSep; r.eeLat = eeLat; r.eeAvg = eeAvg; r.trv = trv;
+  r.eLow = (es !== null && es <= 6) || (el !== null && el <= 7) || (eAvg !== null && eAvg <= 6.5);
+  r.eeHigh = (eeSep !== null && eeSep >= 15) || (eeLat !== null && eeLat >= 13) || (eeAvg !== null && eeAvg >= 14);
+  r.trHigh = trv !== null && trv >= 2.8;
+  r.nHigh = (r.eLow ? 1 : 0) + (r.eeHigh ? 1 : 0) + (r.trHigh ? 1 : 0);
+  const hasRelax = (es !== null || el !== null) && e !== null;
+  const hasTr = trv !== null;
+  r.complete = hasRelax && hasTr;
+  if (!hasRelax) r.missing.push('E 峰与 e′');
+  if (!hasTr) r.missing.push('TR Vmax');
+  if (!r.complete) {
+    r.lap = 'unknown';
+    r.text = '数据不足（缺 ' + r.missing.join('、') + '），2025 路径须三条主判据齐全';
+  } else if (r.nHigh === 3) {
+    r.lap = 'elevated';
+    r.grade = (r.ea !== undefined && r.ea >= 2) ? 3 : 2;
+    r.text = '三项同满足 → LAP 升高，' + (r.grade === 3 ? 'Ⅲ 级（E/A ≥2）' : 'Ⅱ 级（E/A <2）');
+  } else if (r.nHigh === 0) {
+    r.lap = 'normal'; r.grade = 0;
+    r.text = '三项全正常 → LAP 正常、舒张功能正常';
+  } else if (r.eLow && !r.eeHigh && !r.trHigh && r.ea !== undefined && r.ea <= 0.8) {
+    r.lap = 'normal'; r.grade = 1;
+    r.text = 'Ⅰ 级（e′ 减低、E/A ≤0.8、LAP 正常）';
+  } else {
+    r.lap = 'indeterminate';
+    r.text = '三项未全满足 → 不确定；须补 LARS ≤18%、肺静脉 S/D ≤0.67、IVRT ≤70 ms、LAVi >34 mL/m²';
+    if (lavi !== null && lavi > 34) {
+      r.text += '（本例 LAVi 已 >34，但 R39 把 LAVi 列为二线，单凭此项不能定级）';
+    } else {
+      r.text += '（LAVi 须排除运动员、贫血、房颤、二尖瓣病）';
+    }
+    r.text += '，症状明显者做舒张负荷超声';
+  }
+  return r;
+}
+
+/**
  * 主动脉瓣狭窄「低流量低压差（LF-LG）」专项判读
  *
  * 判定链路：先看流量（SVi ≤35 mL/m² 为低流量）→ 再看压差（mPG <40 mmHg 为低压差）
@@ -2926,6 +2988,7 @@ module.exports = {
   gradeEe,
   tapsePasp,
   lvFilling,
+  lvFilling2025,
   asLflg,
   rvFuncScore,
   cpRm,

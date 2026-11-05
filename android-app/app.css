@@ -1378,6 +1378,8 @@ html, body {
   font-size: 13px;
   color: #1d4ed8;
   font-weight: 600;
+  /* v1.15.6：舒张功能等条目同屏并列两套结论，结果串里的换行要真换行 */
+  white-space: pre-line;
   line-height: 1.7;
   /* ★ v1.8.3：原先 break-all 会把「（>1200）」从数字中间劈开成「（>120 | 0）」，
      换成只在整段放不下时才断词的 overflow-wrap；中文照常按字断行 */

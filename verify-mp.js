@@ -447,7 +447,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 117 条（R113–R117 心肌病与造影 5 篇；R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 儿童心衰、R111 BSE 先心 TTE、R112 巴西负荷超声）', EXD.REFS.length, 117, 0);
+  check('参考文献 118 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明；R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 儿童心衰、R111 BSE 先心 TTE、R112 巴西负荷超声）', EXD.REFS.length, 118, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
@@ -1728,24 +1728,42 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('IE：术中直视为 2023 新增主要标准',
     ieTxt.indexOf('术中直视（2023 新增）') !== -1 ? 1 : 0, 1, 0);
 
-  // 超声造影 CEUS（R47 共识 + R48 技师指南，v1.3.6 新增）
+  // 左心造影 / 右心声学造影 双条目（v1.15.6 同版本覆盖：拆开、补流程与搜索词）
   const ceTxt = briefText('contrast-echo');
-  check('造影页：适应证限定 LVO / EBD',
+  check('左心造影页：适应证限定 LVO / EBD',
     ceTxt.indexOf('LVO') !== -1 && ceTxt.indexOf('EBD') !== -1 ? 1 : 0, 1, 0);
-  check('造影页：MI 分级齐全（<0.2 / <0.3 / 0.3–0.5 / >0.5）',
+  check('左心造影页：MI 分级齐全（<0.2 / <0.3 / 0.3–0.5 / >0.5）',
     ['< 0.2', '< 0.3', '0.3 – 0.5', '> 0.5'].every(function (k) { return ceTxt.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);
-  check('造影页：团注剂量（Definity 0.5 mL / Optison 0.3 mL）',
+  check('左心造影页：团注剂量（Definity 0.5 mL / Optison 0.3 mL）',
     ceTxt.indexOf('0.5 mL') !== -1 && ceTxt.indexOf('0.3 mL') !== -1 ? 1 : 0, 1, 0);
-  check('造影页：EBD 增敏三招（加血 10% / 咳嗽 Valsalva / 股静脉）',
-    ceTxt.indexOf('加血 10%') !== -1 && ceTxt.indexOf('股静脉') !== -1 ? 1 : 0, 1, 0);
-  check('造影页：TEE 采集至少 10 个心动周期',
-    ceTxt.indexOf('10 个心动周期') !== -1 ? 1 : 0, 1, 0);
-  check('造影页：安全性数据（1/10,000 与 1/500,000）',
+  check('左心造影页：检查流程 / 诊断疾病 / 如何判断三节齐全',
+    ['检查流程', '能诊断 / 鉴别哪些疾病', '如何判断'].every(function (k) { return ceTxt.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);
+  check('左心造影页：安全性数据（1/10,000 与 1/500,000）',
     ceTxt.indexOf('10,000') !== -1 && ceTxt.indexOf('500,000') !== -1 ? 1 : 0, 1, 0);
-  check('造影页：肺动脉高压者需监护 30 分钟',
+  check('左心造影页：肺动脉高压者需监护 30 分钟',
     ceTxt.indexOf('30 分钟') !== -1 ? 1 : 0, 1, 0);
-  check('造影页：右向左分流为绝对禁忌（除非本次目的就是 EBD）',
+  check('左心造影页：右向左分流为绝对禁忌（除非本次目的就是 EBD）',
     ceTxt.indexOf('右向左分流') !== -1 && ceTxt.indexOf('动脉内注射') !== -1 ? 1 : 0, 1, 0);
+  check('左心造影页：右心内容已迁出（不再写增敏三招 / 10 个心动周期）',
+    ceTxt.indexOf('增敏三招') === -1 && ceTxt.indexOf('10 个心动周期') === -1 ? 1 : 0, 1, 0);
+  // 右心声学造影：合并过来的手法与流程
+  const buTxt = briefText('bubble');
+  check('右心声学造影页：增敏三招（加血 10% / 股静脉）已并入',
+    buTxt.indexOf('加血 10%') !== -1 && buTxt.indexOf('股静脉') !== -1 ? 1 : 0, 1, 0);
+  check('右心声学造影页：TEE 采集至少 10 个心动周期',
+    buTxt.indexOf('10 个心动周期') !== -1 ? 1 : 0, 1, 0);
+  check('右心声学造影页：检查流程 / 诊断疾病 / 如何判断三节齐全',
+    ['检查流程', '能诊断 / 提示哪些疾病', '如何判断'].every(function (k) { return buTxt.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);
+  check('右心声学造影页：振荡盐水相对禁忌与 Valsalva 已并入',
+    buTxt.indexOf('相对禁忌') !== -1 && buTxt.indexOf('Valsalva') !== -1 ? 1 : 0, 1, 0);
+  // ★ 搜索可见性：标题 + sub 必须能命中（用户 2026-11-05 反馈「搜左心造影看不到」）
+  const CS = require(pathW.join(__dirname, 'miniprogram', 'utils', 'cross-search.js'));
+  check('搜索「左心造影」能命中左心造影条目',
+    CS.calcCount('左心造影') >= 1 ? 1 : 0, 1, 0);
+  check('搜索「右心声学造影」能命中右心声学造影条目',
+    CS.calcCount('右心声学造影') >= 1 ? 1 : 0, 1, 0);
+  check('搜索「造影」同时命中左右两条',
+    CS.calcCount('造影') >= 2 ? 1 : 0, 1, 0);
   // 参考文献挂 R47 / R48 + R115 / R116 / R117
   pgF.onLoad({ id: 'contrast-echo' });
   pgF.onShow();

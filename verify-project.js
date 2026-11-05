@@ -249,9 +249,21 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 117) ok('参考文献 117 条（R113–R117 心肌病与造影 5 篇；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声）');
+if (EX.REFS.length === 118) ok('参考文献 118 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
+// v1.15.7：公众号 / 第三方转载 / 机构仓储这类易失效链接，不能是文献的唯一入口
+const STABLE_RE = /doi\.org|pubmed|pmc\.ncbi|pmc\.nih|cjmit\.com|asecho\.org|academic\.oup\.com|ahajournals\.org|link\.springer\.com|d\.wanfangdata|yiigle\.com|onlinejase|ersnet\.org/;
+const FRAGILE_RE = /mp\.weixin\.qq\.com|ima\.qq\.com|pubnr\.napstic|转载|仓储|第三方/;
+const fragileOnly = EX.REFS.filter(r => {
+  const ds = r.dl || [];
+  if (!ds.length) return false;
+  const fragile = ds.filter(d => FRAGILE_RE.test(String(d.u) + ' ' + String(d.t)));
+  if (!fragile.length) return false;
+  return !ds.some(d => STABLE_RE.test(String(d.u)));
+});
+if (!fragileOnly.length) ok('全文转载类文献均并列至少一条稳定指引（DOI / 官网 / 万方题录）');
+else bad('以下文献只有易失效的转载链接: ' + fragileOnly.map(r => r.id).join(' '));
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
 if (dlAll.length >= 80) ok('文献直链 ' + dlAll.length + ' 条（官方 PDF / 免费全文 / 需订阅地址）');
 else bad('文献直链过少: ' + dlAll.length);
@@ -945,33 +957,62 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
     ? ok('危急值清单 ' + cvRows.length + ' 条，含' + cvNeed.join(' / '))
     : bad('危急值清单异常（' + cvRows.length + ' 行，缺 ' + cvMiss.join(',') + '）');
 
-  // 11.9 超声造影条目：适应证限定 LVO/EBD、MI 分级、剂量、EBD 三招、安全性数据
+  // 11.9 左心造影条目：适应证 / MI 分级 / 剂量 / 检查流程 / 诊断 / 判读 / 安全性
   const ce = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'views-atlas')[0]
     .items.filter(i => i.id === 'contrast-echo')[0];
   if (ce) {
     const ceText = JSON.stringify(ce.blocks || []);
     const ceNeed = [
       /LVO/, /EBD/, /0\.2/, /0\.3/, /0\.5/, /Definity/, /Optison/,
-      /Valsalva/, /10 个心动周期/, /10,000/, /500,000/, /30 分钟/,
+      /10,000/, /500,000/, /30 分钟/, /检查流程/, /能诊断/, /如何判断/,
     ];
     const ceMiss = ceNeed.filter(re => !re.test(ceText));
     (!ceMiss.length)
-      ? ok('超声造影条目含适应证 / MI 分级 / 剂量 / EBD 手法 / 安全性要点')
-      : bad('超声造影条目缺：' + ceMiss.map(String).join(','));
-    // 三招表：加血 / 咳嗽 Valsalva / 股静脉
-    const ceTb = (ce.blocks || []).filter(b => b.kind === 'table' &&
-      (b.heads || []).join('|') === '手法|具体做法|原理')[0];
-    const ceRows = (ceTb && ceTb.rows) || [];
-    (ceRows.length >= 3 && /加血/.test(ceRows[0][0]) && /股静脉/.test(ceRows[2][0]))
-      ? ok('EBD 增敏三招齐全（加血 10% / 咳嗽 Valsalva / 股静脉）')
-      : bad('EBD 增敏三招异常：' + JSON.stringify(ceRows.map(r => r[0])));
-    // 引用：R47 / R48 两份 ASE 文件 + R115 BSE 2023 + R116 / R117 两份国内共识
+      ? ok('左心造影条目含适应证 / MI 分级 / 剂量 / 流程 / 诊断 / 判读 / 安全性要点')
+      : bad('左心造影条目缺：' + ceMiss.map(String).join(','));
     (ce.source.join(',') === 'R47,R48,R115,R116,R117')
-      ? ok('超声造影条目引用 R47/R48 + R115/R116/R117 共 5 条')
-      : bad('超声造影条目引用异常：' + ce.source.join(','));
+      ? ok('左心造影条目引用 R47/R48 + R115/R116/R117 共 5 条')
+      : bad('左心造影条目引用异常：' + ce.source.join(','));
+    (ce.title.indexOf('左心造影') !== -1)
+      ? ok('左心造影条目标题含「左心造影」（搜索可见）')
+      : bad('左心造影条目标题不含关键词');
+    (ceText.indexOf('增敏三招') === -1 && ceText.indexOf('10 个心动周期') === -1)
+      ? ok('左心造影条目已迁出右心声学造影内容')
+      : bad('左心造影条目仍混有右心声学造影内容');
   } else {
-    bad('超声造影条目 contrast-echo 缺失');
+    bad('左心造影条目 contrast-echo 缺失');
   }
+  // 11.9b 右心声学造影条目：合并过来的增敏三招、TEE 10 心搏、流程与搜索词
+  const bu = EX.BRIEF_SECTIONS.reduce((a, s) => a.concat(s.items || []), [])
+    .filter(i => i.id === 'bubble')[0];
+  if (bu) {
+    const buText = JSON.stringify(bu.blocks || []);
+    const buTb = (bu.blocks || []).filter(b => b.kind === 'table' &&
+      (b.heads || []).join('|') === '手法|具体做法|原理')[0];
+    const buRows = (buTb && buTb.rows) || [];
+    (buRows.length >= 3 && /加血/.test(buRows[0][0]) && /股静脉/.test(buRows[2][0]))
+      ? ok('右心声学造影：增敏三招齐全（加血 10% / 咳嗽 Valsalva / 股静脉）')
+      : bad('右心声学造影：增敏三招异常：' + JSON.stringify(buRows.map(r => r[0])));
+    (buText.indexOf('10 个心动周期') !== -1 && buText.indexOf('检查流程') !== -1 &&
+      buText.indexOf('能诊断') !== -1 && buText.indexOf('如何判断') !== -1)
+      ? ok('右心声学造影：流程 / TEE 采集 / 诊断 / 判断四节齐全')
+      : bad('右心声学造影：流程或判读章节缺失');
+    (bu.title.indexOf('右心声学造影') !== -1)
+      ? ok('右心声学造影条目标题含「右心声学造影」（搜索可见）')
+      : bad('右心声学造影条目标题不含关键词');
+  } else {
+    bad('右心声学造影条目 bubble 缺失');
+  }
+  // 11.9c 搜索可见性（用户 2026-11-05 反馈「搜左心造影看不到」）
+  const CSSEARCH = require(path.join(MP, 'utils', 'cross-search.js'));
+  (CSSEARCH.calcCount('左心造影') >= 1 && CSSEARCH.calcCount('右心声学造影') >= 1)
+    ? ok('搜索「左心造影」与「右心声学造影」均可命中目录条目')
+    : bad('造影关键词搜索命中异常：左=' + CSSEARCH.calcCount('左心造影') +
+      ' 右=' + CSSEARCH.calcCount('右心声学造影'));
+  (EX.kwOf('contrast-echo').indexOf('左心造影') !== -1 &&
+    EX.kwOf('bubble').indexOf('右心声学造影') !== -1)
+    ? ok('SEARCH_KW 补齐左右心造影口语别名')
+    : bad('SEARCH_KW 未补造影别名');
 
   // 11.10 超声引导下有创操作条目：12 类操作对照表、心包穿刺数据、活检部位、ICE 风险
   const eiSec = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'views-atlas')[0];
@@ -1375,9 +1416,9 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
 /* ── v1.15.1：R109–R112 入库 + ped-base 两节（EACVI 报告要素 / ISHLT 心衰分级）── */
 {
   const ids = EX.REFS.slice(-5).map(function (r) { return r.id; }).join(',');
-  (ids === 'R113,R114,R115,R116,R117')
-    ? ok('R113–R117 五条按序排在文献表末尾')
-    : bad('文献表末尾不是 R113–R117：' + ids);
+  (ids === 'R114,R115,R116,R117,R118')
+    ? ok('R114–R118 五条按序排在文献表末尾')
+    : bad('文献表末尾不是 R114–R118：' + ids);
 
   const byId = {};
   EX.REFS.forEach(function (r) { byId[r.id] = r; });

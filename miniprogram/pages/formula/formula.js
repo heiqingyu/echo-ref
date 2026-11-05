@@ -1077,7 +1077,22 @@ Page({
         if (!ev.error) parts.push('E/Vp ' + calc.fmt(ev.ratio, 2) + '（' + ev.text + '）');
       }
       if (f.text) parts.push('→ ' + f.text);
-      out = parts.join('；');
+      const g = calc.lvFilling2025({
+        e: v.dfe === undefined ? null : v.dfe,
+        a: v.dfa === undefined ? null : v.dfa,
+        es: v.dfes === undefined ? null : v.dfes,
+        el: v.dfel === undefined ? null : v.dfel,
+        trv: v.dftrv === undefined ? null : v.dftrv,
+        lavi: v.dflavi === undefined ? null : v.dflavi,
+      });
+      const gLine = [
+        'e′ ' + (g.eAvg !== null ? calc.fmt(g.eAvg, 1) : '—') + '（' + (g.eLow ? '减低' : '未减低') + '）',
+        '平均 E/e′ ' + (g.eeAvg !== null ? calc.fmt(g.eeAvg) : '—') + '（' + (g.eeHigh ? '升高' : '未升高') + '）',
+        'TR Vmax ' + (g.trv !== null ? calc.fmt(g.trv, 1) : '—') + '（' + (g.trHigh ? '≥2.8' : '<2.8') + '）',
+        '→ ' + g.text,
+      ].join('；');
+      out = '【2016 ASE/EACVI 简化路径】' + parts.join('；') +
+        '\n【ASE 2025 · R39】' + gLine;
     } else if (gid === 'volidx') {
       // —— 容积指数与重构分级 ——
       const r = calc.volumeIndices(v.vedv, v.vesv, bsa, female);

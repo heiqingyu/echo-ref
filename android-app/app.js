@@ -698,7 +698,7 @@
       fields: [['dfe', 'E 峰', 'cm/s'], ['dfa', 'A 峰', 'cm/s'], ['dfes', '间隔 e′', 'cm/s'],
         ['dfel', '侧壁 e′', 'cm/s'], ['dflavi', 'LAVi（可选）', 'mL/m²'], ['dftrv', 'TR Vmax（可选）', 'm/s'],
         ['dfvp', 'Vp 血流传播速度（可选）', 'cm/s']],
-      note: '2016 ASE/EACVI 简化路径：E/A ≥2，或 E/A ≤0.8 结合平均 E/e′ >14、LAVi >34、TR Vmax >2.8 三指标，分 Ⅰ/Ⅱ/Ⅲ 级。同屏给平均 E/e′（<8 正常、>14 升高）与 E/Vp（≤1.5 正常，>2.5 约 PCWP >18）；Vp 四腔彩色 M 型测（正常 ≥45 cm/s）' },
+      note: '2016 简化路径与 ASE 2025（R39）结果同屏并列，两套不互相覆盖。2016：E/A ≥2，或 E/A ≤0.8 结合三个升高指标（平均 E/e′ >14、LAVi >34、TR Vmax >2.8），分 Ⅰ/Ⅱ/Ⅲ 级。2025（Figure 3）三条主判据：e′ 减低（间隔 ≤6 / 侧壁 ≤7 / 平均 ≤6.5 cm/s）、E/e′ 升高（间隔 ≥15 / 侧壁 ≥13 / 平均 ≥14）、TR Vmax ≥2.8 m/s；三项同满足为 LAP 升高（E/A <2 Ⅱ 级、≥2 Ⅲ 级），三项全正常为 LAP 正常、舒张功能正常，其余须补 LARS ≤18% / 肺静脉 S/D ≤0.67 / IVRT ≤70 ms / LAVi >34 或做舒张负荷超声。R39 把 LAVi 降为二线且要求排除运动员、贫血、房颤、二尖瓣病。同屏另给平均 E/e′（<8 正常、>14 升高）与 E/Vp（≤1.5 正常、>2.5 约 PCWP >18）；Vp 彩色 M 型四腔切面测（正常 ≥45 cm/s）。报告须写明分级与充盈压，不能定级时至少写 LAP 正常/升高；两套结论不一致时并列写明、不自行取舍，并注明各自版本' },
 
     { id: 'sync', sec: 'recon', title: '心脏同步化（机械不同步）', rel: ['crt'],
       opts: [{ k: 'sy_flash', n: '室间隔闪动', list: [['n', '无'], ['y', '有']] },
@@ -976,7 +976,7 @@
        文案必须与 calc-groups.js 的 sub 逐字一致（verify-project 会比对，别再两边各写一套）。 */
     'mpap': 'IVC 估 RAP · sPAP / dPAP / mPAP · ESC/ERS 可能性',
     'aortaz': '瓣环 / 窦部 / 窦管交界 / 升主动脉 · 成人参考区间',
-    'dfun': '四步法分级 · 左房压估测 · 2022 更新',
+    'dfun': '2016 四步法 / ASE 2025 并列 · 左房压估测',
     'mtype': '缩短分数 · 立方公式 EF · 二尖瓣 EPSS',
     'pvfu': 'TAVR / 换瓣后 EOA 与压差',
     'sync': 'SPWMD · IVMD · Ts-SD · 闪动 / 摇摆 · CRT 术前旁证',
@@ -2951,7 +2951,22 @@
         if (!ev.error) parts.push('E/Vp ' + Calc.fmt(ev.ratio, 2) + '（' + ev.text + '）');
       }
       if (f.text) parts.push('→ ' + f.text);
-      put('dfun', partsOf(parts));
+      const g = Calc.lvFilling2025({
+        e: v.dfe === undefined ? null : v.dfe,
+        a: v.dfa === undefined ? null : v.dfa,
+        es: v.dfes === undefined ? null : v.dfes,
+        el: v.dfel === undefined ? null : v.dfel,
+        trv: v.dftrv === undefined ? null : v.dftrv,
+        lavi: v.dflavi === undefined ? null : v.dflavi,
+      });
+      const gLine = [
+        'e′ ' + (g.eAvg !== null ? Calc.fmt(g.eAvg, 1) : '—') + '（' + (g.eLow ? '减低' : '未减低') + '）',
+        '平均 E/e′ ' + (g.eeAvg !== null ? Calc.fmt(g.eeAvg) : '—') + '（' + (g.eeHigh ? '升高' : '未升高') + '）',
+        'TR Vmax ' + (g.trv !== null ? Calc.fmt(g.trv, 1) : '—') + '（' + (g.trHigh ? '≥2.8' : '<2.8') + '）',
+        '→ ' + g.text,
+      ].join('；');
+      put('dfun', '【2016 ASE/EACVI 简化路径】' + partsOf(parts) +
+        '\n【ASE 2025 · R39】' + gLine);
     }
 
     // 心脏同步化（机械不同步）
