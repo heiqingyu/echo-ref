@@ -447,7 +447,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 112 条（R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 儿童心衰、R111 BSE 先心 TTE、R112 巴西负荷超声）', EXD.REFS.length, 112, 0);
+  check('参考文献 117 条（R113–R117 心肌病与造影 5 篇；R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 儿童心衰、R111 BSE 先心 TTE、R112 巴西负荷超声）', EXD.REFS.length, 117, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
@@ -1746,11 +1746,11 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     ceTxt.indexOf('30 分钟') !== -1 ? 1 : 0, 1, 0);
   check('造影页：右向左分流为绝对禁忌（除非本次目的就是 EBD）',
     ceTxt.indexOf('右向左分流') !== -1 && ceTxt.indexOf('动脉内注射') !== -1 ? 1 : 0, 1, 0);
-  // 参考文献挂 R47 / R48
+  // 参考文献挂 R47 / R48 + R115 / R116 / R117
   pgF.onLoad({ id: 'contrast-echo' });
   pgF.onShow();
-  check('造影页：参考文献挂 R47 + R48',
-    (pgF.data.refs || []).map(function (r) { return r.id; }).join(',') === 'R47,R48' ? 1 : 0, 1, 0);
+  check('造影页：参考文献挂 R47/R48 + R115/R116/R117',
+    (pgF.data.refs || []).map(function (r) { return r.id; }).join(',') === 'R47,R48,R115,R116,R117' ? 1 : 0, 1, 0);
   // 文献直链：R48 含中文 PDF
   const EXDCE = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
   const R48dl = (EXDCE.REFS.filter(function (r) { return r.id === 'R48'; })[0].dl || []);

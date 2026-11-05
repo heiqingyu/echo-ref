@@ -249,7 +249,7 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
-if (EX.REFS.length === 112) ok('参考文献 112 条（R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声）');
+if (EX.REFS.length === 117) ok('参考文献 117 条（R113–R117 心肌病与造影 5 篇；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 const dlAll = EX.REFS.reduce((a, r) => a.concat(r.dl || []), []);
@@ -965,9 +965,9 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
     (ceRows.length >= 3 && /加血/.test(ceRows[0][0]) && /股静脉/.test(ceRows[2][0]))
       ? ok('EBD 增敏三招齐全（加血 10% / 咳嗽 Valsalva / 股静脉）')
       : bad('EBD 增敏三招异常：' + JSON.stringify(ceRows.map(r => r[0])));
-    // 引用必须是 R47 / R48
-    (ce.source.join(',') === 'R47,R48')
-      ? ok('超声造影条目引用 R47（共识声明）+ R48（技师指南）')
+    // 引用：R47 / R48 两份 ASE 文件 + R115 BSE 2023 + R116 / R117 两份国内共识
+    (ce.source.join(',') === 'R47,R48,R115,R116,R117')
+      ? ok('超声造影条目引用 R47/R48 + R115/R116/R117 共 5 条')
       : bad('超声造影条目引用异常：' + ce.source.join(','));
   } else {
     bad('超声造影条目 contrast-echo 缺失');
@@ -1374,10 +1374,10 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
 
 /* ── v1.15.1：R109–R112 入库 + ped-base 两节（EACVI 报告要素 / ISHLT 心衰分级）── */
 {
-  const ids = EX.REFS.slice(-4).map(function (r) { return r.id; }).join(',');
-  (ids === 'R109,R110,R111,R112')
-    ? ok('R109–R112 四条按序排在文献表末尾')
-    : bad('文献表末尾不是 R109–R112：' + ids);
+  const ids = EX.REFS.slice(-5).map(function (r) { return r.id; }).join(',');
+  (ids === 'R113,R114,R115,R116,R117')
+    ? ok('R113–R117 五条按序排在文献表末尾')
+    : bad('文献表末尾不是 R113–R117：' + ids);
 
   const byId = {};
   EX.REFS.forEach(function (r) { byId[r.id] = r; });
