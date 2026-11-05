@@ -749,22 +749,18 @@ function check(name, ok, detail) {
       // ★ v1.8.3：详情卡是 buildCalcInputs() 运行时写进 #calcGroups 的，不在目录 #calcIndex 里
       resistOuts: document.querySelectorAll('#calcGroups .card[data-g="resist"] .calc-out').length,
       lvgeomOuts: document.querySelectorAll('#calcGroups .card[data-g="lvgeom"] .calc-out').length,
+      // ★ v1.15.4：瓣膜拆成两组、组名也改了，取样改按组 id（g-valve / g-valve-interv）
       valveCalc: (function () {
-        // ★ v1.8.2：组头被包进 .fx-hd，列表与 .fx-hd 同级（同在 .fx-card 内），
-        //   不再能从 .fx-group 直接 nextElementSibling 找到 —— 先上溯卡片再取列表。
-        var gs = idx.querySelectorAll('.fx-group');
-        for (var i = 0; i < gs.length; i += 1) {
-          if (gs[i].textContent.indexOf('瓣膜评估') === 0) {
-            var card = gs[i].closest ? gs[i].closest('.fx-card') : null;
-            var lst = card ? card.querySelector('.fx-list') : null;
-            if (!lst) {
-              lst = gs[i].nextElementSibling;
-              while (lst && !lst.classList.contains('fx-list')) lst = lst.nextElementSibling;
-            }
-            return lst ? lst.querySelectorAll('.fx-item[data-kind="calc"]').length : -1;
-          }
-        }
-        return -1;
+        var g = document.getElementById('g-valve');
+        var card = g && g.closest ? g.closest('.fx-card') : null;
+        var lst = card ? card.querySelector('.fx-list') : null;
+        return lst ? lst.querySelectorAll('.fx-item[data-kind="calc"]').length : -1;
+      })(),
+      valveIntervCalc: (function () {
+        var g = document.getElementById('g-valve-interv');
+        var card = g && g.closest ? g.closest('.fx-card') : null;
+        var lst = card ? card.querySelector('.fx-list') : null;
+        return lst ? lst.querySelectorAll('.fx-item[data-kind="calc"]').length : -1;
       })(),
       album: idx.querySelectorAll('.fx-item[data-kind="album"]').length,
       albumTxt: (idx.querySelector('.fx-item[data-kind="album"]') || {}).textContent || '',
@@ -788,8 +784,8 @@ function check(name, ok, detail) {
     check('发布版含公式集页且默认可见', d.visible, true);
     // v1.6.5：回到公式集目录后「重置」重新出现（详情页与切面学习页会隐藏）
     check('公式集目录恢复显示「重置」按钮', d.resetShown === true, 'shown=' + d.resetShown);
-    check('公式集分组 = 瓣膜 + 先心病 + 3 个计算组 + 4 组评估（v1.13.10 先心前置）',
-      d.groups.join('|') === '瓣膜评估|先天性心脏病（含术后）|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|急症与特殊场景',
+    check('公式集分组 = 瓣膜疾病 + 瓣膜介入 + 先心病 + 3 个计算组 + 4 组评估（v1.15.4 瓣膜拆两组）',
+      d.groups.join('|') === '瓣膜疾病与定量|瓣膜介入与人工瓣|先天性心脏病（含术后）|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|急症与特殊场景',
       d.groups.join('|'));
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
@@ -805,7 +801,8 @@ function check(name, ok, detail) {
     check('无外链时 href 免检', d.links === 0 || (d.href || '').indexOf('https://') === 0, d.href);
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
-    check('发布版瓣膜评估组含 4 条计算（TR / PPM / TAVR 瓣环 / 人工瓣术后）', d.valveCalc === 4, d.valveCalc);
+    check('发布版瓣膜疾病组只含 1 条计算（TR 定量）', d.valveCalc === 1, d.valveCalc);
+    check('发布版瓣膜介入组含 3 条计算（PPM / TAVR 瓣环 / 人工瓣术后）', d.valveIntervCalc === 3, d.valveIntervCalc);
     check('参考文献 112 条', d.refs === 112, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
@@ -873,7 +870,7 @@ function check(name, ok, detail) {
       return JSON.stringify({
         literal: txt.indexOf('**') >= 0 ? txt.slice(txt.indexOf('**') - 20, txt.indexOf('**') + 20) : '',
         bold: card.querySelectorAll('b').length,
-        toc: card.querySelectorAll('.fx-nav--sec .fx-nav__c').length,
+        toc: card.querySelectorAll('.ftoc .ftoc__i').length,
         anchors: card.querySelectorAll('.fx-h[id^="sec-"]').length
       });
     })()`);
@@ -883,7 +880,7 @@ function check(name, ok, detail) {
     } else {
       check('详情正文不再出现字面量 **', L.literal === '', L.literal);
       check('详情正文已渲染 <b> 加粗', L.bold > 0, L.bold);
-      check('长条目顶部有小节导航胶囊', L.toc >= 2, L.toc);
+      check('长条目带悬浮小节目录项', L.toc >= 2, L.toc);
       check('小节标题带锚点 id（可跳转）', L.anchors >= 2, L.anchors);
     }
 
@@ -2122,7 +2119,7 @@ function check(name, ok, detail) {
      打开小节数最多的条目 → 点第 4 个胶囊 → 断言 scrollY 明显大于 0。
      ★ 必须放在文件末尾：中途切页签会让后面的断言全红。
      ──────────────────────────────────────────────────────────── */
-  console.log('\n【三c】条目内小节导航（点胶囊真的会滚）');
+  console.log('\n【三c】条目内小节导航（悬浮目录，点小节真的会滚）');
   await c.evalJs(`(function(){
     document.querySelector('.tab[data-tab="calc"]').click();
     const card = document.querySelector('#calcGroups .card[data-g="tavr"]');
@@ -2131,26 +2128,30 @@ function check(name, ok, detail) {
     document.getElementById('calcDetail').hidden = false;
     card.hidden = false;
     window.scrollTo(0, 0);
-    return card.querySelectorAll('.fx-nav--sec .fx-nav__c').length;
+    return card.querySelectorAll('.ftoc .ftoc__i').length;
   })()`);
   const navN = await c.evalJs(
-    'document.querySelectorAll(\'#calcGroups .card[data-g="tavr"] .fx-nav--sec .fx-nav__c\').length');
-  check('TAVR 条目渲染出 8 个小节导航胶囊', navN === 8, navN);
-  // v1.13.6：小节导航必须是换行平铺（flex-wrap:wrap），且内容不横向溢出被裁
+    'document.querySelectorAll(\'#calcGroups .card[data-g="tavr"] .ftoc .ftoc__i\').length');
+  check('TAVR 条目渲染出 8 个小节目录项', navN === 8, navN);
+  // v1.15.4：悬浮目录 = 圆点固定定位 + 面板默认收起（不占正文高度）
   const navLayout = await c.evalJs(`(function(){
-    var n = document.querySelector('#calcGroups .card[data-g="tavr"] .fx-nav--sec');
-    if (!n) return 'no';
-    var cs = getComputedStyle(n);
-    return JSON.stringify({ wrap: cs.flexWrap, ox: cs.overflowX,
-      sh: Math.round(n.scrollWidth), cw: Math.round(n.clientWidth),
-      h: Math.round(n.getBoundingClientRect().height),
-      rows: Math.round(n.getBoundingClientRect().height / 26) });
+    var d = document.querySelector('#calcGroups .card[data-g="tavr"] .ftoc__dot');
+    var p = document.querySelector('#calcGroups .card[data-g="tavr"] .ftoc__panel');
+    if (!d || !p) return 'no';
+    var r = d.getBoundingClientRect();
+    return JSON.stringify({ pos: getComputedStyle(d.parentNode).position,
+      w: Math.round(r.width), h: Math.round(r.height),
+      panel: getComputedStyle(p).display });
   })()`);
-  check('小节导航换行平铺（不横滑、内容不被裁）',
-    navLayout !== 'no' && JSON.parse(navLayout).wrap === 'wrap' &&
-    JSON.parse(navLayout).sh <= JSON.parse(navLayout).cw + 1, navLayout);
+  check('悬浮目录默认只有一个小圆点（固定定位 + 面板收起）',
+    navLayout !== 'no' && JSON.parse(navLayout).pos === 'fixed' &&
+    JSON.parse(navLayout).w <= 48 && JSON.parse(navLayout).panel === 'none', navLayout);
+  // 点圆点展开，再点第 5 项
+  await c.evalJs('document.querySelector(\'#calcGroups .card[data-g="tavr"] .ftoc__dot\').click()');
+  await new Promise((r) => setTimeout(r, 200));
+
   await c.evalJs(
-    'document.querySelector(\'#calcGroups .card[data-g="tavr"] .fx-nav--sec .fx-nav__c:nth-child(5)\').click()');
+    'document.querySelector(\'#calcGroups .card[data-g="tavr"] .ftoc .ftoc__list .ftoc__i:nth-child(5)\').click()');
   await new Promise((r) => setTimeout(r, 900));
   const scrollInfo = await c.evalJs(`(function(){
     return JSON.stringify({
@@ -2162,7 +2163,7 @@ function check(name, ok, detail) {
   })()`);
   const navSc = JSON.parse(scrollInfo);
   const scrolled = Math.max(navSc.wy, navSc.de, navSc.bd);
-  check('点第 5 个胶囊后页面确实向下滚动', scrolled > 200, scrollInfo);
+  check('点第 5 个目录项后页面确实向下滚动', scrolled > 200, scrollInfo);
   const atTarget = await c.evalJs(`(function(){
     const el = document.getElementById('sec-4-tavr');
     if (!el) return -1;
@@ -2226,8 +2227,8 @@ function check(name, ok, detail) {
   check('先心组目录第一条是房间隔缺损（ASD 置顶）', chdFirst === 'asd', chdFirst);
 
   /* v1.13.10：先心病整组紧跟瓣膜评估 */
-  const secHead = await c.evalJs('(function(){return [].slice.call(document.querySelectorAll("#calcList .fx-group")).slice(0,2).map(function(e){return e.id;}).join(",");})()');
-  check('目录前两组为 瓣膜评估 → 先天性心脏病', secHead === 'g-valve,g-chd', secHead);
+  const secHead = await c.evalJs('(function(){return [].slice.call(document.querySelectorAll("#calcList .fx-group")).slice(0,3).map(function(e){return e.id;}).join(",");})()');
+  check('目录前三组为 瓣膜疾病 → 瓣膜介入 → 先天性心脏病', secHead === 'g-valve,g-valve-interv,g-chd', secHead);
 
   /* v1.13.10：条目内小节导航必须用 button —— 用 <a href="#sec-…"> 时移动端
      touchend 会先写 hash，视图栈把未知 hash 当目录，点击分节直接回公式集。 */
@@ -2235,16 +2236,28 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 200));
   await c.evalJs('(function(){var e=document.querySelector(String.fromCharCode(35)+"calcList .fx-item[data-kind=brief][data-id=asd]"); if(e) e.click();})()');
   await new Promise((r) => setTimeout(r, 400));
-  const tocTag = String(await c.evalJs('(function(){var l=document.querySelectorAll("#calcGroups .fx-nav--sec .fx-nav__c"); if(!l.length) return "0"; var bad=0,href=0;' +
+  const tocTag = String(await c.evalJs('(function(){var l=document.querySelectorAll("#calcGroups .ftoc .ftoc__i"); if(!l.length) return "0"; var bad=0,href=0;' +
     '[].forEach.call(l,function(a){ if(a.tagName!=="BUTTON") bad++; if(a.hasAttribute("href")) href++; });' +
     'return l.length+"/"+bad+"/"+href;})()'));
-  check('小节导航用 button 且不带 href（v1.13.10）', tocTag.split('/')[1] === '0' && tocTag.split('/')[2] === '0', tocTag);
-  await c.evalJs('(function(){var l=document.querySelectorAll("#calcGroups .fx-nav--sec .fx-nav__c"); if(l[1]) l[1].click(); return 1;})()');
+  check('悬浮目录的小节项用 button 且不带 href（v1.15.4）', tocTag.split('/')[1] === '0' && tocTag.split('/')[2] === '0', tocTag);
+  // v1.15.4：默认只有一个圆点（面板 display:none），点开才展开列表
+  const ftocClosed = String(await c.evalJs('(function(){var p=document.querySelector("#calcGroups .ftoc__panel");' +
+    'return p ? getComputedStyle(p).display : "no";})()'));
+  check('悬浮目录默认收起、不占正文高度', ftocClosed === 'none', ftocClosed);
+  await c.evalJs('(function(){var d=document.querySelector("#calcGroups .ftoc__dot"); if(d) d.click(); return 1;})()');
+  await new Promise((r) => setTimeout(r, 200));
+  const ftocOpen = String(await c.evalJs('(function(){var p=document.querySelector("#calcGroups .ftoc__panel");' +
+    'return p ? getComputedStyle(p).display : "no";})()'));
+  check('点圆点展开小节列表', ftocOpen === 'flex', ftocOpen);
+  await c.evalJs('(function(){var l=document.querySelectorAll("#calcGroups .ftoc .ftoc__i"); if(l[1]) l[1].click(); return 1;})()');
   await new Promise((r) => setTimeout(r, 500));
   const afterToc = String(await c.evalJs('JSON.stringify({h:location.hash,card:!!document.querySelector("#calcGroups .card[data-g=asd]"),y:Math.round(window.scrollY)})'));
   const at = JSON.parse(afterToc);
   // 只判「视图没被切走」；滚动量由前面 TAVR 那条单独判（这里视口高度不定，量不可靠）
   check('点分节不切视图（hash 仍为 #/calc/asd）', at.card === true && at.h === '#/calc/asd', afterToc);
+  const ftocAfter = String(await c.evalJs('(function(){var p=document.querySelector("#calcGroups .ftoc__panel");' +
+    'return p ? getComputedStyle(p).display : "no";})()'));
+  check('点完小节面板自动收起', ftocAfter === 'none', ftocAfter);
   await c.evalJs('(function(){location.hash = "#sec-1-asd"; return 1;})()');
   await new Promise((r) => setTimeout(r, 400));
   const anchorSafe = await c.evalJs('(function(){return !!document.querySelector("#calcGroups .card[data-g=asd]");})()');

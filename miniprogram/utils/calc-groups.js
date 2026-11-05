@@ -264,7 +264,9 @@ const GROUPS = [
    * 计算统一走 valve-calc.js 的 valveCalc(id, v, bsa)，不另写一套公式。
    */
   /* ★ v1.4.4：AS / AR / MS / MR 四条并入「二尖瓣疾病评估」「主动脉瓣疾病评估」两个评估页，
-   *   输入与结果都在评估页内完成，公式集目录不再单列；TR 仍为独立计算条目。 */
+   *   输入与结果都在评估页内完成，公式集目录不再单列；TR 仍为独立计算条目。
+   * ★ v1.15.4：瓣膜组拆成「瓣膜疾病与定量」(valve) 与「瓣膜介入与人工瓣」(valve-interv)；
+   *   TR 留在 valve，ppm / tavrsz / pvfu 归 valve-interv。 */
   {
     id: 'tr',
     ab: 'TR',
@@ -443,7 +445,7 @@ const GROUPS = [
   {
     id: 'ppm',
     ab: 'EOAi',
-    sec: 'valve',
+    sec: 'valve-interv',
     title: '人工瓣 EOAi 与 PPM',
     sub: '有效开口面积指数 · 患者-瓣膜不匹配',
     fields: [
@@ -662,7 +664,7 @@ const GROUPS = [
   {
     id: 'tavrsz',
     ab: '瓣环',
-    sec: 'valve',
+    sec: 'valve-interv',
     title: 'TAVR 瓣环尺寸与 oversizing',
     sub: '周长/面积导出直径 · 面积 oversizing 判读',
     fields: [
@@ -701,7 +703,7 @@ const GROUPS = [
   {
     id: 'pvfu',
     ab: '跨瓣',
-    sec: 'valve',
+    sec: 'valve-interv',
     title: '人工瓣术后跨瓣血流',
     sub: 'TAVR / 换瓣后 EOA 与压差',
     fields: [

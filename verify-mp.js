@@ -597,10 +597,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
 
   // —— 目录页 ——
   const dirs = pgA.data.sections;
-  check('公式集分 8 个大组（3 计算 + 1 瓣膜 + 4 评估；v1.6.3 起「切面学习 / TEE 演示」移出目录）', dirs.length, 8, 0);
-  check('组标题顺序（v1.13.10：先心病紧跟瓣膜评估）',
+  check('公式集分 9 个大组（3 计算 + 2 瓣膜 + 4 评估；v1.15.4 瓣膜拆成疾病与介入两组）', dirs.length, 9, 0);
+  check('组标题顺序（v1.15.4：瓣膜疾病与定量 → 瓣膜介入与人工瓣 → 先心病）',
     dirs.map(d => d.title).join('|') ===
-      '瓣膜评估|先天性心脏病（含术后）|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|急症与特殊场景' ? 1 : 0, 1, 0);
+      '瓣膜疾病与定量|瓣膜介入与人工瓣|先天性心脏病（含术后）|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|急症与特殊场景' ? 1 : 0, 1, 0);
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
@@ -847,9 +847,11 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segSim.some(i => /ct2tee/.test(i.url)) &&
     segSim.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
-  check('血流动力学、舒张与心功能 12 条（v1.12.8 Qp/Qs 并入先心病分流判读；M 型三合一 / 快速比值 / Ea / VTI 比 / 舒张功能 / CRT 前）', dirById('hemo').items.length, 12, 0);
-  check('右心与肺循环 6 条（v1.8.3 合并后：mpap / rvvol / papi / resist / rvsyst / tapse；IVC 已并入判读条目）',
-    dirById('right').items.length, 6, 0);
+  check('血流动力学、舒张与心功能 13 条（v1.15.4 左心评估总论移入；v1.12.8 Qp/Qs 并入先心病分流判读）', dirById('hemo').items.length, 13, 0);
+  check('右心与肺循环 7 条（v1.15.4 右心评估总论移入；v1.8.3 合并后：mpap / rvvol / papi / resist / rvsyst / tapse）',
+    dirById('right').items.length, 7, 0);
+  check('左心 / 右心总论各自在组首（v1.15.4：不再挂在心腔组）',
+    dirById('hemo').items[0].id === 'lv' && dirById('right').items[0].id === 'rv' ? 1 : 0, 1, 0);
   check('右心组条目齐全，且被合并的旧条目不再单独出现',
     ['mpap', 'rvvol', 'papi', 'resist', 'rvsyst', 'tapse']
       .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) &&
@@ -860,8 +862,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       !dirById('hemo').items.some(i => i.id === 'dias' || i.id === 'evp') ? 1 : 0, 1, 0);
   check('心脏同步化条目在重构组',
     dirById('recon').items.some(i => i.id === 'sync' && i.kind === 'calc') ? 1 : 0, 1, 0);
-  check('血流动力学、舒张与心功能 12 条（合并 dias / evp 之后；v1.12.8 Qp/Qs 移出）',
-    dirById('hemo').items.length, 12, 0);
+  check('血流动力学、舒张与心功能 13 条（合并 dias / evp 之后；v1.15.4 左心评估移入）',
+    dirById('hemo').items.length, 13, 0);
   check('重构、室壁运动与心肌功能 12 条（v1.11.2 起 lvnc 内嵌进 LVNC 判读条目、目录不再单列）',
     dirById('recon').items.length, 12, 0);
   check('重构组条目齐全（四联已并为 lvgeom，旧的 lvmih / rwsv / spher / volidx 不再单列）',
@@ -869,15 +871,15 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) &&
       !['lvmih', 'rwsv', 'spher', 'volidx'].some(id => dirById('recon').items.some(i => i.id === id))
       ? 1 : 0, 1, 0);
-  check('计算类条目 3 个计算组合计 30 条（v1.12.8 Qp/Qs 并入 shd；另并入瓣膜 4 / 先心 4 / 心腔 2，合计 40）',
-    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 30, 0);
+  check('计算类条目 3 个计算组合计 32 条（v1.15.4 左右心总论移入；另并入瓣膜病 1 / 瓣膜介入 3 / 先心 4 / 心腔 2，合计 42）',
+    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 32, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   // v1.5.3：原「介入尺寸、先心与随访」组已拆散，8 个计算器分别并入瓣膜 / 先心 / 心腔组
   check('原「介入尺寸」组已不存在', dirById('ivs') ? 0 : 1, 1, 0);
-  check('TAVR 瓣环 / 人工瓣术后 → 瓣膜评估组',
-    ['tavrsz', 'pvfu'].every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('TAVR 瓣环 / 人工瓣术后 / PPM → 瓣膜介入与人工瓣组',
+    ['tavrsz', 'pvfu', 'ppm'].every(id => dirById('valve-interv').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('McGoon / CoA / 主动脉 Z 值 / 主动脉增长率 → 先心组',
     ['paidx', 'coa', 'aortaz', 'aortagrow']
       .every(id => dirById('chd').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -890,21 +892,27 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('器械与介入组已拆散：CRT / LAD 进心腔组、LVAD 进急症组',
     ['crt', 'la'].every(id => dirById('chamber').items.some(i => i.id === id)) &&
     dirById('vascular').items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
-  check('心腔、心肌与应变 25 条（v1.8.4 四组合并后 −5；v1.10.10 新增 LVNC +1；v1.14.5 新增下腔静脉 +1）', dirById('chamber').items.length, 25, 0);
-  ['lv', 'rv', 'rvfun', 'strain', 'la-strain', 'peri', 'cp-rm', 'ctrcd'].forEach(id => {
+  check('心腔、心肌与应变 23 条（v1.15.4 左右心总论移出 −2；v1.10.10 新增 LVNC +1；v1.14.5 新增下腔静脉 +1）', dirById('chamber').items.length, 23, 0);
+  ['rvfun', 'strain', 'la-strain', 'peri', 'cp-rm', 'ctrcd'].forEach(id => {
     check('心腔、应变与负荷含 ' + id,
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  // 瓣膜评估组 = 9 条通用/专用计算 + 8 条判读 + 1 个解剖示意图（v1.4.4 起 AS/AR/MS/MR 并入两个评估页）
-  check('瓣膜评估组 15 条（4 计算 + 11 判读含器械介入；v1.8.4 把 lf-lg 并入 aortic）', dirById('valve').items.length, 15, 0);
-  // v1.4.9：VCW/RF/PR/AS 负荷/DVI/TAPSE-PASP/RAP 这些纯查表或已被评估页覆盖的也删了，只剩 2 条
-  check('瓣膜评估组 4 条计算（tr / ppm / tavrsz / pvfu）',
-    ['tr', 'ppm', 'tavrsz', 'pvfu']
-      .every(id => dirById('valve').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('左右心总论已不在心腔组',
+    ['lv', 'rv'].every(id => !dirById('chamber').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
+  // v1.15.4：瓣膜拆两组 —— 疾病与定量 8 条（1 计算 + 7 判读）/ 介入与人工瓣 7 条（3 计算 + 4 判读）
+  check('瓣膜疾病与定量 8 条（TR 定量 + 7 条判读）', dirById('valve').items.length, 8, 0);
+  check('瓣膜疾病与定量组顺序（二尖瓣 → 主动脉瓣 → BAV → 风湿性 → IE → 根部 → TR → AS 负荷）',
+    dirById('valve').items.map(i => i.id).join(',') ===
+      'mitral,aortic,bav,rheumatic,ie,aortic-root,tr,asload' ? 1 : 0, 1, 0);
+  check('瓣膜介入与人工瓣 7 条（TEER → TTVI → TAVR → 瓣环尺寸 → 人工瓣 → PPM → 术后跨瓣）',
+    dirById('valve-interv').items.map(i => i.id).join(',') ===
+      'mv-interv,tr-interv,tavr,tavrsz,prosthetic,ppm,pvfu' ? 1 : 0, 1, 0);
+  check('瓣膜疾病组只剩 1 条计算（TR）',
+    dirById('valve').items.filter(i => i.kind === 'calc').length, 1, 0);
   check('与评估页重复的通用计算已并入、不再单列（wilkins / mva / pisav / avav）',
     ['wilkins', 'mva', 'pisav', 'avav']
       .every(id => !dirById('valve').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
-  check('瓣膜通用计算不再出现在血流动力学组',
+  check('瓣膜通用计算不再出现在血流动力学组（v1.15.4 也不在疾病组）',
     ['vcw', 'rf', 'asload', 'pr', 'ppm']
       .every(id => !dirById('hemo').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
   // v1.4.4：AS / AR / MS / MR 四条并入「二尖瓣疾病评估」「主动脉瓣疾病评估」，
@@ -917,8 +925,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('瓣膜评估组含判读条目 ' + id,
       dirById('valve').items.some(i => i.id === id && i.kind === 'brief') ? 1 : 0, 1, 0);
   });
-  check('不存在重复的「瓣膜疾病评估」分组',
-    dirs.filter(s => s.title.indexOf('瓣膜疾病') !== -1).length === 0 ? 1 : 0, 1, 0);
+  check('瓣膜只拆成两组、没有第三组重复',
+    dirs.filter(s => s.title.indexOf('瓣膜') === 0).length === 2 ? 1 : 0, 1, 0);
   check('心肌病变 7 条已并入心腔组、不再单独成组（v1.8.4：淀粉样变 + 法布雷并入 infiltr）',
     ['hcm', 'infiltr', 'dcm', 'athlete', 'arvc', 'myocarditis', 'sarcoid']
       .every(id => dirById('chamber').items.some(i => i.id === id)) &&
@@ -933,8 +941,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     check('先天性心脏病含 ' + id,
       dirById('chd').items.some(i => i.id === id) ? 1 : 0, 1, 0);
   });
-  check('v1.13.10：目录前两组为 瓣膜评估 → 先天性心脏病',
-    (dirs[0].id === 'valve' && dirs[1].id === 'chd') ? 1 : 0, 1, 0);
+  check('v1.15.4：目录前三组为 瓣膜疾病 → 瓣膜介入 → 先天性心脏病',
+    (dirs[0].id === 'valve' && dirs[1].id === 'valve-interv' && dirs[2].id === 'chd') ? 1 : 0, 1, 0);
   check('v1.13.10：先心组目录前三条依次为 ASD / VSD / PDA',
     dirById('chd').items.slice(0, 3).map(i => i.id).join(',') === 'asd,vsd,pda' ? 1 : 0, 1, 0);
   check('先心病合并术后 3 条（Mustard / Fontan / ASO）',
@@ -946,8 +954,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('负荷试验 2 条已并入心腔组（运动负荷 + DSE；HCM 激发已并入 hcm）', dirById('chamber').items.filter(i => ['stress-echo','dse'].indexOf(i.id) !== -1).length, 2, 0);
   check('负荷试验含 stress-echo',
     dirById('chamber').items.some(i => i.id === 'stress-echo') ? 1 : 0, 1, 0);
-  check('瓣膜介入三条已归入瓣膜组（tr-interv / mv-interv / tavr）',
-    ['tr-interv', 'mv-interv', 'tavr'].every(id => dirById('valve').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
+  check('瓣膜介入三条已归入瓣膜介入组（tr-interv / mv-interv / tavr）',
+    ['tr-interv', 'mv-interv', 'tavr'].every(id => dirById('valve-interv').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
   check('有创操作条目归入切面图像组',
     dirById('views-atlas').items.some(i => i.id === 'echo-interv') ? 1 : 0, 1, 0);
   check('造影、伪影与图像优化含 contrast-echo',
@@ -989,21 +997,28 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     fxWxml.indexOf('pagefoot') !== -1 && fxWxml.indexOf('bindtap="onGo"') !== -1 ? 1 : 0, 1, 0);
   check('onGo 区分 switchTab / navigateTo',
     /switchTab/.test(fxJs) && /navigateTo/.test(fxJs) ? 1 : 0, 1, 0);
-  // ── v1.13.6：小节导航统一成「换行平铺」（用户：单行横滑要来回拖、看不全）──
+  // ── v1.15.4：小节导航改成悬浮目录（用户：「想要一个小点，点开才看分组」）──
   const fxWxss = fsW.readFileSync(
     pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.wxss'), 'utf8');
-  check('详情页小节导航用 view 换行平铺（不再是 scroll-view 横滑）',
-    fxWxml.indexOf('class="fx-nav"') !== -1 &&
-    fxWxml.indexOf('fx-nav--scroll') === -1 &&
-    fxWxss.indexOf('.fx-nav--scroll {') === -1 ? 1 : 0, 1, 0);
-  const mpNavAt = fxWxss.indexOf('.fx-nav__c {');
-  const mpNavCss = mpNavAt === -1 ? '' : fxWxss.slice(mpNavAt, fxWxss.indexOf('}', mpNavAt));
-  // ★ v1.14.2：胶囊策略从「允许折行」改成「限宽 47% + 单行省略」。
-  //   两者都保证不撑出横向滚动，但后者让 16 节的条目不再占掉半屏。
-  check('小节胶囊限宽单行省略（max-width + overflow hidden，不撑出横向滚动）',
-    mpNavCss.indexOf('max-width: 47%') !== -1 &&
-    mpNavCss.indexOf('overflow: hidden') !== -1 &&
-    mpNavCss.indexOf('text-overflow: ellipsis') !== -1 ? 1 : 0, 1, 0);
+  check('详情页小节导航为悬浮目录（圆点 + 面板，旧胶囊条已删）',
+    fxWxml.indexOf('class="ftoc"') !== -1 &&
+    fxWxml.indexOf('ftoc__dot') !== -1 &&
+    fxWxml.indexOf('ftoc__panel') !== -1 &&
+    fxWxml.indexOf('class="fx-nav"') === -1 ? 1 : 0, 1, 0);
+  check('悬浮目录默认收起：面板与遮罩都挂在 tocOpen 上',
+    fxWxml.indexOf('wx:if="{{tocOpen}}" class="ftoc__mask"') !== -1 &&
+    fxWxml.indexOf('wx:if="{{tocOpen}}" class="ftoc__panel"') !== -1 ? 1 : 0, 1, 0);
+  const mpFtocAt = fxWxss.indexOf('.ftoc {');
+  const mpFtocCss = mpFtocAt === -1 ? '' : fxWxss.slice(mpFtocAt, fxWxss.indexOf('}', mpFtocAt));
+  check('圆点固定在右侧不随滚动（position: fixed + safe-area）',
+    mpFtocCss.indexOf('position: fixed') !== -1 &&
+    mpFtocCss.indexOf('env(safe-area-inset-bottom)') !== -1 ? 1 : 0, 1, 0);
+  check('点圆点展开 / 点小节跳转且自动收起',
+    fxWxml.indexOf('catchtap="onTocToggle"') !== -1 &&
+    fxWxml.indexOf('catchtap="onJumpSec"') !== -1 &&
+    fxJs.indexOf('onTocToggle') !== -1 &&
+    fxJs.indexOf('onTocClose') !== -1 &&
+    fxJs.indexOf('tocOpen: false') !== -1 ? 1 : 0, 1, 0);
 
   // 跳转
   pgA.onOpen({ currentTarget: { dataset: { kind: 'calc', id: 'bernoulli' } } });

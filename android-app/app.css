@@ -1717,6 +1717,95 @@ button.fx-nav__c {
   background: var(--brand);
 }
 
+/* ── 悬浮小节目录（v1.15.4）──
+   用户 2026-11-05：长条目的胶囊条一直占着首屏，要「默认一个小点，点开才看分组」。
+   默认只有右侧一个圆点（不占正文高度），点开是带序号的小节列表，当前节高亮。
+   位置贴在右下偏上：避开 iOS 底部手势区与浏览器工具栏，单手拇指可达。 */
+.ftoc {
+  position: fixed;
+  right: max(14px, env(safe-area-inset-right, 0px));
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+}
+.ftoc__dot {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(37, 99, 235, .9);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, .22);
+  /* 常驻按钮难免压住正文最后一行的一两个字：留一点透明度，底下的字能透出来。
+     手指按下去 / 展开时恢复完全不透明，避免显得"灰了不能点"。 */
+  opacity: .88;
+  transition: opacity .15s;
+}
+.ftoc__dot:hover,
+.ftoc--open .ftoc__dot { opacity: 1; }
+.ftoc__dot:active { background: #1d4ed8; }
+.ftoc--open .ftoc__dot { background: #1d4ed8; }
+.ftoc__mask { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, .18); }
+.ftoc--open .ftoc__mask { display: block; }
+.ftoc__panel {
+  display: none;
+  position: absolute;
+  right: 0;
+  bottom: 56px;
+  width: min(78vw, 300px);
+  max-height: 62vh;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, .28);
+}
+.ftoc--open .ftoc__panel { display: flex; }
+.ftoc__hd {
+  padding: 9px 14px;
+  font-size: 11px;
+  color: var(--sub);
+  border-bottom: 1px solid #eef2f7;
+}
+.ftoc__list { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 4px 0; }
+.ftoc__i {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 14px;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.ftoc__i--on { background: var(--brand-soft); color: var(--brand); font-weight: 600; }
+.ftoc__no {
+  flex: none;
+  width: 16px;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+.ftoc__i--on .ftoc__no { color: var(--brand); }
+.ftoc__t { flex: 1; }
+/* 桌面端：条目很长时圆点会挡住正文右侧，往里收一点、并降低不透明度 */
+@media (min-width: 720px) {
+  .ftoc { right: 22px; bottom: 32px; }
+  .ftoc__dot { opacity: .72; }
+  .ftoc__dot:hover { opacity: 1; }
+}
+
 /* 小节标题锚点：点击跳转时留出顶栏高度 */
 .fx-h {
   scroll-margin-top: 56px;

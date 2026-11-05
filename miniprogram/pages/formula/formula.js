@@ -178,6 +178,8 @@ Page({
     isReference: false,
     toc: [],
     curSec: '',
+    // ★ v1.15.4：悬浮小节目录的开合（默认收起，只有一个圆点）
+    tocOpen: false,
     // ★ v1.11.2：本条正文里出现过的缩写 → 中文全称（跨页面阅读时不给读者留「只认识字母」的坑）
     abbrs: [],
     showTop: false,
@@ -393,7 +395,8 @@ Page({
     const id = e && e.currentTarget && e.currentTarget.dataset
       ? e.currentTarget.dataset.id : '';
     if (!id) return;
-    this.setData({ curSec: id });
+    // ★ v1.15.4：点完就收起面板，正文立刻回到可见状态
+    this.setData({ curSec: id, tocOpen: false });
     const q = wx.createSelectorQuery().in(this);
     q.select('#' + id).boundingClientRect();
     q.selectViewport().scrollOffset();
@@ -404,6 +407,39 @@ Page({
       const top = Math.max(0, cur + rect.top - 8);
       wx.pageScrollTo({ scrollTop: top, duration: 220 });
     });
+  },
+
+  /**
+   * 悬浮目录：开 / 合（v1.15.4）
+   *
+   * 打开时按当前滚动位置标出「正在看哪一节」：一次批量取各小节的位置，
+   * 取「已滚过顶部 120px 的最后一节」。只在打开瞬间算一次，滚动时不监听，
+   * 避免 onPageScroll 里反复 createSelectorQuery（长条目会掉帧）。
+   */
+  onTocToggle() {
+    const open = !this.data.tocOpen;
+    this.setData({ tocOpen: open });
+    if (!open) return;
+    const toc = this.data.toc || [];
+    if (!toc.length) return;
+    const q = wx.createSelectorQuery().in(this);
+    toc.forEach(function (s) { q.select('#' + s.id).boundingClientRect(); });
+    q.selectViewport().scrollOffset();
+    q.exec((res) => {
+      const sv = res[toc.length] || {};
+      const cur = sv.scrollTop || 0;
+      let mark = toc[0].id;
+      toc.forEach(function (s, i) {
+        const r = res[i];
+        if (r && cur + r.top <= 120) mark = s.id;
+      });
+      this.setData({ curSec: mark });
+    });
+  },
+
+  /** 悬浮目录：点遮罩收起 */
+  onTocClose() {
+    this.setData({ tocOpen: false });
   },
 
   /** 把当前输入写回缓存 */

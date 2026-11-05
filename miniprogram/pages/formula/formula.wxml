@@ -12,13 +12,26 @@
       </view>
     </view>
 
-    <!-- 条目内小节导航：长条目滚到中间容易迷路，点胶囊直接定位到该节 -->
-    <!-- ★ v1.13.6：统一为换行平铺（网页/APK 同步跟进）。v1.11.3 曾用单行横向滚动省高度，
-         结果节数多的条目要左右拖才能看全，用户反馈很难找，改回平铺。 -->
-    <view wx:if="{{toc.length}}" class="fx-nav">
-      <view wx:for="{{toc}}" wx:key="id" wx:for-item="sec"
-            class="fx-nav__c {{curSec === sec.id ? 'fx-nav__c--on' : ''}}"
-            data-id="{{sec.id}}" hover-class="fx-nav__c--tap" bindtap="onJumpSec">{{sec.t}}</view>
+    <!-- 条目内小节导航（v1.15.4）：改成悬浮目录——默认只有右下一个小圆点，
+         不占首屏高度；点开才是带序号的小节列表，当前节高亮，点一项直接跳。
+         用户 2026-11-05：「想要一个小点，点开才看分组」。 -->
+    <view wx:if="{{toc.length}}" class="ftoc">
+      <view wx:if="{{tocOpen}}" class="ftoc__mask" bindtap="onTocClose"></view>
+      <view wx:if="{{tocOpen}}" class="ftoc__panel">
+        <view class="ftoc__hd">本条目小节 · {{toc.length}}</view>
+        <scroll-view scroll-y class="ftoc__list">
+          <view wx:for="{{toc}}" wx:key="id" wx:for-item="sec" wx:for-index="si"
+                class="ftoc__i {{curSec === sec.id ? 'ftoc__i--on' : ''}}"
+                data-id="{{sec.id}}" hover-class="ftoc__i--tap" catchtap="onJumpSec">
+            <text class="ftoc__no">{{si + 1}}</text>
+            <text class="ftoc__t">{{sec.t}}</text>
+          </view>
+        </scroll-view>
+      </view>
+      <view class="ftoc__dot {{tocOpen ? 'ftoc__dot--on' : ''}}" hover-class="ftoc__dot--tap"
+            catchtap="onTocToggle">
+        <text class="ftoc__ic">{{tocOpen ? '✕' : '≡'}}</text>
+      </view>
     </view>
 
     <!-- 评估类内容（extra-data）或计算条目的评分细则表（calc-groups 的 blocks） -->

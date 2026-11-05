@@ -20,9 +20,19 @@ const app = getApp();
 const EXTRA = [
   {
     id: 'valve',
-    title: '瓣膜评估',
+    title: '瓣膜疾病与定量',
     // ★ v1.7.9：「瓣膜解剖 · TEE 标准切面」已移到「切面学习」页签（与切面速查同属图谱，
     //   不是计算器也不是判读条目）。组壳保留，供 BRIEF_SECTIONS 的 mergeInto 并入用。
+    // ★ v1.15.4：原「瓣膜评估」15 条拆成两组，本组只放「自己瓣膜」的判读与定量。
+    note: '自己瓣膜的判读：狭窄与反流的严重度、形态评分、根部测法。瓣膜已换过或准备上器械的，见下一组',
+    items: [],
+  },
+  {
+    // ★ v1.15.4：器械相关（术前筛选 · 尺寸 · 人工瓣功能）单独成组，
+    //   避免计算器与疾病条目在一组里交错。条目由 moveTo / sec 归到本组。
+    id: 'valve-interv',
+    title: '瓣膜介入与人工瓣',
+    note: '术前筛选与尺寸（TEER / TTVI / TAVR）、人工瓣功能与并发症，以及 PPM / 术后跨瓣两个算式',
     items: [],
   },
 ];
@@ -104,8 +114,14 @@ function buildSections() {
   });
 
   EXTRA.forEach(function (s) {
-    // ★ 跳转型条目（瓣膜解剖示意图）先别急着塞开头，等判读条目合并完再放末尾
-    sections.push({ id: s.id, title: s.title, items: s.items.slice() });
+    // ★ v1.15.4：组壳自己的计算器（sec 指向本组）在这里先拼，
+    //   排在判读条目之前；mergeInto 的 BRIEF 段不再重复拼一遍。
+    const calcs = CG.GROUPS.filter(function (g) {
+      return !g.partOnly && !g.dirHide && g.sec === s.id;
+    }).map(function (g) {
+      return { kind: 'calc', id: g.id, ab: g.ab || '', title: g.title, sub: g.sub || '' };
+    });
+    sections.push({ id: s.id, title: s.title, note: s.note || '', items: calcs.concat(s.items.slice()) });
   });
 
   // ★ 瓣膜组（sec: 'valve'）的计算器由下面的 BRIEF 循环统一并入（mergeInto 分支），
@@ -114,7 +130,8 @@ function buildSections() {
   EX.BRIEF_SECTIONS.forEach(function (s) {
     // ★ v1.5.3：sec 指向本组的计算器直接并进来，排在判读条目之前
     //   （原「介入尺寸、先心与随访」组已拆散，8 个计算器归到 valve / chd / chamber）
-    const calcs = CG.GROUPS.filter(function (g) {
+    // ★ v1.15.4：mergeInto 的段（瓣膜）其计算器已在 EXTRA 循环里拼过，这里不再重复
+    const calcs = s.mergeInto ? [] : CG.GROUPS.filter(function (g) {
       return !g.partOnly && !g.dirHide && g.sec === s.id;
     }).map(function (g) {
       return { kind: 'calc', id: g.id, ab: g.ab || '', title: g.title, sub: g.sub || '' };
@@ -173,15 +190,22 @@ function buildSections() {
     });
   }
 
-  // ★ v1.7.7：瓣膜评估整组前置（临床使用频率最高），组内二尖瓣 / 主动脉瓣评估再提到最前
+  // ★ v1.7.7：瓣膜整组前置（临床使用频率最高），组内二尖瓣 / 主动脉瓣评估再提到最前
   moveSectionFirst(sections, 'valve');
-  headItems(sections, 'valve', ['mitral', 'aortic']);
+  // ★ v1.15.4：瓣膜评估拆成「瓣膜疾病与定量」+「瓣膜介入与人工瓣」，两组相邻
+  moveSectionAfter(sections, 'valve-interv', 'valve');
+  headItems(sections, 'valve', ['mitral', 'aortic', 'bav', 'rheumatic', 'ie', 'aortic-root', 'tr', 'asload']);
+  headItems(sections, 'valve-interv', ['mv-interv', 'tr-interv', 'tavr', 'tavrsz', 'prosthetic', 'ppm', 'pvfu']);
 
-  // ★ v1.13.10：先心病整组紧跟瓣膜评估（用户指定：放在瓣膜评估后面）
-  moveSectionAfter(sections, 'chd', 'valve');
+  // ★ v1.13.10：先心病整组紧跟瓣膜（v1.15.4 起跟在「瓣膜介入与人工瓣」后面）
+  moveSectionAfter(sections, 'chd', 'valve-interv');
 
   // ★ v1.13.10：先心组「ASD / VSD / PDA」三条置顶（用户指定；sec:'chd' 的计算器排其后）
   headItems(sections, 'chd', ['asd', 'vsd', 'pda']);
+
+  // ★ v1.15.4：右心 / 左心「总论」各自置组首，不再挂在心腔组
+  headItems(sections, 'right', ['rv']);
+  headItems(sections, 'hemo', ['lv']);
 
   // ★ v1.7.7：收藏组置顶（没有收藏时不出现），每条目也记一个 fav 标记给星标用
   const favs = readFavs();

@@ -690,7 +690,7 @@
       note: '四个位点可只填测到的。Z 值由站内成人参考区间反推（均值 = 区间中点，SD = 半径 ÷ 1.96），口径与「Z > 2 视为扩张」一致，但不是人群实测 SD，不能与儿童 Z 值或 CT 的 Z 值互换。近段升主动脉另按 BSA 指数化：男 ≥2.1、女 ≥2.0 cm/m² 提示扩张' },
 
     /* ── 舒张功能定量（sec: vq） ── */
-    { id: 'ppm', sec: 'valve', title: '人工瓣 EOAi 与 PPM',
+    { id: 'ppm', sec: 'valve-interv', title: '人工瓣 EOAi 与 PPM',
       fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', ''],
         ['pbmi', 'BMI（可选；≥30 用肥胖切点）', 'kg/m²']],
       note: 'EOAi = EOA/BSA。R15（ASE 2024）：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65；二尖瓣位 正常 >1.2、中度 1.2–0.91、重度 ≤0.90（cm²/m²）。BMI ≥30 时整体下调：主动脉位 0.70 / 0.70–0.56 / ≤0.55，二尖瓣位 1.0 / 1.0–0.76 / ≤0.75' },
@@ -763,7 +763,7 @@
         ['hel', '侧壁 e′', 'cm/s'], ['htrv', 'TR Vmax', 'm/s'], ['hgls', 'GLS（绝对值）', '%'],
         ['hbnp', 'NT-proBNP', 'pg/mL']],
       note: '三类各取最高分后相加（0–6）。形态学：LAVi ≥34 计 1、≥40 计 2；LVMI 男 >115/149、女 >95/122 计 1/2；RWT >0.42 计 1；PASP >35 计 1。功能学：E/e′ 9–14 计 1、≥15 计 2；e′ 减低计 1；TR Vmax >2.8 计 1；GLS <16% 计 1。标志物按窦律/房颤分档。≥5 分支持 HFpEF' },
-    { id: 'tavrsz', sec: 'valve', title: 'TAVR 瓣环尺寸与 oversizing',
+    { id: 'tavrsz', sec: 'valve-interv', title: 'TAVR 瓣环尺寸与 oversizing',
       fields: [['tcirc', '瓣环周长', 'mm'], ['tarea', '瓣环面积', 'mm²'], ['tnom', '拟用标称直径', 'mm']],
       note: '周长导出直径 = C/π；面积导出直径 = 2√(A/π)；面积 oversizing = (标称面积/实测面积 − 1)×100%。自膨胀瓣常见目标 10–20%，球囊扩张瓣 −10% ~ +5%。具体型号按厂商说明书与术者经验核定' },
     { id: 'laasz', sec: 'chamber', title: '左心耳封堵尺寸推荐',
@@ -773,7 +773,7 @@
     { id: 'aortagrow', sec: 'chd', title: '主动脉扩张增长率',
       fields: [['d1', '上次直径', 'cm'], ['d2', '本次直径', 'cm'], ['yrs', '间隔时间', '年']],
       note: '增长率 = (本次 − 上次) × 10 ÷ 间隔年数（mm/年）。<3 低危；3–5 缩短随访间隔；≥5 倾向尽快干预。必须同切面同方法测量' },
-    { id: 'pvfu', sec: 'valve', title: '人工瓣术后跨瓣血流',
+    { id: 'pvfu', sec: 'valve-interv', title: '人工瓣术后跨瓣血流',
       fields: [['lvotD', 'LVOT 直径', 'cm'], ['lvotVti', 'LVOT VTI', 'cm'],
         ['valveVti', '人工瓣 VTI', 'cm'], ['fupvmax', '跨瓣峰值流速', 'm/s'], ['fupmean', '跨瓣平均压差', 'mmHg']],
       note: 'EOA = (π×LVOT 直径²÷4 × LVOT VTI) ÷ 人工瓣 VTI。术后平均压差 <20 mmHg、EOA ≥1.2 cm²（EOAi ≥0.8）为佳。压差高不等于故障：先排 undersizing、瓣周漏、LVOT 梗阻、压降恢复与高流量' },
@@ -1169,22 +1169,28 @@
     return h + '</div>';
   }
 
+  /**
+   * 条目内小节导航（v1.15.4 改为悬浮目录）
+   *
+   * 用户 2026-11-05：长条目的胶囊条一直占着首屏，「想要一个小点，点开才看分组」。
+   * 现在默认只有右侧一个圆点，点开列出全部小节（带序号、当前节高亮），点一项直接跳。
+   * ★ 仍然必须是 button 而不是 <a href="#sec-…">：移动端 touchend 会先写 hash，
+   *   hashchange 被视图栈当成未知路由，界面被打回公式集目录（v1.13.10 的坑）。
+   */
   function tocHtml(toc) {
     if (!toc || toc.length < 2) return '';
-    let h = '<div class="fx-nav fx-nav--sec">';
-    toc.forEach(function (s) {
-      // ★ v1.13.10：必须用 button，不能用 <a href="#sec-…">。
-      //   移动端浏览器 / WebView 在 touchend 就先写 hash，等 click 里的
-      //   preventDefault 已经来不及 —— hashchange 被视图栈当成未知路由，
-      //   parseHash 返回 null → leaveView()，界面被打回公式集目录。
-      //   与 v1.6.6 组名跳转条踩的是同一个坑。
-      // ★ v1.14.2：胶囊只显示「序号 + 主标题」，冒号后的副标题剪掉。
-      //   完整标题在 title 里，正文顶部本来也有；不剪的话 16 节的条目
-      //   每个胶囊折两行、整块占掉半屏（用户 2026-11-03 反馈「排版很乱」）。
+    let h = '<div class="ftoc" data-ftoc="1">';
+    h += '<div class="ftoc__mask" data-ftoc-mask="1"></div>';
+    h += '<div class="ftoc__panel"><div class="ftoc__hd">本条目小节 · ' + toc.length + '</div><div class="ftoc__list">';
+    toc.forEach(function (s, i) {
+      // ★ v1.14.2：只显示「序号 + 主标题」，冒号后的副标题剪掉；完整名称在 title 里
       const full = String(s.t || '');
       const short = full.split(/[：:]/)[0] || full;
-      h += '<button type="button" class="fx-nav__c" title="' + esc(full) + '" data-sec="' + s.id + '">' + esc(short) + '</button>';
+      h += '<button type="button" class="ftoc__i" title="' + esc(full) + '" data-sec="' + esc(s.id) + '">' +
+        '<span class="ftoc__no">' + (i + 1) + '</span><span class="ftoc__t">' + esc(short) + '</span></button>';
     });
+    h += '</div></div>';
+    h += '<button type="button" class="ftoc__dot" data-ftoc-toggle="1" aria-label="小节目录" title="小节目录"><span class="ftoc__ic">≡</span></button>';
     return h + '</div>';
   }
 
@@ -1599,25 +1605,32 @@
       });
     });
 
-    // 瓣膜评估组：v1.4.1 起 AS/AR/MS/MR/TR 就是 calc-groups 里的普通计算条目
-    // （三层端目录一致），这里不再从 VALVE_INDEX 生成 kind:'valve' 条目，
+    // 瓣膜组：v1.4.1 起 AS/AR/MS/MR/TR 就是 calc-groups 里的普通计算条目
+    // （三端目录一致），这里不再从 VALVE_INDEX 生成 kind:'valve' 条目，
     // 否则完整版里同一台计算器会出现两次。
-    const valveItems = [];
-    // ★ 瓣膜通用计算（sec: 'valve'）并入瓣膜组，紧跟瓣膜专用计算器之后
-    //   —— 与小程序 calculators.js 的顺序严格一致
-    CALC_GROUPS.filter(function (g) {
-      return !g.partOnly && !g.dirHide && g.sec === 'valve';
-    }).forEach(function (g) {
-      valveItems.push({ kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || g.sub || '' });
-    });
-    (MERGED.valve || []).forEach(function (sec) {
-      sec.items.forEach(function (it) {
-        if (it.segOnly) return;   // ★ 只在「切面学习」页签列出
-        valveItems.push({ kind: 'brief', id: it.id, ab: it.ab || '', title: it.title, sub: it.sub || '' });
+    // ★ v1.15.4：原「瓣膜评估」拆成「瓣膜疾病与定量」+「瓣膜介入与人工瓣」，
+    //   两组同构（本组 sec 的计算器 + mergeInto 进来的判读条目），与小程序 calculators.js 严格一致。
+    const VALVE_SECS = [
+      { id: 'valve', title: '瓣膜疾病与定量',
+        note: '自己瓣膜的判读：狭窄与反流的严重度、形态评分、根部测法。瓣膜已换过或准备上器械的，见下一组' },
+      { id: 'valve-interv', title: '瓣膜介入与人工瓣',
+        note: '术前筛选与尺寸（TEER / TTVI / TAVR）、人工瓣功能与并发症，以及 PPM / 术后跨瓣两个算式' },
+    ];
+    VALVE_SECS.forEach(function (vs) {
+      const items = CALC_GROUPS.filter(function (g) {
+        return !g.partOnly && !g.dirHide && g.sec === vs.id;
+      }).map(function (g) {
+        return { kind: 'calc', id: g.id, ab: CALC_AB[g.id] || '', title: g.title, sub: CALC_SUB[g.id] || g.sub || '' };
       });
+      (MERGED[vs.id] || []).forEach(function (sec) {
+        sec.items.forEach(function (it) {
+          if (it.segOnly) return;   // ★ 只在「切面学习」页签列出
+          items.push({ kind: 'brief', id: it.id, ab: it.ab || '', title: it.title, sub: it.sub || '' });
+        });
+      });
+      // ★ v1.7.9：「瓣膜解剖 · TEE 标准切面」已移出公式集，只在「切面学习」页签列出
+      secs.push({ id: vs.id, title: vs.title, note: vs.note, items: items });
     });
-    // ★ v1.7.9：「瓣膜解剖 · TEE 标准切面」已移出公式集，只在「切面学习」页签列出
-    secs.push({ id: 'valve', title: '瓣膜评估', items: valveItems });
 
     BRIEF.forEach(function (sec) {
       if (sec.mergeInto) return;
@@ -1674,27 +1687,42 @@
       });
     }
 
-    // ★ v1.7.7：瓣膜评估整组前置（临床使用频率最高），组内二尖瓣 / 主动脉瓣评估再提到最前
+    /** 把某组内指定的条目提到最前（顺序按 ids）；与小程序 headItems 同逻辑 */
+    const headItems = function (secId, ids) {
+      const sec = secs.filter(function (s) { return s.id === secId; })[0];
+      if (!sec) return;
+      const head = ids.map(function (id) {
+        return sec.items.filter(function (it) { return it.id === id; })[0];
+      }).filter(Boolean);
+      if (!head.length) return;
+      sec.items = head.concat(sec.items.filter(function (it) {
+        return head.indexOf(it) === -1;
+      }));
+    };
+
+    // ★ v1.7.7：瓣膜整组前置（临床使用频率最高），组内再按临床顺序排
     const vIdx = secs.map(function (s) { return s.id; }).indexOf('valve');
     if (vIdx > 0) secs.unshift(secs.splice(vIdx, 1)[0]);
-    const vSec = secs[0];
-    if (vSec && vSec.id === 'valve') {
-      const head = ['mitral', 'aortic'].map(function (id) {
-        return vSec.items.filter(function (it) { return it.id === id; })[0];
-      }).filter(Boolean);
-      if (head.length) {
-        vSec.items = head.concat(vSec.items.filter(function (it) {
-          return head.indexOf(it) === -1;
-        }));
-      }
+    // ★ v1.15.4：瓣膜介入组紧跟瓣膜疾病组
+    const viIdx = secs.map(function (s) { return s.id; }).indexOf('valve-interv');
+    if (viIdx > 0) {
+      const vi = secs.splice(viIdx, 1)[0];
+      const v0 = secs.map(function (s) { return s.id; }).indexOf('valve');
+      secs.splice(v0 + 1, 0, vi);
     }
+    headItems('valve', ['mitral', 'aortic', 'bav', 'rheumatic', 'ie', 'aortic-root', 'tr', 'asload']);
+    headItems('valve-interv', ['mv-interv', 'tr-interv', 'tavr', 'tavrsz', 'prosthetic', 'ppm', 'pvfu']);
 
-    // ★ v1.13.10：先心病整组紧跟瓣膜评估（用户指定：放在瓣膜评估后面）
+    // ★ v1.13.10：先心病整组紧跟瓣膜（v1.15.4 起跟在「瓣膜介入与人工瓣」后面）
     const chdIdx = secs.map(function (s) { return s.id; }).indexOf('chd');
-    const vvIdx = secs.map(function (s) { return s.id; }).indexOf('valve');
+    const vvIdx = secs.map(function (s) { return s.id; }).indexOf('valve-interv');
     if (chdIdx > 0 && vvIdx >= 0 && chdIdx !== vvIdx + 1) {
       secs.splice(vvIdx + 1, 0, secs.splice(chdIdx, 1)[0]);
     }
+
+    // ★ v1.15.4：右心 / 左心「总论」各自置组首，不再挂在心腔组
+    headItems('right', ['rv']);
+    headItems('hemo', ['lv']);
 
     // ★ v1.13.10：先心组「ASD / VSD / PDA」三条置顶（用户指定；sec:'chd' 的计算器排其后）
     const cSec = secs.filter(function (s) { return s.id === 'chd'; })[0];
@@ -2420,16 +2448,53 @@
     $('calcGroups').querySelectorAll('.chip[data-rel]').forEach(function (c) {
       c.addEventListener('click', function () { openCalcGroup(c.dataset.rel); });
     });
-    // 条目内小节导航：点胶囊滚到对应小节（与目录页组名跳转条同一套交互）
-    $('calcGroups').querySelectorAll('.fx-nav--sec .fx-nav__c').forEach(function (a) {
-      a.addEventListener('click', function (ev) {
+    // 条目内小节导航（v1.15.4 悬浮目录）：圆点开合、点小节跳转、点遮罩收起
+    //   ★ 容器每渲染一次就换新节点，所以每次都得重绑；用 dataset.bound 防重复绑同一节点。
+    // ★ 每个条目的详情卡各有一个 .ftoc，必须逐个绑（只绑第一个的话，
+    //   除第一条之外的条目点圆点没反应——2026-11-05 实测踩过）。
+    $('calcGroups').querySelectorAll('.ftoc').forEach(function (ftoc) {
+      if (ftoc.dataset.bound) return;
+      ftoc.dataset.bound = '1';
+      const ftocDot = ftoc.querySelector('.ftoc__dot');
+      const ftocIc = ftoc.querySelector('.ftoc__ic');
+      const ftocPanel = ftoc.querySelector('.ftoc__panel');
+      const ftocMask = ftoc.querySelector('.ftoc__mask');
+      // 打开时按「现在看到哪一节」高亮：滚过顶部 120px 的最后一节。
+      // 停在页首时一节都没越过线，那就高亮第一节——否则面板打开后一条高亮都没有，看着像坏了。
+      const ftocMark = function () {
+        let mark = null;
+        ftocPanel.querySelectorAll('.ftoc__i').forEach(function (b) {
+          const t = document.getElementById(b.dataset.sec);
+          if (t && t.getBoundingClientRect().top <= 120) mark = b;
+        });
+        if (!mark) mark = ftocPanel.querySelector('.ftoc__i');
+        ftocPanel.querySelectorAll('.ftoc__i').forEach(function (b) {
+          b.classList.toggle('ftoc__i--on', b === mark);
+        });
+      };
+      ftocDot.addEventListener('click', function (ev) {
         ev.preventDefault();
-        const id = a.dataset.sec;
-        const target = id ? document.getElementById(id) : null;
-        if (!target) return;
-        // 顶栏是 fixed 的，滚动后要留出高度，否则标题被盖住
-        const top = target.getBoundingClientRect().top + window.pageYOffset - 56;
-        goToY(top);
+        const open = !ftoc.classList.contains('ftoc--open');
+        ftoc.classList.toggle('ftoc--open', open);
+        // 图标跟着换成 ✕，让「再点一下收起」这件事对用户可见（小程序端同款）
+        if (ftocIc) ftocIc.textContent = open ? '✕' : '≡';
+        if (open) ftocMark();
+      });
+      const closeFtoc = function () {
+        ftoc.classList.remove('ftoc--open');
+        if (ftocIc) ftocIc.textContent = '≡';
+      };
+      ftocMask.addEventListener('click', closeFtoc);
+      ftocPanel.querySelectorAll('.ftoc__i').forEach(function (b) {
+        b.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          const target = b.dataset.sec ? document.getElementById(b.dataset.sec) : null;
+          closeFtoc();
+          if (!target) return;
+          // 顶栏是 fixed 的，滚动后要留出高度，否则标题被盖住
+          const top = target.getBoundingClientRect().top + window.pageYOffset - 56;
+          goToY(top);
+        });
       });
     });
     // 绑定动态生成的分段选择器

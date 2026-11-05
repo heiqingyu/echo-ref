@@ -95,9 +95,8 @@
   line-height: 1.4;
 }
 
-/* ★ v1.13.6：删掉 .fx-nav--scroll（单行横滑）。
-   注意它的 flex-wrap: nowrap 写在 .fx-nav 之前、同权重，早就被下面的 wrap 覆盖，
-   所以小程序其实一直是换行的 —— 网页/APK 现在也对齐成换行平铺。 */
+/* 注：v1.15.4 起旧的小节胶囊条（.fx-nav / .fx-nav__c）已整段删除，
+   换成下面这套 .ftoc 悬浮目录；其他页面（calculators / segments）仍在用 .fx-nav，别跨页删。 */
 
 /* 行内加粗（正文里的 **重点**） */
 .fx-b {
@@ -134,37 +133,97 @@
   margin-right: 6rpx;
 }
 
-/* ── 条目内小节导航（长条目定位用） ── */
-.fx-nav {
+/* ── 悬浮小节目录（v1.15.4）──
+   默认只是一个圆点贴右侧，不占首屏高度；点开是带序号的小节列表，当前节高亮。
+   bottom 留出 tabBar 高度 + 安全区，避免压在底部页签上。 */
+.ftoc {
+  position: fixed;
+  right: 24rpx;
+  bottom: calc(180rpx + env(safe-area-inset-bottom));
+  z-index: 60;
+}
+
+.ftoc__dot {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
   display: flex;
-  flex-wrap: wrap;
-  gap: 12rpx;
-  margin: 16rpx 0 6rpx;
+  align-items: center;
+  justify-content: center;
+  background: rgba(37, 99, 235, 0.9);
+  box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, 0.24);
 }
 
-.fx-nav__c {
-  /* ★ v1.14.2：限宽 47% + 单行省略。16 节的条目原来长标题折两行、胶囊占掉半屏。
-     有 max-width 兜底，不会撑出横向滚动（v1.13.6 的顾虑已覆盖）。 */
-  max-width: 47%;
-  padding: 8rpx 18rpx;
-  font-size: 22rpx;
-  line-height: 1.35;
-  color: #6b7280;
-  background: #f1f3f6;
-  border-radius: 999rpx;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.ftoc__dot--on,
+.ftoc__dot--tap { background: #1d4ed8; }
 
-.fx-nav__c--on {
+.ftoc__ic {
   color: #ffffff;
-  background: #2563eb;
+  font-size: 38rpx;
+  line-height: 1;
 }
 
-.fx-nav__c--tap {
-  background: #dbe6ff;
+.ftoc__mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.2);
+}
+
+.ftoc__panel {
+  position: absolute;
+  right: 0;
+  bottom: 108rpx;
+  width: 460rpx;
+  max-height: 64vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 12rpx 44rpx rgba(15, 23, 42, 0.3);
+}
+
+.ftoc__hd {
+  padding: 16rpx 24rpx;
+  font-size: 22rpx;
+  color: #6b7280;
+  border-bottom: 1rpx solid #eef2f7;
+}
+
+.ftoc__list { max-height: 58vh; }
+
+.ftoc__i {
+  display: flex;
+  gap: 12rpx;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #f4f6f9;
+}
+
+.ftoc__i--on { background: #eff4ff; }
+.ftoc__i--tap { background: #e5edff; }
+
+.ftoc__no {
+  flex: none;
+  width: 36rpx;
+  font-size: 24rpx;
+  color: #94a3b8;
+}
+
+.ftoc__i--on .ftoc__no { color: #2563eb; }
+
+.ftoc__t {
+  flex: 1;
+  font-size: 26rpx;
+  line-height: 1.45;
+  color: #1f2329;
+}
+
+.ftoc__i--on .ftoc__t {
   color: #2563eb;
+  font-weight: 600;
 }
 
 /* ★ v1.14.2：正文按自然段切分（js 里 EX.paraSplit），行高与段间距同步放大 */
