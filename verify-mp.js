@@ -340,6 +340,13 @@ check('儿童页输入即落盘（saveLocalProfile 4 处）',
   (pedJs.match(/this\.saveLocalProfile\(\)/g) || []).length, 4, 0);
 check('展开状态记在本机（echoref:pedsOpen）',
   pedJs.indexOf('echoref:pedsOpen') !== -1 ? 1 : 0, 1, 0);
+// 用户 2026-11-06：儿童页的值只留在本页，不要「保存到其他页」
+check('儿童页没有「保存到其他页」按钮',
+  wxmlPeds.indexOf('保存身高体重到其他页') === -1 ? 1 : 0, 1, 0);
+check('儿童页不再写 globalData.profile',
+  pedJs.indexOf('globalData.profile.height') === -1 ? 1 : 0, 1, 0);
+check('儿童页不再写 globalData.peds（无人读的死写入）',
+  pedJs.indexOf('globalData.peds') === -1 ? 1 : 0, 1, 0);
 check('顶部导航 3 项（新生儿不单列）',
   (pedJs.match(/\{ id: 'sec-/g) || []).length, 3, 0);
 check('新生儿超期只留一句（模板走 wx:else 分支）',

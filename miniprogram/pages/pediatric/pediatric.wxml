@@ -64,10 +64,6 @@
       请输入有效的身高（30–220 cm）与体重（1–150 kg）
     </view>
     <view wx:for="{{warnings}}" wx:key="*this" class="hint">{{item}}</view>
-
-    <view class="footer-btns">
-      <view class="btn btn--ghost" bindtap="saveProfile">保存身高体重到其他页</view>
-    </view>
   </view>
 
   <!-- ② 结果摘要：填完抬头就能看到「测了几项、几项异常、哪项偏得最多」 -->

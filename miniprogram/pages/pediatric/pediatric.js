@@ -1,6 +1,5 @@
 const peds = require('../../utils/peds-zscore.js');
 const core = require('../../utils/echo-core.js');
-const app = getApp();
 
 /**
  * 儿童 Z 值页 —— 2026-11-06 版式重构
@@ -331,10 +330,6 @@ Page({
       neoAgeText: neoTooOld ? (neoAgeDays >= 60 ? neoAge.toFixed(1) + ' 岁' : Math.round(neoAgeDays) + ' 天') : '',
       neoExtrap: !neoTooOld && neoW > 0 && (neoW < peds.NEO_RANGE.wMin || neoW > peds.NEO_RANGE.wMax),
     });
-
-    if (hasBsa) {
-      app.globalData.peds = { bsa: peds.round(bsa, 3), age: this.data.age, measured: measured };
-    }
   },
 
   /** 已测项一览：输入几项就列几行，按 |Z| 降序 */
@@ -421,19 +416,6 @@ Page({
         '判读请以新生儿体重法或本单位参考值为准。');
     }
     return arr;
-  },
-
-  /** 把身高体重写回全局，供其他页复用 */
-  saveProfile() {
-    const h = parseFloat(this.data.height);
-    const w = parseFloat(this.data.weight);
-    if (!(h > 30 && h < 220 && w > 1 && w < 150)) {
-      wx.showToast({ title: '身高体重无效', icon: 'none' });
-      return;
-    }
-    app.globalData.profile.height = h;
-    app.globalData.profile.weight = w;
-    wx.showToast({ title: '已保存身高体重', icon: 'success' });
   },
 
   /* ────────── 转发 / 收藏 ────────── */
