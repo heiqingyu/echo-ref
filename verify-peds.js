@@ -169,12 +169,16 @@ check('rangeFromZ 未知参数 → null', peds.rangeFromZ('XX', 0.45, 2), null);
  * ================================================================== */
 section('6. 系数表完整性');
 
-check('PEDS_Z 参数数 == 40', Object.keys(peds.PEDS_Z).length, 40);
-check('PEDS_FIELDS 数 == 40', peds.PEDS_FIELDS.length, 40);
-// 33 项来自 PHN 指数方程 + 3 项来自 Kampmann M 型分组表
-check('PHN 参数数 == 33', peds.PEDS_FIELDS.filter(function (k) {
+check('PEDS_Z 参数数 == 41', Object.keys(peds.PEDS_Z).length, 41);
+check('PEDS_FIELDS 数 == 41', peds.PEDS_FIELDS.length, 41);
+// 30 项来自 PHN 指数方程 + 3 项 Kampmann + 4 项 CSMC + 4 项冠脉（深圳 SZ / 四川 2025）
+// ★ 2026-11-06：冠脉不再挂 PHN（PHN 数据集没有冠脉），改走 model:'cor'
+check('PHN 参数数 == 30', peds.PEDS_FIELDS.filter(function (k) {
   return !peds.PEDS_Z[k].model;
-}).length, 33);
+}).length, 30);
+check('冠脉参数数 == 4', peds.PEDS_FIELDS.filter(function (k) {
+  return peds.PEDS_Z[k].model === 'cor';
+}).length, 4);
 check('Kampmann 参数数 == 3', peds.PEDS_FIELDS.filter(function (k) {
   return peds.PEDS_Z[k].model === 'kamp';
 }).length, 3);
@@ -216,13 +220,22 @@ Object.keys(peds.PEDS_Z).forEach(function (k) {
     if (z.paper !== 'L' && z.paper !== 'R') allComplete = false;
     return;
   }
+  if (d.model === 'cor') {
+    // 冠脉不存 a/mean/sd，系数在 SZ_Z / SC_Z 里，主行必须能查到模型
+    const pm = peds.COR_PRIMARY[k];
+    const m = pm === 'sz' ? peds.SZ_Z[k] : peds.SC_Z[k];
+    if (!m) { allComplete = false; return; }
+    if (!(m.rse > 0)) allComplete = false;
+    if (!(m.r2 > 0 && m.r2 <= 1)) allComplete = false;
+    return;
+  }
   if (typeof d.a !== 'number' || typeof d.mean !== 'number' ||
       typeof d.sd !== 'number' || !d.name) {
     allComplete = false;
   }
   if (!(d.sd > 0)) allComplete = false;
 });
-check('所有系数完整（PHN a/mean/sd，Kampmann 分组表，CSMC 三项式）', allComplete, true);
+check('所有系数完整（PHN a/mean/sd，Kampmann 分组表，CSMC 三项式，冠脉 RSE）', allComplete, true);
 
 // ★ 关键回归：LVESD / LVESV 必须来自 Cantinotti/PHN 补充表（曾误填 2.36/25.07）
 check('LVESD mean == 2.675', peds.PEDS_Z.LVESD.mean, 2.675);
@@ -246,7 +259,7 @@ section('7. buildPedsList 主接口');
 //   LVEDD 界面 mm 38 → 原生 cm 3.8
 //   BSA^0.45=0.698564 ; 3.8/0.698564=5.439 ; Z=(5.439−3.89)/0.33=4.694
 const rows = peds.buildPedsList(0.4506, { LVEDD: 38, LVESD: 25, LVM: 20 });
-check('buildPedsList 行数', rows.length, 40);
+check('buildPedsList 行数', rows.length, 41);
 
 const lvedd = rows.find(function (r) { return r.key === 'LVEDD'; });
 check('LVEDD 显示单位 mm', lvedd.unit, 'mm');
@@ -268,7 +281,7 @@ check('未测参数状态 none', mpa.status, 'none');
 
 // measured 缺失整体（只查参考区间）
 const noMeas = peds.buildPedsList(0.4506, null);
-check('无实测值仍出 40 行', noMeas.length, 40);
+check('无实测值仍出 41 行', noMeas.length, 41);
 check('无实测值时区间仍算出',
   noMeas.find(function (r) { return r.key === 'LVEDD'; }).rangeText !== '—', true);
 
@@ -298,7 +311,7 @@ section('8. buildPedsGrouped 分组');
 const grouped = peds.buildPedsGrouped(0.4506, { LVEDD: 38, LVM: 20 });
 check('分组数 == 10', grouped.length, 10);
 const totalRows = grouped.reduce(function (n, g) { return n + g.rows.length; }, 0);
-check('分组行数合计 == 40', totalRows, 40);
+check('分组行数合计 == 41', totalRows, 41);
 check('第一组标题', grouped[0].title, '左心室结构');
 check('第一组行数 == 4', grouped[0].rows.length, 4);
 check('分组内无 undefined', grouped.every(function (g) {
@@ -409,9 +422,11 @@ check('ROOT 均值落在 ±2SD 区间内',
 
 // 每一行都该满足：均值 = (下界 + 上界) / 2（±2SD 对称）
 // 容差 0.06：显示时最多四舍五入到 0.01，两端各留 0.005 的双倍余量
+// ★ 冠脉行例外：对数尺度下区间是乘性的（×e^±2RSE），中点必然高于均值，另有断言
 let allMid = true;
 const midOffenders = [];
 pvRows.forEach(function (r) {
+  if (r.model === 'cor') return;
   if (r.rangeText === '—' || !r.meanText || r.meanText === '—') return;
   const b = r.rangeText.split('–');
   const lo = parseFloat(b[0]);
@@ -527,29 +542,71 @@ check('±2SD 区间上下不对称（上偏 > 下偏）', (lca1.hi2 - lca1.mean)
 check('上偏 / 下偏 = e^0.23（乘性区间的固有性质）',
   (lca1.hi2 - lca1.mean) / (lca1.mean - lca1.lo2), 1.25860, 1e-4);
 
-// 14.6 与 PHN 并列：冠脉三项挂 alt，其他项不挂
-const szRows = peds.buildPedsList(1.0, { LMCA: 3.4, LAD: 2.6, RCA: 3.0, LVEDD: 38 });
-check('冠脉三项都挂上 SZ 行',
+// 14.6 冠脉主行 = 深圳 SZ，次行 = 四川 2025；LCX 只有四川，无次行
+const szRows = peds.buildPedsList(1.0, { LMCA: 3.4, LAD: 2.6, LCX: 1.5, RCA: 3.0, LVEDD: 38 });
+check('冠脉四项主行都是对数模型',
+  szRows.filter(function (r) { return r.model === 'cor'; }).length, 4);
+check('LMCA/LAD/RCA 三项挂四川次行',
   szRows.filter(function (r) { return ['LMCA', 'LAD', 'RCA'].indexOf(r.key) !== -1 && r.alt; }).length, 3);
-check('非冠脉项不挂 SZ 行',
-  szRows.filter(function (r) { return ['LMCA', 'LAD', 'RCA'].indexOf(r.key) === -1 && r.alt; }).length, 0);
+check('LCX 没有次行（四川已是主行）',
+  szRows.filter(function (r) { return r.key === 'LCX'; })[0].alt, null);
+check('非冠脉项不挂 alt',
+  szRows.filter(function (r) { return r.model !== 'cor' && r.alt; }).length, 0);
 const ladRow = szRows.filter(function (r) { return r.key === 'LAD'; })[0];
-check('LAD 单行两套 Z：PHN +2.06 / SZ +1.25', ladRow.zText + ' / ' + ladRow.alt.zText, '+2.06 / +1.25');
-check('两法判读不同（PHN 轻度增大 / SZ 正常）',
-  ladRow.statusText + ' / ' + ladRow.alt.statusText, '轻度增大 / 正常');
+check('LAD 主行深圳 +1.25 / 次行四川 +2.43', ladRow.zText + ' / ' + ladRow.alt.zText, '+1.25 / +2.43');
+check('两法判读不同（深圳正常 / 四川轻度增大）',
+  ladRow.statusText + ' / ' + ladRow.alt.statusText, '正常 / 轻度增大');
 
-// 14.7 外推标记：队列为 1 月龄–17 岁（BSA 0.23–1.85）
+// 14.7 外推标记：SZ 队列为 1 月龄–17 岁（BSA 0.23–1.85）
 check('BSA 0.22（新生儿段）标外推', peds.szInRange(0.22), false);
 check('BSA 0.50 在范围内', peds.szInRange(0.5), true);
 check('BSA 1.90 超出上界', peds.szInRange(1.9), false);
-check('新生儿段 SZ 行带 extrap 标记',
+check('新生儿段 LAD 主行带 extrap 标记',
   peds.buildPedsList(0.22, { LAD: 1.2 })
-    .filter(function (r) { return r.key === 'LAD'; })[0].alt.extrap, true);
+    .filter(function (r) { return r.key === 'LAD'; })[0].extrap, true);
 
-// 14.8 冠脉组说明必须写清两套不可互比
+// 14.8 冠脉组说明必须写清两套不可混用
 const corGroup = peds.PEDS_GROUPS.filter(function (g) { return g.title === '冠状动脉'; })[0];
 check('冠脉组带双法说明', !!(corGroup && corGroup.note && corGroup.note.indexOf('SZ') !== -1), true);
-check('冠脉组说明含「不可互相比较」', corGroup.note.indexOf('不可互相比较') !== -1, true);
+check('冠脉组说明含「不可跨套比较」', corGroup.note.indexOf('不可跨套比较') !== -1, true);
+check('冠脉组说明点明深圳小程序不同源', corGroup.note.indexOf('深圳儿童医院自家小程序') !== -1, true);
+
+/* ================================================================== *
+ * 14b. 四川 2025 冠脉方程（中国当代儿科杂志，n=744）
+ *      期望值按原文表 3–6 的幂函数行与式(1)–(4) 手算
+ * ------------------------------------------------------------------ */
+section('14b. 四川 2025 冠脉方程（n=744，四段齐全）');
+
+check('SC 四段齐全', Object.keys(peds.SC_Z).join(','), 'LMCA,LAD,LCX,RCA');
+// BSA 1.0 时 exp(a) 必须等于原文的乘数（Y = mul × BSA^b）
+['LMCA', 'LAD', 'LCX', 'RCA'].forEach(function (k) {
+  check('SC ' + k + ' exp(a) == 原文乘数',
+    Math.exp(peds.SC_Z[k].a), peds.SC_Z[k].mul, 5e-3);
+});
+check('SC LAD 系数 b', peds.SC_Z.LAD.b, 0.353);
+check('SC LCX 残差标准误', peds.SC_Z.LCX.rse, 0.145414);
+
+// 手算：LAD 2.6 mm @BSA1.0 → (ln2.6 − 0.64763)/0.126832 = 0.307881/0.126832 = +2.42747
+check('SC LAD 2.6 mm @BSA1.0 → Z', peds.logZ(peds.SC_Z.LAD, peds.logAt(peds.SC_Z.LAD, 1), 2.6), 2.42747, 1e-4);
+// LCX 1.5 mm @BSA1.0 → (ln1.5 − 0.44340)/0.145414 = −0.037932/0.145414 = −0.26088
+check('SC LCX 1.5 mm @BSA1.0 → Z', peds.logZ(peds.SC_Z.LCX, peds.logAt(peds.SC_Z.LCX, 1), 1.5), -0.26088, 1e-4);
+// RCA 3.0 mm @BSA1.0 → (ln3.0 − 0.78299)/0.126883 = 0.315622/0.126883 = +2.48751
+check('SC RCA 3.0 mm @BSA1.0 → Z', peds.logZ(peds.SC_Z.RCA, peds.logAt(peds.SC_Z.RCA, 1), 3.0), 2.48751, 1e-4);
+
+// LCX 一律走四川（深圳原文没有 LCX）
+check('LCX 主行来源＝四川', szRows.filter(function (r) { return r.key === 'LCX'; })[0].src, 'sc');
+check('LMCA 主行来源＝深圳', szRows.filter(function (r) { return r.key === 'LMCA'; })[0].src, 'sz');
+
+// 两套不能互串：同一 BSA、同一测值，深圳与四川的 Z 必须不同（LAD 差 > 1）
+const ladSz = peds.szZ(2.6, 'LAD', 1.0);
+const ladSc = peds.logZ(peds.SC_Z.LAD, peds.logAt(peds.SC_Z.LAD, 1), 2.6);
+check('LAD 两套 Z 相差 > 1', Math.abs(ladSc - ladSz) > 1, true);
+
+// 冠脉行的区间是乘性的：中点必须高于均值
+const corRow = szRows.filter(function (r) { return r.key === 'LMCA'; })[0];
+const corB = corRow.rangeText.split('–');
+const corMid = (parseFloat(corB[0]) + parseFloat(corB[1])) / 2;
+check('冠脉区间中点 > 均值（乘性区间）', corMid > parseFloat(corRow.meanText), true);
 
 /* ================================================================== *
  * 15. 新生儿体重法（深圳 2014，0–28 天，n=288）

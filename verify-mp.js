@@ -321,12 +321,30 @@ const wxmlPeds = fsW.readFileSync(
   pathW.join(__dirname, 'miniprogram', 'pages', 'pediatric', 'pediatric.wxml'), 'utf8');
 check('index.wxml 参考值行 2 处带缩写',
   (wxmlIndex.match(/\{\{item\.name\}\}（\{\{item\.key\}\}）/g) || []).length, 2, 0);
-check('pediatric.wxml Z 值行 3 处带缩写（主表 / ±3SD / 新生儿）',
-  (wxmlPeds.match(/\{\{row\.name\}\}（\{\{row\.key\}\}）/g) || []).length, 3, 0);
-check('pediatric.wxml 输入标签保持原样（不加缩写）',
-  (wxmlPeds.match(/\{\{inputs\[index\]\.name\}\} \/ /g) || []).length, 1, 0);
-check('pediatric.wxml 更多参数标签保持原样',
-  (wxmlPeds.match(/\{\{moreInputs\[index\]\.name\}\} \/ /g) || []).length, 1, 0);
+// 2026-11-06 版式重构：结果表拆进各解剖组卡，±3SD 独立表已并入组卡
+check('pediatric.wxml Z 值行 2 处带缩写（组内结果表 / 新生儿）',
+  (wxmlPeds.match(/\{\{row\.name\}\}（\{\{row\.key\}\}）/g) || []).length, 2, 0);
+check('pediatric.wxml 组内输入标签带单位、不加缩写',
+  (wxmlPeds.match(/\{\{f\.name\}\} \/ \{\{f\.unit\}\}/g) || []).length, 1, 0);
+check('每组卡同时含输入与结果（item.inputs / item.results）',
+  ((wxmlPeds.match(/wx:for="\{\{item\.inputs\}\}"/g) || []).length === 1 &&
+   (wxmlPeds.match(/wx:for="\{\{item\.results\}\}"/g) || []).length === 1) ? 1 : 0, 1, 0);
+// ★ 2026-11-06：儿童页的身高体重只记本页，不再拿成人默认 170/65 预填
+const pedJs = fsW.readFileSync(
+  pathW.join(__dirname, 'miniprogram', 'pages', 'pediatric', 'pediatric.js'), 'utf8');
+check('儿童页不再从 globalData.profile 初始化身高体重',
+  pedJs.indexOf('syncFromGlobal') === -1 ? 1 : 0, 1, 0);
+check('儿童页身高体重记在本机（echoref:pedsProfile）',
+  pedJs.indexOf('echoref:pedsProfile') !== -1 ? 1 : 0, 1, 0);
+check('儿童页输入即落盘（saveLocalProfile 4 处）',
+  (pedJs.match(/this\.saveLocalProfile\(\)/g) || []).length, 4, 0);
+check('展开状态记在本机（echoref:pedsOpen）',
+  pedJs.indexOf('echoref:pedsOpen') !== -1 ? 1 : 0, 1, 0);
+check('顶部导航 3 项（新生儿不单列）',
+  (pedJs.match(/\{ id: 'sec-/g) || []).length, 3, 0);
+check('新生儿超期只留一句（模板走 wx:else 分支）',
+  (wxmlPeds.indexOf('wx:if="{{neoTooOld}}"') !== -1 &&
+   wxmlPeds.indexOf('<block wx:else>') !== -1) ? 1 : 0, 1, 0);
 check('行数据均带 key（成人）', C.buildReferenceList('male', null, 'CN', 1.75)
   .every(r => !!r.key) ? 1 : 0, 1, 0);
 

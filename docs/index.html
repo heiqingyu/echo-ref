@@ -478,6 +478,131 @@ html, body {
 }
 
 /* ────────── 儿童 Z 值 ────────── */
+
+/* ── 顶部分区导航：吸附在固定顶栏下方，页面再长也能一步跳过去 ── */
+.pnav {
+  position: sticky;
+  top: calc(var(--appbar-h) + var(--safe-t) + var(--guard-h, 0px));
+  z-index: 30;
+  display: flex;
+  gap: 6px;
+  margin: -4px -2px 12px;
+  padding: 8px 2px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.pnav::-webkit-scrollbar { display: none; }
+.pnav__i {
+  flex: none;
+  margin: 0;
+  padding: 6px 13px;
+  border: 1px solid #d6e2f2;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.pnav__i:active { transform: scale(.96); }
+
+/* 分区小标题（如「测量与结果」） */
+.sechead { margin: 20px 0 10px; padding-left: 2px; }
+.sechead__t { display: block; font-size: 16px; font-weight: 700; color: var(--ink); }
+.sechead__s {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sub);
+}
+
+/* 折叠工具条：全部展开 / 全部收起（各人习惯不同，选过的会被记住） */
+.foldbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+.foldbar__i {
+  flex: none;
+  margin: 0;
+  padding: 5px 12px;
+  border: 1px solid #d6e2f2;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.foldbar__i:active { transform: scale(.96); }
+.foldbar__h {
+  flex: 1 0 100%;
+  font-size: 11px;
+  color: #9aa3ad;
+}
+
+/* ── 组卡：一张卡 = 一组输入框 + 该组 Z 结果 ──
+      改版前输入在上面一大块、结果在下面另一大块，中间隔着空白，
+      填完一项要往下翻很远才看到答案（用户 2026-11-06 反馈）。 */
+.pcard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 14px 8px;
+  margin-bottom: 12px;
+}
+.pcard__h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0 12px;
+  border-bottom: 1px solid #f0f2f4;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.pcard__t {
+  flex: 1;
+  min-width: 0;
+  padding-left: 9px;
+  border-left: 3px solid var(--brand);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.pcard__s { flex: none; font-size: 11.5px; color: var(--brand); }
+.pcard__f { flex: none; font-size: 12px; color: var(--sub); }
+.pcard__b { padding-top: 2px; }
+.pcard__in { padding-top: 2px; }
+.pcard__note {
+  margin: 12px 0 2px;
+  padding: 8px 10px;
+  border-left: 3px solid #d8dde3;
+  border-radius: 0 6px 6px 0;
+  background: #f7f8fa;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--sub);
+}
+
+/* 结果表表头 */
+.zrow--head { padding: 6px 0; border-bottom: 1px solid #e8ebef; }
+.zrow--head .zrow__n,
+.zrow--head .zrow__v,
+.zrow--head .zrow__r,
+.zrow--head .zrow__g { font-size: 11.5px; font-weight: 600; color: var(--sub); }
+
+/* 参考值列的第二行：±3SD（旧版另有独立折叠表，并入同格后取消） */
+.zrow__r3 { display: block; margin-top: 2px; font-size: 10.5px; color: #9aa3ad; }
+
+.phits__t { margin: 14px 0 2px; font-size: 12px; color: var(--sub); }
+
 .pgroup {
   font-size: 14px;
   font-weight: 600;
@@ -2337,7 +2462,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.15.8</div>
+    <div class="verline">心脏超声参考值 · v1.15.9</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2395,7 +2520,7 @@ button.fx-nav__c {
         <div id="aliasList" hidden></div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.15.8</div>
+      <div class="verline">心脏超声参考值 · v1.15.9</div>
       <div class="note note--warn">
         公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
@@ -2520,8 +2645,18 @@ button.fx-nav__c {
 
   <!-- ───── Tab5 儿童 Z 值 ───── -->
   <section class="page" id="page-peds" hidden>
-    <div class="card">
-      <div class="card__t">受检者信息</div>
+
+    <!-- ★ 顶部分区导航：页面再长也能一步跳过去（新生儿不单列：只是末尾一张小卡） -->
+    <div class="pnav">
+      <button class="pnav__i" data-go="pdPerson">受检者</button>
+      <button class="pnav__i" data-go="pdSumCard">摘要</button>
+      <button class="pnav__i" data-go="pdMeasure">测量</button>
+      <button class="pnav__i" data-go="pdInfo">说明</button>
+    </div>
+
+    <!-- ① 受检者 -->
+    <div class="card" id="pdPerson">
+      <div class="card__t">受检者</div>
       <div class="card__d">儿童心脏尺寸随生长变化，Z 值按体表面积（BSA）标准化，与年龄、性别无临床显著关系</div>
       <div class="row">
         <div class="field">
@@ -2563,41 +2698,10 @@ button.fx-nav__c {
         </div>
       </div>
       <div class="hint" id="pdWarn"></div>
+      <button class="btn btn--ghost" id="pdClear">清空本页全部输入</button>
     </div>
 
-    <div class="card">
-      <div class="card__t">测量值输入</div>
-      <div class="card__d">内径 mm · 容积 mL · 质量 g · 面积 cm² · 留空跳过</div>
-      <div id="pdInputs"></div>
-      <button class="btn btn--ghost" id="pdMore">展开其他参数（共 40 项）</button>
-      <button class="btn" id="pdClear">清空全部测量值</button>
-    </div>
-
-    <div class="card" id="pdNeoCard" hidden>
-      <div class="card__t">新生儿（0–28 天）· 体重法</div>
-      <div class="card__d">
-        深圳市儿童医院 288 名 0–28 d 健康新生儿，直接按<b>体重</b>建模：
-        ln Y = a + bW + cW² + dW³（W = 体重 kg）。新生儿体表面积仅 0.15–0.25 m²，
-        上面三套 BSA 模型在这一段全部属于外推；本组才是原生区间。
-      </div>
-      <div class="hint" id="pdNeoWarn" hidden></div>
-      <button class="btn btn--ghost" id="pdNeoBtn">展开新生儿 17 项（按体重）</button>
-      <div id="pdNeoBody" hidden>
-        <div class="pgroup">本组另填（其余 9 项自动沿用上方同名测值）</div>
-        <div id="pdNeoInputs"></div>
-        <div id="pdNeoList"></div>
-        <div class="note">
-          <b>本组没有冠脉</b>：原文 39 项里不含 LCA / LAD / RCA，新生儿冠脉目前无中国公开方程；
-          冠脉仍见上方「冠状动脉」组（PHN 与深圳 SZ 法），新生儿段为外推。
-        </div>
-        <div class="note">
-          <b>数据来源</b>：林洲, 夏焙, 许娜, 等. 中华医学超声杂志(电子版), 2014, 11(2): 142-154.（见 R80）<br>
-          n=288，0–28 d，男 183 / 女 105，性别间差异无统计学意义，故本组不分性别。
-          原文中主动脉峡部、主动脉膈段的非线性系数与实测不符，本组不采用这两项。
-        </div>
-      </div>
-    </div>
-
+    <!-- ② 收缩功能（LVEDD + LVESD 推算） -->
     <div class="card" id="pdFuncCard" hidden>
       <div class="card__t">收缩功能（自动推算）</div>
       <div class="card__d" id="pdFuncDesc"></div>
@@ -2612,6 +2716,7 @@ button.fx-nav__c {
       <div class="note" id="pdFuncNote"></div>
     </div>
 
+    <!-- ③ 结果摘要：填完抬头就看到测了几项、几项异常、哪项偏得最多 -->
     <div class="card" id="pdSumCard" hidden>
       <div class="card__t">结果摘要</div>
       <div class="zbig" id="pdSumBig">
@@ -2619,6 +2724,7 @@ button.fx-nav__c {
         <span class="zbig__l" id="pdSumLbl"></span>
       </div>
       <div class="note" id="pdWorst"></div>
+      <div id="pdHits"></div>
       <div class="note note--warn" id="pdDiscord" hidden></div>
       <div class="key">
         <div class="key__i key__i--n">|Z| ≤ 2<br>正常</div>
@@ -2627,104 +2733,109 @@ button.fx-nav__c {
       </div>
     </div>
 
-    <div class="card">
-      <div class="card__t">本页覆盖哪些结构</div>
-      <div class="card__d">
-        ① 左室（内径/壁厚/容积/质量/长径/面积）、主动脉、肺动脉、二尖瓣环、三尖瓣环 → PHN（n=3566）<br>
-        ② 左房左右径、右房左右径、右室流入道内径 → 中国汉族儿童（n=545/515，2D 四腔）<br>
-        ③ 左房前后径、右室前后径、右室前壁 → Kampmann（中欧 n=2036，M 型）<br>
-        ④ 冠状动脉 → PHN，另并列深圳 SZ 法（n=842，1 月龄–17 岁）<br>
-        ⑤ 新生儿 17 项（心室与大血管 / 房室瓣环 / 左房容积·左室容积·心肌质量）→ 深圳 2014（n=288，0–28 天，<b>体重法</b>）
+    <!-- ④ 测量与结果：每组一张卡，输入在上、该组 Z 结果在下 -->
+    <div class="sechead" id="pdMeasure">
+      <div class="sechead__t">测量与结果</div>
+      <div class="sechead__s">每组输入框下面是这一组的 Z 值，不用上下翻</div>
+    </div>
+    <!-- 展开状态每个人习惯不同：点组标题单独切，下次进入按上次的来 -->
+    <div class="foldbar">
+      <button class="foldbar__i" id="pdExpandAll">全部展开</button>
+      <button class="foldbar__i" id="pdCollapseAll">全部收起</button>
+      <span class="foldbar__h">展开状态会记住，下次进入照旧</span>
+    </div>
+    <div id="pdGroups"></div>
+
+    <!-- ⑤ 新生儿体重法 -->
+    <div class="card" id="pdNeoCard" hidden>
+      <div id="pdNeoHead">
+        <div class="card__t">新生儿（0–28 天）· 体重法</div>
+        <div class="card__d">
+          深圳市儿童医院 288 名 0–28 d 健康新生儿，直接按<b>体重</b>建模：
+          ln Y = a + bW + cW² + dW³（W = 体重 kg）。新生儿体表面积仅 0.15–0.25 m²，
+          上面各组的 BSA 模型在这一段全部属于外推；本组才是原生区间。
+        </div>
       </div>
-      <div class="note">
-        五套人群与测法不同，同一患儿只取实际所用切面对应的一套；0–28 天用第五套 ——
-        它不经 BSA、直接按体重建模，是唯一在 0.20 m² 上不算外推的一套。
-      </div>
-      <div class="note">
-        <b>同一房室两行≠数据打架</b>：右室流入道内径（四腔，约 23 mm）比 M 型右室前后径
-        （胸骨旁，约 11 mm）大一倍 —— 切面与径线不同所致，不可互比。
-      </div>
-      <div class="note">
-        <b>冠脉两行 = 两套人群、两套方程</b>：上行 PHN（北美，幂律），下行深圳 SZ 法（中国，对数线性）。
-        同一测值常差 0.7–1.1 个 Z，判读以报告采用的那套为准，<b>两行不可互比、不可混用</b>。
-        SZ 队列不含 0–28 天新生儿，BSA &lt; 0.23 时该行标「外推」。
-      </div>
-      <div class="note">
-        <b>冠脉怎么测：2025 中国共识的六条硬口径</b><br>
-        2025 年《儿童冠状动脉经胸超声心动图规范化检查中国专家共识》（中华超声影像学杂志 2025;34(11):921-931，见 R83）
-        统一了测量规范。它和 Z 值同等重要 —— Z 值再准，测法不对也是白算：<br>
-        ① <b>分段</b>：按 AHA 15 分段法，TTE 可稳定显示其中 9 段（LMCA、LAD 近/中/远段、LCx、RCA 近/中/远段、后降支）；
-        只报能看清的段，看不清的写「未显示」，不要外推。<br>
-        ② <b>时相</b>：<b>舒张早期、T 波终点</b>测量。冠脉在舒张期充盈、管径最大且稳定，收到收缩期测会系统性偏小。<br>
-        ③ <b>边界</b>：<b>内膜到内膜</b>（inner edge to inner edge），与成人 Z 值库口径一致，
-        混用外膜-外膜会让 Z 值整体上移。<br>
-        ④ <b>图像</b>：局部放大 2–4 倍，帧率 ≥30 fps；婴幼儿用高频探头（≥7.5 MHz）。<br>
-        ⑤ <b>校正</b>：一律换算 Z 值（按 BSA），不用绝对值下结论 —— 绝对值 3 mm 在婴儿是巨大瘤、在青少年是正常。<br>
-        ⑥ <b>分级</b>（川崎病，AHA 2017）：Z &lt;2 无扩张；2–&lt;2.5 仅扩张；≥2.5–&lt;5 小型瘤；
-        ≥5–&lt;10 且绝对值 &lt;8 mm 中型瘤；≥10 或绝对值 ≥8 mm 巨大瘤。
+      <div class="hint" id="pdNeoWarn" hidden></div>
+      <button class="btn btn--ghost" id="pdNeoBtn">展开新生儿 17 项（按体重）</button>
+      <div id="pdNeoBody" hidden>
+        <div class="pgroup">本组另填（其余 9 项自动沿用上方同名测值）</div>
+        <div id="pdNeoInputs"></div>
+        <div id="pdNeoList"></div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card__t">Z 值对照</div>
-      <div class="card__d" id="pdDesc"></div>
-      <div id="pdList"></div>
-    </div>
-
-    <div class="card">
-      <div class="card__t">±3SD 显著异常阈值</div>
-      <div class="card__d">±2SD 已在上一张表「正常范围」列给出，这里只列 ±3SD（显著异常线），避免同一区间在两处重复出现。</div>
-      <button class="btn btn--ghost" id="pdRangesBtn">展开 ±3SD 阈值</button>
-      <div id="pdRanges" hidden></div>
-    </div>
-
-    <div class="card">
-      <div class="card__t">计算原理</div>
-      <div class="note">
-        <b>① 体表面积（Haycock）</b><br>
-        BSA(m²) = 0.024265 × 身高(cm)<sup>0.3964</sup> × 体重(kg)<sup>0.5378</sup>
-      </div>
-      <div class="note">
-        <b>② Z 值</b><br>
-        PHN 项：Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
-        中国方程项：Z = ( 实测值 − M ) ÷ SD，M = β0 + β1·BSA + β2·BSA² + β3·BSA³<br>
-        SZ 冠脉项：Z = [ ln(实测值) − ( a + b·ln BSA ) ] ÷ RSE（对数尺度，故 ±2SD 区间不对称）<br>
-        系数逐项不同；Kampmann 项无方程，为分组表插值。|Z| ≤ 2 覆盖约 95% 健康儿童。
-      </div>
-      <div class="note note--warn">
-        <b>数据来源（第一套 · PHN）</b>　Pediatric Heart Network Normal Echocardiogram Database，
-        n = 3566，0–18 岁健康非肥胖儿童，19 个中心。<br>
-        Lopez L, Colan S, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.（参考文献 R8）<br>
-        LVESD / LVESV 系数来自 PHN 后续补充发表（PMC7870534）。
-      </div>
-      <div class="note note--warn">
-        <b>数据来源（第二套 · 中国汉族儿童房室腔径）</b>　PHN 没有左房 / 右房 / 右室腔径，改用中国多中心方程：<br>
-        Wang SS, et al. <i>J Clin Ultrasound.</i> 2018;46(5):328-333.（左心 n = 545，见 R77）<br>
-        Wang SS, et al. <i>J Clin Ultrasound.</i> 2017;45(5):293-303.（右心 n = 515，见 R78）<br>
-        上海儿童医学中心牵头，Haycock BSA，1 天–18 岁，SD 为固定常数。
-        ★ 左心用边际 SD、右心用残差 SD，跨篇比 Z 时刻度略有差异。
-      </div>
-      <div class="note note--warn">
-        <b>数据来源（第三套 · M 型补充）</b>　左房前后径 / 右室前后径 / 右室前壁取中欧 M 型数据：<br>
-        Kampmann C, et al. <i>Heart.</i> 2000;83(6):667-672.（n = 2036，见 R76）<br>
-        原文给的是「按 BSA 分组的 均值 ± 2SD」表而非方程，本页对分组值做线性插值（BSA 0.25–2.0 m²）。
-        原文用 DuBois BSA，本页用 Haycock，新生儿段可差 5–8%。
-      </div>
-      <div class="note note--warn">
-        <b>数据来源（第四套 · 深圳 SZ 法冠脉）</b>　Fan SM, Xia B, Liu WX, et al.
-        <i>BMC Pediatr.</i> 2021;21:429. DOI 10.1186/s12887-021-02877-9.
-        （n = 842，6 省 9 中心，1 月龄–17 岁，Haycock BSA，见 R79）<br>
-        ln LCA = 1.0084 + 0.3740 ln BSA（RSE 0.115）；ln LAD = 0.8063 + 0.3697 ln BSA（RSE 0.119）；
-        ln RCA = 0.8040 + 0.3291 ln BSA（RSE 0.150）。原文只测 LCA / LAD / RCA 三段，无 LCX。
-        ★ 队列不含 0–28 天新生儿；BSA &lt; 0.23 时仍给数值但标「外推」。
-      </div>
-      <div class="note note--warn">
-        <b>数据来源（第五套 · 深圳 2014 新生儿体重法）</b>　林洲, 夏焙, 许娜, 等.
-        新生儿超声心动图正常参考值及 Z 值回归方程式的研究. 中华医学超声杂志(电子版),
-        2014, 11(2): 142–154.（n = 288，0–28 d，体重法，见 R80）<br>
-        ln Y = a + bW + cW² + dW³（W = 体重 kg），Z = [ ln(实测) − ln(预测均值) ] ÷ s̄x；
-        s̄x 为对数尺度残差，故 ±2SD 区间乘性不对称。原文中主动脉峡部、主动脉膈段的
-        非线性系数与实测不符（3.27 kg 算得 495 / 338 mm），本页不采用这两项。
+    <!-- ⑥ 说明与来源：全页所有解释文字集中在此，正文里不再零散散布 -->
+    <div class="card" id="pdInfo">
+      <div class="card__t">说明与来源</div>
+      <div class="card__d">五套参照各管一段、Z 值怎么算、冠脉两行什么意思、本页没有哪些参数 —— 都在这一块。</div>
+      <button class="btn btn--ghost" id="pdInfoBtn">展开说明</button>
+      <div id="pdInfoBody" hidden>
+        <div class="note">
+          <b>一、Z 值怎么算</b><br>
+          PHN 项：Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
+          中国方程项：Z = ( 实测值 − M ) ÷ SD，M 为 BSA 的三次多项式<br>
+          冠脉项：Z = [ ln(实测值) − ( a + b·ln BSA ) ] ÷ RSE（对数尺度，故 ±2SD 区间不对称）<br>
+          BSA 用 Haycock：0.024265 × 身高(cm)<sup>0.3964</sup> × 体重(kg)<sup>0.5378</sup>。
+          |Z| ≤ 2 覆盖约 95% 健康儿童；Z = 0 即人群均值。
+        </div>
+        <div class="note">
+          <b>二、五套参照，各管一段，不要混用</b><br>
+          ① 左室、大血管、瓣环 → PHN（n=3566，多种族）<br>
+          ② 左房左右径、右房左右径、右室流入道内径 → 中国汉族儿童（n=545 / 515，2D·心尖四腔）<br>
+          ③ 左房前后径、右室前后径、右室前壁 → Kampmann 2000（中欧 n=2036，M 型）<br>
+          ④ 冠状动脉 → 深圳 SZ 法为主（n=842，1 月龄–17 岁），四川 2025 为辅（n=744，0–18 岁，含左回旋支）<br>
+          ⑤ 新生儿 17 项 → 深圳 2014（n=288，0–28 天，<b>体重法</b>，不经 BSA）<br>
+          五套的人群、测量方法与建模变量都不同，同一患儿只取实际所用切面对应的一套判读。
+        </div>
+        <div class="note">
+          <b>三、冠脉两行是什么</b><br>
+          主行＝深圳 SZ 法（6 省 9 中心，对数线性 n=842）；次行＝四川 2025（四川省人民医院 n=744，四段齐全）。
+          同一测值可差 1 个 Z 以上（LAD 2.6 mm、BSA 1.0：深圳 +1.25「正常」/ 四川 +2.43「轻度增大」），
+          临界值时两行都要看，<b>不可跨套比较</b>。<br>
+          ★ 深圳儿童医院自家小程序用的是夏焙团队 2012/2013 方程，与本页两套都不同源；
+          同一测值可再差 0.5–1 个 Z（90 cm / 9 kg、LCA 2.2 mm：该小程序 −0.105、本页深圳法约 +0.54）。
+          这不是算错，是参照人群不同 —— 同一患儿随访请固定用同一套。<br>
+          ★ SZ 队列不含 0–28 天新生儿，BSA &lt; 0.23 时该行标「外推」。
+        </div>
+        <div class="note">
+          <b>四、冠脉怎么测（2025 中国共识）</b><br>
+          ① <b>分段</b>：按 AHA 15 分段法，TTE 可稳定显示其中 9 段（LMCA、LAD 近/中/远段、LCx、
+          RCA 近/中/远段、后降支）；只报能看清的段，看不清的写「未显示」。<br>
+          ② <b>时相</b>：<b>舒张早期、T 波终点</b>测量，冠脉在舒张期充盈、管径最大且稳定。<br>
+          ③ <b>边界</b>：<b>内膜到内膜</b>，混用外膜-外膜会让 Z 值整体上移。<br>
+          ④ <b>图像</b>：局部放大 2–4 倍，帧率 ≥30 fps；婴幼儿用高频探头（≥7.5 MHz）。<br>
+          ⑤ <b>校正</b>：一律换算 Z 值，不用绝对值下结论 —— 3 mm 在婴儿是巨大瘤、在青少年是正常。<br>
+          ⑥ <b>分级</b>（川崎病，AHA 2017）：Z &lt;2 无扩张；2–&lt;2.5 仅扩张；≥2.5–&lt;5 小型瘤；
+          ≥5–&lt;10 且绝对值 &lt;8 mm 中型瘤；≥10 或绝对值 ≥8 mm 巨大瘤。
+        </div>
+        <div class="note">
+          <b>五、同一房室两行，是测法不同</b><br>
+          左房左右径（心尖四腔）与左房前后径（M 型）数值接近；右室流入道内径（心尖四腔，约 23 mm）
+          比 M 型右室前后径（胸骨旁，约 11 mm）大一倍 —— 切面与径线不同所致，不可互比，按报告实际切面选行。
+        </div>
+        <div class="note">
+          <b>六、本页仍没有的参数</b><br>
+          腔静脉、右室面积 / 容积 —— 现有数据源都没有，儿童也暂无公认方程。左房容积只有
+          新生儿体重法（深圳 2014）有，1 月龄以上暂无公认方程。本页不采用未经原文核对的系数来凑数。
+        </div>
+        <div class="note">
+          <b>七、新生儿体重法为什么单独一套</b><br>
+          Z = [ ln(实测) − ln(预测均值) ] ÷ s̄x。s̄x 是对数尺度残差（≈变异系数），
+          所以 ±2SD 区间乘性：均值 × e^±2s̄x，上下不对称，不能写成「均值 ± 2SD」。
+          本组不含冠脉（原文 39 项里没有），新生儿冠脉目前无中国公开方程。
+        </div>
+        <div class="note note--warn">
+          <b>文献</b><br>
+          R8 Lopez L, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.（PHN，n=3566）<br>
+          R76 Kampmann C, et al. <i>Heart.</i> 2000;83(6):667-672.（n=2036）<br>
+          R77 Wang SS, et al. <i>J Clin Ultrasound.</i> 2018;46(5):328-333.（左心 n=545）<br>
+          R78 Wang SS, et al. <i>J Clin Ultrasound.</i> 2017;45(5):293-303.（右心 n=515）<br>
+          R79 Fan SM, Xia B, Liu WX, et al. <i>BMC Pediatr.</i> 2021;21:429.（深圳 SZ 冠脉，n=842）<br>
+          R80 林洲, 夏焙, 许娜, 等. 中华医学超声杂志(电子版). 2014;11(2):142-154.（新生儿体重法）<br>
+          R83 儿童冠状动脉经胸超声心动图规范化检查中国专家共识. 中华超声影像学杂志. 2025;34(11):921-931.<br>
+          四川 2025：王永, 蒋佳颖, 邓燕, 等. 中国当代儿科杂志. 2025;27(2):176-182.（n=744）
+        </div>
       </div>
     </div>
   </section>
@@ -3710,10 +3821,15 @@ const PEDS_Z = {
   ARCHD:  { a: 0.50, mean: 1.36,  sd: 0.19,  unit: 'cm', name: '主动脉弓远端内径' },
   ISTH:   { a: 0.50, mean: 1.25,  sd: 0.18,  unit: 'cm', name: '主动脉峡部内径' },
 
-  // ── 冠状动脉 ───────────────────────────────────────────────
-  LMCA:   { a: 0.45, mean: 2.95,  sd: 0.57,  unit: 'mm', name: '左主干内径' },
-  LAD:    { a: 0.45, mean: 1.90,  sd: 0.34,  unit: 'mm', name: '左前降支近段内径' },
-  RCA:    { a: 0.45, mean: 2.32,  sd: 0.55,  unit: 'mm', name: '右冠状动脉近段内径' },
+  // ── 冠状动脉（不走 PHN！见 3b-3：两套中国儿童方程，对数尺度）────
+  //   ★ 2026-11-06 改：原来这三项挂的是 α=0.45 的幂律系数，但 PHN 数据集
+  //     根本没测冠脉（Lopez 2017 的 21 个结构里没有冠脉），那组数没有可核的
+  //     出处，且与深圳儿童医院小程序的差值可达 1 个 Z。现改为
+  //     「深圳 SZ（Fan 2021）」为主、「四川（王永 2025）」为辅，两篇都能逐字核。
+  LMCA:   { model: 'cor', unit: 'mm', dec: 1, name: '左冠主干内径（LMCA）' },
+  LAD:    { model: 'cor', unit: 'mm', dec: 1, name: '左前降支近段内径（LAD）' },
+  LCX:    { model: 'cor', unit: 'mm', dec: 1, name: '左回旋支近段内径（LCX）' },
+  RCA:    { model: 'cor', unit: 'mm', dec: 1, name: '右冠主干内径（RCA）' },
 
   // ── 肺动脉 ─────────────────────────────────────────────────
   PVSAX:  { a: 0.50, mean: 1.91,  sd: 0.24,  unit: 'cm', name: '肺动脉瓣环短轴内径' },
@@ -3882,6 +3998,31 @@ const SZ_Z = {
 const SZ_RANGE = { ageMin: 1 / 12, ageMax: 17, bsaMin: 0.23, bsaMax: 1.85 };
 
 /* ------------------------------------------------------------------ *
+ * 3b-4. 四川儿童冠脉方程（2025，n=744，0–18 岁）——冠脉的第二套中国数据
+ *
+ *  王永, 蒋佳颖, 邓燕, 等. 基于 Z 值回归模型诊断儿童冠状动脉病变的研究.
+ *  中国当代儿科杂志. 2025;27(2):176-182. DOI 10.7499/j.issn.1008-8830.2405030
+ *  四川省人民医院，744 名健康儿童建模、251 例川崎病验证，0–18 岁。
+ *
+ *      Y = a_mul × BSA^b   （幂函数，R² 最优、MSE 最小）
+ *      Z = [ ln(实测) − (a + b·ln BSA) ] / RSE
+ *  a / b / RSE 取自原文表 3–6 的幂函数行与式(1)–(4)，四段齐全（含 LCX）。
+ *  ★ 四段都有 → LCX 只有这一套中国方程，故 LCX 行以本表为主行。
+ *  ★ 该文队列在四川，与深圳队列不同源；同一测值两套可差 0.2–0.4 个 Z
+ *    （LAD 2.0 mm、BSA 0.67：SZ −1.6 / 四川 −1.3），不可互比。
+ * ------------------------------------------------------------------ */
+
+const SC_Z = {
+  LMCA: { a: 0.96623, b: 0.358, rse: 0.111616, r2: 0.691, mul: 2.628 },
+  LAD:  { a: 0.64763, b: 0.353, rse: 0.126832, r2: 0.628, mul: 1.911 },
+  LCX:  { a: 0.44340, b: 0.319, rse: 0.145414, r2: 0.609, mul: 1.558 },
+  RCA:  { a: 0.78299, b: 0.378, rse: 0.126883, r2: 0.663, mul: 2.188 },
+};
+
+/** 四川队列覆盖 0–18 岁；原文未给 BSA 上下界，按身高体重可及的 0.18–2.1 标注 */
+const SC_RANGE = { bsaMin: 0.18, bsaMax: 2.10 };
+
+/* ------------------------------------------------------------------ *
  * 2f. 新生儿（0–28 天）体重法 —— 深圳儿童医院 2014
  *  林洲, 夏焙, 许娜, 等. 中华医学超声杂志(电子版), 2014, 11(2): 142-154.
  *  DOI 10.3877/cma.j.issn.1672-6448.2014.02.012（n=288，0–28 d）
@@ -3962,12 +4103,14 @@ const PEDS_GROUPS = [
   { title: '主动脉', keys: ['ANN', 'ROOT', 'STJ', 'AAO', 'ARCHP', 'ARCHD', 'ISTH'] },
   {
     title: '冠状动脉',
-    keys: ['LMCA', 'LAD', 'RCA'],
-    note: '每项两行：上行 PHN（北美多中心，幂律模型），下行深圳 SZ 法（中国儿童多中心，' +
-      'ln Y = a + b·ln BSA，n=842，1 月龄–17 岁）。两套的人群、模型与离散度都不同，' +
-      '同一测值可差 0.7–1.1 个 Z（如 LAD 2.6 mm、BSA 1.0：PHN +2.06「轻度增大」/ SZ +1.25「正常」），' +
-      '不可互相比较或混用，以报告所依据的那一套判读。SZ 队列不含 0–28 天新生儿，' +
-      'BSA < 0.23 时该行属外推（会标注「外推」）。',
+    keys: ['LMCA', 'LAD', 'LCX', 'RCA'],
+    note: '主行＝深圳 SZ 法（Fan 2021，6 省 9 中心 n=842，1 月龄–17 岁）；次行＝四川 2025' +
+      '（n=744，0–18 岁）。两套都是中国儿童队列，但人群不同，同一测值可差 1 个 Z 以上' +
+      '（LAD 2.6 mm、BSA 1.0：深圳 +1.25 / 四川 +2.43）；LCX 只有四川一套。' +
+      '两者都按 ln 尺度建模，正常范围是乘性区间、上下不对称，' +
+      '不可写成「均值 ± 2SD」。深圳儿童医院自家小程序用的是夏焙团队 2012/2013 方程，' +
+      '与本页两套都不同源，同一测值可再差 0.5–1 个 Z。' +
+      '两套不可跨套比较：同一患儿随访请始终用同一套。',
   },
   { title: '肺动脉', keys: ['PVSAX', 'PVLAX', 'MPA', 'RPA', 'LPA'] },
   { title: '二尖瓣', keys: ['MVAP', 'MVLAT', 'MVA'] },
@@ -4253,6 +4396,132 @@ function buildCsmcRow(key, def, bsa, measured, hasBsa) {
 }
 
 /**
+ * 冠脉行的主/次两套中国方程（对数线性）
+ *
+ * ★ 2026-11-06 重组：原来主行是「PHN 幂律（α=0.45）」、次行是深圳 SZ。
+ *   PHN 数据集并没有冠脉，那组系数查不到出处；且与深圳儿童医院小程序的
+ *   差值可达 1 个 Z（90 cm/9 kg、LCA 2.2 mm：本页旧值 +0.24，深圳小程序 −0.105）。
+ *   现改为两套都能逐字核原文的中国队列：
+ *     主行 深圳 SZ（Fan 2021，6 省 9 中心 n=842，1 月龄–17 岁）—— 深圳儿童医院牵头
+ *     次行 四川 SC（王永 2025，n=744，0–18 岁，四段齐全）
+ *   LCX 只有四川这套，故 LCX 以四川为主行、无次行。
+ */
+const COR_PRIMARY = { LMCA: 'sz', LAD: 'sz', LCX: 'sc', RCA: 'sz' };
+
+/** 模型表取用：'sz' → SZ_Z，'sc' → SC_Z */
+function corModel(model, key) {
+  return model === 'sz' ? SZ_Z[key] : SC_Z[key];
+}
+
+/**
+ * 统一的对数线性方程求值：Mean = a_mul × BSA^b = exp(a + b·ln BSA)
+ * @returns {{mean,sd,lo2,hi2,lo3,hi3}|null} 单位 mm
+ */
+function logAt(m, bsa) {
+  if (!m || !bsa || bsa <= 0) return null;
+  const mean = Math.exp(m.a + m.b * Math.log(bsa));
+  return {
+    mean: mean,
+    sd: mean * m.rse,                 // 均值处等效线性 SD（只用于显示）
+    lo2: mean * Math.exp(-2 * m.rse),
+    hi2: mean * Math.exp(2 * m.rse),
+    lo3: mean * Math.exp(-3 * m.rse),
+    hi3: mean * Math.exp(3 * m.rse),
+  };
+}
+
+/** Z = [ ln(实测) − ln(预测均值) ] / RSE */
+function logZ(m, t, value) {
+  if (!m || !t || !(value > 0)) return null;
+  return (Math.log(value) - Math.log(t.mean)) / m.rse;
+}
+
+/**
+ * 把一套对数模型渲染成「一行」所需的字段（主行与次行共用）
+ */
+function logView(m, t, raw, hasValue) {
+  const z = (t && hasValue) ? logZ(m, t, raw) : null;
+  const g = gradeZ(z);
+  const rng = function (k) {
+    if (!t) return '—';
+    return fmt(k === 2 ? t.lo2 : t.lo3, 2) + ' – ' + fmt(k === 2 ? t.hi2 : t.hi3, 2);
+  };
+  return {
+    z: z === null ? null : round(z, 2),
+    zText: z === null ? '—' : (z > 0 ? '+' : '') + fmt(z, 2),
+    status: g.level,
+    statusText: g.text,
+    statusCls: g.cls,
+    meanText: t ? fmt(t.mean, 2) + ' mm' : '—',
+    sdText: t ? 'SD ' + fmt(t.sd, 2) + ' mm' : '—',
+    subText: t ? fmt(t.mean, 2) + ' mm' : '—',
+    rangeText: rng(2),
+    range3Text: rng(3),
+    mulText: t ? '×e^±' + fmt(2 * m.rse, 2) : '—',
+    r2Text: 'R² ' + m.r2.toFixed(2),
+    rseText: 'RSE ' + m.rse.toFixed(3),
+  };
+}
+
+/**
+ * 冠脉行：主行 + 一套备行（结构与 PHN 行一致，界面无需新分支）
+ *
+ * 主行字段直接取主模型的 Z / 区间；`alt` 为备模型，界面按老样式渲染第二行。
+ */
+function buildCoronaryRow(key, def, bsa, measured, hasBsa) {
+  const v = pickValue(measured, key);
+  const raw = v.hasValue ? parseFloat(v.raw) : null;
+  const dec = def.dec === undefined ? 1 : def.dec;
+
+  const pm = COR_PRIMARY[key] === 'sc' ? 'sc' : 'sz';
+  const pModel = corModel(pm, key);
+  const pT = (hasBsa && pModel) ? logAt(pModel, bsa) : null;
+  const pView = logView(pModel, pT, raw, v.hasValue);
+
+  const am = pm === 'sz' ? 'sc' : null;
+  const aModel = am ? corModel(am, key) : null;
+  const aT = (hasBsa && aModel) ? logAt(aModel, bsa) : null;
+  const aView = aModel ? logView(aModel, aT, raw, v.hasValue) : null;
+
+  const inRange = function (model, m) {
+    if (!hasBsa) return false;
+    return model === 'sz'
+      ? szInRange(bsa)
+      : (bsa >= SC_RANGE.bsaMin && bsa <= SC_RANGE.bsaMax);
+  };
+
+  return {
+    key: key,
+    name: def.name,
+    unit: def.unit,
+    src: pm,
+    srcText: pm === 'sz' ? 'SZ 法 · 深圳' : '四川 2025',
+    model: 'cor',
+    altLabel: aModel ? '四川 2025' : '',
+    alt: aView ? Object.assign({}, aView, {
+      src: am,
+      srcText: '四川 2025',
+      extrap: !inRange(am, aModel),
+      hasValue: v.hasValue,
+    }) : null,
+    extrap: !inRange(pm, pModel),
+    alphaText: '对数尺度 · ' + pView.rseText,
+    meanText: pView.meanText,
+    sdText: pView.sdText,
+    subText: pView.subText,
+    rangeText: pView.rangeText,
+    range3Text: pView.range3Text,
+    value: v.hasValue ? fmt(raw, dec) : '—',
+    z: pView.z,
+    zText: pView.zText,
+    status: pView.status,
+    statusText: pView.statusText,
+    statusCls: pView.statusCls,
+    hasValue: v.hasValue,
+  };
+}
+
+/**
  * 冠脉行的「并列第二套」：深圳 SZ 法（2021 中国儿童多中心）
  *
  * 结构与主行同形，界面只需在同一行的下一行渲染即可，不必另写分支。
@@ -4436,6 +4705,12 @@ function buildPedsList(bsa, measured) {
       continue;
     }
 
+    // 冠状动脉（两套中国对数线性方程，主行 + 备行）
+    if (def.model === 'cor') {
+      rows.push(buildCoronaryRow(key, def, bsa, measured, hasBsa));
+      continue;
+    }
+
     // 界面单位 → PHN 原生单位
     // 内径：界面 mm，PHN cm → ÷10
     // 容积：界面 mL = cm³，一致
@@ -4474,16 +4749,12 @@ function buildPedsList(bsa, measured) {
     const meanUi = hasBsa ? def.mean * Math.pow(bsa, def.a) * uiScale : null;
     const sdUi = hasBsa ? def.sd * Math.pow(bsa, def.a) * uiScale : null;
 
-    // ★ 冠脉三项并列深圳 SZ 法（v1.8.0）：同一测值、两套方程、两个 Z
-    const alt = (hasBsa || hasValue) ? buildSzAlt(key, bsa, hasBsa, raw, hasValue) : null;
-
     rows.push({
       key: key,
       name: def.name,
       unit: uiUnit,
       src: 'phn',
       srcText: 'PHN',
-      alt: alt,
       // 指数化后的均值（界面单位），用于解释
       alphaText: 'α=' + def.a.toFixed(2),
       meanText: hasBsa ? fmt(meanUi, decOut) + ' ' + uiUnit : '—',
@@ -4566,6 +4837,8 @@ function describeZ(z) {
     CSMC_Z: CSMC_Z,
     SZ_Z: SZ_Z,
     SZ_RANGE: SZ_RANGE,
+    SC_Z: SC_Z,
+    SC_RANGE: SC_RANGE,
     NEO_Z: NEO_Z,
     NEO_RANGE: NEO_RANGE,
     NEO_GROUPS: NEO_GROUPS,
@@ -4587,6 +4860,12 @@ function describeZ(z) {
     szInRange: szInRange,
     csmcAt: csmcAt,
     buildCsmcRow: buildCsmcRow,
+    COR_PRIMARY: COR_PRIMARY,
+    corModel: corModel,
+    logAt: logAt,
+    logZ: logZ,
+    logView: logView,
+    buildCoronaryRow: buildCoronaryRow,
     buildSzAlt: buildSzAlt,
     neoMean: neoMean,
     neoAt: neoAt,
@@ -21714,7 +21993,7 @@ const MATERIALS = [];
     sex: function (v) { state.sex = v; renderIndex(); },
     formula: function (v) { state.formula = v; renderIndex(); },
     standard: function (v) { state.standard = v; renderIndex(); },
-    pdsex: function () { /* 儿童 Z 值不区分性别，仅作记录 */ },
+    pdsex: function (v) { state.pdsex = v; pdSaveProfile(); },  // 不参与算 Z，只记住
     calccollapse: function (v) { calcCollapse = v; renderCalc(); },
     calcsigns: function (v) { calcSigns = v; renderCalc(); },
   };
@@ -25368,29 +25647,96 @@ const MATERIALS = [];
 
   /* 六、Tab4 儿童 Z 值 */
 
-  // ★ 左房（LAAP）与右室内径（RVDD）放进快速区：儿童超声里房室大小比壁厚更常被问，
-  //   之前快速区只有左室 + 主动脉根部，用户要「其他房室大小」得先展开 36 项才找得到。
-  const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT',
-    'LA4C', 'RA4C', 'RVIDd', 'LVEDV', 'LVESV', 'LVM', 'ROOT'];
-  const MORE_KEYS = Peds.PEDS_FIELDS.filter(function (k) {
-    return QUICK_KEYS.indexOf(k) === -1;
-  });
+  /* ── 儿童页：一组一卡，输入框在上、该组 Z 结果紧随其下（不用上下翻）── */
 
-  const pdVal = {};     // 儿童页测量值（界面单位）
-  let pdMoreOpen = false;
+  const pdVal = {};        // 儿童页测量值（界面单位，冠脉也存这里）
+  let pdGroupOpen = null;  // 组卡折叠状态 { 0: true, 4: true, ... }
 
   // ★ v1.8.1 新生儿（0–28 天）体重法：只认体重，不依赖 BSA
-  const pdNeoVal = {};  // 本组另需自填的 8 项
+  const pdNeoVal = {};     // 本组另需自填的 8 项
   let pdNeoOpen = false;
-  let pdNeoAuto = false;  // 体重进 1.5–5.0 kg 时自动展开一次
+  let pdNeoAuto = false;   // 体重进 1.5–5.0 kg 时自动展开一次
+
+  /**
+   * 展开状态记在本机（localStorage）
+   *
+   * 每个人习惯不一样：有人只看冠脉、有人要全摊开。存「哪些组是展开的」，
+   * 下次进页面照旧，不用每次都重新点一遍。存的键是组下标，组标题改字也不会错位。
+   */
+  const PD_OPEN_KEY = 'echoref:pedsOpen';
+
+  // 首次进入时默认展开的组（其余收起）
+  function pdDefaultOpen() {
+    const o = {};
+    Peds.PEDS_GROUPS.forEach(function (g, i) {
+      o[i] = (g.title === '冠状动脉' || g.title === '左心室结构');
+    });
+    return o;
+  }
+
+  function pdLoadOpen() {
+    const o = pdDefaultOpen();
+    try {
+      const raw = window.localStorage.getItem(PD_OPEN_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        Peds.PEDS_GROUPS.forEach(function (g, i) {
+          if (saved && typeof saved[i] === 'boolean') o[i] = saved[i];
+        });
+      }
+    } catch (e) { /* 读不到 / 解析失败就用默认 */ }
+    return o;
+  }
+
+  function pdSaveOpen() {
+    try {
+      window.localStorage.setItem(PD_OPEN_KEY, JSON.stringify(pdGroupOpen || {}));
+    } catch (e) { /* 存不下就算了，不影响用 */ }
+  }
+
+  /**
+   * 儿童页自己的身高体重 / 年龄 / 性别，记在本机
+   *
+   * ★ 不能用成人页的默认值（170 cm / 65 kg）来预填：儿童页一打开就是这组数，
+   *   等于每次都在给一个不存在的孩子算 Z 值（用户 2026-11-06 反馈）。
+   *   本页只认自己上次填的，没记录就留空。
+   */
+  const PD_PROFILE_KEY = 'echoref:pedsProfile';
+
+  function pdLoadProfile() {
+    try {
+      const raw = window.localStorage.getItem(PD_PROFILE_KEY);
+      if (raw) return JSON.parse(raw) || {};
+    } catch (e) { /* 读不到就当没填过 */ }
+    return {};
+  }
+
+  function pdSaveProfile() {
+    try {
+      window.localStorage.setItem(PD_PROFILE_KEY, JSON.stringify({
+        height: $('pdHeight').value,
+        weight: $('pdWeight').value,
+        age: $('pdAge').value,
+        sex: state.pdsex || 'male',
+      }));
+    } catch (e) { /* 存不下就算了 */ }
+  }
+
+  function pdRestoreProfile() {
+    const pr = pdLoadProfile();
+    if (pr.height) $('pdHeight').value = pr.height;
+    if (pr.weight) $('pdWeight').value = pr.weight;
+    if (pr.age) $('pdAge').value = pr.age;
+    if (pr.sex) { state.pdsex = pr.sex; setSeg('pdsex', pr.sex); }
+  }
 
   /** 参数在界面上的显示单位 */
   function uiUnit(key) {
     return Peds.PEDS_Z[key].unit === 'cm' ? 'mm' : Peds.PEDS_Z[key].unit;
   }
 
-  function buildPedsInputs() {
-    const keys = pdMoreOpen ? QUICK_KEYS.concat(MORE_KEYS) : QUICK_KEYS;
+  /** 一组的输入框（每行两项，与旧版排版一致） */
+  function pdInputRows(keys) {
     let html = '';
     for (let i = 0; i < keys.length; i += 2) {
       html += '<div class="row">';
@@ -25401,14 +25747,45 @@ const MATERIALS = [];
           '<label class="field__l">' + esc(def.name) + ' / ' + uiUnit(k) + '</label>' +
           '<input class="field__i" type="number" inputmode="decimal" step="0.1" ' +
           'data-pk="' + k + '" placeholder="留空跳过" ' +
-          'value="' + (pdVal[k] !== undefined ? pdVal[k] : '') + '">' +
+          'value="' + (pdVal[k] !== undefined ? esc(pdVal[k]) : '') + '">' +
           '</div>';
       }
       html += '</div>';
     }
-    $('pdInputs').innerHTML = html;
+    return html;
+  }
 
-    $('pdInputs').querySelectorAll('input').forEach(function (inp) {
+  /**
+   * 建 10 张组卡（只在启动 / 清空时调用）
+   *
+   * ★ 输入框只建一次，输入时只刷 .pres 里的结果表 ——
+   *   若每次 input 都重建 input 的 DOM，光标会跳到末尾、手机上直接收键盘，
+   *   数字就没法连着敲了（2026-11-06 改版时的硬约束）。
+   */
+  function buildPedsGroups() {
+    const box = $('pdGroups');
+    if (!box) return;
+    if (!pdGroupOpen) pdGroupOpen = pdLoadOpen();
+
+    let html = '';
+    Peds.PEDS_GROUPS.forEach(function (g, i) {
+      const open = !!pdGroupOpen[i];
+      html += '<div class="pcard" data-g="' + i + '">' +
+        '<div class="pcard__h">' +
+          '<span class="pcard__t">' + esc(g.title) + '</span>' +
+          '<span class="pcard__s"></span>' +
+          '<span class="pcard__f">' + (open ? '收起' : '展开') + '</span>' +
+        '</div>' +
+        '<div class="pcard__b"' + (open ? '' : ' hidden') + '>' +
+          (g.note ? '<div class="note pcard__note">' + esc(g.note) + '</div>' : '') +
+          '<div class="pcard__in">' + pdInputRows(g.keys) + '</div>' +
+          '<div class="pres"></div>' +
+        '</div>' +
+      '</div>';
+    });
+    box.innerHTML = html;
+
+    box.querySelectorAll('input[data-pk]').forEach(function (inp) {
       inp.addEventListener('input', function () {
         const k = inp.dataset.pk;
         if (inp.value === '') delete pdVal[k];
@@ -25417,12 +25794,73 @@ const MATERIALS = [];
       });
     });
 
-    $('pdMore').textContent = pdMoreOpen
-      ? '收起其他参数'
-      : '展开其他参数（共 ' + Peds.PEDS_FIELDS.length + ' 项）';
+    box.querySelectorAll('.pcard__h').forEach(function (hd) {
+      hd.addEventListener('click', function () {
+        const i = Number(hd.parentNode.dataset.g);
+        pdGroupOpen[i] = !pdGroupOpen[i];
+        hd.parentNode.querySelector('.pcard__b').hidden = !pdGroupOpen[i];
+        hd.querySelector('.pcard__f').textContent = pdGroupOpen[i] ? '收起' : '展开';
+        pdSaveOpen();   // 记住这次选择，下次进页面照旧
+      });
+    });
   }
 
-  /* ── ★ v1.8.1 新生儿体重法（深圳 2014，17 项）───────────────── */
+  /** 按当前 pdGroupOpen 刷新折叠外观（不重建 DOM，输入内容与焦点都不受影响） */
+  function pdApplyOpen() {
+    const box = $('pdGroups');
+    if (!box) return;
+    box.querySelectorAll('.pcard').forEach(function (c) {
+      const open = !!pdGroupOpen[Number(c.dataset.g)];
+      c.querySelector('.pcard__b').hidden = !open;
+      c.querySelector('.pcard__f').textContent = open ? '收起' : '展开';
+    });
+  }
+
+  /** 全部展开 / 全部收起（同样会记住） */
+  function pdSetAll(open) {
+    if (!pdGroupOpen) pdGroupOpen = pdLoadOpen();
+    Peds.PEDS_GROUPS.forEach(function (g, i) { pdGroupOpen[i] = open; });
+    pdSaveOpen();
+    pdApplyOpen();
+  }
+
+  /**
+   * 一行 Z 结果（含冠脉的四川次行）
+   * 参考值列同时给 ±2SD 与 ±3SD —— 旧版另挂一张「±3SD 阈值表」，同一组数被拆到
+   * 两处、还要来回折叠，正是「数据东一块西一块」的来源；并进同一格后可删掉那张表。
+   */
+  function pdRowHtml(r) {
+    const tag = r.model === 'cor' ? ' data-cor="1"' : '';   // 对数尺度行：区间乘性、中点≠均值
+    let h = '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '"' + tag + '>' +
+      '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
+        '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span></div>' +
+      '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
+      '<div class="zrow__r">' + esc(r.rangeText) +
+        '<span class="zrow__r3">±3SD ' + esc(r.range3Text) + '</span></div>' +
+      '<div class="zrow__g">' + (r.hasValue
+        ? '<span class="tag ' + r.statusCls + '">' + esc(r.zText) + '</span>'
+        : '<span class="tag tag--none">—</span>') +
+      '</div></div>';
+
+    // ★ 冠脉并列第二套中国方程：同一测值第二个 Z
+    if (r.alt) {
+      h += '<div class="zrow zrow--alt' + (r.hasValue ? '' : ' zrow--none') + '" data-cor="1">' +
+        '<div class="zrow__n">' + esc(r.altLabel) +
+          (r.alt.extrap ? '<span class="zrow__ext">外推</span>' : '') +
+          '<span class="zrow__sub">均值 ' + esc(r.alt.subText) + ' · ' +
+            esc(r.alt.r2Text) + '</span></div>' +
+        '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
+        '<div class="zrow__r">' + esc(r.alt.rangeText) +
+          '<span class="zrow__r3">±3SD ' + esc(r.alt.range3Text) + '</span></div>' +
+        '<div class="zrow__g">' + (r.hasValue
+          ? '<span class="tag ' + r.alt.statusCls + '">' + esc(r.alt.zText) + '</span>'
+          : '<span class="tag tag--none">—</span>') +
+        '</div></div>';
+    }
+    return h;
+  }
+
+  /* ── 新生儿体重法（深圳 2014，17 项）────────────────────────── */
 
   /** 本组需自填的 8 项；其余 9 项自动沿用上方同名测值（ARD←ANN、PA←MPA…） */
   function buildNeoInputs() {
@@ -25469,16 +25907,20 @@ const MATERIALS = [];
     const tooOld = ageDays > 28;
     const warn = $('pdNeoWarn');
     if (tooOld) {
+      // ★ 整组停用时只留这一句：标题与建模说明都没意义，别再占屏（用户 2026-11-06 反馈）
       card.hidden = false;
+      $('pdNeoHead').hidden = true;
+      $('pdNeoBtn').hidden = true;
       warn.hidden = false;
       warn.textContent = '⚠ 年龄 ' + (ageDays >= 60 ? (ageDays / 365.25).toFixed(1) + ' 岁'
           : Math.round(ageDays) + ' 天') +
         '，已超出新生儿期（0–28 天）。本组方程只按体重建模、无年龄项，' +
         '套用会把年龄大的小体重患儿算成正常，故整组停用。';
       $('pdNeoBody').hidden = true;
-      $('pdNeoBtn').textContent = '已停用（年龄超出 0–28 天）';
       return;
     }
+    $('pdNeoHead').hidden = false;
+    $('pdNeoBtn').hidden = false;
     $('pdNeoBtn').disabled = false;
 
     const extrap = w < Peds.NEO_RANGE.wMin || w > Peds.NEO_RANGE.wMax;
@@ -25499,7 +25941,7 @@ const MATERIALS = [];
     const neo = Object.assign({}, pdVal, pdNeoVal);
     const groups = Peds.buildNeoGrouped(w, neo);
 
-    let html = '<div class="zrow zrow--neo" style="border-bottom:1px solid #e3e6ea;color:#6b7280;font-weight:600">' +
+    let html = '<div class="zrow zrow--neo zrow--head">' +
       '<div class="zrow__n">参数</div><div class="zrow__v">实测</div>' +
       '<div class="zrow__r">±2SD 正常范围</div><div class="zrow__g">Z 值</div></div>';
 
@@ -25511,7 +25953,8 @@ const MATERIALS = [];
             (r.fromText ? '<span class="zrow__ext">' + esc(r.fromText) + '</span>' : '') +
             '<span class="zrow__sub">均值 ' + esc(r.subText) + ' · ' + esc(r.r2Text) + '</span></div>' +
           '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
-          '<div class="zrow__r">' + esc(r.rangeText) + '</div>' +
+          '<div class="zrow__r">' + esc(r.rangeText) +
+            '<span class="zrow__r3">±3SD ' + esc(r.range3Text) + '</span></div>' +
           '<div class="zrow__g">' + (r.hasValue
             ? '<span class="tag ' + r.statusCls + '">' + esc(r.zText) + '</span>'
             : '<span class="tag tag--none">—</span>') +
@@ -25528,14 +25971,11 @@ const MATERIALS = [];
     const valid = h > 30 && h < 220 && w > 1 && w < 150;
     const bsa = valid ? Peds.bsaHaycock(h, w) : 0;
 
-    // ★ v1.8.1 新生儿体重法只依赖体重，故在 BSA 校验之前先渲染
+    // ★ 新生儿体重法只依赖体重，故在 BSA 校验之前先渲染
     renderNeo((w > 0 && w < 150) ? w : 0, age);
 
     $('pdBsa').textContent = valid ? bsa.toFixed(2) : '—';
     $('pdBmi').textContent = valid ? Core.bmi(h, w).toFixed(1) : '—';
-    $('pdDesc').textContent = valid
-      ? '体表面积 BSA = ' + bsa.toFixed(2) + ' m²　·　|Z| ≤ 2 视为正常'
-      : '请先填写身高体重';
 
     // 警告
     const warns = [];
@@ -25547,9 +25987,15 @@ const MATERIALS = [];
     }
     $('pdWarn').innerHTML = warns.map(function (t) { return '⚠ ' + esc(t); }).join('<br>');
 
+    const box = $('pdGroups');
+    const cards = box ? box.querySelectorAll('.pcard') : [];
+
     if (!valid) {
-      $('pdList').innerHTML = '<div class="note">请先填写有效的身高体重（30–220 cm / 1–150 kg）。</div>';
-      $('pdRanges').innerHTML = '';
+      cards.forEach(function (c) {
+        c.querySelector('.pcard__s').textContent = '';
+        c.querySelector('.pres').innerHTML =
+          '<div class="note">先填身高与体重算出 BSA，本组即显示 Z 值与正常范围。</div>';
+      });
       $('pdFuncCard').hidden = true;
       $('pdSumCard').hidden = true;
       state.peds = null;
@@ -25597,7 +26043,7 @@ const MATERIALS = [];
         '<div class="kv__v">' + func.SV + '<span class="kv__u">mL</span></div></div>';
       $('pdFuncNote').textContent =
         '推算的 EDV ' + func.EDV + ' mL / ESV ' + func.ESV +
-        ' mL 已代入下方「左心室容积与质量」组的 Z 值对照（未手动填容积时）。';
+        ' mL 已代入「左心室容积与质量」组的 Z 值对照（未手动填容积时）。';
     } else {
       $('pdFuncCard').hidden = true;
     }
@@ -25626,14 +26072,41 @@ const MATERIALS = [];
           '</b>（' + esc(worst.statusText) + '）'
         : '';
 
+      // ★ 已测项一览：输入几项就列几行，按 |Z| 降序（原来只报偏离最大那一条）
+      const hits = [];
+      grouped.forEach(function (g) {
+        g.rows.forEach(function (r) {
+          if (!r.hasValue) return;
+          hits.push({
+            name: r.name, group: g.title,
+            valueText: r.value + (r.unit ? ' ' + r.unit : ''),
+            zText: r.zText, zAbs: r.z === null ? -1 : Math.abs(r.z),
+            statusText: r.statusText, statusCls: r.statusCls,
+            altLabel: r.altLabel || '', altText: r.alt ? r.alt.zText : '',
+          });
+        });
+      });
+      hits.sort(function (a, b) { return b.zAbs - a.zAbs; });
+      $('pdHits').innerHTML = hits.length
+        ? '<div class="phits__t">已测项（按偏离程度排序，共 ' + hits.length + ' 项）</div>' +
+          hits.map(function (x) {
+            return '<div class="phit">' +
+              '<div class="phit__l"><div class="phit__n">' + esc(x.name) + '</div>' +
+              '<div class="phit__v">' + esc(x.group) + ' · 实测 ' + esc(x.valueText) +
+              (x.altText ? '　次套 ' + esc(x.altLabel) + ' ' + esc(x.altText) : '') + '</div></div>' +
+              '<div class="phit__r"><span class="tag ' + x.statusCls + '">' + esc(x.zText) + '</span>' +
+              '<div class="phit__s">' + esc(x.statusText) + '</div></div></div>';
+          }).join('')
+        : '';
+
       // ★ v1.8.0：冠脉两法若一法异常、一法正常，必须点明，否则用户会以为矛盾
       const disc = [];
       grouped.forEach(function (g) {
         g.rows.forEach(function (r) {
           if (!r.alt || !r.hasValue || r.z === null || r.alt.z === null) return;
           if ((Math.abs(r.z) > 2) !== (Math.abs(r.alt.z) > 2)) {
-            disc.push(esc(r.name) + '（PHN ' + esc(r.zText) + ' ' + esc(r.statusText) +
-              ' / SZ ' + esc(r.alt.zText) + ' ' + esc(r.alt.statusText) + '）');
+            disc.push(esc(r.name) + '（深圳 ' + esc(r.zText) + ' ' + esc(r.statusText) +
+              ' / 四川 ' + esc(r.alt.zText) + ' ' + esc(r.alt.statusText) + '）');
           }
         });
       });
@@ -25645,72 +26118,44 @@ const MATERIALS = [];
       $('pdSumCard').hidden = true;
     }
 
-    // ── Z 值表 ──
-    let html = '';
-    grouped.forEach(function (g) {
-      html += '<div class="pgroup">' + esc(g.title) + '</div>';
-      if (g.note) html += '<div class="pnote">' + esc(g.note) + '</div>';
-      g.rows.forEach(function (r) {
-        html += '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '">' +
-          '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
-            '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span></div>' +
-          '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
-          '<div class="zrow__r">' + esc(r.rangeText) + '</div>' +
-          '<div class="zrow__g">' + (r.hasValue
-            ? '<span class="tag ' + r.statusCls + '">' + esc(r.zText) + '</span>'
-            : '<span class="tag tag--none">—</span>') +
-          '</div></div>';
-        // ★ v1.8.0：冠脉并列深圳 SZ 法，同一测值第二个 Z
-        if (r.alt) {
-          html += '<div class="zrow zrow--alt' + (r.hasValue ? '' : ' zrow--none') + '">' +
-            '<div class="zrow__n">SZ 法 · 深圳' +
-              (r.alt.extrap ? '<span class="zrow__ext">外推</span>' : '') +
-              '<span class="zrow__sub">均值 ' + esc(r.alt.meanText) + '</span></div>' +
-            '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
-            '<div class="zrow__r">' + esc(r.alt.rangeText) + '</div>' +
-            '<div class="zrow__g">' + (r.hasValue
-              ? '<span class="tag ' + r.alt.statusCls + '">' + esc(r.alt.zText) + '</span>'
-              : '<span class="tag tag--none">—</span>') +
-            '</div></div>';
-        }
-      });
+    // ── 逐组回填：每组卡里的结果表 + 组头「N 项已测」──
+    grouped.forEach(function (g, i) {
+      const card = cards[i];
+      if (!card) return;
+      let c = 0;
+      g.rows.forEach(function (r) { if (r.hasValue) c++; });
+      card.querySelector('.pcard__s').textContent = c ? c + ' 项已测' : '';
+      card.querySelector('.pres').innerHTML =
+        '<div class="zrow zrow--head">' +
+          '<div class="zrow__n">参数</div><div class="zrow__v">实测</div>' +
+          '<div class="zrow__r">±2SD 正常范围</div><div class="zrow__g">Z 值</div>' +
+        '</div>' + g.rows.map(pdRowHtml).join('');
     });
-    $('pdList').innerHTML = html;
-
-    // ── ±3SD 阈值表（默认折叠；只列 ±3SD，不重复 ±2SD 与均值）──
-    let rhtml = '';
-    grouped.forEach(function (g) {
-      rhtml += '<div class="pgroup">' + esc(g.title) + '</div>';
-      g.rows.forEach(function (r) {
-        rhtml += '<div class="zrow">' +
-          '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
-            '<span class="zrow__sub">' + esc(r.alphaText) + '</span></div>' +
-          '<div style="flex:2;text-align:right;font-size:12px;color:var(--sub);line-height:1.6">' +
-            '±3SD　' + esc(r.range3Text) + ' ' + esc(r.unit) +
-          '</div></div>';
-        if (r.alt) {
-          rhtml += '<div class="zrow zrow--alt">' +
-            '<div class="zrow__n">SZ 法 · 深圳<span class="zrow__sub">对数尺度 · ' +
-              esc(r.alt.r2Text) + '</span></div>' +
-            '<div style="flex:2;text-align:right;font-size:12px;color:var(--sub);line-height:1.6">' +
-              '±3SD　' + esc(r.alt.range3Text) + ' ' + esc(r.unit) +
-            '</div></div>';
-        }
-      });
-    });
-    $('pdRanges').innerHTML = rhtml;
 
     state.peds = { bsa: Peds.round(bsa, 3), measured: measured, age: $('pdAge').value };
   }
 
   ['pdHeight', 'pdWeight', 'pdAge'].forEach(function (id) {
-    $(id).addEventListener('input', renderPeds);
+    $(id).addEventListener('input', function () {
+      pdSaveProfile();   // 记住本页填过的数，下次进来直接恢复
+      renderPeds();
+    });
   });
 
-  $('pdMore').addEventListener('click', function () {
-    pdMoreOpen = !pdMoreOpen;
-    buildPedsInputs();
+  // ★ 顶部分区导航：页面再长也能一步跳过去（.pnav 自身吸附在顶栏下方）
+  document.querySelectorAll('.pnav__i').forEach(function (b) {
+    b.addEventListener('click', function () {
+      const t = document.getElementById(b.dataset.go);
+      if (!t) return;
+      goToY(t.getBoundingClientRect().top + window.pageYOffset -
+        (parseInt(getComputedStyle(document.documentElement)
+          .getPropertyValue('--appbar-h'), 10) || 52) - 46);
+    });
   });
+
+  // 折叠工具条：全部展开 / 全部收起（选择同样记在本机）
+  $('pdExpandAll').addEventListener('click', function () { pdSetAll(true); });
+  $('pdCollapseAll').addEventListener('click', function () { pdSetAll(false); });
 
   // 新生儿区块：默认随体重自动展开一次，之后由用户手动控制
   $('pdNeoBtn').addEventListener('click', function () {
@@ -25718,19 +26163,20 @@ const MATERIALS = [];
     renderPeds();
   });
 
-  // ±3SD 阈值表默认折叠：±2SD 已在主表「正常范围」列，两处都摊开容易看成两套数
-  $('pdRangesBtn').addEventListener('click', function () {
-    const box = $('pdRanges');
-    const willOpen = box.hidden;
-    box.hidden = !willOpen;
-    this.textContent = willOpen ? '收起 ±3SD 阈值' : '展开 ±3SD 阈值';
+  // 说明与来源：全页解释文字都收在这一块，默认折叠
+  $('pdInfoBtn').addEventListener('click', function () {
+    const b = $('pdInfoBody');
+    const open = b.hidden;
+    b.hidden = !open;
+    this.textContent = open ? '收起说明' : '展开说明';
   });
 
   $('pdClear').addEventListener('click', function () {
     Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
     Object.keys(pdNeoVal).forEach(function (k) { delete pdNeoVal[k]; });
-    pdMoreOpen = false;
-    buildPedsInputs();
+    pdGroupOpen = null;
+    pdRestoreProfile();
+    buildPedsGroups();
     buildNeoInputs();
     renderPeds();
   });
@@ -25753,12 +26199,13 @@ const MATERIALS = [];
     state.measurements = null;
 
     ['pdHeight', 'pdWeight', 'pdAge'].forEach(function (id) { $(id).value = ''; });
+    pdSaveProfile();   // 本页记录也清掉，否则下次进来又把旧身高体重填回去
     Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
     Object.keys(pdNeoVal).forEach(function (k) { delete pdNeoVal[k]; });
-    pdMoreOpen = false;
+    pdGroupOpen = null;
     pdNeoOpen = false;
     pdNeoAuto = false;
-    buildPedsInputs();
+    buildPedsGroups();
     buildNeoInputs();
 
     Object.keys(calcVal).forEach(function (k) { delete calcVal[k]; });
@@ -25875,7 +26322,7 @@ const MATERIALS = [];
     buildCalcInputs();
     renderIndex();
     renderEF();
-    buildPedsInputs();
+    buildPedsGroups();
     buildNeoInputs();
     renderPeds();
     renderCalc();

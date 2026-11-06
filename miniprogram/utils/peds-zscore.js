@@ -105,10 +105,15 @@ const PEDS_Z = {
   ARCHD:  { a: 0.50, mean: 1.36,  sd: 0.19,  unit: 'cm', name: '主动脉弓远端内径' },
   ISTH:   { a: 0.50, mean: 1.25,  sd: 0.18,  unit: 'cm', name: '主动脉峡部内径' },
 
-  // ── 冠状动脉 ───────────────────────────────────────────────
-  LMCA:   { a: 0.45, mean: 2.95,  sd: 0.57,  unit: 'mm', name: '左主干内径' },
-  LAD:    { a: 0.45, mean: 1.90,  sd: 0.34,  unit: 'mm', name: '左前降支近段内径' },
-  RCA:    { a: 0.45, mean: 2.32,  sd: 0.55,  unit: 'mm', name: '右冠状动脉近段内径' },
+  // ── 冠状动脉（不走 PHN！见 3b-3：两套中国儿童方程，对数尺度）────
+  //   ★ 2026-11-06 改：原来这三项挂的是 α=0.45 的幂律系数，但 PHN 数据集
+  //     根本没测冠脉（Lopez 2017 的 21 个结构里没有冠脉），那组数没有可核的
+  //     出处，且与深圳儿童医院小程序的差值可达 1 个 Z。现改为
+  //     「深圳 SZ（Fan 2021）」为主、「四川（王永 2025）」为辅，两篇都能逐字核。
+  LMCA:   { model: 'cor', unit: 'mm', dec: 1, name: '左冠主干内径（LMCA）' },
+  LAD:    { model: 'cor', unit: 'mm', dec: 1, name: '左前降支近段内径（LAD）' },
+  LCX:    { model: 'cor', unit: 'mm', dec: 1, name: '左回旋支近段内径（LCX）' },
+  RCA:    { model: 'cor', unit: 'mm', dec: 1, name: '右冠主干内径（RCA）' },
 
   // ── 肺动脉 ─────────────────────────────────────────────────
   PVSAX:  { a: 0.50, mean: 1.91,  sd: 0.24,  unit: 'cm', name: '肺动脉瓣环短轴内径' },
@@ -277,6 +282,31 @@ const SZ_Z = {
 const SZ_RANGE = { ageMin: 1 / 12, ageMax: 17, bsaMin: 0.23, bsaMax: 1.85 };
 
 /* ------------------------------------------------------------------ *
+ * 3b-4. 四川儿童冠脉方程（2025，n=744，0–18 岁）——冠脉的第二套中国数据
+ *
+ *  王永, 蒋佳颖, 邓燕, 等. 基于 Z 值回归模型诊断儿童冠状动脉病变的研究.
+ *  中国当代儿科杂志. 2025;27(2):176-182. DOI 10.7499/j.issn.1008-8830.2405030
+ *  四川省人民医院，744 名健康儿童建模、251 例川崎病验证，0–18 岁。
+ *
+ *      Y = a_mul × BSA^b   （幂函数，R² 最优、MSE 最小）
+ *      Z = [ ln(实测) − (a + b·ln BSA) ] / RSE
+ *  a / b / RSE 取自原文表 3–6 的幂函数行与式(1)–(4)，四段齐全（含 LCX）。
+ *  ★ 四段都有 → LCX 只有这一套中国方程，故 LCX 行以本表为主行。
+ *  ★ 该文队列在四川，与深圳队列不同源；同一测值两套可差 0.2–0.4 个 Z
+ *    （LAD 2.0 mm、BSA 0.67：SZ −1.6 / 四川 −1.3），不可互比。
+ * ------------------------------------------------------------------ */
+
+const SC_Z = {
+  LMCA: { a: 0.96623, b: 0.358, rse: 0.111616, r2: 0.691, mul: 2.628 },
+  LAD:  { a: 0.64763, b: 0.353, rse: 0.126832, r2: 0.628, mul: 1.911 },
+  LCX:  { a: 0.44340, b: 0.319, rse: 0.145414, r2: 0.609, mul: 1.558 },
+  RCA:  { a: 0.78299, b: 0.378, rse: 0.126883, r2: 0.663, mul: 2.188 },
+};
+
+/** 四川队列覆盖 0–18 岁；原文未给 BSA 上下界，按身高体重可及的 0.18–2.1 标注 */
+const SC_RANGE = { bsaMin: 0.18, bsaMax: 2.10 };
+
+/* ------------------------------------------------------------------ *
  * 2f. 新生儿（0–28 天）体重法 —— 深圳儿童医院 2014
  *  林洲, 夏焙, 许娜, 等. 中华医学超声杂志(电子版), 2014, 11(2): 142-154.
  *  DOI 10.3877/cma.j.issn.1672-6448.2014.02.012（n=288，0–28 d）
@@ -357,12 +387,14 @@ const PEDS_GROUPS = [
   { title: '主动脉', keys: ['ANN', 'ROOT', 'STJ', 'AAO', 'ARCHP', 'ARCHD', 'ISTH'] },
   {
     title: '冠状动脉',
-    keys: ['LMCA', 'LAD', 'RCA'],
-    note: '每项两行：上行 PHN（北美多中心，幂律模型），下行深圳 SZ 法（中国儿童多中心，' +
-      'ln Y = a + b·ln BSA，n=842，1 月龄–17 岁）。两套的人群、模型与离散度都不同，' +
-      '同一测值可差 0.7–1.1 个 Z（如 LAD 2.6 mm、BSA 1.0：PHN +2.06「轻度增大」/ SZ +1.25「正常」），' +
-      '不可互相比较或混用，以报告所依据的那一套判读。SZ 队列不含 0–28 天新生儿，' +
-      'BSA < 0.23 时该行属外推（会标注「外推」）。',
+    keys: ['LMCA', 'LAD', 'LCX', 'RCA'],
+    note: '主行＝深圳 SZ 法（Fan 2021，6 省 9 中心 n=842，1 月龄–17 岁）；次行＝四川 2025' +
+      '（n=744，0–18 岁）。两套都是中国儿童队列，但人群不同，同一测值可差 1 个 Z 以上' +
+      '（LAD 2.6 mm、BSA 1.0：深圳 +1.25 / 四川 +2.43）；LCX 只有四川一套。' +
+      '两者都按 ln 尺度建模，正常范围是乘性区间、上下不对称，' +
+      '不可写成「均值 ± 2SD」。深圳儿童医院自家小程序用的是夏焙团队 2012/2013 方程，' +
+      '与本页两套都不同源，同一测值可再差 0.5–1 个 Z。' +
+      '两套不可跨套比较：同一患儿随访请始终用同一套。',
   },
   { title: '肺动脉', keys: ['PVSAX', 'PVLAX', 'MPA', 'RPA', 'LPA'] },
   { title: '二尖瓣', keys: ['MVAP', 'MVLAT', 'MVA'] },
@@ -648,6 +680,132 @@ function buildCsmcRow(key, def, bsa, measured, hasBsa) {
 }
 
 /**
+ * 冠脉行的主/次两套中国方程（对数线性）
+ *
+ * ★ 2026-11-06 重组：原来主行是「PHN 幂律（α=0.45）」、次行是深圳 SZ。
+ *   PHN 数据集并没有冠脉，那组系数查不到出处；且与深圳儿童医院小程序的
+ *   差值可达 1 个 Z（90 cm/9 kg、LCA 2.2 mm：本页旧值 +0.24，深圳小程序 −0.105）。
+ *   现改为两套都能逐字核原文的中国队列：
+ *     主行 深圳 SZ（Fan 2021，6 省 9 中心 n=842，1 月龄–17 岁）—— 深圳儿童医院牵头
+ *     次行 四川 SC（王永 2025，n=744，0–18 岁，四段齐全）
+ *   LCX 只有四川这套，故 LCX 以四川为主行、无次行。
+ */
+const COR_PRIMARY = { LMCA: 'sz', LAD: 'sz', LCX: 'sc', RCA: 'sz' };
+
+/** 模型表取用：'sz' → SZ_Z，'sc' → SC_Z */
+function corModel(model, key) {
+  return model === 'sz' ? SZ_Z[key] : SC_Z[key];
+}
+
+/**
+ * 统一的对数线性方程求值：Mean = a_mul × BSA^b = exp(a + b·ln BSA)
+ * @returns {{mean,sd,lo2,hi2,lo3,hi3}|null} 单位 mm
+ */
+function logAt(m, bsa) {
+  if (!m || !bsa || bsa <= 0) return null;
+  const mean = Math.exp(m.a + m.b * Math.log(bsa));
+  return {
+    mean: mean,
+    sd: mean * m.rse,                 // 均值处等效线性 SD（只用于显示）
+    lo2: mean * Math.exp(-2 * m.rse),
+    hi2: mean * Math.exp(2 * m.rse),
+    lo3: mean * Math.exp(-3 * m.rse),
+    hi3: mean * Math.exp(3 * m.rse),
+  };
+}
+
+/** Z = [ ln(实测) − ln(预测均值) ] / RSE */
+function logZ(m, t, value) {
+  if (!m || !t || !(value > 0)) return null;
+  return (Math.log(value) - Math.log(t.mean)) / m.rse;
+}
+
+/**
+ * 把一套对数模型渲染成「一行」所需的字段（主行与次行共用）
+ */
+function logView(m, t, raw, hasValue) {
+  const z = (t && hasValue) ? logZ(m, t, raw) : null;
+  const g = gradeZ(z);
+  const rng = function (k) {
+    if (!t) return '—';
+    return fmt(k === 2 ? t.lo2 : t.lo3, 2) + ' – ' + fmt(k === 2 ? t.hi2 : t.hi3, 2);
+  };
+  return {
+    z: z === null ? null : round(z, 2),
+    zText: z === null ? '—' : (z > 0 ? '+' : '') + fmt(z, 2),
+    status: g.level,
+    statusText: g.text,
+    statusCls: g.cls,
+    meanText: t ? fmt(t.mean, 2) + ' mm' : '—',
+    sdText: t ? 'SD ' + fmt(t.sd, 2) + ' mm' : '—',
+    subText: t ? fmt(t.mean, 2) + ' mm' : '—',
+    rangeText: rng(2),
+    range3Text: rng(3),
+    mulText: t ? '×e^±' + fmt(2 * m.rse, 2) : '—',
+    r2Text: 'R² ' + m.r2.toFixed(2),
+    rseText: 'RSE ' + m.rse.toFixed(3),
+  };
+}
+
+/**
+ * 冠脉行：主行 + 一套备行（结构与 PHN 行一致，界面无需新分支）
+ *
+ * 主行字段直接取主模型的 Z / 区间；`alt` 为备模型，界面按老样式渲染第二行。
+ */
+function buildCoronaryRow(key, def, bsa, measured, hasBsa) {
+  const v = pickValue(measured, key);
+  const raw = v.hasValue ? parseFloat(v.raw) : null;
+  const dec = def.dec === undefined ? 1 : def.dec;
+
+  const pm = COR_PRIMARY[key] === 'sc' ? 'sc' : 'sz';
+  const pModel = corModel(pm, key);
+  const pT = (hasBsa && pModel) ? logAt(pModel, bsa) : null;
+  const pView = logView(pModel, pT, raw, v.hasValue);
+
+  const am = pm === 'sz' ? 'sc' : null;
+  const aModel = am ? corModel(am, key) : null;
+  const aT = (hasBsa && aModel) ? logAt(aModel, bsa) : null;
+  const aView = aModel ? logView(aModel, aT, raw, v.hasValue) : null;
+
+  const inRange = function (model, m) {
+    if (!hasBsa) return false;
+    return model === 'sz'
+      ? szInRange(bsa)
+      : (bsa >= SC_RANGE.bsaMin && bsa <= SC_RANGE.bsaMax);
+  };
+
+  return {
+    key: key,
+    name: def.name,
+    unit: def.unit,
+    src: pm,
+    srcText: pm === 'sz' ? 'SZ 法 · 深圳' : '四川 2025',
+    model: 'cor',
+    altLabel: aModel ? '四川 2025' : '',
+    alt: aView ? Object.assign({}, aView, {
+      src: am,
+      srcText: '四川 2025',
+      extrap: !inRange(am, aModel),
+      hasValue: v.hasValue,
+    }) : null,
+    extrap: !inRange(pm, pModel),
+    alphaText: '对数尺度 · ' + pView.rseText,
+    meanText: pView.meanText,
+    sdText: pView.sdText,
+    subText: pView.subText,
+    rangeText: pView.rangeText,
+    range3Text: pView.range3Text,
+    value: v.hasValue ? fmt(raw, dec) : '—',
+    z: pView.z,
+    zText: pView.zText,
+    status: pView.status,
+    statusText: pView.statusText,
+    statusCls: pView.statusCls,
+    hasValue: v.hasValue,
+  };
+}
+
+/**
  * 冠脉行的「并列第二套」：深圳 SZ 法（2021 中国儿童多中心）
  *
  * 结构与主行同形，界面只需在同一行的下一行渲染即可，不必另写分支。
@@ -831,6 +989,12 @@ function buildPedsList(bsa, measured) {
       continue;
     }
 
+    // 冠状动脉（两套中国对数线性方程，主行 + 备行）
+    if (def.model === 'cor') {
+      rows.push(buildCoronaryRow(key, def, bsa, measured, hasBsa));
+      continue;
+    }
+
     // 界面单位 → PHN 原生单位
     // 内径：界面 mm，PHN cm → ÷10
     // 容积：界面 mL = cm³，一致
@@ -869,16 +1033,12 @@ function buildPedsList(bsa, measured) {
     const meanUi = hasBsa ? def.mean * Math.pow(bsa, def.a) * uiScale : null;
     const sdUi = hasBsa ? def.sd * Math.pow(bsa, def.a) * uiScale : null;
 
-    // ★ 冠脉三项并列深圳 SZ 法（v1.8.0）：同一测值、两套方程、两个 Z
-    const alt = (hasBsa || hasValue) ? buildSzAlt(key, bsa, hasBsa, raw, hasValue) : null;
-
     rows.push({
       key: key,
       name: def.name,
       unit: uiUnit,
       src: 'phn',
       srcText: 'PHN',
-      alt: alt,
       // 指数化后的均值（界面单位），用于解释
       alphaText: 'α=' + def.a.toFixed(2),
       meanText: hasBsa ? fmt(meanUi, decOut) + ' ' + uiUnit : '—',
@@ -965,6 +1125,9 @@ module.exports = {
   CSMC_Z,
   SZ_Z,
   SZ_RANGE,
+  SC_Z,
+  SC_RANGE,
+  COR_PRIMARY,
   NEO_Z,
   NEO_RANGE,
   NEO_GROUPS,
@@ -980,6 +1143,9 @@ module.exports = {
   szAt,
   szZ,
   szInRange,
+  logAt,
+  logZ,
+  buildCoronaryRow,
   neoMean,
   neoAt,
   neoZ,

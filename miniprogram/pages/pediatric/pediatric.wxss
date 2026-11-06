@@ -7,3 +7,152 @@
 .footer-btns {
   margin-top: 26rpx;
 }
+
+/* ────────── 顶部分区导航（吸附）──────────
+   ★ 滚动用 JS 的 pageScrollTo，不用 <a href="#…">：
+     微信里 hash 会被路由抢先解析，整页会被打回公式集。 */
+.pnav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  gap: 12rpx;
+  padding: 16rpx 0 18rpx;
+  margin-bottom: 6rpx;
+  background: #f4f6f8;
+}
+
+.pnav__item {
+  flex: 1;
+  text-align: center;
+  font-size: 24rpx;
+  color: var(--brand);
+  background: #fff;
+  border: 1rpx solid var(--line);
+  border-radius: 999rpx;
+  padding: 12rpx 4rpx;
+  line-height: 1.2;
+}
+
+/* 区标题（测量与结果） */
+.sechead {
+  padding: 18rpx 6rpx 14rpx;
+}
+
+.sechead__t {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.sechead__s {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 23rpx;
+  color: var(--sub);
+}
+
+/* 折叠工具条：全部展开 / 全部收起（各人习惯不同，选过的会被记住） */
+.foldbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12rpx;
+  padding: 0 6rpx 14rpx;
+}
+
+.foldbar__i {
+  flex: none;
+  padding: 8rpx 22rpx;
+  border-radius: 999rpx;
+  background: var(--brand-soft, #eaf2fb);
+  color: var(--brand, #1f6fd0);
+  font-size: 23rpx;
+  line-height: 1.3;
+}
+
+.foldbar__h {
+  flex: 1 0 100%;
+  font-size: 21rpx;
+  color: #9aa3ad;
+}
+
+/* ────────── 可折叠的卡片标题 ────────── */
+.card__title--fold {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 18rpx;
+}
+
+.foldtitle {
+  flex: 1;
+  min-width: 0;
+}
+
+.foldstat {
+  font-size: 22rpx;
+  font-weight: 400;
+  color: var(--brand);
+  background: #eef4ff;
+  border-radius: 999rpx;
+  padding: 2rpx 14rpx;
+}
+
+.foldicon {
+  flex: none;
+  font-size: 22rpx;
+  font-weight: 400;
+  color: var(--sub);
+}
+
+/* 每组结果表的表头 */
+.z-row--head {
+  border-bottom: 1rpx solid #e3e6ea;
+  padding-bottom: 14rpx;
+  margin-top: 18rpx;
+}
+
+/* ────────── 已测项一览（结果摘要里逐条列，输入几项就几行）────────── */
+.pd-hit {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #eef1f4;
+}
+
+.pd-hit:last-child {
+  border-bottom: none;
+}
+
+.pd-hit__l {
+  flex: 1;
+  min-width: 0;
+}
+
+.pd-hit__n {
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+.pd-hit__v {
+  margin-top: 4rpx;
+  font-size: 23rpx;
+  color: var(--sub);
+  line-height: 1.45;
+}
+
+.pd-hit__r {
+  flex: none;
+  text-align: right;
+}
+
+.pd-hit__s {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--sub);
+}

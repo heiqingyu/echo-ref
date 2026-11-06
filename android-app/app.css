@@ -467,6 +467,131 @@ html, body {
 }
 
 /* ────────── 儿童 Z 值 ────────── */
+
+/* ── 顶部分区导航：吸附在固定顶栏下方，页面再长也能一步跳过去 ── */
+.pnav {
+  position: sticky;
+  top: calc(var(--appbar-h) + var(--safe-t) + var(--guard-h, 0px));
+  z-index: 30;
+  display: flex;
+  gap: 6px;
+  margin: -4px -2px 12px;
+  padding: 8px 2px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.pnav::-webkit-scrollbar { display: none; }
+.pnav__i {
+  flex: none;
+  margin: 0;
+  padding: 6px 13px;
+  border: 1px solid #d6e2f2;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.pnav__i:active { transform: scale(.96); }
+
+/* 分区小标题（如「测量与结果」） */
+.sechead { margin: 20px 0 10px; padding-left: 2px; }
+.sechead__t { display: block; font-size: 16px; font-weight: 700; color: var(--ink); }
+.sechead__s {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sub);
+}
+
+/* 折叠工具条：全部展开 / 全部收起（各人习惯不同，选过的会被记住） */
+.foldbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+.foldbar__i {
+  flex: none;
+  margin: 0;
+  padding: 5px 12px;
+  border: 1px solid #d6e2f2;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.foldbar__i:active { transform: scale(.96); }
+.foldbar__h {
+  flex: 1 0 100%;
+  font-size: 11px;
+  color: #9aa3ad;
+}
+
+/* ── 组卡：一张卡 = 一组输入框 + 该组 Z 结果 ──
+      改版前输入在上面一大块、结果在下面另一大块，中间隔着空白，
+      填完一项要往下翻很远才看到答案（用户 2026-11-06 反馈）。 */
+.pcard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 14px 8px;
+  margin-bottom: 12px;
+}
+.pcard__h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0 12px;
+  border-bottom: 1px solid #f0f2f4;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.pcard__t {
+  flex: 1;
+  min-width: 0;
+  padding-left: 9px;
+  border-left: 3px solid var(--brand);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.pcard__s { flex: none; font-size: 11.5px; color: var(--brand); }
+.pcard__f { flex: none; font-size: 12px; color: var(--sub); }
+.pcard__b { padding-top: 2px; }
+.pcard__in { padding-top: 2px; }
+.pcard__note {
+  margin: 12px 0 2px;
+  padding: 8px 10px;
+  border-left: 3px solid #d8dde3;
+  border-radius: 0 6px 6px 0;
+  background: #f7f8fa;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--sub);
+}
+
+/* 结果表表头 */
+.zrow--head { padding: 6px 0; border-bottom: 1px solid #e8ebef; }
+.zrow--head .zrow__n,
+.zrow--head .zrow__v,
+.zrow--head .zrow__r,
+.zrow--head .zrow__g { font-size: 11.5px; font-weight: 600; color: var(--sub); }
+
+/* 参考值列的第二行：±3SD（旧版另有独立折叠表，并入同格后取消） */
+.zrow__r3 { display: block; margin-top: 2px; font-size: 10.5px; color: #9aa3ad; }
+
+.phits__t { margin: 14px 0 2px; font-size: 12px; color: var(--sub); }
+
 .pgroup {
   font-size: 14px;
   font-weight: 600;
@@ -2370,3 +2495,25 @@ button.fx-nav__c {
   color: #b91c1c;
 }
 
+
+/* ── 已测项一览（儿童页结果摘要，输入几项列几行）── */
+.phit {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.phit:last-child { border-bottom: none; }
+
+.phit__l { flex: 1; min-width: 0; }
+
+.phit__n { font-size: 14px; color: var(--ink); line-height: 1.45; }
+
+.phit__v { margin-top: 2px; font-size: 11.5px; color: var(--sub); line-height: 1.45; }
+
+.phit__r { flex: none; text-align: right; }
+
+.phit__s { margin-top: 3px; font-size: 11px; color: var(--sub); }

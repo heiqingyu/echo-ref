@@ -293,7 +293,7 @@
     sex: function (v) { state.sex = v; renderIndex(); },
     formula: function (v) { state.formula = v; renderIndex(); },
     standard: function (v) { state.standard = v; renderIndex(); },
-    pdsex: function () { /* 儿童 Z 值不区分性别，仅作记录 */ },
+    pdsex: function (v) { state.pdsex = v; pdSaveProfile(); },  // 不参与算 Z，只记住
     calccollapse: function (v) { calcCollapse = v; renderCalc(); },
     calcsigns: function (v) { calcSigns = v; renderCalc(); },
   };
@@ -3949,29 +3949,96 @@
 
   /* 六、Tab4 儿童 Z 值 */
 
-  // ★ 左房（LAAP）与右室内径（RVDD）放进快速区：儿童超声里房室大小比壁厚更常被问，
-  //   之前快速区只有左室 + 主动脉根部，用户要「其他房室大小」得先展开 36 项才找得到。
-  const QUICK_KEYS = ['LVEDD', 'LVESD', 'LVST', 'LVPWT',
-    'LA4C', 'RA4C', 'RVIDd', 'LVEDV', 'LVESV', 'LVM', 'ROOT'];
-  const MORE_KEYS = Peds.PEDS_FIELDS.filter(function (k) {
-    return QUICK_KEYS.indexOf(k) === -1;
-  });
+  /* ── 儿童页：一组一卡，输入框在上、该组 Z 结果紧随其下（不用上下翻）── */
 
-  const pdVal = {};     // 儿童页测量值（界面单位）
-  let pdMoreOpen = false;
+  const pdVal = {};        // 儿童页测量值（界面单位，冠脉也存这里）
+  let pdGroupOpen = null;  // 组卡折叠状态 { 0: true, 4: true, ... }
 
   // ★ v1.8.1 新生儿（0–28 天）体重法：只认体重，不依赖 BSA
-  const pdNeoVal = {};  // 本组另需自填的 8 项
+  const pdNeoVal = {};     // 本组另需自填的 8 项
   let pdNeoOpen = false;
-  let pdNeoAuto = false;  // 体重进 1.5–5.0 kg 时自动展开一次
+  let pdNeoAuto = false;   // 体重进 1.5–5.0 kg 时自动展开一次
+
+  /**
+   * 展开状态记在本机（localStorage）
+   *
+   * 每个人习惯不一样：有人只看冠脉、有人要全摊开。存「哪些组是展开的」，
+   * 下次进页面照旧，不用每次都重新点一遍。存的键是组下标，组标题改字也不会错位。
+   */
+  const PD_OPEN_KEY = 'echoref:pedsOpen';
+
+  // 首次进入时默认展开的组（其余收起）
+  function pdDefaultOpen() {
+    const o = {};
+    Peds.PEDS_GROUPS.forEach(function (g, i) {
+      o[i] = (g.title === '冠状动脉' || g.title === '左心室结构');
+    });
+    return o;
+  }
+
+  function pdLoadOpen() {
+    const o = pdDefaultOpen();
+    try {
+      const raw = window.localStorage.getItem(PD_OPEN_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        Peds.PEDS_GROUPS.forEach(function (g, i) {
+          if (saved && typeof saved[i] === 'boolean') o[i] = saved[i];
+        });
+      }
+    } catch (e) { /* 读不到 / 解析失败就用默认 */ }
+    return o;
+  }
+
+  function pdSaveOpen() {
+    try {
+      window.localStorage.setItem(PD_OPEN_KEY, JSON.stringify(pdGroupOpen || {}));
+    } catch (e) { /* 存不下就算了，不影响用 */ }
+  }
+
+  /**
+   * 儿童页自己的身高体重 / 年龄 / 性别，记在本机
+   *
+   * ★ 不能用成人页的默认值（170 cm / 65 kg）来预填：儿童页一打开就是这组数，
+   *   等于每次都在给一个不存在的孩子算 Z 值（用户 2026-11-06 反馈）。
+   *   本页只认自己上次填的，没记录就留空。
+   */
+  const PD_PROFILE_KEY = 'echoref:pedsProfile';
+
+  function pdLoadProfile() {
+    try {
+      const raw = window.localStorage.getItem(PD_PROFILE_KEY);
+      if (raw) return JSON.parse(raw) || {};
+    } catch (e) { /* 读不到就当没填过 */ }
+    return {};
+  }
+
+  function pdSaveProfile() {
+    try {
+      window.localStorage.setItem(PD_PROFILE_KEY, JSON.stringify({
+        height: $('pdHeight').value,
+        weight: $('pdWeight').value,
+        age: $('pdAge').value,
+        sex: state.pdsex || 'male',
+      }));
+    } catch (e) { /* 存不下就算了 */ }
+  }
+
+  function pdRestoreProfile() {
+    const pr = pdLoadProfile();
+    if (pr.height) $('pdHeight').value = pr.height;
+    if (pr.weight) $('pdWeight').value = pr.weight;
+    if (pr.age) $('pdAge').value = pr.age;
+    if (pr.sex) { state.pdsex = pr.sex; setSeg('pdsex', pr.sex); }
+  }
 
   /** 参数在界面上的显示单位 */
   function uiUnit(key) {
     return Peds.PEDS_Z[key].unit === 'cm' ? 'mm' : Peds.PEDS_Z[key].unit;
   }
 
-  function buildPedsInputs() {
-    const keys = pdMoreOpen ? QUICK_KEYS.concat(MORE_KEYS) : QUICK_KEYS;
+  /** 一组的输入框（每行两项，与旧版排版一致） */
+  function pdInputRows(keys) {
     let html = '';
     for (let i = 0; i < keys.length; i += 2) {
       html += '<div class="row">';
@@ -3982,14 +4049,45 @@
           '<label class="field__l">' + esc(def.name) + ' / ' + uiUnit(k) + '</label>' +
           '<input class="field__i" type="number" inputmode="decimal" step="0.1" ' +
           'data-pk="' + k + '" placeholder="留空跳过" ' +
-          'value="' + (pdVal[k] !== undefined ? pdVal[k] : '') + '">' +
+          'value="' + (pdVal[k] !== undefined ? esc(pdVal[k]) : '') + '">' +
           '</div>';
       }
       html += '</div>';
     }
-    $('pdInputs').innerHTML = html;
+    return html;
+  }
 
-    $('pdInputs').querySelectorAll('input').forEach(function (inp) {
+  /**
+   * 建 10 张组卡（只在启动 / 清空时调用）
+   *
+   * ★ 输入框只建一次，输入时只刷 .pres 里的结果表 ——
+   *   若每次 input 都重建 input 的 DOM，光标会跳到末尾、手机上直接收键盘，
+   *   数字就没法连着敲了（2026-11-06 改版时的硬约束）。
+   */
+  function buildPedsGroups() {
+    const box = $('pdGroups');
+    if (!box) return;
+    if (!pdGroupOpen) pdGroupOpen = pdLoadOpen();
+
+    let html = '';
+    Peds.PEDS_GROUPS.forEach(function (g, i) {
+      const open = !!pdGroupOpen[i];
+      html += '<div class="pcard" data-g="' + i + '">' +
+        '<div class="pcard__h">' +
+          '<span class="pcard__t">' + esc(g.title) + '</span>' +
+          '<span class="pcard__s"></span>' +
+          '<span class="pcard__f">' + (open ? '收起' : '展开') + '</span>' +
+        '</div>' +
+        '<div class="pcard__b"' + (open ? '' : ' hidden') + '>' +
+          (g.note ? '<div class="note pcard__note">' + esc(g.note) + '</div>' : '') +
+          '<div class="pcard__in">' + pdInputRows(g.keys) + '</div>' +
+          '<div class="pres"></div>' +
+        '</div>' +
+      '</div>';
+    });
+    box.innerHTML = html;
+
+    box.querySelectorAll('input[data-pk]').forEach(function (inp) {
       inp.addEventListener('input', function () {
         const k = inp.dataset.pk;
         if (inp.value === '') delete pdVal[k];
@@ -3998,12 +4096,73 @@
       });
     });
 
-    $('pdMore').textContent = pdMoreOpen
-      ? '收起其他参数'
-      : '展开其他参数（共 ' + Peds.PEDS_FIELDS.length + ' 项）';
+    box.querySelectorAll('.pcard__h').forEach(function (hd) {
+      hd.addEventListener('click', function () {
+        const i = Number(hd.parentNode.dataset.g);
+        pdGroupOpen[i] = !pdGroupOpen[i];
+        hd.parentNode.querySelector('.pcard__b').hidden = !pdGroupOpen[i];
+        hd.querySelector('.pcard__f').textContent = pdGroupOpen[i] ? '收起' : '展开';
+        pdSaveOpen();   // 记住这次选择，下次进页面照旧
+      });
+    });
   }
 
-  /* ── ★ v1.8.1 新生儿体重法（深圳 2014，17 项）───────────────── */
+  /** 按当前 pdGroupOpen 刷新折叠外观（不重建 DOM，输入内容与焦点都不受影响） */
+  function pdApplyOpen() {
+    const box = $('pdGroups');
+    if (!box) return;
+    box.querySelectorAll('.pcard').forEach(function (c) {
+      const open = !!pdGroupOpen[Number(c.dataset.g)];
+      c.querySelector('.pcard__b').hidden = !open;
+      c.querySelector('.pcard__f').textContent = open ? '收起' : '展开';
+    });
+  }
+
+  /** 全部展开 / 全部收起（同样会记住） */
+  function pdSetAll(open) {
+    if (!pdGroupOpen) pdGroupOpen = pdLoadOpen();
+    Peds.PEDS_GROUPS.forEach(function (g, i) { pdGroupOpen[i] = open; });
+    pdSaveOpen();
+    pdApplyOpen();
+  }
+
+  /**
+   * 一行 Z 结果（含冠脉的四川次行）
+   * 参考值列同时给 ±2SD 与 ±3SD —— 旧版另挂一张「±3SD 阈值表」，同一组数被拆到
+   * 两处、还要来回折叠，正是「数据东一块西一块」的来源；并进同一格后可删掉那张表。
+   */
+  function pdRowHtml(r) {
+    const tag = r.model === 'cor' ? ' data-cor="1"' : '';   // 对数尺度行：区间乘性、中点≠均值
+    let h = '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '"' + tag + '>' +
+      '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
+        '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span></div>' +
+      '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
+      '<div class="zrow__r">' + esc(r.rangeText) +
+        '<span class="zrow__r3">±3SD ' + esc(r.range3Text) + '</span></div>' +
+      '<div class="zrow__g">' + (r.hasValue
+        ? '<span class="tag ' + r.statusCls + '">' + esc(r.zText) + '</span>'
+        : '<span class="tag tag--none">—</span>') +
+      '</div></div>';
+
+    // ★ 冠脉并列第二套中国方程：同一测值第二个 Z
+    if (r.alt) {
+      h += '<div class="zrow zrow--alt' + (r.hasValue ? '' : ' zrow--none') + '" data-cor="1">' +
+        '<div class="zrow__n">' + esc(r.altLabel) +
+          (r.alt.extrap ? '<span class="zrow__ext">外推</span>' : '') +
+          '<span class="zrow__sub">均值 ' + esc(r.alt.subText) + ' · ' +
+            esc(r.alt.r2Text) + '</span></div>' +
+        '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
+        '<div class="zrow__r">' + esc(r.alt.rangeText) +
+          '<span class="zrow__r3">±3SD ' + esc(r.alt.range3Text) + '</span></div>' +
+        '<div class="zrow__g">' + (r.hasValue
+          ? '<span class="tag ' + r.alt.statusCls + '">' + esc(r.alt.zText) + '</span>'
+          : '<span class="tag tag--none">—</span>') +
+        '</div></div>';
+    }
+    return h;
+  }
+
+  /* ── 新生儿体重法（深圳 2014，17 项）────────────────────────── */
 
   /** 本组需自填的 8 项；其余 9 项自动沿用上方同名测值（ARD←ANN、PA←MPA…） */
   function buildNeoInputs() {
@@ -4050,16 +4209,20 @@
     const tooOld = ageDays > 28;
     const warn = $('pdNeoWarn');
     if (tooOld) {
+      // ★ 整组停用时只留这一句：标题与建模说明都没意义，别再占屏（用户 2026-11-06 反馈）
       card.hidden = false;
+      $('pdNeoHead').hidden = true;
+      $('pdNeoBtn').hidden = true;
       warn.hidden = false;
       warn.textContent = '⚠ 年龄 ' + (ageDays >= 60 ? (ageDays / 365.25).toFixed(1) + ' 岁'
           : Math.round(ageDays) + ' 天') +
         '，已超出新生儿期（0–28 天）。本组方程只按体重建模、无年龄项，' +
         '套用会把年龄大的小体重患儿算成正常，故整组停用。';
       $('pdNeoBody').hidden = true;
-      $('pdNeoBtn').textContent = '已停用（年龄超出 0–28 天）';
       return;
     }
+    $('pdNeoHead').hidden = false;
+    $('pdNeoBtn').hidden = false;
     $('pdNeoBtn').disabled = false;
 
     const extrap = w < Peds.NEO_RANGE.wMin || w > Peds.NEO_RANGE.wMax;
@@ -4080,7 +4243,7 @@
     const neo = Object.assign({}, pdVal, pdNeoVal);
     const groups = Peds.buildNeoGrouped(w, neo);
 
-    let html = '<div class="zrow zrow--neo" style="border-bottom:1px solid #e3e6ea;color:#6b7280;font-weight:600">' +
+    let html = '<div class="zrow zrow--neo zrow--head">' +
       '<div class="zrow__n">参数</div><div class="zrow__v">实测</div>' +
       '<div class="zrow__r">±2SD 正常范围</div><div class="zrow__g">Z 值</div></div>';
 
@@ -4092,7 +4255,8 @@
             (r.fromText ? '<span class="zrow__ext">' + esc(r.fromText) + '</span>' : '') +
             '<span class="zrow__sub">均值 ' + esc(r.subText) + ' · ' + esc(r.r2Text) + '</span></div>' +
           '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
-          '<div class="zrow__r">' + esc(r.rangeText) + '</div>' +
+          '<div class="zrow__r">' + esc(r.rangeText) +
+            '<span class="zrow__r3">±3SD ' + esc(r.range3Text) + '</span></div>' +
           '<div class="zrow__g">' + (r.hasValue
             ? '<span class="tag ' + r.statusCls + '">' + esc(r.zText) + '</span>'
             : '<span class="tag tag--none">—</span>') +
@@ -4109,14 +4273,11 @@
     const valid = h > 30 && h < 220 && w > 1 && w < 150;
     const bsa = valid ? Peds.bsaHaycock(h, w) : 0;
 
-    // ★ v1.8.1 新生儿体重法只依赖体重，故在 BSA 校验之前先渲染
+    // ★ 新生儿体重法只依赖体重，故在 BSA 校验之前先渲染
     renderNeo((w > 0 && w < 150) ? w : 0, age);
 
     $('pdBsa').textContent = valid ? bsa.toFixed(2) : '—';
     $('pdBmi').textContent = valid ? Core.bmi(h, w).toFixed(1) : '—';
-    $('pdDesc').textContent = valid
-      ? '体表面积 BSA = ' + bsa.toFixed(2) + ' m²　·　|Z| ≤ 2 视为正常'
-      : '请先填写身高体重';
 
     // 警告
     const warns = [];
@@ -4128,9 +4289,15 @@
     }
     $('pdWarn').innerHTML = warns.map(function (t) { return '⚠ ' + esc(t); }).join('<br>');
 
+    const box = $('pdGroups');
+    const cards = box ? box.querySelectorAll('.pcard') : [];
+
     if (!valid) {
-      $('pdList').innerHTML = '<div class="note">请先填写有效的身高体重（30–220 cm / 1–150 kg）。</div>';
-      $('pdRanges').innerHTML = '';
+      cards.forEach(function (c) {
+        c.querySelector('.pcard__s').textContent = '';
+        c.querySelector('.pres').innerHTML =
+          '<div class="note">先填身高与体重算出 BSA，本组即显示 Z 值与正常范围。</div>';
+      });
       $('pdFuncCard').hidden = true;
       $('pdSumCard').hidden = true;
       state.peds = null;
@@ -4178,7 +4345,7 @@
         '<div class="kv__v">' + func.SV + '<span class="kv__u">mL</span></div></div>';
       $('pdFuncNote').textContent =
         '推算的 EDV ' + func.EDV + ' mL / ESV ' + func.ESV +
-        ' mL 已代入下方「左心室容积与质量」组的 Z 值对照（未手动填容积时）。';
+        ' mL 已代入「左心室容积与质量」组的 Z 值对照（未手动填容积时）。';
     } else {
       $('pdFuncCard').hidden = true;
     }
@@ -4207,14 +4374,41 @@
           '</b>（' + esc(worst.statusText) + '）'
         : '';
 
+      // ★ 已测项一览：输入几项就列几行，按 |Z| 降序（原来只报偏离最大那一条）
+      const hits = [];
+      grouped.forEach(function (g) {
+        g.rows.forEach(function (r) {
+          if (!r.hasValue) return;
+          hits.push({
+            name: r.name, group: g.title,
+            valueText: r.value + (r.unit ? ' ' + r.unit : ''),
+            zText: r.zText, zAbs: r.z === null ? -1 : Math.abs(r.z),
+            statusText: r.statusText, statusCls: r.statusCls,
+            altLabel: r.altLabel || '', altText: r.alt ? r.alt.zText : '',
+          });
+        });
+      });
+      hits.sort(function (a, b) { return b.zAbs - a.zAbs; });
+      $('pdHits').innerHTML = hits.length
+        ? '<div class="phits__t">已测项（按偏离程度排序，共 ' + hits.length + ' 项）</div>' +
+          hits.map(function (x) {
+            return '<div class="phit">' +
+              '<div class="phit__l"><div class="phit__n">' + esc(x.name) + '</div>' +
+              '<div class="phit__v">' + esc(x.group) + ' · 实测 ' + esc(x.valueText) +
+              (x.altText ? '　次套 ' + esc(x.altLabel) + ' ' + esc(x.altText) : '') + '</div></div>' +
+              '<div class="phit__r"><span class="tag ' + x.statusCls + '">' + esc(x.zText) + '</span>' +
+              '<div class="phit__s">' + esc(x.statusText) + '</div></div></div>';
+          }).join('')
+        : '';
+
       // ★ v1.8.0：冠脉两法若一法异常、一法正常，必须点明，否则用户会以为矛盾
       const disc = [];
       grouped.forEach(function (g) {
         g.rows.forEach(function (r) {
           if (!r.alt || !r.hasValue || r.z === null || r.alt.z === null) return;
           if ((Math.abs(r.z) > 2) !== (Math.abs(r.alt.z) > 2)) {
-            disc.push(esc(r.name) + '（PHN ' + esc(r.zText) + ' ' + esc(r.statusText) +
-              ' / SZ ' + esc(r.alt.zText) + ' ' + esc(r.alt.statusText) + '）');
+            disc.push(esc(r.name) + '（深圳 ' + esc(r.zText) + ' ' + esc(r.statusText) +
+              ' / 四川 ' + esc(r.alt.zText) + ' ' + esc(r.alt.statusText) + '）');
           }
         });
       });
@@ -4226,72 +4420,44 @@
       $('pdSumCard').hidden = true;
     }
 
-    // ── Z 值表 ──
-    let html = '';
-    grouped.forEach(function (g) {
-      html += '<div class="pgroup">' + esc(g.title) + '</div>';
-      if (g.note) html += '<div class="pnote">' + esc(g.note) + '</div>';
-      g.rows.forEach(function (r) {
-        html += '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '">' +
-          '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
-            '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span></div>' +
-          '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
-          '<div class="zrow__r">' + esc(r.rangeText) + '</div>' +
-          '<div class="zrow__g">' + (r.hasValue
-            ? '<span class="tag ' + r.statusCls + '">' + esc(r.zText) + '</span>'
-            : '<span class="tag tag--none">—</span>') +
-          '</div></div>';
-        // ★ v1.8.0：冠脉并列深圳 SZ 法，同一测值第二个 Z
-        if (r.alt) {
-          html += '<div class="zrow zrow--alt' + (r.hasValue ? '' : ' zrow--none') + '">' +
-            '<div class="zrow__n">SZ 法 · 深圳' +
-              (r.alt.extrap ? '<span class="zrow__ext">外推</span>' : '') +
-              '<span class="zrow__sub">均值 ' + esc(r.alt.meanText) + '</span></div>' +
-            '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
-            '<div class="zrow__r">' + esc(r.alt.rangeText) + '</div>' +
-            '<div class="zrow__g">' + (r.hasValue
-              ? '<span class="tag ' + r.alt.statusCls + '">' + esc(r.alt.zText) + '</span>'
-              : '<span class="tag tag--none">—</span>') +
-            '</div></div>';
-        }
-      });
+    // ── 逐组回填：每组卡里的结果表 + 组头「N 项已测」──
+    grouped.forEach(function (g, i) {
+      const card = cards[i];
+      if (!card) return;
+      let c = 0;
+      g.rows.forEach(function (r) { if (r.hasValue) c++; });
+      card.querySelector('.pcard__s').textContent = c ? c + ' 项已测' : '';
+      card.querySelector('.pres').innerHTML =
+        '<div class="zrow zrow--head">' +
+          '<div class="zrow__n">参数</div><div class="zrow__v">实测</div>' +
+          '<div class="zrow__r">±2SD 正常范围</div><div class="zrow__g">Z 值</div>' +
+        '</div>' + g.rows.map(pdRowHtml).join('');
     });
-    $('pdList').innerHTML = html;
-
-    // ── ±3SD 阈值表（默认折叠；只列 ±3SD，不重复 ±2SD 与均值）──
-    let rhtml = '';
-    grouped.forEach(function (g) {
-      rhtml += '<div class="pgroup">' + esc(g.title) + '</div>';
-      g.rows.forEach(function (r) {
-        rhtml += '<div class="zrow">' +
-          '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
-            '<span class="zrow__sub">' + esc(r.alphaText) + '</span></div>' +
-          '<div style="flex:2;text-align:right;font-size:12px;color:var(--sub);line-height:1.6">' +
-            '±3SD　' + esc(r.range3Text) + ' ' + esc(r.unit) +
-          '</div></div>';
-        if (r.alt) {
-          rhtml += '<div class="zrow zrow--alt">' +
-            '<div class="zrow__n">SZ 法 · 深圳<span class="zrow__sub">对数尺度 · ' +
-              esc(r.alt.r2Text) + '</span></div>' +
-            '<div style="flex:2;text-align:right;font-size:12px;color:var(--sub);line-height:1.6">' +
-              '±3SD　' + esc(r.alt.range3Text) + ' ' + esc(r.unit) +
-            '</div></div>';
-        }
-      });
-    });
-    $('pdRanges').innerHTML = rhtml;
 
     state.peds = { bsa: Peds.round(bsa, 3), measured: measured, age: $('pdAge').value };
   }
 
   ['pdHeight', 'pdWeight', 'pdAge'].forEach(function (id) {
-    $(id).addEventListener('input', renderPeds);
+    $(id).addEventListener('input', function () {
+      pdSaveProfile();   // 记住本页填过的数，下次进来直接恢复
+      renderPeds();
+    });
   });
 
-  $('pdMore').addEventListener('click', function () {
-    pdMoreOpen = !pdMoreOpen;
-    buildPedsInputs();
+  // ★ 顶部分区导航：页面再长也能一步跳过去（.pnav 自身吸附在顶栏下方）
+  document.querySelectorAll('.pnav__i').forEach(function (b) {
+    b.addEventListener('click', function () {
+      const t = document.getElementById(b.dataset.go);
+      if (!t) return;
+      goToY(t.getBoundingClientRect().top + window.pageYOffset -
+        (parseInt(getComputedStyle(document.documentElement)
+          .getPropertyValue('--appbar-h'), 10) || 52) - 46);
+    });
   });
+
+  // 折叠工具条：全部展开 / 全部收起（选择同样记在本机）
+  $('pdExpandAll').addEventListener('click', function () { pdSetAll(true); });
+  $('pdCollapseAll').addEventListener('click', function () { pdSetAll(false); });
 
   // 新生儿区块：默认随体重自动展开一次，之后由用户手动控制
   $('pdNeoBtn').addEventListener('click', function () {
@@ -4299,19 +4465,20 @@
     renderPeds();
   });
 
-  // ±3SD 阈值表默认折叠：±2SD 已在主表「正常范围」列，两处都摊开容易看成两套数
-  $('pdRangesBtn').addEventListener('click', function () {
-    const box = $('pdRanges');
-    const willOpen = box.hidden;
-    box.hidden = !willOpen;
-    this.textContent = willOpen ? '收起 ±3SD 阈值' : '展开 ±3SD 阈值';
+  // 说明与来源：全页解释文字都收在这一块，默认折叠
+  $('pdInfoBtn').addEventListener('click', function () {
+    const b = $('pdInfoBody');
+    const open = b.hidden;
+    b.hidden = !open;
+    this.textContent = open ? '收起说明' : '展开说明';
   });
 
   $('pdClear').addEventListener('click', function () {
     Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
     Object.keys(pdNeoVal).forEach(function (k) { delete pdNeoVal[k]; });
-    pdMoreOpen = false;
-    buildPedsInputs();
+    pdGroupOpen = null;
+    pdRestoreProfile();
+    buildPedsGroups();
     buildNeoInputs();
     renderPeds();
   });
@@ -4334,12 +4501,13 @@
     state.measurements = null;
 
     ['pdHeight', 'pdWeight', 'pdAge'].forEach(function (id) { $(id).value = ''; });
+    pdSaveProfile();   // 本页记录也清掉，否则下次进来又把旧身高体重填回去
     Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
     Object.keys(pdNeoVal).forEach(function (k) { delete pdNeoVal[k]; });
-    pdMoreOpen = false;
+    pdGroupOpen = null;
     pdNeoOpen = false;
     pdNeoAuto = false;
-    buildPedsInputs();
+    buildPedsGroups();
     buildNeoInputs();
 
     Object.keys(calcVal).forEach(function (k) { delete calcVal[k]; });
@@ -4459,7 +4627,7 @@
     buildCalcInputs();
     renderIndex();
     renderEF();
-    buildPedsInputs();
+    buildPedsGroups();
     buildNeoInputs();
     renderPeds();
     renderCalc();

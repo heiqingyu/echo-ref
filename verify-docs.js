@@ -239,22 +239,119 @@ function check(name, ok, detail) {
   await new Promise((r) => setTimeout(r, 400));
   check('切到儿童页后 page-peds 可见',
     (await c.evalJs('!document.getElementById("page-peds").hidden')) === true);
-  const zInputs = await c.evalJs('document.querySelectorAll("#pdInputs input").length');
+  const zInputs = await c.evalJs('document.querySelectorAll("#pdGroups input").length');
   check('儿童 Z 值输入项已生成', zInputs > 3, zInputs + ' 项');
+
+  // ★ 儿童页不该被成人默认 170 cm / 65 kg 预填（用户 2026-11-06 反馈）
+  const pdBlank = await c.evalJs(
+    'JSON.stringify({h:document.getElementById("pdHeight").value,' +
+    'w:document.getElementById("pdWeight").value})');
+  check('儿童页启动不预填成人默认身高体重', pdBlank === '{"h":"","w":""}', pdBlank);
+
+  // ★ 2026-11-06 版式重构：一组一张卡（输入与该组结果同屏）+ 顶部分区导航
+  const pdLayout = await c.evalJs(`(function(){
+    return JSON.stringify({
+      nav: document.querySelectorAll('#page-peds .pnav__i').length,
+      cards: document.querySelectorAll('#pdGroups .pcard').length,
+      headFirst: document.querySelectorAll('#pdGroups .pres .zrow--head').length,
+    });
+  })()`);
+  const L = JSON.parse(pdLayout);
+  // 新生儿不单列（只是末尾一张小卡，且常常停用）
+  check('儿童页顶部分区导航 4 项', L.nav === 4, pdLayout);
+  check('按 PEDS_GROUPS 生成 10 张组卡', L.cards === 10, pdLayout);
+  check('未填 BSA 时组卡只给提示、不出表', L.headFirst === 0, pdLayout);
+
   // 录入身高体重年龄
   await set('pdHeight', 110); await set('pdWeight', 19); await set('pdAge', 5);
   await new Promise((r) => setTimeout(r, 600));
-  const zRows = await c.evalJs('document.querySelectorAll("#pdList > *").length');
-  check('Z 值结果行已渲染', zRows > 3, zRows + ' 行');
+  const pdMemo = await c.evalJs('window.localStorage.getItem("echoref:pedsProfile")');
+  check('身高体重写入本页记录（下次进入恢复）',
+    pdMemo && JSON.parse(pdMemo).height === '110', pdMemo);
+
+  const zRows = await c.evalJs(
+    'document.querySelectorAll("#pdGroups .pres .zrow:not(.zrow--head)").length');
+  // 41 项 + 冠脉 3 条四川次行（LCX 无次行）= 44
+  check('Z 值结果行已渲染', zRows === 44, zRows + ' 行');
+  const zHead = await c.evalJs('document.querySelectorAll("#pdGroups .pres .zrow--head").length');
+  check('10 张组卡各出一张表头', zHead === 10, zHead + ' 张');
   // 儿童 Z 值行同样须带英文缩写
   const zAbbr = await c.evalJs(
-    '[...document.querySelectorAll("#pdList .zrow__n")].filter(function(e){' +
-    'return /\uff08[A-Za-z]/.test(e.textContent);}).length');
-  check('Z 值行均带英文缩写', zAbbr === 40, zAbbr + ' / 40 行');
+    '[...document.querySelectorAll("#pdGroups .pres .zrow:not(.zrow--alt) .zrow__n")]' +
+    '.filter(function(e){return /\uff08[A-Za-z]/.test(e.textContent);}).length');
+  // 41 个主行（冠脉的「四川 2025」次行没有缩写，不计入）
+  check('Z 值行均带英文缩写', zAbbr === 41, zAbbr + ' / 41 行');
+
+  // ★ 输入框与该组结果必须在同一张卡里（改版前输入一大块、结果另一大块）
+  const pdPair = await c.evalJs(`(function(){
+    var bad = [];
+    [...document.querySelectorAll('#pdGroups .pcard')].forEach(function (c) {
+      var n = c.querySelectorAll('.pcard__in input').length;
+      var z = c.querySelectorAll('.pres .zrow').length;
+      if (!n || !z) bad.push(c.dataset.g + ':' + n + '/' + z);
+    });
+    return bad.join(';');
+  })()`);
+  check('每张组卡同时含输入框与该组结果', pdPair === '', pdPair || '(10/10)');
+
+  // 折叠：点组头收起 / 再点展开
+  const foldSeq = await c.evalJs(`(function(){
+    var c = document.querySelectorAll('#pdGroups .pcard')[0];
+    var h = c.querySelector('.pcard__h'), b = c.querySelector('.pcard__b');
+    var before = b.hidden;
+    h.click(); var after = b.hidden;
+    h.click(); var back = b.hidden;
+    return JSON.stringify({before: before, after: after, back: back});
+  })()`);
+  const fs2 = JSON.parse(foldSeq);
+  check('组卡可折叠：点一次收起、再点展开',
+    fs2.before === false && fs2.after === true && fs2.back === false, foldSeq);
+
+  // ★ 展开/收起状态要记住（每个人习惯不同，下次进入不该回到默认）
+  const foldMemo = await c.evalJs(`(function(){
+    var KEY = 'echoref:pedsOpen';
+    var raw0 = window.localStorage.getItem(KEY);
+    document.getElementById('pdExpandAll').click();
+    var allOpen = [...document.querySelectorAll('#pdGroups .pcard__b')].filter(function(b){
+      return !b.hidden; }).length;
+    var savedAll = window.localStorage.getItem(KEY);
+    document.getElementById('pdCollapseAll').click();
+    var allShut = [...document.querySelectorAll('#pdGroups .pcard__b')].filter(function(b){
+      return b.hidden; }).length;
+    document.getElementById('pdExpandAll').click();
+    return JSON.stringify({
+      raw0: raw0, allOpen: allOpen, allShut: allShut,
+      saved: savedAll ? savedAll.split('true').length - 1 : -1
+    });
+  })()`);
+  const fm = JSON.parse(foldMemo);
+  check('「全部展开」一次打开 10 组', fm.allOpen === 10, foldMemo);
+  check('「全部收起」一次收起 10 组', fm.allShut === 10, foldMemo);
+  check('展开状态写入 localStorage（10 组）', fm.saved === 10, foldMemo);
+
+  // 说明与来源默认折叠，点按钮展开
+  const infoSeq = await c.evalJs(`(function(){
+    var b = document.getElementById('pdInfoBody');
+    var before = b.hidden;
+    document.getElementById('pdInfoBtn').click();
+    var after = b.hidden;
+    document.getElementById('pdInfoBtn').click();
+    return JSON.stringify({before: before, after: after});
+  })()`);
+  const is2 = JSON.parse(infoSeq);
+  check('说明与来源默认折叠、可展开', is2.before === true && is2.after === false, infoSeq);
+
+  // 顶部分区导航：点「说明」应滚到页面下方
+  await c.evalJs('document.querySelector(\'#page-peds .pnav__i[data-go="pdInfo"]\').click()');
+  await new Promise((r) => setTimeout(r, 700));
+  const navY = await c.evalJs('window.scrollY');
+  check('点顶部分区导航可滚到对应区块', navY > 400, navY + ' px');
+  await c.evalJs('window.scrollTo(0, 0)');
+  await new Promise((r) => setTimeout(r, 200));
 
   // ★ 儿童页必须列出左房与右室（用户反馈：原来只有左室大小，其他房室没有）
   const pedsKamp = await c.evalJs(`(function(){
-    var ns = [...document.querySelectorAll('#pdList .zrow__n')];
+    var ns = [...document.querySelectorAll('#pdGroups .pres .zrow__n')];
     var keys = ['LA4C', 'RA4C', 'RVIDd', 'RVIDs', 'LAAP', 'RVDD', 'RVAWd'];
     var hit = 0;
     ns.forEach(function (e) {
@@ -264,31 +361,30 @@ function check(name, ok, detail) {
     });
     return JSON.stringify({
       hit: hit,
-      note: document.querySelectorAll('#pdList .pnote').length
+      note: document.querySelectorAll('#pdGroups .pcard__note').length
     });
   })()`);
   const pk = JSON.parse(pedsKamp);
   check('儿童页列出左房与右室 7 项', pk.hit === 7, pedsKamp);
-  // v1.8.0：冠脉组也加了「PHN / 深圳 SZ 双法」说明 → 两条 pnote
+  // 左房与右心组 + 冠脉组各带一条组内来源说明
   check('左房与右心组 + 冠脉组各带一条来源说明', pk.note === 2, pedsKamp);
 
   // ★ 回归：内径的「均值」必须与「±2SD 范围」同量级
   //   v1.6.8 之前均值漏了 cm→mm 的 ×10，同一行出现「均值 2.0 mm」与「16.4–23.1 mm」
   const midMismatch = await c.evalJs(`(function(){
     var bad = [];
-    [...document.querySelectorAll('#pdList .zrow')].forEach(function (r) {
+    [...document.querySelectorAll('#pdGroups .pres .zrow')].forEach(function (r) {
+      // 冠脉行是对数尺度的乘性区间，中点本来就不等于均值，跳过
+      if (r.dataset.cor) return;
       var sub = r.querySelector('.zrow__sub');
       var rg = r.querySelector('.zrow__r');
       if (!sub || !rg) return;
-      // v1.8.0：SZ 行是对数尺度的乘性区间，中点本来就不等于均值，跳过
-      var nm = r.querySelector('.zrow__n');
-      if (nm && nm.textContent.indexOf('SZ 法') >= 0) return;
       var t = sub.textContent;
       var i = t.indexOf('均值');
       if (i < 0) return;
       var mid = parseFloat(t.slice(i + 2).trim().split(' ')[0]);
-      var b = rg.textContent.split('–');
-      if (b.length < 2) return;
+      // 参考值列现在并入了 ±3SD 次行，比对 ±2SD 时要切掉
+      var b = rg.textContent.split('±3SD')[0].split('–');
       var lo = parseFloat(b[0]);
       var hi = parseFloat(b[1]);
       if (!isFinite(mid) || !isFinite(lo) || !isFinite(hi)) return;
@@ -298,22 +394,36 @@ function check(name, ok, detail) {
   })()`);
   check('每行均值与 ±2SD 区间同单位', midMismatch === '', midMismatch || '(全部一致)');
 
-  // ±3SD 表默认折叠、只列 ±3SD（不再与主表重复 ±2SD）
-  const rngInit = await c.evalJs('document.getElementById("pdRanges").hidden');
-  check('±3SD 阈值表默认折叠', rngInit === true, String(rngInit));
-  await c.evalJs('document.getElementById("pdRangesBtn").click()');
-  await new Promise((r) => setTimeout(r, 200));
-  const rngOpen = await c.evalJs(
-    'JSON.stringify({h:document.getElementById("pdRanges").hidden,' +
-    'n:document.querySelectorAll("#pdRanges .zrow").length,' +
-    'has2:document.getElementById("pdRanges").textContent.indexOf("±2SD")>=0})');
-  const ro3 = JSON.parse(rngOpen);
-  // 40 项 + 冠脉 3 条 SZ 行（v1.8.0）= 43
-  check('点开后展开 ±3SD 表（40 项 + 3 条 SZ 行）', ro3.h === false && ro3.n === 43, rngOpen);
-  check('±3SD 表不再重复 ±2SD', ro3.has2 === false, rngOpen);
-  await c.evalJs('document.getElementById("pdRangesBtn").click()');
+  // ±3SD 并入参考值列（旧版另有独立折叠表，同组数被拆两处）
+  const r3n = await c.evalJs(
+    'document.querySelectorAll("#pdGroups .pres .zrow__r3").length');
+  check('±3SD 并入参考值列（41 项 + 3 条四川次行）', r3n === 44, r3n + ' 条');
+  check('不再有独立的 ±3SD 折叠表',
+    (await c.evalJs('document.getElementById("pdRanges") === null')) === true);
+
   const pdBsa = await c.evalJs('document.getElementById("pdBsa").textContent');
   check('儿童 BSA 已算出', pdBsa && /\d\.\d+/.test(pdBsa), pdBsa);
+
+  // ★ 新生儿超出 0–28 天：整组停用，只留一句提示（不再摆标题与建模说明）
+  await set('pdHeight', 75); await set('pdWeight', 7.5); await set('pdAge', 0.2);
+  await new Promise((r) => setTimeout(r, 500));
+  const neo = await c.evalJs(`(function(){
+    return JSON.stringify({
+      card: !document.getElementById('pdNeoCard').hidden,
+      head: document.getElementById('pdNeoHead').hidden,
+      btn: document.getElementById('pdNeoBtn').hidden,
+      body: document.getElementById('pdNeoBody').hidden,
+      txt: document.getElementById('pdNeoWarn').textContent.indexOf('已超出新生儿期') >= 0
+    });
+  })()`);
+  const nv = JSON.parse(neo);
+  check('超龄时新生儿卡仍出现（给一句说明）', nv.card === true, neo);
+  check('超龄时隐藏标题与建模说明', nv.head === true, neo);
+  check('超龄时不出「展开」按钮', nv.btn === true, neo);
+  check('超龄时结果表收起', nv.body === true, neo);
+  check('超龄只留「已超出新生儿期」一句', nv.txt === true, neo);
+  await set('pdHeight', 110); await set('pdWeight', 19); await set('pdAge', 5);
+  await new Promise((r) => setTimeout(r, 300));
 
   console.log('\n【三·二】节段划分页（室壁划分，APK 也打这一份）');
   await c.evalJs('document.querySelector(\'.tab[data-tab="segments"]\').click()');

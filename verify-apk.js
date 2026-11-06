@@ -368,8 +368,10 @@ const REQUIRED_IDS = [
   'calcGroups', 'calcClear', 'calcBsaNote', 'calcIndex', 'calcList', 'calcDetail', 'calcBack',
   'calcRefs', 'calcRefList',
   'efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd', 'efResult', 'efKv', 'efMark', 'efGrade',
-  'pdHeight', 'pdWeight', 'pdAge', 'pdBsa', 'pdWarn', 'pdInputs', 'pdMore',
-  'pdClear', 'pdSumCard', 'pdSumV', 'pdList', 'pdRanges',
+  'pdHeight', 'pdWeight', 'pdAge', 'pdBsa', 'pdWarn', 'pdFuncCard',
+  'pdClear', 'pdSumCard', 'pdSumV', 'pdGroups', 'pdHits',
+  'pdNeoCard', 'pdNeoBtn', 'pdNeoInputs', 'pdNeoList',
+  'pdInfo', 'pdInfoBtn', 'pdInfoBody',
 ];
 REQUIRED_IDS.forEach(function (id) {
   check('元素 #' + id + ' 存在', new RegExp('id="' + id + '"').test(html), true);

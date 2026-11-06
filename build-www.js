@@ -562,8 +562,18 @@ ${SEG_HTML}
 
   <!-- ───── Tab5 儿童 Z 值 ───── -->
   <section class="page" id="page-peds" hidden>
-    <div class="card">
-      <div class="card__t">受检者信息</div>
+
+    <!-- ★ 顶部分区导航：页面再长也能一步跳过去（新生儿不单列：只是末尾一张小卡） -->
+    <div class="pnav">
+      <button class="pnav__i" data-go="pdPerson">受检者</button>
+      <button class="pnav__i" data-go="pdSumCard">摘要</button>
+      <button class="pnav__i" data-go="pdMeasure">测量</button>
+      <button class="pnav__i" data-go="pdInfo">说明</button>
+    </div>
+
+    <!-- ① 受检者 -->
+    <div class="card" id="pdPerson">
+      <div class="card__t">受检者</div>
       <div class="card__d">儿童心脏尺寸随生长变化，Z 值按体表面积（BSA）标准化，与年龄、性别无临床显著关系</div>
       <div class="row">
         <div class="field">
@@ -605,41 +615,10 @@ ${SEG_HTML}
         </div>
       </div>
       <div class="hint" id="pdWarn"></div>
+      <button class="btn btn--ghost" id="pdClear">清空本页全部输入</button>
     </div>
 
-    <div class="card">
-      <div class="card__t">测量值输入</div>
-      <div class="card__d">内径 mm · 容积 mL · 质量 g · 面积 cm² · 留空跳过</div>
-      <div id="pdInputs"></div>
-      <button class="btn btn--ghost" id="pdMore">展开其他参数（共 40 项）</button>
-      <button class="btn" id="pdClear">清空全部测量值</button>
-    </div>
-
-    <div class="card" id="pdNeoCard" hidden>
-      <div class="card__t">新生儿（0–28 天）· 体重法</div>
-      <div class="card__d">
-        深圳市儿童医院 288 名 0–28 d 健康新生儿，直接按<b>体重</b>建模：
-        ln Y = a + bW + cW² + dW³（W = 体重 kg）。新生儿体表面积仅 0.15–0.25 m²，
-        上面三套 BSA 模型在这一段全部属于外推；本组才是原生区间。
-      </div>
-      <div class="hint" id="pdNeoWarn" hidden></div>
-      <button class="btn btn--ghost" id="pdNeoBtn">展开新生儿 17 项（按体重）</button>
-      <div id="pdNeoBody" hidden>
-        <div class="pgroup">本组另填（其余 9 项自动沿用上方同名测值）</div>
-        <div id="pdNeoInputs"></div>
-        <div id="pdNeoList"></div>
-        <div class="note">
-          <b>本组没有冠脉</b>：原文 39 项里不含 LCA / LAD / RCA，新生儿冠脉目前无中国公开方程；
-          冠脉仍见上方「冠状动脉」组（PHN 与深圳 SZ 法），新生儿段为外推。
-        </div>
-        <div class="note">
-          <b>数据来源</b>：林洲, 夏焙, 许娜, 等. 中华医学超声杂志(电子版), 2014, 11(2): 142-154.（见 R80）<br>
-          n=288，0–28 d，男 183 / 女 105，性别间差异无统计学意义，故本组不分性别。
-          原文中主动脉峡部、主动脉膈段的非线性系数与实测不符，本组不采用这两项。
-        </div>
-      </div>
-    </div>
-
+    <!-- ② 收缩功能（LVEDD + LVESD 推算） -->
     <div class="card" id="pdFuncCard" hidden>
       <div class="card__t">收缩功能（自动推算）</div>
       <div class="card__d" id="pdFuncDesc"></div>
@@ -654,6 +633,7 @@ ${SEG_HTML}
       <div class="note" id="pdFuncNote"></div>
     </div>
 
+    <!-- ③ 结果摘要：填完抬头就看到测了几项、几项异常、哪项偏得最多 -->
     <div class="card" id="pdSumCard" hidden>
       <div class="card__t">结果摘要</div>
       <div class="zbig" id="pdSumBig">
@@ -661,6 +641,7 @@ ${SEG_HTML}
         <span class="zbig__l" id="pdSumLbl"></span>
       </div>
       <div class="note" id="pdWorst"></div>
+      <div id="pdHits"></div>
       <div class="note note--warn" id="pdDiscord" hidden></div>
       <div class="key">
         <div class="key__i key__i--n">|Z| ≤ 2<br>正常</div>
@@ -669,104 +650,109 @@ ${SEG_HTML}
       </div>
     </div>
 
-    <div class="card">
-      <div class="card__t">本页覆盖哪些结构</div>
-      <div class="card__d">
-        ① 左室（内径/壁厚/容积/质量/长径/面积）、主动脉、肺动脉、二尖瓣环、三尖瓣环 → PHN（n=3566）<br>
-        ② 左房左右径、右房左右径、右室流入道内径 → 中国汉族儿童（n=545/515，2D 四腔）<br>
-        ③ 左房前后径、右室前后径、右室前壁 → Kampmann（中欧 n=2036，M 型）<br>
-        ④ 冠状动脉 → PHN，另并列深圳 SZ 法（n=842，1 月龄–17 岁）<br>
-        ⑤ 新生儿 17 项（心室与大血管 / 房室瓣环 / 左房容积·左室容积·心肌质量）→ 深圳 2014（n=288，0–28 天，<b>体重法</b>）
+    <!-- ④ 测量与结果：每组一张卡，输入在上、该组 Z 结果在下 -->
+    <div class="sechead" id="pdMeasure">
+      <div class="sechead__t">测量与结果</div>
+      <div class="sechead__s">每组输入框下面是这一组的 Z 值，不用上下翻</div>
+    </div>
+    <!-- 展开状态每个人习惯不同：点组标题单独切，下次进入按上次的来 -->
+    <div class="foldbar">
+      <button class="foldbar__i" id="pdExpandAll">全部展开</button>
+      <button class="foldbar__i" id="pdCollapseAll">全部收起</button>
+      <span class="foldbar__h">展开状态会记住，下次进入照旧</span>
+    </div>
+    <div id="pdGroups"></div>
+
+    <!-- ⑤ 新生儿体重法 -->
+    <div class="card" id="pdNeoCard" hidden>
+      <div id="pdNeoHead">
+        <div class="card__t">新生儿（0–28 天）· 体重法</div>
+        <div class="card__d">
+          深圳市儿童医院 288 名 0–28 d 健康新生儿，直接按<b>体重</b>建模：
+          ln Y = a + bW + cW² + dW³（W = 体重 kg）。新生儿体表面积仅 0.15–0.25 m²，
+          上面各组的 BSA 模型在这一段全部属于外推；本组才是原生区间。
+        </div>
       </div>
-      <div class="note">
-        五套人群与测法不同，同一患儿只取实际所用切面对应的一套；0–28 天用第五套 ——
-        它不经 BSA、直接按体重建模，是唯一在 0.20 m² 上不算外推的一套。
-      </div>
-      <div class="note">
-        <b>同一房室两行≠数据打架</b>：右室流入道内径（四腔，约 23 mm）比 M 型右室前后径
-        （胸骨旁，约 11 mm）大一倍 —— 切面与径线不同所致，不可互比。
-      </div>
-      <div class="note">
-        <b>冠脉两行 = 两套人群、两套方程</b>：上行 PHN（北美，幂律），下行深圳 SZ 法（中国，对数线性）。
-        同一测值常差 0.7–1.1 个 Z，判读以报告采用的那套为准，<b>两行不可互比、不可混用</b>。
-        SZ 队列不含 0–28 天新生儿，BSA &lt; 0.23 时该行标「外推」。
-      </div>
-      <div class="note">
-        <b>冠脉怎么测：2025 中国共识的六条硬口径</b><br>
-        2025 年《儿童冠状动脉经胸超声心动图规范化检查中国专家共识》（中华超声影像学杂志 2025;34(11):921-931，见 R83）
-        统一了测量规范。它和 Z 值同等重要 —— Z 值再准，测法不对也是白算：<br>
-        ① <b>分段</b>：按 AHA 15 分段法，TTE 可稳定显示其中 9 段（LMCA、LAD 近/中/远段、LCx、RCA 近/中/远段、后降支）；
-        只报能看清的段，看不清的写「未显示」，不要外推。<br>
-        ② <b>时相</b>：<b>舒张早期、T 波终点</b>测量。冠脉在舒张期充盈、管径最大且稳定，收到收缩期测会系统性偏小。<br>
-        ③ <b>边界</b>：<b>内膜到内膜</b>（inner edge to inner edge），与成人 Z 值库口径一致，
-        混用外膜-外膜会让 Z 值整体上移。<br>
-        ④ <b>图像</b>：局部放大 2–4 倍，帧率 ≥30 fps；婴幼儿用高频探头（≥7.5 MHz）。<br>
-        ⑤ <b>校正</b>：一律换算 Z 值（按 BSA），不用绝对值下结论 —— 绝对值 3 mm 在婴儿是巨大瘤、在青少年是正常。<br>
-        ⑥ <b>分级</b>（川崎病，AHA 2017）：Z &lt;2 无扩张；2–&lt;2.5 仅扩张；≥2.5–&lt;5 小型瘤；
-        ≥5–&lt;10 且绝对值 &lt;8 mm 中型瘤；≥10 或绝对值 ≥8 mm 巨大瘤。
+      <div class="hint" id="pdNeoWarn" hidden></div>
+      <button class="btn btn--ghost" id="pdNeoBtn">展开新生儿 17 项（按体重）</button>
+      <div id="pdNeoBody" hidden>
+        <div class="pgroup">本组另填（其余 9 项自动沿用上方同名测值）</div>
+        <div id="pdNeoInputs"></div>
+        <div id="pdNeoList"></div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card__t">Z 值对照</div>
-      <div class="card__d" id="pdDesc"></div>
-      <div id="pdList"></div>
-    </div>
-
-    <div class="card">
-      <div class="card__t">±3SD 显著异常阈值</div>
-      <div class="card__d">±2SD 已在上一张表「正常范围」列给出，这里只列 ±3SD（显著异常线），避免同一区间在两处重复出现。</div>
-      <button class="btn btn--ghost" id="pdRangesBtn">展开 ±3SD 阈值</button>
-      <div id="pdRanges" hidden></div>
-    </div>
-
-    <div class="card">
-      <div class="card__t">计算原理</div>
-      <div class="note">
-        <b>① 体表面积（Haycock）</b><br>
-        BSA(m²) = 0.024265 × 身高(cm)<sup>0.3964</sup> × 体重(kg)<sup>0.5378</sup>
-      </div>
-      <div class="note">
-        <b>② Z 值</b><br>
-        PHN 项：Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
-        中国方程项：Z = ( 实测值 − M ) ÷ SD，M = β0 + β1·BSA + β2·BSA² + β3·BSA³<br>
-        SZ 冠脉项：Z = [ ln(实测值) − ( a + b·ln BSA ) ] ÷ RSE（对数尺度，故 ±2SD 区间不对称）<br>
-        系数逐项不同；Kampmann 项无方程，为分组表插值。|Z| ≤ 2 覆盖约 95% 健康儿童。
-      </div>
-      <div class="note note--warn">
-        <b>数据来源（第一套 · PHN）</b>　Pediatric Heart Network Normal Echocardiogram Database，
-        n = 3566，0–18 岁健康非肥胖儿童，19 个中心。<br>
-        Lopez L, Colan S, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.（参考文献 R8）<br>
-        LVESD / LVESV 系数来自 PHN 后续补充发表（PMC7870534）。
-      </div>
-      <div class="note note--warn">
-        <b>数据来源（第二套 · 中国汉族儿童房室腔径）</b>　PHN 没有左房 / 右房 / 右室腔径，改用中国多中心方程：<br>
-        Wang SS, et al. <i>J Clin Ultrasound.</i> 2018;46(5):328-333.（左心 n = 545，见 R77）<br>
-        Wang SS, et al. <i>J Clin Ultrasound.</i> 2017;45(5):293-303.（右心 n = 515，见 R78）<br>
-        上海儿童医学中心牵头，Haycock BSA，1 天–18 岁，SD 为固定常数。
-        ★ 左心用边际 SD、右心用残差 SD，跨篇比 Z 时刻度略有差异。
-      </div>
-      <div class="note note--warn">
-        <b>数据来源（第三套 · M 型补充）</b>　左房前后径 / 右室前后径 / 右室前壁取中欧 M 型数据：<br>
-        Kampmann C, et al. <i>Heart.</i> 2000;83(6):667-672.（n = 2036，见 R76）<br>
-        原文给的是「按 BSA 分组的 均值 ± 2SD」表而非方程，本页对分组值做线性插值（BSA 0.25–2.0 m²）。
-        原文用 DuBois BSA，本页用 Haycock，新生儿段可差 5–8%。
-      </div>
-      <div class="note note--warn">
-        <b>数据来源（第四套 · 深圳 SZ 法冠脉）</b>　Fan SM, Xia B, Liu WX, et al.
-        <i>BMC Pediatr.</i> 2021;21:429. DOI 10.1186/s12887-021-02877-9.
-        （n = 842，6 省 9 中心，1 月龄–17 岁，Haycock BSA，见 R79）<br>
-        ln LCA = 1.0084 + 0.3740 ln BSA（RSE 0.115）；ln LAD = 0.8063 + 0.3697 ln BSA（RSE 0.119）；
-        ln RCA = 0.8040 + 0.3291 ln BSA（RSE 0.150）。原文只测 LCA / LAD / RCA 三段，无 LCX。
-        ★ 队列不含 0–28 天新生儿；BSA &lt; 0.23 时仍给数值但标「外推」。
-      </div>
-      <div class="note note--warn">
-        <b>数据来源（第五套 · 深圳 2014 新生儿体重法）</b>　林洲, 夏焙, 许娜, 等.
-        新生儿超声心动图正常参考值及 Z 值回归方程式的研究. 中华医学超声杂志(电子版),
-        2014, 11(2): 142–154.（n = 288，0–28 d，体重法，见 R80）<br>
-        ln Y = a + bW + cW² + dW³（W = 体重 kg），Z = [ ln(实测) − ln(预测均值) ] ÷ s̄x；
-        s̄x 为对数尺度残差，故 ±2SD 区间乘性不对称。原文中主动脉峡部、主动脉膈段的
-        非线性系数与实测不符（3.27 kg 算得 495 / 338 mm），本页不采用这两项。
+    <!-- ⑥ 说明与来源：全页所有解释文字集中在此，正文里不再零散散布 -->
+    <div class="card" id="pdInfo">
+      <div class="card__t">说明与来源</div>
+      <div class="card__d">五套参照各管一段、Z 值怎么算、冠脉两行什么意思、本页没有哪些参数 —— 都在这一块。</div>
+      <button class="btn btn--ghost" id="pdInfoBtn">展开说明</button>
+      <div id="pdInfoBody" hidden>
+        <div class="note">
+          <b>一、Z 值怎么算</b><br>
+          PHN 项：Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
+          中国方程项：Z = ( 实测值 − M ) ÷ SD，M 为 BSA 的三次多项式<br>
+          冠脉项：Z = [ ln(实测值) − ( a + b·ln BSA ) ] ÷ RSE（对数尺度，故 ±2SD 区间不对称）<br>
+          BSA 用 Haycock：0.024265 × 身高(cm)<sup>0.3964</sup> × 体重(kg)<sup>0.5378</sup>。
+          |Z| ≤ 2 覆盖约 95% 健康儿童；Z = 0 即人群均值。
+        </div>
+        <div class="note">
+          <b>二、五套参照，各管一段，不要混用</b><br>
+          ① 左室、大血管、瓣环 → PHN（n=3566，多种族）<br>
+          ② 左房左右径、右房左右径、右室流入道内径 → 中国汉族儿童（n=545 / 515，2D·心尖四腔）<br>
+          ③ 左房前后径、右室前后径、右室前壁 → Kampmann 2000（中欧 n=2036，M 型）<br>
+          ④ 冠状动脉 → 深圳 SZ 法为主（n=842，1 月龄–17 岁），四川 2025 为辅（n=744，0–18 岁，含左回旋支）<br>
+          ⑤ 新生儿 17 项 → 深圳 2014（n=288，0–28 天，<b>体重法</b>，不经 BSA）<br>
+          五套的人群、测量方法与建模变量都不同，同一患儿只取实际所用切面对应的一套判读。
+        </div>
+        <div class="note">
+          <b>三、冠脉两行是什么</b><br>
+          主行＝深圳 SZ 法（6 省 9 中心，对数线性 n=842）；次行＝四川 2025（四川省人民医院 n=744，四段齐全）。
+          同一测值可差 1 个 Z 以上（LAD 2.6 mm、BSA 1.0：深圳 +1.25「正常」/ 四川 +2.43「轻度增大」），
+          临界值时两行都要看，<b>不可跨套比较</b>。<br>
+          ★ 深圳儿童医院自家小程序用的是夏焙团队 2012/2013 方程，与本页两套都不同源；
+          同一测值可再差 0.5–1 个 Z（90 cm / 9 kg、LCA 2.2 mm：该小程序 −0.105、本页深圳法约 +0.54）。
+          这不是算错，是参照人群不同 —— 同一患儿随访请固定用同一套。<br>
+          ★ SZ 队列不含 0–28 天新生儿，BSA &lt; 0.23 时该行标「外推」。
+        </div>
+        <div class="note">
+          <b>四、冠脉怎么测（2025 中国共识）</b><br>
+          ① <b>分段</b>：按 AHA 15 分段法，TTE 可稳定显示其中 9 段（LMCA、LAD 近/中/远段、LCx、
+          RCA 近/中/远段、后降支）；只报能看清的段，看不清的写「未显示」。<br>
+          ② <b>时相</b>：<b>舒张早期、T 波终点</b>测量，冠脉在舒张期充盈、管径最大且稳定。<br>
+          ③ <b>边界</b>：<b>内膜到内膜</b>，混用外膜-外膜会让 Z 值整体上移。<br>
+          ④ <b>图像</b>：局部放大 2–4 倍，帧率 ≥30 fps；婴幼儿用高频探头（≥7.5 MHz）。<br>
+          ⑤ <b>校正</b>：一律换算 Z 值，不用绝对值下结论 —— 3 mm 在婴儿是巨大瘤、在青少年是正常。<br>
+          ⑥ <b>分级</b>（川崎病，AHA 2017）：Z &lt;2 无扩张；2–&lt;2.5 仅扩张；≥2.5–&lt;5 小型瘤；
+          ≥5–&lt;10 且绝对值 &lt;8 mm 中型瘤；≥10 或绝对值 ≥8 mm 巨大瘤。
+        </div>
+        <div class="note">
+          <b>五、同一房室两行，是测法不同</b><br>
+          左房左右径（心尖四腔）与左房前后径（M 型）数值接近；右室流入道内径（心尖四腔，约 23 mm）
+          比 M 型右室前后径（胸骨旁，约 11 mm）大一倍 —— 切面与径线不同所致，不可互比，按报告实际切面选行。
+        </div>
+        <div class="note">
+          <b>六、本页仍没有的参数</b><br>
+          腔静脉、右室面积 / 容积 —— 现有数据源都没有，儿童也暂无公认方程。左房容积只有
+          新生儿体重法（深圳 2014）有，1 月龄以上暂无公认方程。本页不采用未经原文核对的系数来凑数。
+        </div>
+        <div class="note">
+          <b>七、新生儿体重法为什么单独一套</b><br>
+          Z = [ ln(实测) − ln(预测均值) ] ÷ s̄x。s̄x 是对数尺度残差（≈变异系数），
+          所以 ±2SD 区间乘性：均值 × e^±2s̄x，上下不对称，不能写成「均值 ± 2SD」。
+          本组不含冠脉（原文 39 项里没有），新生儿冠脉目前无中国公开方程。
+        </div>
+        <div class="note note--warn">
+          <b>文献</b><br>
+          R8 Lopez L, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.（PHN，n=3566）<br>
+          R76 Kampmann C, et al. <i>Heart.</i> 2000;83(6):667-672.（n=2036）<br>
+          R77 Wang SS, et al. <i>J Clin Ultrasound.</i> 2018;46(5):328-333.（左心 n=545）<br>
+          R78 Wang SS, et al. <i>J Clin Ultrasound.</i> 2017;45(5):293-303.（右心 n=515）<br>
+          R79 Fan SM, Xia B, Liu WX, et al. <i>BMC Pediatr.</i> 2021;21:429.（深圳 SZ 冠脉，n=842）<br>
+          R80 林洲, 夏焙, 许娜, 等. 中华医学超声杂志(电子版). 2014;11(2):142-154.（新生儿体重法）<br>
+          R83 儿童冠状动脉经胸超声心动图规范化检查中国专家共识. 中华超声影像学杂志. 2025;34(11):921-931.<br>
+          四川 2025：王永, 蒋佳颖, 邓燕, 等. 中国当代儿科杂志. 2025;27(2):176-182.（n=744）
+        </div>
       </div>
     </div>
   </section>
