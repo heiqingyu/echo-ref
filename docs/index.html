@@ -679,6 +679,20 @@ html, body {
   vertical-align: 1px;
 }
 
+/* 结果行上的来源徽章（冠脉主行「深圳 SZ」/ 次行「四川 2025」）——
+   主行不标来源时，只有次行写「四川 2025」，看着像主行没出处（用户 2026-11-06 反馈） */
+.zrow__src {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #1d4ed8;
+  background: #eff4ff;
+  border-radius: 4px;
+  vertical-align: 1px;
+}
+
 /* ★ v1.8.1：新生儿体重法 17 行 —— 参数名偏长，收窄实测 / Z 列，把宽度让给名字与区间 */
 .zrow--neo .zrow__v { flex: 0.62; font-size: 13px; }
 .zrow--neo .zrow__r { flex: 1.18; font-size: 11.5px; }
@@ -2827,14 +2841,13 @@ button.fx-nav__c {
         </div>
         <div class="note note--warn">
           <b>文献</b><br>
-          R8 Lopez L, et al. <i>Circ Cardiovasc Imaging.</i> 2017;10(11):e006979.（PHN，n=3566）<br>
-          R76 Kampmann C, et al. <i>Heart.</i> 2000;83(6):667-672.（n=2036）<br>
-          R77 Wang SS, et al. <i>J Clin Ultrasound.</i> 2018;46(5):328-333.（左心 n=545）<br>
-          R78 Wang SS, et al. <i>J Clin Ultrasound.</i> 2017;45(5):293-303.（右心 n=515）<br>
-          R79 Fan SM, Xia B, Liu WX, et al. <i>BMC Pediatr.</i> 2021;21:429.（深圳 SZ 冠脉，n=842）<br>
-          R80 林洲, 夏焙, 许娜, 等. 中华医学超声杂志(电子版). 2014;11(2):142-154.（新生儿体重法）<br>
-          R83 儿童冠状动脉经胸超声心动图规范化检查中国专家共识. 中华超声影像学杂志. 2025;34(11):921-931.<br>
-          四川 2025：王永, 蒋佳颖, 邓燕, 等. 中国当代儿科杂志. 2025;27(2):176-182.（n=744）
+          本页只用 8 篇：前 7 篇在「公式集 · 参考文献」里有编号，点条目可直接跳过去看全文入口；
+          四川那篇发表较新、暂未进总表，题录写在最下面。
+        </div>
+        <div id="pdRefs"></div>
+        <div class="note">
+          四川 2025（无 R 编号）：王永, 蒋佳颖, 邓燕, 等. 中国当代儿科杂志. 2025;27(2):176-182.
+          （n=744，0–18 岁，四段齐全含左回旋支）
         </div>
       </div>
     </div>
@@ -3826,10 +3839,10 @@ const PEDS_Z = {
   //     根本没测冠脉（Lopez 2017 的 21 个结构里没有冠脉），那组数没有可核的
   //     出处，且与深圳儿童医院小程序的差值可达 1 个 Z。现改为
   //     「深圳 SZ（Fan 2021）」为主、「四川（王永 2025）」为辅，两篇都能逐字核。
-  LMCA:   { model: 'cor', unit: 'mm', dec: 1, name: '左冠主干内径（LMCA）' },
-  LAD:    { model: 'cor', unit: 'mm', dec: 1, name: '左前降支近段内径（LAD）' },
-  LCX:    { model: 'cor', unit: 'mm', dec: 1, name: '左回旋支近段内径（LCX）' },
-  RCA:    { model: 'cor', unit: 'mm', dec: 1, name: '右冠主干内径（RCA）' },
+  LMCA:   { model: 'cor', unit: 'mm', dec: 1, name: '左冠主干内径' },
+  LAD:    { model: 'cor', unit: 'mm', dec: 1, name: '左前降支近段内径' },
+  LCX:    { model: 'cor', unit: 'mm', dec: 1, name: '左回旋支近段内径' },
+  RCA:    { model: 'cor', unit: 'mm', dec: 1, name: '右冠主干内径' },
 
   // ── 肺动脉 ─────────────────────────────────────────────────
   PVSAX:  { a: 0.50, mean: 1.91,  sd: 0.24,  unit: 'cm', name: '肺动脉瓣环短轴内径' },
@@ -4496,6 +4509,9 @@ function buildCoronaryRow(key, def, bsa, measured, hasBsa) {
     unit: def.unit,
     src: pm,
     srcText: pm === 'sz' ? 'SZ 法 · 深圳' : '四川 2025',
+    // ★ 主行必须自己标明来源：否则只有次行写「四川 2025」，主行看着像没有出处
+    //   （用户 2026-11-06 反馈「下面四川，上面写个深圳吧」）
+    srcLabel: pm === 'sz' ? '深圳 SZ' : '四川 2025',
     model: 'cor',
     altLabel: aModel ? '四川 2025' : '',
     alt: aView ? Object.assign({}, aView, {
@@ -25825,6 +25841,34 @@ const MATERIALS = [];
   }
 
   /**
+   * 说明区的文献导航
+   *
+   * 与公式集「参考文献」用同一种条目样式（.ref-item），点一条跳到总表对应位置并高亮 ——
+   * 原来把 8 条文献挤成一段文字，手机上就是一大坨，读不了也点不了（用户 2026-11-06 反馈）。
+   */
+  const PD_REF_IDS = ['R8', 'R76', 'R77', 'R78', 'R79', 'R80', 'R83'];
+
+  function buildPdRefs() {
+    const box = $('pdRefs');
+    if (!box || typeof ExtraData === 'undefined' || !ExtraData.REFS) return;
+    const map = {};
+    ExtraData.REFS.forEach(function (r) { map[r.id] = r; });
+    box.innerHTML = PD_REF_IDS.map(function (id) {
+      const r = map[id];
+      if (!r) return '';
+      return '<div class="ref-item ref-item--jump" data-ref="' + id + '">' +
+        '<div class="ref-item__id">' + id + '</div>' +
+        '<div class="ref-item__body">' +
+          '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
+          '<div class="ref-item__where">' + esc(r.where) + '</div>' +
+        '</div></div>';
+    }).join('');
+    box.querySelectorAll('.ref-item--jump').forEach(function (it) {
+      it.addEventListener('click', function () { jumpToRef(it.dataset.ref); });
+    });
+  }
+
+  /**
    * 一行 Z 结果（含冠脉的四川次行）
    * 参考值列同时给 ±2SD 与 ±3SD —— 旧版另挂一张「±3SD 阈值表」，同一组数被拆到
    * 两处、还要来回折叠，正是「数据东一块西一块」的来源；并进同一格后可删掉那张表。
@@ -25833,6 +25877,7 @@ const MATERIALS = [];
     const tag = r.model === 'cor' ? ' data-cor="1"' : '';   // 对数尺度行：区间乘性、中点≠均值
     let h = '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '"' + tag + '>' +
       '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
+        (r.srcLabel ? '<span class="zrow__src">' + esc(r.srcLabel) + '</span>' : '') +
         '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span></div>' +
       '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
       '<div class="zrow__r">' + esc(r.rangeText) +
@@ -26175,7 +26220,6 @@ const MATERIALS = [];
     Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
     Object.keys(pdNeoVal).forEach(function (k) { delete pdNeoVal[k]; });
     pdGroupOpen = null;
-    pdRestoreProfile();
     buildPedsGroups();
     buildNeoInputs();
     renderPeds();
@@ -26322,6 +26366,8 @@ const MATERIALS = [];
     buildCalcInputs();
     renderIndex();
     renderEF();
+    pdRestoreProfile();   // 恢复本页上次填的身高体重（不预填成人默认值）
+    buildPdRefs();        // 说明区的文献导航
     buildPedsGroups();
     buildNeoInputs();
     renderPeds();

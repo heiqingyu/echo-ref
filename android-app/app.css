@@ -668,6 +668,20 @@ html, body {
   vertical-align: 1px;
 }
 
+/* 结果行上的来源徽章（冠脉主行「深圳 SZ」/ 次行「四川 2025」）——
+   主行不标来源时，只有次行写「四川 2025」，看着像主行没出处（用户 2026-11-06 反馈） */
+.zrow__src {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #1d4ed8;
+  background: #eff4ff;
+  border-radius: 4px;
+  vertical-align: 1px;
+}
+
 /* ★ v1.8.1：新生儿体重法 17 行 —— 参数名偏长，收窄实测 / Z 列，把宽度让给名字与区间 */
 .zrow--neo .zrow__v { flex: 0.62; font-size: 13px; }
 .zrow--neo .zrow__r { flex: 1.18; font-size: 11.5px; }

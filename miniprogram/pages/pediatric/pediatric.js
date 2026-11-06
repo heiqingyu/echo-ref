@@ -1,5 +1,7 @@
 const peds = require('../../utils/peds-zscore.js');
 const core = require('../../utils/echo-core.js');
+const EX = require('../../utils/extra-data.js');
+const app = getApp();
 
 /**
  * 儿童 Z 值页 —— 2026-11-06 版式重构
@@ -65,6 +67,20 @@ function saveOpen(open) {
   try { wx.setStorageSync(OPEN_KEY, open); } catch (e) { /* 存不下就算了，不影响用 */ }
 }
 
+/**
+ * 本页引用的文献（顺序＝正文出现顺序）
+ *
+ * 前 7 篇在「公式集 · 参考文献」总表里有编号，点条目直接跳过去看全文入口；
+ * 四川 2025 发表较新、暂未进总表，界面上用一段文字单列。
+ */
+const PEDS_REF_IDS = ['R8', 'R76', 'R77', 'R78', 'R79', 'R80', 'R83'];
+
+const PEDS_REFS = (function () {
+  const map = {};
+  (EX.REFS || []).forEach(function (r) { map[r.id] = r; });
+  return PEDS_REF_IDS.map(function (id) { return map[id]; }).filter(Boolean);
+})();
+
 /** { 下标: 展开? } → { 下标: 收起? }（模板里用的是 collapsed） */
 function toCollapsed(open) {
   const c = {};
@@ -123,6 +139,7 @@ Page({
     neoAgeText: '',
 
     // 说明区
+    refs: PEDS_REFS,
     infoOpen: false,
     showFormula: false,
   },
@@ -206,6 +223,14 @@ Page({
   onToggleOnlyMeasured() { this.setData({ onlyMeasured: !this.data.onlyMeasured }); this.refresh(); },
   onToggleNeo()      { this.setData({ neoOpen: !this.data.neoOpen }); },
   onToggleInfo()     { this.setData({ infoOpen: !this.data.infoOpen }); },
+
+  /** 点文献条目 → 切到公式集，并定位到总表里那一条（到位后高亮） */
+  onJumpRef(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    app.globalData.pendingRef = id;
+    wx.switchTab({ url: '/pages/calculators/calculators' });
+  },
   onToggleFormula()  { this.setData({ showFormula: !this.data.showFormula }); },
 
   onNeoInput(e) {

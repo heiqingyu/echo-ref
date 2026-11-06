@@ -4127,6 +4127,34 @@
   }
 
   /**
+   * 说明区的文献导航
+   *
+   * 与公式集「参考文献」用同一种条目样式（.ref-item），点一条跳到总表对应位置并高亮 ——
+   * 原来把 8 条文献挤成一段文字，手机上就是一大坨，读不了也点不了（用户 2026-11-06 反馈）。
+   */
+  const PD_REF_IDS = ['R8', 'R76', 'R77', 'R78', 'R79', 'R80', 'R83'];
+
+  function buildPdRefs() {
+    const box = $('pdRefs');
+    if (!box || typeof ExtraData === 'undefined' || !ExtraData.REFS) return;
+    const map = {};
+    ExtraData.REFS.forEach(function (r) { map[r.id] = r; });
+    box.innerHTML = PD_REF_IDS.map(function (id) {
+      const r = map[id];
+      if (!r) return '';
+      return '<div class="ref-item ref-item--jump" data-ref="' + id + '">' +
+        '<div class="ref-item__id">' + id + '</div>' +
+        '<div class="ref-item__body">' +
+          '<div class="ref-item__zh">' + esc(r.zh) + '</div>' +
+          '<div class="ref-item__where">' + esc(r.where) + '</div>' +
+        '</div></div>';
+    }).join('');
+    box.querySelectorAll('.ref-item--jump').forEach(function (it) {
+      it.addEventListener('click', function () { jumpToRef(it.dataset.ref); });
+    });
+  }
+
+  /**
    * 一行 Z 结果（含冠脉的四川次行）
    * 参考值列同时给 ±2SD 与 ±3SD —— 旧版另挂一张「±3SD 阈值表」，同一组数被拆到
    * 两处、还要来回折叠，正是「数据东一块西一块」的来源；并进同一格后可删掉那张表。
@@ -4135,6 +4163,7 @@
     const tag = r.model === 'cor' ? ' data-cor="1"' : '';   // 对数尺度行：区间乘性、中点≠均值
     let h = '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '"' + tag + '>' +
       '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
+        (r.srcLabel ? '<span class="zrow__src">' + esc(r.srcLabel) + '</span>' : '') +
         '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span></div>' +
       '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
       '<div class="zrow__r">' + esc(r.rangeText) +
@@ -4477,7 +4506,6 @@
     Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
     Object.keys(pdNeoVal).forEach(function (k) { delete pdNeoVal[k]; });
     pdGroupOpen = null;
-    pdRestoreProfile();
     buildPedsGroups();
     buildNeoInputs();
     renderPeds();
@@ -4627,6 +4655,8 @@
     buildCalcInputs();
     renderIndex();
     renderEF();
+    pdRestoreProfile();   // 恢复本页上次填的身高体重（不预填成人默认值）
+    buildPdRefs();        // 说明区的文献导航
     buildPedsGroups();
     buildNeoInputs();
     renderPeds();

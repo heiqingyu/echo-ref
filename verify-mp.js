@@ -347,6 +347,21 @@ check('儿童页不再写 globalData.profile',
   pedJs.indexOf('globalData.profile.height') === -1 ? 1 : 0, 1, 0);
 check('儿童页不再写 globalData.peds（无人读的死写入）',
   pedJs.indexOf('globalData.peds') === -1 ? 1 : 0, 1, 0);
+// 用户 2026-11-06：文献改成导航条目，跟公式集一种样式，点一条跳到总表
+check('儿童页文献用 ref-item 条目渲染',
+  wxmlPeds.indexOf('class="ref-item ref-item--jump"') !== -1 ? 1 : 0, 1, 0);
+check('文献条目绑定 onJumpRef',
+  /data-id="\{\{item\.id\}\}"\s+bindtap="onJumpRef"/.test(wxmlPeds) ? 1 : 0, 1, 0);
+check('文献数据取自总表 REFS（PEDS_REFS）',
+  pedJs.indexOf('PEDS_REFS') !== -1 && pedJs.indexOf('EX.REFS') !== -1 ? 1 : 0, 1, 0);
+check('跳转走 pendingRef + switchTab 到公式集',
+  (pedJs.indexOf('pendingRef') !== -1 &&
+   pedJs.indexOf('/pages/calculators/calculators') !== -1) ? 1 : 0, 1, 0);
+check('冠脉主行来源徽章渲染（z-row__src）',
+  wxmlPeds.indexOf('class="z-row__src"') !== -1 ? 1 : 0, 1, 0);
+check('文献条目样式已进 pediatric.wxss',
+  (fsW.readFileSync(pathW.join(__dirname, 'miniprogram', 'pages', 'pediatric',
+    'pediatric.wxss'), 'utf8').indexOf('.ref-item__id') !== -1) ? 1 : 0, 1, 0);
 check('顶部导航 3 项（新生儿不单列）',
   (pedJs.match(/\{ id: 'sec-/g) || []).length, 3, 0);
 check('新生儿超期只留一句（模板走 wx:else 分支）',

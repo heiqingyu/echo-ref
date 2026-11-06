@@ -156,3 +156,80 @@
   font-size: 22rpx;
   color: var(--sub);
 }
+
+/* ────────── 说明区：文献导航（与公式集同一种条目样式） ────────── */
+.ref-item {
+  display: flex;
+  gap: 14rpx;
+  padding: 18rpx 0;
+  border-top: 1rpx solid #f0f1f3;
+}
+
+.ref-item:first-of-type {
+  border-top: none;
+}
+
+/* 可点：右侧挂一个 › ，与公式集目录条目的观感一致 */
+.ref-item--jump {
+  align-items: center;
+  padding-right: 8rpx;
+}
+
+.ref-item--jump::after {
+  content: '›';
+  flex: none;
+  margin-left: 6rpx;
+  font-size: 30rpx;
+  color: #b7bfca;
+  line-height: 1;
+}
+
+.ref-item--jump:active {
+  background: #f5f8ff;
+}
+
+.ref-item__id {
+  flex: none;
+  width: 64rpx;
+  height: 40rpx;
+  line-height: 40rpx;
+  text-align: center;
+  font-size: 21rpx;
+  font-weight: 600;
+  color: #1d4ed8;
+  background: #eff4ff;
+  border-radius: 8rpx;
+}
+
+.ref-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ref-item__zh {
+  font-size: 25rpx;
+  font-weight: 600;
+  color: #1f2329;
+  line-height: 1.5;
+}
+
+.ref-item__where {
+  font-size: 22rpx;
+  color: #2f3a4d;
+  font-weight: 500;
+  margin-top: 2rpx;
+  line-height: 1.5;
+}
+
+/* 结果行上的来源徽章（冠脉主行「深圳 SZ」/ 次行「四川 2025」） */
+.z-row__src {
+  display: inline-block;
+  margin-left: 8rpx;
+  padding: 0 8rpx;
+  font-size: 19rpx;
+  line-height: 1.7;
+  color: #1d4ed8;
+  background: #eff4ff;
+  border-radius: 6rpx;
+  vertical-align: 1rpx;
+}

@@ -398,6 +398,18 @@ function check(name, ok, detail) {
   const r3n = await c.evalJs(
     'document.querySelectorAll("#pdGroups .pres .zrow__r3").length');
   check('±3SD 并入参考值列（41 项 + 3 条四川次行）', r3n === 44, r3n + ' 条');
+  // 冠脉主行必须自报来源，否则只有次行写「四川」，主行看着没出处
+  const corSrc = await c.evalJs(`(function(){
+    var n = [...document.querySelectorAll('#pdGroups .zrow__src')].map(function(e){
+      return e.textContent; });
+    var dup = [...document.querySelectorAll('#pdGroups .pres .zrow__n')].filter(function(e){
+      return /（[A-Z]{2,}）（[A-Z]{2,}）/.test(e.textContent); }).length;
+    return JSON.stringify({n: n.join(','), dup: dup});
+  })()`);
+  const cs = JSON.parse(corSrc);
+  // 顺序＝LMCA / LAD / LCX / RCA；LCX 只有四川一套，没有次行
+  check('冠脉四行都标了来源', cs.n === '深圳 SZ,深圳 SZ,四川 2025,深圳 SZ', corSrc);
+  check('名称不再重复缩写（不出现（LMCA）（LMCA））', cs.dup === 0, corSrc);
   check('不再有独立的 ±3SD 折叠表',
     (await c.evalJs('document.getElementById("pdRanges") === null')) === true);
 
@@ -424,6 +436,40 @@ function check(name, ok, detail) {
   check('超龄只留「已超出新生儿期」一句', nv.txt === true, neo);
   await set('pdHeight', 110); await set('pdWeight', 19); await set('pdAge', 5);
   await new Promise((r) => setTimeout(r, 300));
+
+  // ★ 文献：8 篇改成导航条目（原来挤成一段文字，手机上读不了也点不了）
+  await c.evalJs('document.getElementById("pdInfoBtn").click()');
+  await new Promise((r) => setTimeout(r, 200));
+  const pdRefs = await c.evalJs(`(function(){
+    return JSON.stringify({
+      n: document.querySelectorAll('#pdRefs .ref-item').length,
+      ids: [...document.querySelectorAll('#pdRefs .ref-item__id')].map(function(e){
+        return e.textContent; }).join(','),
+      hasZh: !!document.querySelector('#pdRefs .ref-item__zh'),
+      hasWhere: !!document.querySelector('#pdRefs .ref-item__where')
+    });
+  })()`);
+  const pdInfo = JSON.parse(pdRefs);
+  check('说明区文献改为导航条目（7 条）', pdInfo.n === 7, pdRefs);
+  check('文献编号按引用顺序 R8/R76/R77/R78/R79/R80/R83',
+    pdInfo.ids === 'R8,R76,R77,R78,R79,R80,R83', pdInfo.ids);
+  check('文献条目带中文题名与期刊出处', pdInfo.hasZh === true && pdInfo.hasWhere === true, pdRefs);
+
+  // 点第一条 → 切到公式集、展开参考文献、高亮该条
+  await c.evalJs('document.querySelector("#pdRefs .ref-item--jump").click()');
+  await new Promise((r) => setTimeout(r, 600));
+  const pdRefJump = await c.evalJs(`(function(){
+    var on = document.querySelector('.tab--on');
+    return JSON.stringify({
+      tab: on ? on.dataset.tab : '',
+      open: !document.getElementById('calcRefs').hidden,
+      hit: document.querySelectorAll('.ref-item--hit').length
+    });
+  })()`);
+  const rj = JSON.parse(pdRefJump);
+  check('点文献条目切到公式集', rj.tab === 'calc', pdRefJump);
+  check('公式集参考文献区已展开', rj.open === true, pdRefJump);
+  check('目标文献已高亮', rj.hit >= 1, pdRefJump);
 
   console.log('\n【三·二】节段划分页（室壁划分，APK 也打这一份）');
   await c.evalJs('document.querySelector(\'.tab[data-tab="segments"]\').click()');

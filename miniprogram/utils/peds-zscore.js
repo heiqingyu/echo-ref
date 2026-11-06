@@ -110,10 +110,10 @@ const PEDS_Z = {
   //     根本没测冠脉（Lopez 2017 的 21 个结构里没有冠脉），那组数没有可核的
   //     出处，且与深圳儿童医院小程序的差值可达 1 个 Z。现改为
   //     「深圳 SZ（Fan 2021）」为主、「四川（王永 2025）」为辅，两篇都能逐字核。
-  LMCA:   { model: 'cor', unit: 'mm', dec: 1, name: '左冠主干内径（LMCA）' },
-  LAD:    { model: 'cor', unit: 'mm', dec: 1, name: '左前降支近段内径（LAD）' },
-  LCX:    { model: 'cor', unit: 'mm', dec: 1, name: '左回旋支近段内径（LCX）' },
-  RCA:    { model: 'cor', unit: 'mm', dec: 1, name: '右冠主干内径（RCA）' },
+  LMCA:   { model: 'cor', unit: 'mm', dec: 1, name: '左冠主干内径' },
+  LAD:    { model: 'cor', unit: 'mm', dec: 1, name: '左前降支近段内径' },
+  LCX:    { model: 'cor', unit: 'mm', dec: 1, name: '左回旋支近段内径' },
+  RCA:    { model: 'cor', unit: 'mm', dec: 1, name: '右冠主干内径' },
 
   // ── 肺动脉 ─────────────────────────────────────────────────
   PVSAX:  { a: 0.50, mean: 1.91,  sd: 0.24,  unit: 'cm', name: '肺动脉瓣环短轴内径' },
@@ -780,6 +780,9 @@ function buildCoronaryRow(key, def, bsa, measured, hasBsa) {
     unit: def.unit,
     src: pm,
     srcText: pm === 'sz' ? 'SZ 法 · 深圳' : '四川 2025',
+    // ★ 主行必须自己标明来源：否则只有次行写「四川 2025」，主行看着像没有出处
+    //   （用户 2026-11-06 反馈「下面四川，上面写个深圳吧」）
+    srcLabel: pm === 'sz' ? '深圳 SZ' : '四川 2025',
     model: 'cor',
     altLabel: aModel ? '四川 2025' : '',
     alt: aView ? Object.assign({}, aView, {

@@ -608,6 +608,15 @@ const corB = corRow.rangeText.split('–');
 const corMid = (parseFloat(corB[0]) + parseFloat(corB[1])) / 2;
 check('冠脉区间中点 > 均值（乘性区间）', corMid > parseFloat(corRow.meanText), true);
 
+// 名称里不能再带缩写：模板统一拼「名称（键）」，带后缀会渲染成「（LMCA）（LMCA）」
+check('冠脉行名称不含缩写后缀',
+  szRows.every(function (r) { return !/（[A-Za-z]{2,}/.test(r.name); }) ? 1 : 0, 1, 0);
+check('冠脉四行都带来源标签', szRows.filter(function (r) { return !!r.srcLabel; }).length, 4, 0);
+check('LMCA 主行标签＝深圳 SZ',
+  szRows.filter(function (r) { return r.key === 'LMCA'; })[0].srcLabel, '深圳 SZ', 0);
+check('LCX 主行标签＝四川 2025',
+  szRows.filter(function (r) { return r.key === 'LCX'; })[0].srcLabel, '四川 2025', 0);
+
 /* ================================================================== *
  * 15. 新生儿体重法（深圳 2014，0–28 天，n=288）
  * ================================================================== */

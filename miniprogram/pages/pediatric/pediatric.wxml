@@ -159,6 +159,7 @@
             <view class="z-row {{row.hasValue ? '' : 'z-row--none'}}">
               <view class="z-row__name">
                 {{row.name}}（{{row.key}}）
+                <text wx:if="{{row.srcLabel}}" class="z-row__src">{{row.srcLabel}}</text>
                 <text class="z-row__name-sub">均值 {{row.subText}}</text>
               </view>
               <text class="z-row__val">{{row.value}}{{row.hasValue ? row.unit : ''}}</text>
@@ -343,14 +344,23 @@
 
       <view class="note note--strong">
         <text style="font-weight:600">文献</text>{{'\n'}}
-        R8 Lopez L, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979.（PHN）{{'\n'}}
-        R76 Kampmann C, et al. Heart. 2000;83(6):667-672.{{'\n'}}
-        R77 Wang SS, et al. J Clin Ultrasound. 2018;46(5):328-333.（左心 n=545）{{'\n'}}
-        R78 Wang SS, et al. J Clin Ultrasound. 2017;45(5):293-303.（右心 n=515）{{'\n'}}
-        R79 Fan SM, Xia B, Liu WX, et al. BMC Pediatr. 2021;21:429.（深圳 SZ 冠脉）{{'\n'}}
-        R80 林洲, 夏焙, 许娜, 等. 中华医学超声杂志(电子版). 2014;11(2):142-154.（新生儿体重法）{{'\n'}}
-        R83 儿童冠状动脉经胸超声心动图规范化检查中国专家共识. 中华超声影像学杂志. 2025;34(11):921-931.{{'\n'}}
-        四川 2025：王永, 蒋佳颖, 邓燕, 等. 中国当代儿科杂志. 2025;27(2):176-182.
+        本页只用 8 篇：前 7 篇在「公式集 · 参考文献」里有编号，点条目可直接跳过去看全文入口；
+        四川那篇发表较新、暂未进总表，题录写在最下面。
+      </view>
+
+      <!-- 文献导航：与公式集同一种条目样式，点一条跳到总表对应位置 -->
+      <view wx:for="{{refs}}" wx:key="id"
+            class="ref-item ref-item--jump" data-id="{{item.id}}" bindtap="onJumpRef">
+        <view class="ref-item__id">{{item.id}}</view>
+        <view class="ref-item__body">
+          <view class="ref-item__zh">{{item.zh}}</view>
+          <view class="ref-item__where">{{item.where}}</view>
+        </view>
+      </view>
+
+      <view class="note">
+        四川 2025（无 R 编号）：王永, 蒋佳颖, 邓燕, 等. 中国当代儿科杂志. 2025;27(2):176-182.
+        （n=744，0–18 岁，四段齐全含左回旋支）
       </view>
     </block>
   </view>
