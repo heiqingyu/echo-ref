@@ -140,6 +140,8 @@ Page({
 
   onKw(e) {
     const kw = e.detail.value;
+    // 同值不回写：kw 又绑在输入框 value 上，回写会再抛一次 bindinput → 递归更新警告
+    if (kw === this.data.kw) return;
     this.setData({ kw: kw, rows: this.rebuild(kw) });
   },
 

@@ -161,7 +161,10 @@ Page({
   },
 
   onSegInput(e) {
-    this.applySegKw((e.detail && e.detail.value) || '');
+    const v = (e.detail && e.detail.value) || '';
+    // 同值不回写：segKw 又绑在输入框 value 上，回写会再抛一次 bindinput → 递归更新警告
+    if (v === this.data.segKw) return;
+    this.applySegKw(v);
   },
 
   onSegClear() {

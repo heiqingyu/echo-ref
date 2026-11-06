@@ -303,8 +303,12 @@ Page({
 
   onInput(e) {
     const idx = e.currentTarget.dataset.idx;
+    const v = e.detail.value;
+    const row = this.data.inputs[idx];
+    // 同值不回写：item.value 又绑在输入框 value 上，回写会再抛一次 bindinput → 递归更新警告
+    if (row && (row.value === undefined ? '' : row.value) === v) return;
     const patch = {};
-    patch['inputs[' + idx + '].value'] = e.detail.value;
+    patch['inputs[' + idx + '].value'] = v;
     this.setData(patch);
     this.refresh();
   },
@@ -312,8 +316,11 @@ Page({
   /** ★ v1.13.15：本条 BSA 的身高 / 体重（独立于 inputs，不参与公式字段计数） */
   onBsaInput(e) {
     const k = e.currentTarget.dataset.k;
+    const v = e.detail.value;
+    const field = k === 'w' ? 'bsaW' : 'bsaH';
+    if (this.data[field] === v) return;
     const patch = {};
-    patch[k === 'w' ? 'bsaW' : 'bsaH'] = e.detail.value;
+    patch[field] = v;
     this.setData(patch);
     this.refresh();
   },

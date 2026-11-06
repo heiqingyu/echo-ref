@@ -265,9 +265,60 @@ function check(name, ok, detail) {
   // 录入身高体重年龄
   await set('pdHeight', 110); await set('pdWeight', 19); await set('pdAge', 5);
   await new Promise((r) => setTimeout(r, 600));
-  const pdMemo = await c.evalJs('window.localStorage.getItem("echoref:pedsProfile")');
-  check('身高体重写入本页记录（下次进入恢复）',
-    pdMemo && JSON.parse(pdMemo).height === '110', pdMemo);
+  // ★ 2026-11-06：默认不记，点「记住」才落盘；「重置」清存档并清空输入
+  const keepDefault = await c.evalJs('window.localStorage.getItem("echoref:data:peds")');
+  check('默认不记：不点「记住」时用户输入不落盘', keepDefault === null, keepDefault);
+
+  await c.evalJs('document.getElementById("keepPeds").click()');
+  await new Promise((r) => setTimeout(r, 300));
+  const pdMemo = await c.evalJs('window.localStorage.getItem("echoref:data:peds")');
+  check('点「记住本次输入」后落盘（含身高体重与测值）',
+    !!pdMemo && JSON.parse(pdMemo).height === '110', pdMemo);
+  check('记住开关写入本机（echoref:keep:peds）',
+    await c.evalJs('window.localStorage.getItem("echoref:keep:peds")'), '1');
+
+  await c.evalJs('document.getElementById("resetPeds").click()');
+  await new Promise((r) => setTimeout(r, 300));
+  const afterReset = await c.evalJs(`JSON.stringify({
+    data: window.localStorage.getItem('echoref:data:peds'),
+    keep: window.localStorage.getItem('echoref:keep:peds'),
+    h: document.getElementById('pdHeight').value
+  })`);
+  const ar = JSON.parse(afterReset);
+  check('「重置」清存档 + 关开关 + 清空输入',
+    ar.data === null && ar.keep !== '1' && ar.h === '', afterReset);
+
+  // 复位后重新录入，后面的断言仍按 110 / 19 / 5 走
+  await set('pdHeight', 110); await set('pdWeight', 19); await set('pdAge', 5);
+  await new Promise((r) => setTimeout(r, 500));
+
+  // ★ 首页（EF·参考值）同样有「记住 / 重置」，且同样默认不记
+  const idxKeep = await c.evalJs(`(function(){
+    var k = document.getElementById('keepIndex'), r = document.getElementById('resetIndex');
+    var before = window.localStorage.getItem('echoref:data:index');
+    document.getElementById('inHeight').value = '165';
+    document.getElementById('inHeight').dispatchEvent(new Event('input', {bubbles:true}));
+    k.click();
+    var saved = window.localStorage.getItem('echoref:data:index');
+    var onCls = k.classList.contains('kbtn--on');
+    r.click();
+    var afterReset = window.localStorage.getItem('echoref:data:index');
+    var hAfter = document.getElementById('inHeight').value;
+    // 复位，免得影响后面的断言（重置会把身高体重一起清空）
+    ['inHeight', 'inWeight'].forEach(function (id, i) {
+      var el = document.getElementById(id);
+      el.value = i === 0 ? '170' : '65';
+      el.dispatchEvent(new Event('input', {bubbles:true}));
+    });
+    return JSON.stringify({ui: !!(k && r), before: before, saved: saved,
+      onCls: onCls, afterReset: afterReset, hAfter: hAfter});
+  })()`);
+  const ik = JSON.parse(idxKeep);
+  check('首页有记住 / 重置按钮', ik.ui ? 1 : 0, 1, idxKeep);
+  check('首页默认不记（点之前无存档）', ik.before === null ? 1 : 0, 1, idxKeep);
+  check('首页点「记住」后落盘并高亮', (ik.saved && ik.onCls) ? 1 : 0, 1, idxKeep);
+  check('首页「重置」清存档 + 清空身高',
+    (ik.afterReset === null && ik.hAfter === '') ? 1 : 0, 1, idxKeep);
 
   const zRows = await c.evalJs(
     'document.querySelectorAll("#pdGroups .pres .zrow:not(.zrow--head)").length');

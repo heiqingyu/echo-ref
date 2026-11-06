@@ -334,12 +334,42 @@ const pedJs = fsW.readFileSync(
   pathW.join(__dirname, 'miniprogram', 'pages', 'pediatric', 'pediatric.js'), 'utf8');
 check('儿童页不再从 globalData.profile 初始化身高体重',
   pedJs.indexOf('syncFromGlobal') === -1 ? 1 : 0, 1, 0);
-check('儿童页身高体重记在本机（echoref:pedsProfile）',
-  pedJs.indexOf('echoref:pedsProfile') !== -1 ? 1 : 0, 1, 0);
-check('儿童页输入即落盘（saveLocalProfile 4 处）',
-  (pedJs.match(/this\.saveLocalProfile\(\)/g) || []).length, 4, 0);
+// ★ 2026-11-06 第二轮：改成「点记住才留」，默认重新加载即清空
+check('儿童页记住开关与存档用独立键（echoref:keep:peds / echoref:data:peds）',
+  (pedJs.indexOf("'echoref:keep:peds'") !== -1 &&
+   pedJs.indexOf("'echoref:data:peds'") !== -1 &&
+   pedJs.indexOf("require('../../utils/keep.js')") !== -1) ? 1 : 0, 1, 0);
+check('儿童页每次输入都存快照（saveSnapshot 7 处，含开启记住那一次）',
+  (pedJs.match(/this\.saveSnapshot\(\)/g) || []).length, 7, 0);
+check('儿童页默认不记：onLoad 只在开关打开时读存档',
+  pedJs.indexOf('if (!keep.on(KEEP_ON)) return null;') !== -1 ? 1 : 0, 1, 0);
+check('儿童页「重置」清开关 + 清存档 + 清输入',
+  (pedJs.indexOf('onReset()') !== -1 &&
+   pedJs.indexOf('keep.drop(KEEP_DATA)') !== -1 &&
+   pedJs.indexOf("values: {}, neoInputs: neo") !== -1) ? 1 : 0, 1, 0);
+check('儿童页「记住」按钮在页首（keepbar）',
+  (wxmlPeds.indexOf('class="keepbar"') !== -1 &&
+   wxmlPeds.indexOf('bindtap="onToggleKeep"') !== -1 &&
+   wxmlPeds.indexOf('bindtap="onReset"') !== -1) ? 1 : 0, 1, 0);
 check('展开状态记在本机（echoref:pedsOpen）',
   pedJs.indexOf('echoref:pedsOpen') !== -1 ? 1 : 0, 1, 0);
+
+// ★ 2026-11-06：setData 把值写回正在输入的 <input>，3.17.x 会再抛一次 bindinput；
+//   处理函数不做同值判断就会在「更新应用过程中」再 setData ——
+//   `Component recursive update detected ... may lead to unexpected render results`。
+//   六个入口全部要守卫，缺一处就会在用户打字时刷红色告警。
+console.log('\n=== 20b. 输入回写防递归（同值直接 return）===');
+[['index', 'index.js', 'if (v === this.data.sex) return;'],
+  ['pediatric', 'pediatric.js', 'if (v === this.data.height) return;'],
+  ['formula', 'formula.js', 'if (this.data[field] === v) return;'],
+  ['calculators', 'calculators.js', 'if (v === this.data.kw) return;'],
+  ['segments', 'segments.js', 'if (v === this.data.segKw) return;'],
+  ['album', 'album.js', 'if (kw === this.data.kw) return;']
+].forEach(function (it) {
+  const src = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', it[0], it[1]), 'utf8');
+  check(it[0] + ' 输入同值守卫', src.indexOf(it[2]) !== -1 ? 1 : 0, 1, 0);
+});
 // 用户 2026-11-06：儿童页的值只留在本页，不要「保存到其他页」
 check('儿童页没有「保存到其他页」按钮',
   wxmlPeds.indexOf('保存身高体重到其他页') === -1 ? 1 : 0, 1, 0);
@@ -400,6 +430,23 @@ console.log('\n=== 21. 合并后首页（EF 计算 + 参考值同页）===');
   check('独立 EF 页已移除', appJson.pages.indexOf('pages/ef/ef'), -1, 0);
   check('tabBar 共 4 个页签', appJson.tabBar.list.length, 4, 0);
   check('首页页签名 = EF·参考值', appJson.tabBar.list[0].text === 'EF·参考值' ? 1 : 0, 1, 0);
+
+  // ★ 2026-11-06：首页也要「记住 / 重置」，且默认不记
+  const idxJs = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.js'), 'utf8');
+  const idxWxml = fsW.readFileSync(
+    pathW.join(__dirname, 'miniprogram', 'pages', 'index', 'index.wxml'), 'utf8');
+  check('首页记住开关与存档（echoref:keep:index / echoref:data:index）',
+    (idxJs.indexOf("'echoref:keep:index'") !== -1 &&
+     idxJs.indexOf("'echoref:data:index'") !== -1) ? 1 : 0, 1, 0);
+  check('首页「记住」按钮在页首（keepbar）',
+    (idxWxml.indexOf('class="keepbar"') !== -1 &&
+     idxWxml.indexOf('bindtap="onToggleKeep"') !== -1 &&
+     idxWxml.indexOf('bindtap="onReset"') !== -1) ? 1 : 0, 1, 0);
+  check('首页「重置」清开关 + 清存档',
+    (idxJs.indexOf('onReset()') !== -1 && idxJs.indexOf('keep.drop(KEEP_DATA)') !== -1) ? 1 : 0, 1, 0);
+  check('首页每次输入都存快照（saveSnapshot 6 处，含开启记住那一次）',
+    (idxJs.match(/this\.saveSnapshot\(\)/g) || []).length, 6, 0);
 
   // 非法输入：结果隐藏、实测对照退回正常参考范围
   pg.data.lvedd = '30'; pg.data.lvesd = '40';

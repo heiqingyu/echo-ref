@@ -1,6 +1,15 @@
 <view class="page-wrap">
   <view class="topfade"></view>
 
+  <!-- ★ 记住 / 重置：默认不记，重新加载即清空；点「记住」才把这次输入留下来 -->
+  <view class="keepbar">
+    <view class="keepbar__btn {{keep ? 'keepbar__btn--on' : ''}}" bindtap="onToggleKeep">
+      {{keep ? '已记住 · 点此取消' : '记住本次输入'}}
+    </view>
+    <view class="keepbar__btn keepbar__btn--reset" bindtap="onReset">重置</view>
+    <text class="keepbar__h">{{keep ? '下次打开自动恢复这份输入' : '当前不记，重新加载即清空'}}</text>
+  </view>
+
   <!-- ══════ EF 计算（合并自原「EF 计算」页，置于最上） ══════ -->
   <view class="card">
     <view class="card__title">M 型 / 二维内径测量</view>

@@ -456,7 +456,10 @@ Page({
 
   /** 搜索框输入：实时过滤（条目总量不大，直接过滤，无需防抖） */
   onSearch(e) {
-    this.applySearch((e.detail && e.detail.value) || '');
+    const v = (e.detail && e.detail.value) || '';
+    // 同值不回写：kw 又绑在搜索框 value 上，回写会再抛一次 bindinput → 递归更新警告
+    if (v === this.data.kw) return;
+    this.applySearch(v);
   },
 
   /** 搜索主体（从搜索框、清空、跨页签跳转三处共用） */

@@ -23,6 +23,43 @@ page {
   padding: 24rpx 28rpx 60rpx;
 }
 
+/* ────────── 记住 / 重置 工具条（页首，两个输入页共用） ────────── */
+.keepbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12rpx;
+  padding: 4rpx 6rpx 16rpx;
+}
+
+.keepbar__btn {
+  flex: none;
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid var(--line);
+  background: var(--card);
+  color: var(--sub);
+  font-size: 23rpx;
+  line-height: 1.3;
+}
+
+.keepbar__btn--on {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.keepbar__btn--reset {
+  color: #8a9099;
+}
+
+.keepbar__h {
+  flex: 1 0 100%;
+  font-size: 21rpx;
+  color: #9aa3ad;
+}
+
 /* 页面顶部渐隐：内容滚到页顶时淡出。
    否则「计算 EF / FS」这类按钮会被页顶裁掉上半截，只剩半个字（用户 2026-10-28 报了「乱码」，
    实际是滚动裁切：蓝底白字的「计」被切掉上半，看着像「H」）。 */

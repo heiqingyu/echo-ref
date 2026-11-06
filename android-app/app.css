@@ -508,6 +508,41 @@ html, body {
   color: var(--sub);
 }
 
+/* 记住 / 重置 工具条（页首，两个输入页共用） */
+.keepbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+.kbtn {
+  flex: none;
+  margin: 0;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--sub);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.kbtn:active { transform: scale(.96); }
+.kbtn--on {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+.kbtn--reset { color: #8a9099; }
+.khint {
+  flex: 1 0 100%;
+  font-size: 11px;
+  color: #9aa3ad;
+}
+
 /* 折叠工具条：全部展开 / 全部收起（各人习惯不同，选过的会被记住） */
 .foldbar {
   display: flex;

@@ -327,6 +327,13 @@ const html = `<!DOCTYPE html>
   <!-- ───── Tab1 EF·参考值 ───── -->
   <section class="page" id="page-index">
 
+    <!-- ★ 记住 / 重置：默认不记，重新加载即清空；点「记住」才把这次输入留下来 -->
+    <div class="keepbar">
+      <button class="kbtn" id="keepIndex">记住本次输入</button>
+      <button class="kbtn kbtn--reset" id="resetIndex">重置本页</button>
+      <span class="khint" id="keepIndexHint">当前不记，重新加载即清空</span>
+    </div>
+
     <!-- ══ EF 计算（合并自原「EF 计算」页，置于最上） ══ -->
     <div class="card">
       <div class="card__t">M 型 / 二维内径测量</div>
@@ -562,6 +569,13 @@ ${SEG_HTML}
 
   <!-- ───── Tab5 儿童 Z 值 ───── -->
   <section class="page" id="page-peds" hidden>
+
+    <!-- ★ 记住 / 重置：默认不记，重新加载即清空；点「记住」才把这次输入留下来 -->
+    <div class="keepbar">
+      <button class="kbtn" id="keepPeds">记住本次输入</button>
+      <button class="kbtn kbtn--reset" id="resetPeds">重置本页</button>
+      <span class="khint" id="keepPedsHint">当前不记，重新加载即清空</span>
+    </div>
 
     <!-- ★ 顶部分区导航：页面再长也能一步跳过去（新生儿不单列：只是末尾一张小卡） -->
     <div class="pnav">

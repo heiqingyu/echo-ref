@@ -1,6 +1,18 @@
 const core = require('../../utils/echo-core.js');
 const V = require('../../utils/version.js');
+const keep = require('../../utils/keep.js');
 const app = getApp();
+
+/**
+ * 「记住本次输入」存哪些字段
+ *
+ * 用户 2026-11-06：重新加载后输入框全清空，希望自己点一下才保留。
+ * 只存这页真正手填的东西（身高体重、性别、公式、四个内径），
+ * 参考值标准是全局设置，不跟着这一页走。
+ */
+const KEEP_ON = 'echoref:keep:index';
+const KEEP_DATA = 'echoref:data:index';
+const KEEP_FIELDS = ['sex', 'height', 'weight', 'formula', 'lvedd', 'lvesd', 'ivsd', 'lvpwd'];
 
 /* EF 分级配色（ASE 2015 阈值） */
 const EF_COLOR = {
@@ -35,6 +47,8 @@ function rewardReady() {
 Page({
   data: {
     appVersion: V.APP_VERSION,
+    // 「记住本次输入」开关（默认关：重新加载即清空）
+    keep: false,
     /* —— 受检者基本信息 —— */
     sex: 'male',
     height: '170',
@@ -76,17 +90,70 @@ Page({
   onLoad() {
     const p = app.globalData.profile;
     const m = app.globalData.measurements;
+    // ★ 默认不记：只有点过「记住本次输入」才恢复上次那份
+    const keepOn = keep.on(KEEP_ON);
+    const sv = keepOn ? keep.read(KEEP_DATA) : null;
+    const pick = function (k, fallback) {
+      return (sv && sv[k] !== undefined && sv[k] !== '') ? sv[k] : fallback;
+    };
     this.setData({
-      sex: p.sex,
-      height: String(p.height),
-      weight: String(p.weight),
+      keep: keepOn,
+      sex: pick('sex', p.sex),
+      height: String(pick('height', p.height)),
+      weight: String(pick('weight', p.weight)),
+      formula: pick('formula', this.data.formula),
       standard: app.globalData.standard,
       showReward: rewardReady(),
-      lvedd: m && m.lvedd ? String(m.lvedd) : this.data.lvedd,
-      lvesd: m && m.lvesd ? String(m.lvesd) : this.data.lvesd,
-      ivsd: m && m.ivsd ? String(m.ivsd) : this.data.ivsd,
-      lvpwd: m && m.lvpwd ? String(m.lvpwd) : this.data.lvpwd,
+      lvedd: pick('lvedd', m && m.lvedd ? String(m.lvedd) : this.data.lvedd),
+      lvesd: pick('lvesd', m && m.lvesd ? String(m.lvesd) : this.data.lvesd),
+      ivsd: pick('ivsd', m && m.ivsd ? String(m.ivsd) : this.data.ivsd),
+      lvpwd: pick('lvpwd', m && m.lvpwd ? String(m.lvpwd) : this.data.lvpwd),
     });
+    this.refresh();
+    this.doCalc();
+  },
+
+  /* ══════ 记住 / 重置 ══════ */
+
+  /** 开关打开时把本页手填的字段存一份 */
+  saveSnapshot() {
+    if (!this.data.keep) return;
+    const o = {};
+    const self = this;
+    KEEP_FIELDS.forEach(function (k) { o[k] = self.data[k]; });
+    keep.write(KEEP_DATA, o);
+  },
+
+  onToggleKeep() {
+    const v = !this.data.keep;
+    keep.setOn(KEEP_ON, v);
+    if (v) {
+      this.setData({ keep: true });
+      this.saveSnapshot();
+    } else {
+      keep.drop(KEEP_DATA);
+      this.setData({ keep: false });
+    }
+  },
+
+  /**
+   * 「重置」：清掉存档与开关，并把本页输入全部清空
+   *
+   * ★ 身高体重也要清（用户 2026-11-06：「身高体重没重置」）。
+   *   清了以后 BSA 显示 —，等用户自己填，避免又回到「默认 170/65 一直在那儿」的老问题。
+   */
+  onReset() {
+    keep.setOn(KEEP_ON, false);
+    keep.drop(KEEP_DATA);
+    this.setData({
+      keep: false,
+      sex: 'male',
+      height: '',
+      weight: '',
+      formula: 'mosteller',
+      lvedd: '', lvesd: '', ivsd: '', lvpwd: '',
+    });
+    app.globalData.measurements = null;
     this.refresh();
     this.doCalc();
   },
@@ -102,23 +169,43 @@ Page({
 
   /* ══════ 受检者基本信息 ══════ */
 
+  /**
+   * ★ 值没变就直接返回
+   *
+   * 基础库 3.17.x：setData 把值写回正在输入的 <input>，视图层会再抛一次 bindinput
+   * （值相同）。不判断就会在「更新正在应用」的同步过程中再调 setData，
+   * 触发 `Component recursive update detected ... may lead to unexpected render results`
+   * （2026-11-06 用户报「点参考值 TAB 也报错」）。同一值直接 return 即可断链。
+   */
   onSex(e) {
-    this.setData({ sex: e.currentTarget.dataset.v });
+    const v = e.currentTarget.dataset.v;
+    if (v === this.data.sex) return;
+    this.setData({ sex: v });
+    this.saveSnapshot();
     this.refresh();
   },
 
   onHeight(e) {
-    this.setData({ height: e.detail.value });
+    const v = e.detail.value;
+    if (v === this.data.height) return;
+    this.setData({ height: v });
+    this.saveSnapshot();
     this.refresh();
   },
 
   onWeight(e) {
-    this.setData({ weight: e.detail.value });
+    const v = e.detail.value;
+    if (v === this.data.weight) return;
+    this.setData({ weight: v });
+    this.saveSnapshot();
     this.refresh();
   },
 
   onFormula(e) {
-    this.setData({ formula: e.currentTarget.dataset.v });
+    const v = e.currentTarget.dataset.v;
+    if (v === this.data.formula) return;
+    this.setData({ formula: v });
+    this.saveSnapshot();
     this.refresh();
   },
 
@@ -177,9 +264,13 @@ Page({
 
   onInput(e) {
     const k = e.currentTarget.dataset.k;
+    const v = e.detail.value;
+    // 同值不回写：否则 setData 写回输入框会再抛一次 bindinput，形成递归更新
+    if ((this.data[k] === undefined ? '' : this.data[k]) === v) return;
     const patch = {};
-    patch[k] = e.detail.value;
+    patch[k] = v;
     this.setData(patch);
+    this.saveSnapshot();
     if (this.data.hasResult) this.doCalc();
   },
 

@@ -519,6 +519,41 @@ html, body {
   color: var(--sub);
 }
 
+/* 记住 / 重置 工具条（页首，两个输入页共用） */
+.keepbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+.kbtn {
+  flex: none;
+  margin: 0;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--sub);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.kbtn:active { transform: scale(.96); }
+.kbtn--on {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+.kbtn--reset { color: #8a9099; }
+.khint {
+  flex: 1 0 100%;
+  font-size: 11px;
+  color: #9aa3ad;
+}
+
 /* 折叠工具条：全部展开 / 全部收起（各人习惯不同，选过的会被记住） */
 .foldbar {
   display: flex;
@@ -2338,6 +2373,13 @@ button.fx-nav__c {
   <!-- ───── Tab1 EF·参考值 ───── -->
   <section class="page" id="page-index">
 
+    <!-- ★ 记住 / 重置：默认不记，重新加载即清空；点「记住」才把这次输入留下来 -->
+    <div class="keepbar">
+      <button class="kbtn" id="keepIndex">记住本次输入</button>
+      <button class="kbtn kbtn--reset" id="resetIndex">重置本页</button>
+      <span class="khint" id="keepIndexHint">当前不记，重新加载即清空</span>
+    </div>
+
     <!-- ══ EF 计算（合并自原「EF 计算」页，置于最上） ══ -->
     <div class="card">
       <div class="card__t">M 型 / 二维内径测量</div>
@@ -2476,7 +2518,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.15.9</div>
+    <div class="verline">心脏超声参考值 · v1.16.0</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2534,7 +2576,7 @@ button.fx-nav__c {
         <div id="aliasList" hidden></div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.15.9</div>
+      <div class="verline">心脏超声参考值 · v1.16.0</div>
       <div class="note note--warn">
         公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
@@ -2659,6 +2701,13 @@ button.fx-nav__c {
 
   <!-- ───── Tab5 儿童 Z 值 ───── -->
   <section class="page" id="page-peds" hidden>
+
+    <!-- ★ 记住 / 重置：默认不记，重新加载即清空；点「记住」才把这次输入留下来 -->
+    <div class="keepbar">
+      <button class="kbtn" id="keepPeds">记住本次输入</button>
+      <button class="kbtn kbtn--reset" id="resetPeds">重置本页</button>
+      <span class="khint" id="keepPedsHint">当前不记，重新加载即清空</span>
+    </div>
 
     <!-- ★ 顶部分区导航：页面再长也能一步跳过去（新生儿不单列：只是末尾一张小卡） -->
     <div class="pnav">
@@ -22095,6 +22144,8 @@ const MATERIALS = [];
     $('bsaHint').textContent = '';
     setText('calcBsaNote', CALC_LIST_DESC);
 
+    idxSaveKeep();   // 记住开关打开时，身高体重 / 性别 / 公式一变就落盘
+
     // 参考值列表、EF 结果（LVM/BSA）与计算页都依赖 BSA，一并刷新
     renderEF();
   }
@@ -22204,6 +22255,104 @@ const MATERIALS = [];
   /* 五、Tab1 EF 计算（与参考值同页，置于卡片最上方） */
 
   const EF_IDS = ['efLvedd', 'efLvesd', 'efIvsd', 'efLvpwd'];
+
+  /* ══════ 记住本次输入 / 重置（localStorage，键名与小程序端完全一致） ══════
+     用户 2026-11-06：重新加载后输入框全清空，希望自己点一下才保留。
+     默认不记；点「记住本次输入」后每次改动落盘，下次打开恢复；
+     「重置」把开关与存档一起清掉，回到默认清空。 */
+  const Keep = {
+    on: function (page) {
+      try { return window.localStorage.getItem('echoref:keep:' + page) === '1'; } catch (e) { return false; }
+    },
+    setOn: function (page, v) {
+      try { window.localStorage.setItem('echoref:keep:' + page, v ? '1' : '0'); } catch (e) { /* 存不下就算了 */ }
+    },
+    read: function (page) {
+      try {
+        const raw = window.localStorage.getItem('echoref:data:' + page);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    },
+    write: function (page, obj) {
+      try { window.localStorage.setItem('echoref:data:' + page, JSON.stringify(obj)); } catch (e) { /* 同上 */ }
+    },
+    drop: function (page) {
+      try {
+        window.localStorage.removeItem('echoref:data:' + page);
+        window.localStorage.removeItem('echoref:keep:' + page);
+      } catch (e) { /* 没有就没有 */ }
+    },
+  };
+
+  /** 「记住」按钮的两种样子（两个页各一套） */
+  function keepBtnUI(id, hintId, on) {
+    const b = $(id);
+    if (b) {
+      b.textContent = on ? '已记住 · 点此取消' : '记住本次输入';
+      b.classList.toggle('kbtn--on', !!on);
+    }
+    const h = $(hintId);
+    if (h) h.textContent = on ? '下次打开自动恢复这份输入' : '当前不记，重新加载即清空';
+  }
+
+  /* ── 首页（EF·参考值）：身高体重 / 性别 / 公式 / 四个内径 ── */
+  function idxSnapshot() {
+    const o = {
+      sex: state.sex,
+      formula: state.formula,
+      height: $('inHeight').value,
+      weight: $('inWeight').value,
+    };
+    EF_IDS.forEach(function (id) { o[id] = $(id).value; });
+    return o;
+  }
+
+  function idxSaveKeep() {
+    if (!Keep.on('index')) return;
+    Keep.write('index', idxSnapshot());
+  }
+
+  function idxRestore() {
+    const on = Keep.on('index');
+    keepBtnUI('keepIndex', 'keepIndexHint', on);
+    if (!on) return;
+    const s = Keep.read('index');
+    if (!s) return;
+    if (s.sex) { state.sex = s.sex; setSeg('sex', s.sex); }
+    if (s.formula) { state.formula = s.formula; setSeg('formula', s.formula); }
+    if (s.height) $('inHeight').value = s.height;
+    if (s.weight) $('inWeight').value = s.weight;
+    EF_IDS.forEach(function (id) { if (s[id]) $(id).value = s[id]; });
+  }
+
+  function idxToggleKeep() {
+    const v = !Keep.on('index');
+    Keep.setOn('index', v);
+    if (v) Keep.write('index', idxSnapshot());
+    else Keep.drop('index');
+    keepBtnUI('keepIndex', 'keepIndexHint', v);
+  }
+
+  /** 首页「重置」：删存档 + 关开关 + 本页输入全部清空（身高体重也清） */
+  function idxReset() {
+    Keep.drop('index');
+    keepBtnUI('keepIndex', 'keepIndexHint', false);
+    $('inHeight').value = '';
+    $('inWeight').value = '';
+    state.sex = 'male';
+    state.formula = 'mosteller';
+    setSeg('sex', 'male');
+    setSeg('formula', 'mosteller');
+    EF_IDS.forEach(function (id) { $(id).value = ''; });
+    renderIndex();
+    renderEF();
+  }
+
+  if ($('keepIndex')) $('keepIndex').addEventListener('click', idxToggleKeep);
+  if ($('resetIndex')) $('resetIndex').addEventListener('click', idxReset);
+  ['inHeight', 'inWeight'].concat(EF_IDS).forEach(function (id) {
+    if ($(id)) $(id).addEventListener('input', idxSaveKeep);
+  });
 
   function renderEF() {
     const lvedd = parseFloat($('efLvedd').value);
@@ -25711,39 +25860,63 @@ const MATERIALS = [];
   }
 
   /**
-   * 儿童页自己的身高体重 / 年龄 / 性别，记在本机
+   * 儿童页自己的身高体重 / 年龄 / 性别 / 41 项测值，存不存由「记住」按钮决定
    *
    * ★ 不能用成人页的默认值（170 cm / 65 kg）来预填：儿童页一打开就是这组数，
    *   等于每次都在给一个不存在的孩子算 Z 值（用户 2026-11-06 反馈）。
-   *   本页只认自己上次填的，没记录就留空。
+   * ★ 默认不记：重新进页面即清空。点「记住本次输入」后才落盘（同上，2026-11-06）。
    */
-  const PD_PROFILE_KEY = 'echoref:pedsProfile';
-
-  function pdLoadProfile() {
-    try {
-      const raw = window.localStorage.getItem(PD_PROFILE_KEY);
-      if (raw) return JSON.parse(raw) || {};
-    } catch (e) { /* 读不到就当没填过 */ }
-    return {};
+  function pdSnapshot() {
+    const o = {
+      height: $('pdHeight').value,
+      weight: $('pdWeight').value,
+      age: $('pdAge').value,
+      sex: state.pdsex || 'male',
+      values: {},
+    };
+    Object.keys(pdVal).forEach(function (k) { o.values[k] = pdVal[k]; });
+    return o;
   }
 
   function pdSaveProfile() {
-    try {
-      window.localStorage.setItem(PD_PROFILE_KEY, JSON.stringify({
-        height: $('pdHeight').value,
-        weight: $('pdWeight').value,
-        age: $('pdAge').value,
-        sex: state.pdsex || 'male',
-      }));
-    } catch (e) { /* 存不下就算了 */ }
+    if (!Keep.on('peds')) return;
+    Keep.write('peds', pdSnapshot());
   }
 
   function pdRestoreProfile() {
-    const pr = pdLoadProfile();
+    const on = Keep.on('peds');
+    keepBtnUI('keepPeds', 'keepPedsHint', on);
+    if (!on) return;
+    const pr = Keep.read('peds') || {};
     if (pr.height) $('pdHeight').value = pr.height;
     if (pr.weight) $('pdWeight').value = pr.weight;
     if (pr.age) $('pdAge').value = pr.age;
     if (pr.sex) { state.pdsex = pr.sex; setSeg('pdsex', pr.sex); }
+    if (pr.values) Object.keys(pr.values).forEach(function (k) { pdVal[k] = pr.values[k]; });
+  }
+
+  function pdToggleKeep() {
+    const v = !Keep.on('peds');
+    Keep.setOn('peds', v);
+    if (v) Keep.write('peds', pdSnapshot());
+    else Keep.drop('peds');
+    keepBtnUI('keepPeds', 'keepPedsHint', v);
+  }
+
+  /** 儿童页「重置」：删存档 + 关开关 + 清空本页输入 */
+  function pdResetPeds() {
+    Keep.drop('peds');
+    keepBtnUI('keepPeds', 'keepPedsHint', false);
+    ['pdHeight', 'pdWeight', 'pdAge'].forEach(function (id) { $(id).value = ''; });
+    state.pdsex = 'male';
+    setSeg('pdsex', 'male');
+    Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
+    Object.keys(pdNeoVal).forEach(function (k) { delete pdNeoVal[k]; });
+    pdNeoOpen = false;
+    pdNeoAuto = false;
+    buildPedsGroups();
+    buildNeoInputs();
+    renderPeds();
   }
 
   /** 参数在界面上的显示单位 */
@@ -25806,6 +25979,7 @@ const MATERIALS = [];
         const k = inp.dataset.pk;
         if (inp.value === '') delete pdVal[k];
         else pdVal[k] = inp.value;
+        pdSaveProfile();   // 记住开关打开时，测值也跟着存
         renderPeds();
       });
     });
@@ -26216,6 +26390,9 @@ const MATERIALS = [];
     this.textContent = open ? '收起说明' : '展开说明';
   });
 
+  if ($('keepPeds')) $('keepPeds').addEventListener('click', pdToggleKeep);
+  if ($('resetPeds')) $('resetPeds').addEventListener('click', pdResetPeds);
+
   $('pdClear').addEventListener('click', function () {
     Object.keys(pdVal).forEach(function (k) { delete pdVal[k]; });
     Object.keys(pdNeoVal).forEach(function (k) { delete pdNeoVal[k]; });
@@ -26223,12 +26400,18 @@ const MATERIALS = [];
     buildPedsGroups();
     buildNeoInputs();
     renderPeds();
+    pdSaveProfile();   // 记住开着时把「已清空」也存下去，免得刷新后又冒出来
   });
 
   /* 七、重置 */
 
   $('resetBtn').addEventListener('click', function () {
     if (!confirm('确定要清空全部输入与结果吗？')) return;
+
+    Keep.drop('index');   // 全局重置 = 也把「记住」的存档一起清掉
+    Keep.drop('peds');
+    keepBtnUI('keepIndex', 'keepIndexHint', false);
+    keepBtnUI('keepPeds', 'keepPedsHint', false);
 
     $('inHeight').value = 170;
     $('inWeight').value = 65;
@@ -26361,6 +26544,7 @@ const MATERIALS = [];
     // 基本参数默认值
     $('inHeight').value = state.height;
     $('inWeight').value = state.weight;
+    idxRestore();          // 点过「记住」的话，用存档覆盖默认值
     $('appbarTitle').textContent = TAB_TITLE[currentTab];
 
     buildCalcInputs();
