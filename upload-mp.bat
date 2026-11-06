@@ -25,7 +25,17 @@ if not exist "%IDE%\cli.bat" (
   exit /b 1
 )
 
-echo [1/3] 检查开发者工具登录状态...
+echo [1/4] 包体自检（单文件 500KB 门槛 / 主包 2MB 上限）...
+node check-mp-size.js
+if errorlevel 2 (
+  echo.
+  echo [错误] 包体自检未通过，见上方阻塞项。
+  echo        超 500KB 的 JS 会被跳过转译，上传包不完整，真机白屏。
+  pause
+  exit /b 1
+)
+echo.
+echo [2/4] 检查开发者工具登录状态...
 cd /d "%IDE%"
 call cli.bat islogin
 if errorlevel 1 (
@@ -39,7 +49,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [2/3] 上传中（首次可能要 1-3 分钟）...
+echo [3/4] 上传中（首次可能要 1-3 分钟）...
 call cli.bat upload --project "%PROJ%" -v %VER% -d "%DESC%"
 if errorlevel 1 (
   echo.
@@ -51,6 +61,9 @@ if errorlevel 1 (
 echo.
 echo ============================================
 echo  上传成功 v%VER%
-echo  接下来：微信公众平台 - 版本管理 - 提交审核 或 设为体验版
+echo  接下来（按顺序做，别跳）：
+echo    1. 看上方上传日志的「已跳过处理」列表——必须为空
+echo    2. 设为体验版，用手机打开，逐页点一遍
+echo    3. 确认无白屏，再去公众平台提交审核
 echo ============================================
 pause

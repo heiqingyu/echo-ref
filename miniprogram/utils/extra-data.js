@@ -764,7 +764,10 @@ const LINK_SECTIONS = [
         title: '实用超声规范化检查与操作',
         sub: '王辉、王小丛 主编 · 第 3 章心血管系统 25 段 · 点开选切面',
         album: true,
-        note: '王辉、王小丛 主编 · 科学技术文献出版社 2021 年 9 月北京 · ISBN 978-7-5189-8028-4',
+        // ★ v1.15.8：专辑条目也挂 source——这本就是 R37 的配套动图，此前只在 note 里写了书名，
+        //   REFS 里 R37 因此成了「无人引用」的孤儿（2026-11-06 审计发现）
+        source: ['R37'],
+        note: '王辉、王小丛 主编 · 科学技术文献出版社 2021 年 9 月北京 · ISBN 978-7-5189-8028-4 · 参考文献 R37',
         children: BOOK_CH3_VIDEOS,
       },
       {
@@ -979,6 +982,8 @@ const REFS = [
     dl: [
       { t: '免费页面', u: 'https://publications.ersnet.org/content/erj/61/1/2200879' },
       { t: '文章页（看订阅）', u: 'https://doi.org/10.1183/13993003.00879-2022' },
+      // ★ 2026-11-06：中文解读（中华结核和呼吸杂志 2023;46(5):537-542，马双双等），链接实测 200
+      { t: '文章页（中文解读）', u: 'https://cs.medjournals.cn/article/doi/full/10.3760/cma.j.cn112147-20221020-00833' },
     ],
   },
   {
@@ -1010,6 +1015,7 @@ const REFS = [
     where: 'J Am Soc Echocardiogr, 2016, 29(4): 277–314',
     use: '舒张功能分级四步法与灰区处理（ASE 2025 已发布更新，见 R39）',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://www.yxj.org.cn/detailPage?articleId=416587' },
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/07/Eval-of-Left-Ventricular-Diastolic-Function-by-Echo-superseded.pdf' },
     ],
   },
@@ -1041,6 +1047,7 @@ const REFS = [
     where: 'Eur Heart J, 2023, 44(39): 3948–4042',
     use: '赘生物大小与栓塞风险、TEE 指征、重复超声时机',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://circ.cmt.com.cn/detail/1466208.html' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/advance-article-pdf/doi/10.1093/eurheartj/ehad193/51716381/ehad193.pdf' },
     ],
   },
@@ -1051,6 +1058,7 @@ const REFS = [
     where: 'Circulation, 2020, 142(25): e558–e631',
     use: '最大壁厚诊断阈值、LVOT 梗阻分级与猝死风险因素',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://www.cn-healthcare.com/article/20210607/wap-content-555712.html' },
       { t: '官网 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000937' },
     ],
   },
@@ -1072,6 +1080,8 @@ const REFS = [
     use: '低流量低压差 AS 的负荷试验、钙化评分与手术时机',
     dl: [
       { t: '官网 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000923' },
+      // ★ 2026-11-06：中文解读（《华西医学》2021 年刊出，全文可读），链接实测 200
+      { t: '文章页（中文解读）', u: 'https://www.gensurg.cn/article/10.7507/1002-0179.202108248' },
     ],
   },
   {
@@ -1081,6 +1091,7 @@ const REFS = [
     where: 'Eur Heart J, 2015, 36(42): 2921–2964',
     use: '缩窄性心包炎的呼吸变异、瓣环反转与鉴别路径',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://www.mdweekly.com.cn/index/article/detail?id=9762' },
       { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7539677/' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/36/42/2921/33342779/ehv318.pdf' },
     ],
@@ -1105,6 +1116,8 @@ const REFS = [
     dl: [
       { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9725093/' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/advance-article-pdf/doi/10.1093/eurheartj/ehab395/40340593/ehab395.pdf' },
+      // ★ 2026-11-06：中文解读（张倩 / 王墨扬 / 吴永健，中华心血管病杂志 2021 年 12 期），链接实测 200
+      { t: '文章页（中文解读）', u: 'https://cmab.yiigle.com/uploads/guide_html/4194.html' },
     ],
   },
   {
@@ -1156,6 +1169,7 @@ const REFS = [
     where: 'Eur Heart J, 2020, 41(4): 543–603',
     use: '右心功能不全的危险分层地位、McConnell 征与随访',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://www.cmtopdr.com/post/detail/c21854ba-d1cd-4663-bb5a-c13e3b660598' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/41/4/543/34306708/ehz405.pdf' },
     ],
   },
@@ -1166,6 +1180,7 @@ const REFS = [
     where: 'Eur Heart J, 2022, 43(41): 4229–4361',
     use: 'CTRCD 三级分档、GLS 相对下降 15% 阈值与监测节点',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://cmab.yiigle.com/uploads/guide_html/4909.html' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/43/41/4229/51099586/ehac244.pdf' },
     ],
   },
@@ -1207,6 +1222,7 @@ const REFS = [
     where: 'Eur Heart J, 2021, 42(6): 563–645',
     use: '分流性肺高压的可手术性评估、艾森曼格综合征管理',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://www.peopleapp.com/rmharticle/30017663975' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/42/6/563/39353654/ehaa554.pdf' },
     ],
   },
@@ -1419,6 +1435,7 @@ const REFS = [
     where: 'Eur Heart J, 2025, 46(43): 4462–4568',
     use: 'pregnancy-echo 判读页：mWHO 2.0 风险分级与随访强度（I 级 1–2 次 / II–III 级每季度 / IV 级劝阻妊娠）、妊娠 Heart Team 职责、围产期心肌病章节、主动脉病与妊娠',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://www.cmtopdr.com/post/detail/a876decf-9f9c-4f55-bd80-b2c1e4d5a61c' },
       { t: 'ESC 指南页', u: 'https://www.escardio.org/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/cardiovascular-diseases-during-pregnancy-management-of/' },
     ],
   },
@@ -1632,6 +1649,7 @@ const REFS = [
     en: 'Evans L, Rhodes A, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021.',
     where: 'Crit Care Med, 2021, 49(11): e1063–e1143',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://rs.yiigle.com/cmaid/1413904' },
       { t: 'SCCM 官网指南页', u: 'https://www.sccm.org/clinical-resources/guidelines/guidelines/surviving-sepsis-guidelines-2021' },
       { t: '第三方全文', u: 'https://pure.amsterdamumc.nl/files/142155987/Surviving-sepsis-campaign.pdf' },
       { t: '需订阅（DOI）', u: 'https://doi.org/10.1097/CCM.0000000000005337' },
@@ -1718,6 +1736,7 @@ const REFS = [
     en: '2025 ESC/EACTS Guidelines for the Management of Valvular Heart Disease.',
     where: 'Eur Heart J, 2025（在线先发）',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://zhxzyxldzzz.cma-cmc.com.cn/CN/10.3877/cma.j.issn.2095-6568.2025.03.001' },
       { t: '免费页面', u: 'https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines/Valvular-Heart-Disease' },
     ],
     use: '替代 R23（2021 版）。新增 / 变更：TR 五级（mild / moderate / severe / massive / torrential）、TR 介入升为 Ⅱa / Level A、孤立三尖瓣手术纳入 TRI-SCORE 风险分层、纯 AR 可考虑 TAVI（Ⅱb）、AR 反流分数双阈值（超声 ≥50% / CMR ≥40%）、AS 极重度（Vmax ≥5 m/s 或平均压差 ≥60 mmHg）、TAVI 年龄下限由 ≥75 降至 ≥70 岁；用于 aortic / tr-interv / tavr / prosthetic 四条',
@@ -1795,6 +1814,7 @@ const REFS = [
     en: 'Arbelo E, Protonotarios A, Gimeno JR, et al. 2023 ESC Guidelines for the management of cardiomyopathies.',
     where: 'Eur Heart J, 2023, 44(37): 3503–3626',
     dl: [
+      { t: '文章页（中文解读）', u: 'https://cmab.yiigle.com/uploads/guide_html/5934.html' },
       { t: '文章页（看订阅）', u: 'https://doi.org/10.1093/eurheartj/ehad194' },
     ],
     use: '心肌病的形态功能表型分类（HCM / DCM / NDLVC / ARVC / RCM）；把左室心肌致密化不全定为「左室小梁化表型」而非独立心肌病，以及小梁化表型的诊断、家族筛查与随访口径',
@@ -2069,6 +2089,8 @@ const REFS = [
     dl: [
       { t: 'DOI（需订阅）', u: 'https://doi.org/10.1161/CIR.0000000000001250' },
       { t: '官网文章页（需订阅）', u: 'https://www.ahajournals.org/doi/10.1161/CIR.0000000000001250' },
+      // ★ 2026-11-06：中文解读（中国医学论坛报 / 医学论坛网），链接实测 200
+      { t: '文章页（中文解读）', u: 'https://m.cmt.com.cn/detail/1467615.html' },
     ],
   },
   {
@@ -2857,14 +2879,14 @@ const CALC_SRC = {
   lastiff: ['R4', 'R24'],          // 左房僵硬度（LASr 相关）
   vtir: ['R32', 'R33'],            // RVOT/LVOT VTI 比替代分流
   ppm: ['R15'],                    // EOAi 与 PPM（人工瓣 2024）
-  dfun: ['R14', 'R39'],            // 舒张功能四步法 + 2025 更新
+  dfun: ['R14', 'R39', 'R71'],     // 舒张功能四步法 + 2025 更新 + 心衰 A/B 阶段筛查指标
   sync: ['R6', 'R2', 'R108'],              // CRT 与机械不同步
   lastrain: ['R4', 'R24', 'R40'],  // 左房应变三时相
   aortaidx: ['R27', 'R1'],         // 升主动脉直径指数
   mdsv: ['R40', 'R3'],             // 应变离散度
   swv: ['R2'],                     // 每搏功
   mtype: ['R2'],                   // FS / Teichholz / EPSS
-  wmsi: ['R26', 'R85'],            // 室壁运动积分 + 17 节段模式依据
+  wmsi: ['R26', 'R85', 'R84'],     // 室壁运动积分 + 17 节段模式依据（AHA 2002 命名）
   h2fpef: ['R25', 'R39'],          // H2FPEF 评分
   hfapeff: ['R25', 'R39'],         // HFA-PEFF 评分
   tavrsz: ['R62', 'R30'],          // TAVR 瓣环尺寸与 oversizing

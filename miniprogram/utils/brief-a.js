@@ -1100,7 +1100,7 @@ const SECTIONS_A = [
         sub: '右心与肺循环总论 · RAP · PASP · PVR · PADP · TAPSE/PASP 耦联',
         // ★ v1.15.4：右心评估是「右心与肺循环」整组的总论，目录移到该组组首
         moveTo: 'right',
-        source: ['R5', 'R11', 'R12', 'R107'],
+        source: ['R5', 'R11', 'R12', 'R104', 'R105', 'R107'],
         // ★ v1.14.6：RAP 由 IVC 取值，与「下腔静脉」条目双向互指（ivc 的 rel 里也有 rv）
         rel: ['ivc', 'zh-ph', 'rvfun'],
         blocks: [

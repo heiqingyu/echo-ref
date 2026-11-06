@@ -1514,7 +1514,7 @@ const SECTIONS_B = [
         ab: 'ASD',
         title: '房间隔缺损：分型、封堵与术后',
         sub: '四型定位 · 五项边缘 · 选伞与磨蚀 · 成人 ASD 四个特殊问题',
-        source: ['R32', 'R33', 'R38', 'R10', 'R91'],
+        source: ['R32', 'R33', 'R38', 'R10', 'R91', 'R109'],
         rel: ['tee-20', 'vsd', 'pda', 'pht-rev', 'pvai'],
         blocks: [
           { kind: 'h', text: '一、先定分型：四型里只有一型能封堵' },
@@ -1678,7 +1678,7 @@ const SECTIONS_B = [
         ab: 'VSD',
         title: '室间隔缺损：分型、封堵与术后',
         sub: '四型定位 · 限制性与 RVSP · 主动脉瓣脱垂 · 封堵禁忌 · 术后传导阻滞',
-        source: ['R32', 'R33', 'R38', 'R91'],
+        source: ['R32', 'R33', 'R38', 'R91', 'R109'],
         rel: ['asd', 'pda', 'pht-rev', 'aortic', 'ie'],
         blocks: [
           { kind: 'h', text: '一、分型：四型之外先排「对位不良型」' },
@@ -1827,7 +1827,7 @@ const SECTIONS_B = [
         ab: 'PDA',
         title: '动脉导管未闭：分型、封堵与术后',
         sub: 'A–E 五型 · 收缩压与舒张压两条压差 · 左肺动脉狭窄 · 早产儿处理',
-        source: ['R32', 'R33', 'R91', 'R92'],
+        source: ['R32', 'R33', 'R91', 'R92', 'R109'],
         rel: ['asd', 'vsd', 'pht-rev'],
         blocks: [
           { kind: 'h', text: '一、两套分型：形态学（总体）与 Krichenko（介入）' },
@@ -1976,7 +1976,7 @@ const SECTIONS_B = [
         ab: 'Peds',
         title: '儿童超声基础：Z 值与节段分析',
         sub: 'Z 值方法学 · 上限为何超成人 · 肥胖陷阱 · 剑下 situs · 报告该写什么 · 心衰分级',
-        source: ['R103', 'R8', 'R1', 'R109', 'R110', 'R111'],
+        source: ['R103', 'R8', 'R1', 'R76', 'R77', 'R78', 'R80', 'R109', 'R110', 'R111'],
         rel: ['tga', 'as-switch', 'dorv'],
         blocks: [
           { kind: 'h', text: '一、儿童 Z 值方法学总原则' },
@@ -2565,7 +2565,7 @@ const SECTIONS_B = [
         ab: 'DORV',
         title: '右室双出口（DORV）',
         sub: '骑跨 >50% · Lev 分型 · 术式对应',
-        source: ['R32', 'R33', 'R100'],
+        source: ['R32', 'R33', 'R99', 'R100'],
         rel: ['vsd', 'tof-pr', 'as-switch', 'fontan'],
         blocks: [
           { kind: 'h', text: '一、诊断只差「一半」' },

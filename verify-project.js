@@ -249,6 +249,38 @@ const srcBad = EX.BRIEF_SECTIONS.some(sec => sec.items.some(it =>
   it.source.some(rid => !EX.REFS.filter(r => r.id === rid).length)));
 if (!srcBad) ok('评估内容的引用编号均能在 REFS 中找到');
 else bad('存在悬空的引用编号');
+// ★ v1.15.8：REFS 里不许有「孤儿文献」——每条至少被一个判读条目 / 切面专辑 / 计算器引用
+//   2026-11-06 审计发现 7 条（R37 书、R71 心衰筛查、R76-R78+R80 儿童 Z 值、R84 17 节段命名）
+const citedRefIds = (function () {
+  const s = {};
+  const add = it => (it.source || []).forEach(r => { s[r] = 1; });
+  EX.BRIEF_SECTIONS.forEach(sec => sec.items.forEach(add));
+  (EX.LINK_SECTIONS || []).forEach(sec => sec.items.forEach(add));
+  Object.keys(EX.CALC_SRC || {}).forEach(k => (EX.CALC_SRC[k] || []).forEach(r => { s[r] = 1; }));
+  return Object.keys(s);
+})();
+const orphanRefs = EX.REFS.filter(r => citedRefIds.indexOf(r.id) < 0);
+if (!orphanRefs.length) ok('参考文献 ' + EX.REFS.length + ' 条全部被条目引用（无孤儿文献）');
+else bad('有文献没有任何条目引用: ' + orphanRefs.map(r => r.id + ' ' + r.zh).join(' / '));
+// ★ 正文里写了 [Rnn] 却忘了挂 source —— 同一处审计抓过 6 条
+const REF_TOKEN = /(?<![A-Za-z0-9])R\d{1,3}(?![0-9])/g;
+const refIdSet = {};
+EX.REFS.forEach(r => { refIdSet[r.id] = 1; });
+const missCite = [];
+EX.BRIEF_SECTIONS.forEach(sec => sec.items.forEach(it => {
+  const src = it.source || [];
+  let txt = '';
+  try { txt = EX.blockText(it.blocks || []) || ''; } catch (e) { txt = ''; }
+  if (!txt) {
+    txt = JSON.stringify(it.blocks || []);
+  }
+  const hit = {};
+  (txt.match(REF_TOKEN) || []).forEach(x => { if (refIdSet[x] && src.indexOf(x) < 0) hit[x] = 1; });
+  const ks = Object.keys(hit);
+  if (ks.length) missCite.push(it.id + '→' + ks.join(','));
+}));
+if (!missCite.length) ok('正文提到的文献编号均已挂进 source');
+else bad('正文提到但未挂引用: ' + missCite.join(' | '));
 if (EX.REFS.length === 118) ok('参考文献 118 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
