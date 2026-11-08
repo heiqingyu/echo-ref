@@ -354,6 +354,69 @@ check('儿童页「记住」按钮在页首（keepbar）',
 check('展开状态记在本机（echoref:pedsOpen）',
   pedJs.indexOf('echoref:pedsOpen') !== -1 ? 1 : 0, 1, 0);
 
+// ★ 2026-11-08：冠脉国内最通用口径＝深圳 SZ 默认显示，四川 2025 点按钮才出现
+console.log('\n=== 20a2. 冠脉两套方程的默认显示与切换 ===');
+const pedWxss = fsW.readFileSync(
+  pathW.join(__dirname, 'miniprogram', 'pages', 'pediatric', 'pediatric.wxss'), 'utf8');
+const pzJs = fsW.readFileSync(
+  pathW.join(__dirname, 'miniprogram', 'utils', 'peds-zscore.js'), 'utf8');
+check('冠脉切换状态落本机（echoref:corAlt）+ 四个入口齐全',
+  (pedJs.indexOf("'echoref:corAlt'") !== -1 &&
+   pedJs.indexOf('loadCorAlt') !== -1 && pedJs.indexOf('saveCorAlt') !== -1 &&
+   pedJs.indexOf('onToggleCorAlt') !== -1) ? 1 : 0, 1, 0);
+check('WXML 有切换按钮、四川次行受 corAlt 控制、主行带来源标签',
+  (wxmlPeds.indexOf('class="corbar"') !== -1 &&
+   wxmlPeds.indexOf('bindtap="onToggleCorAlt"') !== -1 &&
+   wxmlPeds.indexOf('row.alt && corAlt') !== -1 &&
+   wxmlPeds.indexOf('row.srcLabel') !== -1) ? 1 : 0, 1, 0);
+check('WXSS 有 .corbar__btn 按钮样式',
+  pedWxss.indexOf('.corbar__btn') !== -1 ? 1 : 0, 1, 0);
+const buildWwwJs = fsW.readFileSync(pathW.join(__dirname, 'build-www.js'), 'utf8');
+const briefBJs = fsW.readFileSync(pathW.join(__dirname, 'miniprogram', 'utils', 'brief-b.js'), 'utf8');
+check('冠脉组打 cor 标记、组说明只讲怎么用',
+  (pzJs.indexOf('cor: true') !== -1 && pzJs.indexOf('不可跨套比较') !== -1 &&
+   pzJs.indexOf("srcLabel: pm === 'sz'") !== -1) ? 1 : 0, 1, 0);
+// ★ 2026-11-08：版本考证只在对话里讨论；公式集 ped-base 保留一条精简口径说明
+check('儿童页三端不再重复「哪个版本最通用 / 国际口径对照」长文',
+  (buildWwwJs.indexOf('哪个版本最通用') === -1 &&
+   buildWwwJs.indexOf('国际口径对照') === -1 &&
+   wxmlPeds.indexOf('哪个版本最通用') === -1 &&
+   wxmlPeds.indexOf('国际口径对照') === -1 &&
+   pzJs.indexOf('kwsd.info') === -1 &&
+   pzJs.indexOf('Kobayashi') === -1 &&
+   pzJs.indexOf('深圳儿童医院自家小程序') === -1 &&
+   briefBJs.indexOf('LMS 4 / ZSP version 4') !== -1) ? 1 : 0, 1, 0);
+check('儿童页说明区只留一段默认口径（默认哪套 / 怎么切换 / 勿跨套）',
+  (wxmlPeds.indexOf('冠脉默认口径') !== -1 &&
+   wxmlPeds.indexOf('默认显示深圳 SZ') !== -1 &&
+   wxmlPeds.indexOf('显示另一套') !== -1 &&
+   wxmlPeds.indexOf('勿跨套比较') !== -1) ? 1 : 0, 1, 0);
+
+// ★ 2026-11-08：多条目小节序号统一（渲染层生成，不改 637 处原始 heading）
+console.log('\n=== 20a3. 小节标题统一编号 ===');
+const fxJs = fsW.readFileSync(
+  pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.js'), 'utf8');
+const fxWxml = fsW.readFileSync(
+  pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.wxml'), 'utf8');
+const fxWxss = fsW.readFileSync(
+  pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.wxss'), 'utf8');
+const exdJs = fsW.readFileSync(
+  pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'), 'utf8');
+check('extra-data 导出 secList / cnNo',
+  (exdJs.indexOf('secList: secList') !== -1 && exdJs.indexOf('function cnNo') !== -1) ? 1 : 0, 1, 0);
+check('secList 保留已有编号、只在整条无编号时自动编号（不挤位）',
+  exdJs.indexOf('if (hasNum && !m) sub = true;') !== -1 ? 1 : 0, 1, 0);
+check('formula.js 的 toBlocks / buildToc 都走 EX.secList',
+  (fxJs.match(/EX\.secList/g) || []).length >= 2 ? 1 : 0, 1, 0);
+check('formula.js 保留原始 b.text（编号只走 secNo + segs，不破坏交叉引用）',
+  fxJs.indexOf('o.text = b.text;') !== -1 ? 1 : 0, 1, 0);
+check('WXML 渲染 secNo、目录用 sec.no 且子级缩进',
+  (fxWxml.indexOf('b.secNo') !== -1 && fxWxml.indexOf('{{sec.no}}') !== -1 &&
+   fxWxml.indexOf('ftoc__i--sub') !== -1) ? 1 : 0, 1, 0);
+check('WXSS 有 .fx-h__no / .fx-h--sub / .ftoc__i--sub',
+  (fxWxss.indexOf('.fx-h__no') !== -1 && fxWxss.indexOf('.fx-h--sub') !== -1 &&
+   fxWxss.indexOf('.ftoc__i--sub') !== -1) ? 1 : 0, 1, 0);
+
 // ★ 2026-11-06：setData 把值写回正在输入的 <input>，3.17.x 会再抛一次 bindinput；
 //   处理函数不做同值判断就会在「更新应用过程中」再 setData ——
 //   `Component recursive update detected ... may lead to unexpected render results`。
@@ -534,7 +597,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 118 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明；R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 儿童心衰、R111 BSE 先心 TTE、R112 巴西负荷超声）', EXD.REFS.length, 118, 0);
+  check('参考文献 119 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 儿童心衰、R111 BSE 先心 TTE、R112 巴西负荷超声）', EXD.REFS.length, 119, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
@@ -935,10 +998,15 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     segSim.some(i => /anesthbeta/.test(i.url)) ? 1 : 0, 1, 0);
   // ── v1.2.4 新增的三个计算组 ──
   check('血流动力学、舒张与心功能 13 条（v1.15.4 左心评估总论移入；v1.12.8 Qp/Qs 并入先心病分流判读）', dirById('hemo').items.length, 13, 0);
-  check('右心与肺循环 7 条（v1.15.4 右心评估总论移入；v1.8.3 合并后：mpap / rvvol / papi / resist / rvsyst / tapse）',
-    dirById('right').items.length, 7, 0);
-  check('左心 / 右心总论各自在组首（v1.15.4：不再挂在心腔组）',
-    dirById('hemo').items[0].id === 'lv' && dirById('right').items[0].id === 'rv' ? 1 : 0, 1, 0);
+  check('右心与肺循环 8 条（v1.15.4 右心评估总论移入；2026-11-08 下腔静脉 IVC 由心腔组移入）',
+    dirById('right').items.length, 8, 0);
+  check('下腔静脉归右心组、不再留在心腔组',
+    dirById('right').items.some(i => i.id === 'ivc') &&
+      !dirById('chamber').items.some(i => i.id === 'ivc') ? 1 : 0, 1, 0);
+  check('舒张功能专条置血流动力学组组首，左心总论次之、右心总论仍组首（2026-11-08）',
+    dirById('hemo').items[0].id === 'dfun' &&
+    dirById('hemo').items[1].id === 'lv' &&
+    dirById('right').items[0].id === 'rv' ? 1 : 0, 1, 0);
   check('右心组条目齐全，且被合并的旧条目不再单独出现',
     ['mpap', 'rvvol', 'papi', 'resist', 'rvsyst', 'tapse']
       .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) &&
@@ -958,8 +1026,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) &&
       !['lvmih', 'rwsv', 'spher', 'volidx'].some(id => dirById('recon').items.some(i => i.id === id))
       ? 1 : 0, 1, 0);
-  check('计算类条目 3 个计算组合计 32 条（v1.15.4 左右心总论移入；另并入瓣膜病 1 / 瓣膜介入 3 / 先心 4 / 心腔 2，合计 42）',
-    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 32, 0);
+  check('计算类条目 3 个计算组合计 33 条（2026-11-08 IVC 移入右心组 +1；另并入瓣膜病 1 / 瓣膜介入 3 / 先心 4 / 心腔 2，合计 42）',
+    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 33, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -979,7 +1047,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('器械与介入组已拆散：CRT / LAD 进心腔组、LVAD 进急症组',
     ['crt', 'la'].every(id => dirById('chamber').items.some(i => i.id === id)) &&
     dirById('vascular').items.some(i => i.id === 'lvad') ? 1 : 0, 1, 0);
-  check('心腔、心肌与应变 23 条（v1.15.4 左右心总论移出 −2；v1.10.10 新增 LVNC +1；v1.14.5 新增下腔静脉 +1）', dirById('chamber').items.length, 23, 0);
+  check('心腔、心肌与应变 22 条（2026-11-08 下腔静脉移到右心组 −1）', dirById('chamber').items.length, 22, 0);
   ['rvfun', 'strain', 'la-strain', 'peri', 'cp-rm', 'ctrcd'].forEach(id => {
     check('心腔、应变与负荷含 ' + id,
       dirById('chamber').items.some(i => i.id === id) ? 1 : 0, 1, 0);

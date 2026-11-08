@@ -204,8 +204,9 @@ function buildSections() {
   headItems(sections, 'chd', ['asd', 'vsd', 'pda']);
 
   // ★ v1.15.4：右心 / 左心「总论」各自置组首，不再挂在心腔组
+  // ★ 2026-11-08：左室舒张功能专条提到血流动力学组最前，左心总论紧随其后
   headItems(sections, 'right', ['rv']);
-  headItems(sections, 'hemo', ['lv']);
+  headItems(sections, 'hemo', ['dfun', 'lv']);
 
   // ★ v1.7.7：收藏组置顶（没有收藏时不出现），每条目也记一个 fav 标记给星标用
   const favs = readFavs();

@@ -79,6 +79,8 @@ function rowsText(rows) {
 /** blocks → 视图模型（表格列数由表头决定） */
 function toBlocks(blocks) {
   let secIdx = -1;
+  const infos = EX.secList ? EX.secList(blocks) : [];
+  let infoIdx = -1;
   return (blocks || []).map(function (b) {
     if (b.kind === 'table') {
       // ★ 表格单元格也要拆行内标记：以前直接 {{c}} 输出，219 个格子会把
@@ -93,9 +95,24 @@ function toBlocks(blocks) {
         warn: !!b.warn,
       };
     }
-    const o = { kind: b.kind, text: b.text, warn: !!b.warn };
+    const o = { kind: b.kind, warn: !!b.warn };
+    // ★ 2026-11-08：小节标题统一编号（顶层「一、二、三…」，子级保持 ① / 2.1 / （一））
+    let body = b.text;
+    if (b.kind === 'h') {
+      infoIdx += 1;
+      const si = infos[infoIdx];
+      if (si) {
+        o.secNo = si.no;
+        o.secSub = si.sub;
+        body = si.text;
+      }
+    }
+    // ★ data 里保留原始 b.text（含原有「一、」编号），只让 segs 用去掉编号的 body：
+    //   标题视觉上是 secNo + segs，但搜索 / 目录 / 静态断言仍按原文匹配，
+    //   否则「统一编号」会把「一、狭窄 MS」这类原文改没，跨条目的交叉引用也会失效。
+    o.text = b.text;
     // 行内标记：**加粗** 拆成片段，渲染时用 <text class="fx-b"> 包裹
-    o.segs = MD.parseInline(b.text);
+    o.segs = MD.parseInline(body);
     // ★ v1.14.2：长段落自动切段（与网页/APK 共用 EX.paraSplit）。
     //   此前 100–560 字的正文一次性连排，手机上就是一堵墙（用户 2026-11-03 反馈）。
     if (b.kind === 'text' && EX.paraSplit) {
@@ -141,11 +158,16 @@ function toBlocks(blocks) {
 function buildToc(blocks) {
   const hs = (blocks || []).filter(function (b) { return b.kind === 'h'; });
   if (hs.length < 2) return [];
-  return hs.map(function (b, i) {
-    const full = String(b.text || '').replace(/\*\*/g, '');
-    // ★ v1.14.2：胶囊只显示「序号 + 主标题」，冒号后的副标题剪掉（与网页同策略）。
-    //   16 节的条目原来每个胶囊折两行，整块占掉半屏。
-    return { id: 'sec-' + i, t: full.split(/[：:]/)[0] || full };
+  // ★ 2026-11-08：序号与正文共用 EX.secList()，目录不再单独数一遍，
+  //   也不会再出现「1 一、xxx」这种阿拉伯 + 中文双重编号。
+  const infos = EX.secList ? EX.secList(blocks) : [];
+  return infos.map(function (s, i) {
+    return {
+      id: 'sec-' + i,
+      t: s ? s.short : String(hs[i].text || '').replace(/\*\*/g, ''),
+      no: s ? s.listNo : String(i + 1),
+      sub: s ? s.sub : false,
+    };
   });
 }
 
@@ -669,22 +691,8 @@ Page({
         parts.push('RWT ' + calc.fmt(v.rwt, 2) + ' · ' +
           (v.rwt > 0.42 ? '升高：向心性肥厚' : '正常或偏低：离心性重构'));
       }
-      // —— 左室充盈压（原独立条目已并入本组）——
-      const f = calc.lvFilling({
-        e: v.dge === undefined ? null : v.dge,
-        a: v.dga === undefined ? null : v.dga,
-        es: v.dges === undefined ? null : v.dges,
-        el: v.dgel === undefined ? null : v.dgel,
-        lavi: v.dglavi === undefined ? null : v.dglavi,
-        trv: v.dgtrv === undefined ? null : v.dgtrv,
-      });
-      if (f.ea !== undefined) parts.push('E/A ' + calc.fmt(f.ea));
-      if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + calc.fmt(f.avgEe));
-      if (f.count > 0) parts.push('充盈压升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
-      else if (v.dglavi !== undefined || v.dgtrv !== undefined) {
-        parts.push('充盈压升高指标 0 项');
-      }
-      if (f.text) parts.push('→ ' + f.text);
+      // ★ 2026-11-08：舒张功能（E/A · e′ · LAVi · TR Vmax）整体并入 dfun 专条，
+      //   这里不再重复跑一遍 lvFilling —— 同一个引擎两处调用，阈值一改就不同步。
       out = parts.join('；');
     } else if (gid === 'rv') {
       // —— 右心：RAP + PASP + PVR + PADP + PH 概率 + 右室功能 ——

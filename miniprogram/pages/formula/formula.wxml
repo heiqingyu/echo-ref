@@ -21,9 +21,9 @@
         <view class="ftoc__hd">本条目小节 · {{toc.length}}</view>
         <scroll-view scroll-y class="ftoc__list">
           <view wx:for="{{toc}}" wx:key="id" wx:for-item="sec" wx:for-index="si"
-                class="ftoc__i {{curSec === sec.id ? 'ftoc__i--on' : ''}}"
+                class="ftoc__i {{sec.sub ? 'ftoc__i--sub' : ''}} {{curSec === sec.id ? 'ftoc__i--on' : ''}}"
                 data-id="{{sec.id}}" hover-class="ftoc__i--tap" catchtap="onJumpSec">
-            <text class="ftoc__no">{{si + 1}}</text>
+            <text class="ftoc__no">{{sec.no}}</text>
             <text class="ftoc__t">{{sec.t}}</text>
           </view>
         </scroll-view>
@@ -38,7 +38,8 @@
     <block wx:if="{{blocks.length > 0}}">
       <block wx:for="{{blocks}}" wx:key="index" wx:for-item="b">
 
-        <view wx:if="{{b.kind === 'h'}}" class="fx-h" id="sec-{{b.secIdx}}">
+        <view wx:if="{{b.kind === 'h'}}" class="fx-h {{b.secSub ? 'fx-h--sub' : ''}}" id="sec-{{b.secIdx}}">
+          <text wx:if="{{b.secNo}}" class="fx-h__no">{{b.secNo}}</text>
           <text wx:for="{{b.segs}}" wx:key="index" wx:for-item="sg"
                 class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text>
         </view>

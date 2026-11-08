@@ -511,3 +511,19 @@
   font-size: 22rpx;
   color: #8a9099;
 }
+
+/* ── 统一小节序号（2026-11-08）── */
+.fx-h__no {
+  color: #2563eb;
+  font-weight: 700;
+  margin-right: 4rpx;
+}
+
+.fx-h--sub {
+  font-size: 25rpx;
+  border-left-color: #93b4ea;
+  padding-left: 22rpx;
+}
+
+.ftoc__i--sub { padding-left: 56rpx; }
+.ftoc__i--sub .ftoc__t { font-size: 23rpx; color: #6b7280; }

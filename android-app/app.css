@@ -2346,6 +2346,40 @@ button.fx-nav__c {
    一见到该字符串就提前结束样式表，剩余注释会变成页面顶部的可见文字
    （2026-10-22 就因此泄漏了一段说明文字）。要提它请写成「style 闭标签」。*/
 
+/* ── 冠脉：默认只显示国内最通用的深圳 SZ，另一套点按钮才出现（2026-11-08）──
+   ★ 必须留在上面「瓣膜专页」标记之前：stripCssBlock 会把该标记到 style 闭标签
+   整段删掉。2026-11-08 曾把这组规则 append 到文件末尾，结果 docs/index.html
+   （= APK 内嵌页 / Pages）里 .corbar 无样式、四川次行默认就该隐藏却一直显示。*/
+.pdGroups--noalt .zrow--alt { display: none; }
+
+.corbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 10px;
+}
+
+.corbar__btn {
+  flex: none;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #c9dcf5;
+  background: var(--brand-soft, #eaf2fb);
+  color: var(--brand, #1f6fd0);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.corbar__h { font-size: 11px; color: var(--sub, #9aa3ad); }
+
+/* ── 统一小节序号（2026-11-08）：顶层「一、二、三…」，子级 ① / 2.1 / （一）保持原样 ── */
+.fx-h__no { color: var(--brand); font-weight: 700; margin-right: 2px; }
+.fx-h--sub { font-size: 13px; padding-left: 14px; border-left-color: #93b4ea; }
+.ftoc__i--sub { padding-left: 30px; }
+.ftoc__i--sub .ftoc__t { font-size: 11.5px; color: var(--sub); }
+
 /* 瓣膜评估页（AS / AR / MS / MR / TR） */
 
 .vswitch {
@@ -2566,3 +2600,6 @@ button.fx-nav__c {
 .phit__r { flex: none; text-align: right; }
 
 .phit__s { margin-top: 3px; font-size: 11px; color: var(--sub); }
+
+/* 冠脉按钮与统一小节序号的样式已上移到「瓣膜专页」标记之前：
+   本行之后的 CSS 会被发布版 stripCssBlock 整段裁掉，勿在此追加规则。 */

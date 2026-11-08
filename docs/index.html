@@ -2357,6 +2357,40 @@ button.fx-nav__c {
    一见到该字符串就提前结束样式表，剩余注释会变成页面顶部的可见文字
    （2026-10-22 就因此泄漏了一段说明文字）。要提它请写成「style 闭标签」。*/
 
+/* ── 冠脉：默认只显示国内最通用的深圳 SZ，另一套点按钮才出现（2026-11-08）──
+   ★ 必须留在上面「瓣膜专页」标记之前：stripCssBlock 会把该标记到 style 闭标签
+   整段删掉。2026-11-08 曾把这组规则 append 到文件末尾，结果 docs/index.html
+   （= APK 内嵌页 / Pages）里 .corbar 无样式、四川次行默认就该隐藏却一直显示。*/
+.pdGroups--noalt .zrow--alt { display: none; }
+
+.corbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 10px;
+}
+
+.corbar__btn {
+  flex: none;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #c9dcf5;
+  background: var(--brand-soft, #eaf2fb);
+  color: var(--brand, #1f6fd0);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.corbar__h { font-size: 11px; color: var(--sub, #9aa3ad); }
+
+/* ── 统一小节序号（2026-11-08）：顶层「一、二、三…」，子级 ① / 2.1 / （一）保持原样 ── */
+.fx-h__no { color: var(--brand); font-weight: 700; margin-right: 2px; }
+.fx-h--sub { font-size: 13px; padding-left: 14px; border-left-color: #93b4ea; }
+.ftoc__i--sub { padding-left: 30px; }
+.ftoc__i--sub .ftoc__t { font-size: 11.5px; color: var(--sub); }
+
 </style>
 </head>
 <body>
@@ -2890,13 +2924,15 @@ button.fx-nav__c {
         </div>
         <div class="note note--warn">
           <b>文献</b><br>
-          本页只用 8 篇：前 7 篇在「公式集 · 参考文献」里有编号，点条目可直接跳过去看全文入口；
-          四川那篇发表较新、暂未进总表，题录写在最下面。
+          本页用 8 篇，全部已进「公式集 · 参考文献」总表；点任一条可直接跳过去看全文入口
+          （四川 2025 现为 R119）。
         </div>
         <div id="pdRefs"></div>
-        <div class="note">
-          四川 2025（无 R 编号）：王永, 蒋佳颖, 邓燕, 等. 中国当代儿科杂志. 2025;27(2):176-182.
-          （n=744，0–18 岁，四段齐全含左回旋支）
+        <div class="note note--strong">
+          <b>冠脉默认口径</b><br>
+          国内无统一标准（2025 中国专家共识）。本页默认显示深圳 SZ（R79，6 省 9 中心 842 例）；
+          点冠脉组「显示另一套」可并列四川 2025（R119），LCX 深圳未测处用四川。
+          两套按 ln 尺度建模，±2SD 上下不对称；同一患儿随访请固定一套，勿跨套比较。
         </div>
       </div>
     </div>
@@ -4166,13 +4202,10 @@ const PEDS_GROUPS = [
   {
     title: '冠状动脉',
     keys: ['LMCA', 'LAD', 'LCX', 'RCA'],
-    note: '主行＝深圳 SZ 法（Fan 2021，6 省 9 中心 n=842，1 月龄–17 岁）；次行＝四川 2025' +
-      '（n=744，0–18 岁）。两套都是中国儿童队列，但人群不同，同一测值可差 1 个 Z 以上' +
-      '（LAD 2.6 mm、BSA 1.0：深圳 +1.25 / 四川 +2.43）；LCX 只有四川一套。' +
-      '两者都按 ln 尺度建模，正常范围是乘性区间、上下不对称，' +
-      '不可写成「均值 ± 2SD」。深圳儿童医院自家小程序用的是夏焙团队 2012/2013 方程，' +
-      '与本页两套都不同源，同一测值可再差 0.5–1 个 Z。' +
-      '两套不可跨套比较：同一患儿随访请始终用同一套。',
+    cor: true,   // ★ 只有本组带「显示另一套」切换按钮（2026-11-08）
+    note: '★ 默认主行＝深圳 SZ（R79，6 省 9 中心 n=842）；点「显示另一套」展开四川 2025（R119，n=744）。' +
+      'LCX 深圳队列未测，该行即四川、无次行。两套均按 ln 尺度建模，±2SD 为乘性区间、上下不对称。' +
+      '★ 两套不可跨套比较：同一患儿随访请始终固定同一套。',
   },
   { title: '肺动脉', keys: ['PVSAX', 'PVLAX', 'MPA', 'RPA', 'LPA'] },
   { title: '二尖瓣', keys: ['MVAP', 'MVLAT', 'MVA'] },
@@ -11294,33 +11327,9 @@ const SECTIONS_A = [
           },
           { kind: 'text', text: '判读顺序：① **先量准**（切面、时相、有无调节束）；② **定构型**（LVMI × RWT 四格）；③ **看三对矛盾**——「壁厚 vs 心腔」（厚壁小腔偏压力负荷、厚壁大腔偏容量或运动）、「壁厚 vs 心电图电压」（壁厚高、电压低 → 淀粉样变）、「肥厚 vs 应变分布」（心尖保留 → 淀粉样变；应变减低区与肥厚区重合 → HCM）；④ 仍定不了，交给 CMR 与实验室（游离轻链、肌钙蛋白、NT-proBNP、基因检测）。' },
           { kind: 'note', text: '四条里最容易被写成「心肌病」的是运动心脏，最容易被漏掉的是淀粉样变：壁厚 14 mm、电压不高、心尖保留三条凑齐时，先查游离轻链与核素显像，别按「高血压性心脏病」随访——两者的用药禁忌完全不同。', warn: true },
-          { kind: 'h', text: '左室充盈压综合判读（四步定级）' },
-          { kind: 'text', text: 'E/e′ 单点值受节段性室壁运动异常、二尖瓣环钙化、心包疾病、机械通气影响；E/A 又会随年龄「假性正常化」。2016 ASE/EACVI 因此改为**多指标综合**：先看 E/A 决定路径，再用三个「升高指标」计数定级。' },
-          {
-            kind: 'table',
-            heads: ['升高指标', '正常阈值', '升高阈值', '备注'],
-            rows: [
-              ['平均 E/e′（间隔+侧壁 ÷2）', '≤14', '>14', '间隔 e′<7 cm/s 或侧壁 e′<10 cm/s 即提示松弛受损'],
-              ['左房容积指数 LAVi', '≤34 mL/m²', '>34 mL/m²', '比左房内径可靠，房颤者不可用'],
-              ['三尖瓣反流峰速 TR Vmax', '≤2.8 m/s', '>2.8 m/s', '反映收缩期肺动脉压，间接反映左房压'],
-            ],
-          },
-          { kind: 'text', text: '判读路径：① E/A ≥2 → 直接判 Ⅲ 级（限制性充盈）。② E/A ≤0.8 → 基础为 Ⅰ 级；若平均 E/e′ >14 或升高指标 ≥2 项，升级为 Ⅱ 级。③ E/A 0.8–2（灰区）→ 按升高指标计数：0 项正常、1 项 Ⅰ 级、2 项 Ⅱ 级、3 项 Ⅲ 级。' },
-          {
-            kind: 'table',
-            heads: ['等级', '充盈模式', '左房压', '临床提示'],
-            rows: [
-              ['正常', 'E/A 0.8–2，指标 0 项', '正常', '—'],
-              ['Ⅰ级', '松弛受损，E/A<0.8', '正常或轻度升高', '高血压、衰老、肥厚型心肌病早期'],
-              ['Ⅱ级', '假性正常化，E/A 0.8–2', '升高', 'HFpEF 常见；Valsalva 后 E/A 下降可证实'],
-              ['Ⅲ级', '限制性，E/A≥2', '明显升高', '预后差，需限钠/利尿并查找病因'],
-            ],
-          },
-          { kind: 'h', text: '三个最常见的踩坑点' },
-          { kind: 'text', text: '① **房颤患者**：E/A 无法测量，改用 E/e′ + LAVi + TR Vmax 三项计数，≥2 项升高提示左房压高。' },
-          { kind: 'text', text: '② **缩窄性心包炎**：会出现「限制性充盈」，但 E/e′ 通常不高（室间隔反常在吸气时右移），需结合呼吸变异与室间隔抖动鉴别（见「缩窄性心包炎 vs 限制型心肌病」）。' },
-          { kind: 'text', text: '③ **重度二尖瓣反流 / 狭窄**：跨瓣血流本身异常，充盈压判读可靠性下降，应以右心、PASP 与临床为主。' },
-          { kind: 'note', text: '充盈压计算器为简化版（未纳入 E 波减速时间、肺静脉 A 波时限、L 波），仅用于快速分级；灰区与临床不符时以完整评估为准。上述分级来自欧美指南的体型校正式阈值，中国成人原始参考区间见「EF·参考值」页；体型差异大时建议同时看按身高（H^2.7）与体表面积（BSA）校准的指标。', warn: true },
+          { kind: 'h', text: '舒张功能与左房压：请用专条，不在这里重复' },
+          { kind: 'text', text: '**舒张功能分级、左房压与充盈压是独立的评估链条**，统一放在公式集的「左室舒张功能（E/A · E/e′ · E/Vp · 分级）」条目：那里同时给出 2016 ASE/EACVI 四步法、ASE 2025 三条主判据、E/Vp 与平均 E/e′，并给出「两套结论不一致时并列写明」的报告口径。' },
+          { kind: 'note', text: '以前本条把 E/A、E/e′、LAVi、TR Vmax 又收了一遍、还带一套 2016 分级，与专条同源同算法却各填一遍数，改阈值时两处容易不同步。现在本条只保留左室结构与收缩功能（LVMI / RWT / 几何构型 / 壁厚鉴别 / EF 版本差异），舒张功能请点下方「相关计算」里的「左室舒张功能」。', links: ['dfun'] },
           { kind: 'h', text: '附：EF 的上下限与版本差异' },
           { kind: 'text', text: 'ASE/EACVI 2015 定量指南按性别给出 EF 正常范围：**男性 52–72%、女性 54–74%**，两端都要看。下限低于旧习惯的「≥55% 不分性别」—— 按旧标准，女性 EF 54% 会被误判为「减低」、男性 53% 反而算正常。报告引用 EF 正常范围时写成区间并注明性别与依据版本（如 ASE 2015）。' },
           { kind: 'text', text: '**上限**：男性 >72%、女性 >74% 即超出正常范围，临床习惯以 **>75%** 为界。EF 偏高先分两种：① 真高动力 —— 贫血、甲亢、脓毒症、动静脉瘘、容量负荷过重、β 受体激动剂、肝硬化等高排低阻状态；② 测量误差 —— Teichholz / Quinones 法在扩大的左室容易高估、心尖缩短（apical foreshortening）漏掉真正心尖、左室过长或切线位切面。超过 75% 时建议改用 Simpson 双平面复核，并同时看 ESVi、GLS 与左室大小：**左室扩大 + EF 偏高**提示高排低阻或显著反流，而不是「心功能特别好」。' },
@@ -11329,15 +11338,9 @@ const SECTIONS_A = [
         fields: [
           { k: 'lvmi', n: '左室质量指数', u: 'g/m²' },
           { k: 'rwt', n: '相对室壁厚度（可选）', u: '' },
-          { k: 'dge', n: 'E 峰', u: 'cm/s' },
-          { k: 'dga', n: 'A 峰', u: 'cm/s' },
-          { k: 'dges', n: '间隔 e′', u: 'cm/s' },
-          { k: 'dgel', n: '侧壁 e′', u: 'cm/s' },
-          { k: 'dglavi', n: 'LAVi（可选）', u: 'mL/m²' },
-          { k: 'dgtrv', n: 'TR Vmax（可选）', u: 'm/s' },
         ],
         calc: 'lv',
-        note: 'LVMI 按性别对照分级，RWT 判断肥厚类型（向心 vs 离心）；E/A + 三个升高指标给出充盈压分级。两部分可分开填。',
+        note: 'LVMI 按性别对照分级，RWT 判断肥厚类型（向心 vs 离心）。舒张功能与左房压请用「左室舒张功能」专条，本条不再重复收 E/A 与 e′。',
       },
       {
         id: 'rv',
@@ -11498,6 +11501,9 @@ const SECTIONS_A = [
         ab: 'IVC',
         title: '下腔静脉：内径 · 变异度 · 各状态下的写法',
         sub: '量法三细节 · cIVC / dIVC 两个公式 · 九种状态的报告句式 · ICU 退路',
+        // ★ 2026-11-08：IVC 是 RAP / 右房压的入口，归「右心与肺循环」组，
+        //   放在「心腔、心肌与应变」里和左心结构混在一起，找右心条目时看不到。
+        moveTo: 'right',
         source: ['R5', 'R104', 'R105', 'R106', 'R107'],
         rel: ['rv', 'rvfun'],
         fields: [
@@ -15266,7 +15272,9 @@ const SECTIONS_B = [
         ab: 'Peds',
         title: '儿童超声基础：Z 值与节段分析',
         sub: 'Z 值方法学 · 上限为何超成人 · 肥胖陷阱 · 剑下 situs · 报告该写什么 · 心衰分级',
-        source: ['R103', 'R8', 'R1', 'R76', 'R77', 'R78', 'R80', 'R109', 'R110', 'R111'],
+        // ★ 2026-11-08：新增「冠脉 Z 值用哪一套」一节，三篇冠脉常模都要挂上，
+        //   否则 verify-project 的「无孤儿文献 / 正文提到必挂 source」会抓到 R119
+        source: ['R103', 'R8', 'R1', 'R76', 'R77', 'R78', 'R80', 'R109', 'R110', 'R111', 'R79', 'R83', 'R119'],
         rel: ['tga', 'as-switch', 'dorv'],
         blocks: [
           { kind: 'h', text: '一、儿童 Z 值方法学总原则' },
@@ -15296,6 +15304,10 @@ const SECTIONS_B = [
           { kind: 'text', text: '分期用 ACC/AHA 的 **A–D 期**，不按「当下有没有症状」临时判：A 期有危险因素、无结构病与生物标志物升高；B 期有结构病或充盈压升高证据但从未有症状；C 期有现在或既往症状；D 期优化治疗后仍反复住院[R110]。功能分级上**婴幼儿不能用 NYHA，要用 Ross 分级**（表 2）——保留 NYHA 的简洁，同时纳入了婴幼儿常见的心衰表现[R110]。' },
           { kind: 'note', text: '**写「EF」，不要写「LVEF」**：先心的体循环心室形态不一定是左室，ISHLT 2025 明确把 LVEF 改为 EF，并删掉了「EF 改善」这一档[R110]。EF 分类（表 3）：HFrEF ≤ 40%、HFmrEF 41%–49%、HFpEF ≥ 50% 且需有充盈压升高证据。但「按体循环心室 EF 分类」只是 **Ⅱb / C**，原文写明这套分级是否成立仍需进一步研究[R110]。', warn: true },
           { kind: 'text', text: '能直接落地的两条：**心衰严重度与分期的记录是 Ⅰ / C**（不是选填）；**BNP / NT-proBNP 是 Ⅰ / B**，用于已知心衰的综合评估与随访，但原文强调它只是**辅助指标、不能单独诊断**[R110]。因此先心患者报 EF 时应注明测的是哪一侧心室、用什么方法（2D 双平面还是 3D），否则跨随访的趋势没有可比性。' },
+
+          { kind: 'h', text: '七、冠状动脉 Z 值用哪一套（国内外没有统一标准）' },
+          { kind: 'text', text: '**国内外尚无统一标准**：2025 中国专家共识原文写明「目前，超声心动图评估冠状动脉内径，国内外尚无统一标准」，并要求同一机构长期随访固定同一套 Z 值标准[R83]。AHA 2017 与共识给川崎病做风险分层用**北美 PHN** 公式[R83]；日本 Z Score Project 在线计算器（kwsd.info/zsp_form.cgi）默认 **LMS 4 / ZSP version 4**，可切换多套常模，属对照工具而非单一标准。国内常模有深圳 SZ（6 省 9 中心 842 例）[R79] 与四川 2025（744 例）[R119]，本工具儿童 Z 值页**默认显示深圳 SZ**，四川由按钮按需展开。' },
+          { kind: 'note', text: '**别跨套比较**：同一测值在不同口径下可差 0.5–2 个 Z，足以把「扩张」改判成「正常」[R103]。报告写明所用常模与版本，同一患儿随访始终固定一套[R83]。国外两套只提供 Excel / 网页计算器、未公开逐段系数，本工具不自行拟合。', warn: true },
         ],
       },
       {
@@ -18717,8 +18729,6 @@ const REFS = [
     dl: [
       { t: '免费页面', u: 'https://publications.ersnet.org/content/erj/61/1/2200879' },
       { t: '文章页（看订阅）', u: 'https://doi.org/10.1183/13993003.00879-2022' },
-      // ★ 2026-11-06：中文解读（中华结核和呼吸杂志 2023;46(5):537-542，马双双等），链接实测 200
-      { t: '文章页（中文解读）', u: 'https://cs.medjournals.cn/article/doi/full/10.3760/cma.j.cn112147-20221020-00833' },
     ],
   },
   {
@@ -18750,7 +18760,6 @@ const REFS = [
     where: 'J Am Soc Echocardiogr, 2016, 29(4): 277–314',
     use: '舒张功能分级四步法与灰区处理（ASE 2025 已发布更新，见 R39）',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.yxj.org.cn/detailPage?articleId=416587' },
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/07/Eval-of-Left-Ventricular-Diastolic-Function-by-Echo-superseded.pdf' },
     ],
   },
@@ -18782,7 +18791,6 @@ const REFS = [
     where: 'Eur Heart J, 2023, 44(39): 3948–4042',
     use: '赘生物大小与栓塞风险、TEE 指征、重复超声时机',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://circ.cmt.com.cn/detail/1466208.html' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/advance-article-pdf/doi/10.1093/eurheartj/ehad193/51716381/ehad193.pdf' },
     ],
   },
@@ -18793,7 +18801,6 @@ const REFS = [
     where: 'Circulation, 2020, 142(25): e558–e631',
     use: '最大壁厚诊断阈值、LVOT 梗阻分级与猝死风险因素',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.cn-healthcare.com/article/20210607/wap-content-555712.html' },
       { t: '官网 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000937' },
     ],
   },
@@ -18826,7 +18833,6 @@ const REFS = [
     where: 'Eur Heart J, 2015, 36(42): 2921–2964',
     use: '缩窄性心包炎的呼吸变异、瓣环反转与鉴别路径',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.mdweekly.com.cn/index/article/detail?id=9762' },
       { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7539677/' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/36/42/2921/33342779/ehv318.pdf' },
     ],
@@ -18904,7 +18910,6 @@ const REFS = [
     where: 'Eur Heart J, 2020, 41(4): 543–603',
     use: '右心功能不全的危险分层地位、McConnell 征与随访',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.cmtopdr.com/post/detail/c21854ba-d1cd-4663-bb5a-c13e3b660598' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/41/4/543/34306708/ehz405.pdf' },
     ],
   },
@@ -18957,7 +18962,6 @@ const REFS = [
     where: 'Eur Heart J, 2021, 42(6): 563–645',
     use: '分流性肺高压的可手术性评估、艾森曼格综合征管理',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.peopleapp.com/rmharticle/30017663975' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/42/6/563/39353654/ehaa554.pdf' },
     ],
   },
@@ -19170,7 +19174,6 @@ const REFS = [
     where: 'Eur Heart J, 2025, 46(43): 4462–4568',
     use: 'pregnancy-echo 判读页：mWHO 2.0 风险分级与随访强度（I 级 1–2 次 / II–III 级每季度 / IV 级劝阻妊娠）、妊娠 Heart Team 职责、围产期心肌病章节、主动脉病与妊娠',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.cmtopdr.com/post/detail/a876decf-9f9c-4f55-bd80-b2c1e4d5a61c' },
       { t: 'ESC 指南页', u: 'https://www.escardio.org/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/cardiovascular-diseases-during-pregnancy-management-of/' },
     ],
   },
@@ -19824,8 +19827,6 @@ const REFS = [
     dl: [
       { t: 'DOI（需订阅）', u: 'https://doi.org/10.1161/CIR.0000000000001250' },
       { t: '官网文章页（需订阅）', u: 'https://www.ahajournals.org/doi/10.1161/CIR.0000000000001250' },
-      // ★ 2026-11-06：中文解读（中国医学论坛报 / 医学论坛网），链接实测 200
-      { t: '文章页（中文解读）', u: 'https://m.cmt.com.cn/detail/1467615.html' },
     ],
   },
   {
@@ -19888,6 +19889,28 @@ const REFS = [
     ],
   },
 
+  /* ★ 2026-11-08：四川 2025 冠脉 Z 值方程，用户把原文 PDF 放进 refs/ 后逐项核对入库。
+     逐字核过：式(1)–(4) 的 a / b / √MSE 与表 3–6 幂函数行完全一致（见 use）。 */
+  {
+    id: 'R119',
+    zh: '四川地区儿童冠状动脉内径 Z 值回归方程（744 例）',
+    en: 'Wang Y, Jiang JY, Deng Y, et al. Diagnosis of Coronary Artery Lesions in Children Based on Z-Score Regression Model.',
+    where: '中国当代儿科杂志, 2025, 27(2): 176–183. DOI: 10.7499/j.issn.1008-8830.2405030',
+    use: '四川省人民医院 2020–2022 年 744 名 0–18 岁健康儿童建模、2018–2022 年 251 例川崎病验证；' +
+      '与 BSA 相关系数最高（LMCA 0.815 / LAD 0.793 / LCX 0.704 / RCA 0.802），七种回归中幂函数 R² 最优、MSE 最小。' +
+      '式(1)–(4)：Z=[ln(实测) − a − b·ln(BSA)] / √MSE，' +
+      'LMCA a=0.96623 b=0.358 √MSE=0.111616；LAD 0.64763 / 0.353 / 0.126832；' +
+      'LCX 0.44340 / 0.319 / 0.145414；RCA 0.78299 / 0.378 / 0.126883。' +
+      '四段齐全（含 LCX，深圳 SZ 队列无 LCX）。★ 单中心地区性常模，不宜与深圳 SZ、' +
+      'Kobayashi ZSP、AHA/PHN 跨套比较；同一患儿随访固定一套。' +
+      '★ 原文方法段写 Z=(M−y)/√MSE，式(1)–(4) 实际用 ln 尺度，本页按式(1)–(4) 实现。',
+    dl: [
+      { t: '中文全文（期刊官网）', u: 'https://www.zgddek.com/fileup/1008-8830/HTML/2025-2-176.htm' },
+      { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11838035/' },
+      { t: 'DOI', u: 'https://doi.org/10.7499/j.issn.1008-8830.2405030' },
+    ],
+  },
+
 ];
 
 /* ══════════════════════════════════════════════════════════════
@@ -19913,7 +19936,7 @@ var CALC_HINTS = {
   hcm: '重构与心肌功能 · 左室重构四联；左室质量与几何构型；心尖保留比值 RAS；每搏功 SW / SWi',
   infiltr: '重构与心肌功能 · 心尖保留比值 RAS；左房应变三值；左室重构四联；应变离散度 MDS',
   /* 心腔与应变 */
-  lv: '血流动力学与心功能 · 左室容积与射血分数；LVOT 每搏量与心排量；M 型三合一',
+  lv: '血流动力学与心功能 · 左室容积与射血分数；LVOT 每搏量与心排量；M 型三合一；左室舒张功能（舒张与左房压专条）',
   rv: '右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP）；PAPi 肺动脉搏动指数；右室容积指数 RVEDVi/RVESVi；快速比值 RV/LV',
   ivc: '右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP，RAP 由 IVC 取值）；右心评估',
   rvfun: '右心与肺循环 · 右室收缩功能三合一；右室容积指数 RVEDVi / RVESVi',
@@ -20006,7 +20029,7 @@ var CALC_HINTS = {
 var CALC_LINKS = {
   'ped-base': ['aortaz', 'paidx'],
   /* 心腔与应变 */
-  lv: ['ef', 'flow', 'mtype'],
+  lv: ['ef', 'flow', 'mtype', 'dfun'],
   rv: ['rvvol', 'quickratio', 'mpap', 'papi'],
   ivc: ['mpap', 'rv'],
   rvfun: ['rvsyst', 'rvvol'],
@@ -20229,6 +20252,70 @@ function abbrHits(text, withMeasure) {
     if (re.test(text)) out.push({ ab: ab, zh: ABBR[i][1] });
     if (out.length >= 6) break;
   }
+  return out;
+}
+
+/* ══════════ 统一小节序号（2026-11-08）══════════
+   起因：用户截图对比发现「感染性心内膜炎赘生物评估」的小节标题都带
+   「一、二、三…」，而「TR 三尖瓣反流量」等条目（多为 calc-notes 生成的
+   计算器说明块）标题是裸的，小节目录里前者还叠成「1 一、xxx」双重编号。
+
+   做法：不在 637 处数据里逐个补前缀（改不全、也容易和已有编号打架），
+   改由渲染时统一生成：
+     - 顶层 h  → 按出现顺序统一给「一、二、三…」，并剥掉数据里原有的中文序号；
+     - 子级 h  → 以 ① / 2.1 / （一）开头的保持原样、不占顶层序号；
+     - 目录弹层 → 顶层显示与正文同一个阿拉伯序号，子级显示「·」并缩进。
+   小程序与网页/APK 共用本函数，保证三端一致。
+   ══════════════════════════════════════════════════════════════ */
+var CN_ONES = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+function cnNo(n) {
+  if (n < 10) return CN_ONES[n];
+  if (n < 20) return '十' + (n % 10 ? CN_ONES[n % 10] : '');
+  if (n < 100) return CN_ONES[Math.floor(n / 10)] + '十' + (n % 10 ? CN_ONES[n % 10] : '');
+  return String(n);
+}
+
+/** 返回与 blocks 里每个 h 一一对应的序号信息（顺序对齐，非 h 不占位） */
+function secList(blocks) {
+  var out = [];
+  var top = 0;
+  var numRe = /^[一二三四五六七八九十百]+[、．.]\s*/;
+  var heads = (blocks || []).filter(function (b) { return b && b.kind === 'h'; });
+  // ★ 2026-11-08：条目里只要已有中文编号，就保留原编号体系，无编号小标题一律降为
+  //   子级（不补号）。否则像人工瓣那样，一个「尺寸决定本底压差」的无编号小标题
+  //   会把后面 12 节整体挤后一位，正文「见第 X 节」交叉引用全部错位。
+  //   只有整条都没有编号时，才统一自动编号（用户反馈「有的有序号、有的没有」）。
+  var hasNum = heads.some(function (b) {
+    return numRe.test(String(b.text || '').replace(/\*\*/g, ''));
+  });
+  (blocks || []).forEach(function (b) {
+    if (!b || b.kind !== 'h') return;
+    var raw = String(b.text || '');
+    var plain = raw.replace(/\*\*/g, '');
+    var m = plain.match(numRe);
+    // 子级：圈号 ① …、小数编号 2.1 …、括号中文（一）…
+    var sub = /^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]/.test(plain) ||
+              /^\d+\.\d/.test(plain) ||
+              /^（[一二三四五六七八九十]+）/.test(plain);
+    if (hasNum && !m) sub = true;   // 已有编号体系里的无编号小标题，保持原样不加号
+    var no = '', text = raw, listNo = '·';
+    if (!sub) {
+      top += 1;
+      no = hasNum ? m[0] : (cnNo(top) + '、');
+      listNo = String(top);
+      text = m ? raw.replace(numRe, '') : raw;
+    }
+    var label = String(text).replace(/\*\*/g, '');
+    out.push({
+      no: no,
+      text: text,                                  // 正文用（保留 ** 加粗）
+      label: label,                                // 目录用（去 **）
+      short: label.split(/[：:]/)[0] || label,     // 目录只显示冒号前主标题
+      sub: sub,
+      top: top,
+      listNo: listNo,
+    });
+  });
   return out;
 }
 
@@ -20655,6 +20742,9 @@ const CALC_SRC = {
     CALC_LINKS: CALC_LINKS,
     ABBR: ABBR,
     abbrHits: abbrHits,
+    CN_ONES: CN_ONES,
+    cnNo: cnNo,
+    secList: secList,
     blockText: blockText,
     EN_ALIAS: EN_ALIAS,
     SEARCH_KW: SEARCH_KW,
@@ -22948,13 +23038,28 @@ const MATERIALS = [];
     let h = '';
     const toc = [];
     let secIdx = -1;
+    let infoIdx = -1;
     const uid = prefix ? String(prefix) : '';
+    // ★ 2026-11-08：小节序号与小程序共用 ExtraData.secList，三端同一套规则
+    const _EXD2 = window.ExtraData || {};
+    const SINFO = _EXD2.secList ? _EXD2.secList(blocks) : null;
     (blocks || []).forEach(function (b) {
       if (b.kind === 'h') {
         secIdx += 1;
+        infoIdx += 1;
+        const si = SINFO && SINFO[infoIdx];
         const id = 'sec-' + secIdx + (uid ? '-' + uid : '');
-        toc.push({ id: id, t: String(b.text || '').replace(/\*\*/g, '') });
-        h += '<div class="fx-h" id="' + id + '">' + mdInline(b.text) + '</div>';
+        toc.push({
+          id: id,
+          t: si ? si.short : String(b.text || '').replace(/\*\*/g, ''),
+          no: si ? si.listNo : String(secIdx + 1),
+          sub: si ? si.sub : false,
+        });
+        const no = si ? si.no : '';
+        const body = si ? si.text : String(b.text || '');
+        h += '<div class="fx-h' + (si && si.sub ? ' fx-h--sub' : '') + '" id="' + id + '">' +
+          (no ? '<span class="fx-h__no">' + esc(no) + '</span>' : '') +
+          mdInline(body) + '</div>';
         return;
       }
       if (b.kind === 'note') {
@@ -23048,10 +23153,13 @@ const MATERIALS = [];
     h += '<div class="ftoc__panel"><div class="ftoc__hd">本条目小节 · ' + toc.length + '</div><div class="ftoc__list">';
     toc.forEach(function (s, i) {
       // ★ v1.14.2：只显示「序号 + 主标题」，冒号后的副标题剪掉；完整名称在 title 里
+      // ★ 2026-11-08：序号直接用 secList 给的（顶层 1/2/3、子级 ·），与正文「一、二、三」对齐
       const full = String(s.t || '');
       const short = full.split(/[：:]/)[0] || full;
-      h += '<button type="button" class="ftoc__i" title="' + esc(full) + '" data-sec="' + esc(s.id) + '">' +
-        '<span class="ftoc__no">' + (i + 1) + '</span><span class="ftoc__t">' + esc(short) + '</span></button>';
+      h += '<button type="button" class="ftoc__i' + (s.sub ? ' ftoc__i--sub' : '') +
+        '" title="' + esc(full) + '" data-sec="' + esc(s.id) + '">' +
+        '<span class="ftoc__no">' + esc(s.no || String(i + 1)) + '</span>' +
+        '<span class="ftoc__t">' + esc(short) + '</span></button>';
     });
     h += '</div></div>';
     h += '<button type="button" class="ftoc__dot" data-ftoc-toggle="1" aria-label="小节目录" title="小节目录"><span class="ftoc__ic">≡</span></button>';
@@ -23584,9 +23692,9 @@ const MATERIALS = [];
       secs.splice(vvIdx + 1, 0, secs.splice(chdIdx, 1)[0]);
     }
 
-    // ★ v1.15.4：右心 / 左心「总论」各自置组首，不再挂在心腔组
+    // ★ 2026-11-08：左室舒张功能专条置血流动力学组组首，左心总论次之
     headItems('right', ['rv']);
-    headItems('hemo', ['lv']);
+    headItems('hemo', ['dfun', 'lv']);
 
     // ★ v1.13.10：先心组「ASD / VSD / PDA」三条置顶（用户指定；sec:'chd' 的计算器排其后）
     const cSec = secs.filter(function (s) { return s.id === 'chd'; })[0];
@@ -25275,22 +25383,8 @@ const MATERIALS = [];
         parts.push('RWT ' + Calc.fmt(v.rwt, 2) + ' · ' +
           (v.rwt > 0.42 ? '升高：向心性肥厚' : '正常或偏低：离心性重构'));
       }
-      // 左室充盈压（原独立条目已并入本组）
-      const f = Calc.lvFilling({
-        e: v.dge === undefined ? null : v.dge,
-        a: v.dga === undefined ? null : v.dga,
-        es: v.dges === undefined ? null : v.dges,
-        el: v.dgel === undefined ? null : v.dgel,
-        lavi: v.dglavi === undefined ? null : v.dglavi,
-        trv: v.dgtrv === undefined ? null : v.dgtrv,
-      });
-      if (f.ea !== undefined) parts.push('E/A ' + Calc.fmt(f.ea));
-      if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + Calc.fmt(f.avgEe));
-      if (f.count > 0) parts.push('充盈压升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
-      else if (v.dglavi !== undefined || v.dgtrv !== undefined) {
-        parts.push('充盈压升高指标 0 项');
-      }
-      if (f.text) parts.push('→ ' + f.text);
+      // ★ 2026-11-08：舒张功能（E/A · e′ · LAVi · TR Vmax）整体并入 dfun 专条，
+      //   这里不再重复跑 lvFilling，避免同一算法两处口径不同步（与小程序同改）。
       put('lv', partsOf(parts));
     }
 
@@ -25817,6 +25911,16 @@ const MATERIALS = [];
   const pdVal = {};        // 儿童页测量值（界面单位，冠脉也存这里）
   let pdGroupOpen = null;  // 组卡折叠状态 { 0: true, 4: true, ... }
 
+  /**
+   * 冠脉「另一套方程」显不显示（2026-11-08）
+   * 默认 false：只显示国内最通用的深圳 SZ；四川 2025 点按钮才出现。
+   * 这是阅读偏好，和折叠状态一样单独记，不跟「记住 / 重置本页」的病例数据绑一起。
+   */
+  const PD_COR_KEY = 'echoref:corAlt';
+  let pdCorAlt = (function () {
+    try { return window.localStorage.getItem(PD_COR_KEY) === '1'; } catch (e) { return false; }
+  })();
+
   // ★ v1.8.1 新生儿（0–28 天）体重法：只认体重，不依赖 BSA
   const pdNeoVal = {};     // 本组另需自填的 8 项
   let pdNeoOpen = false;
@@ -25968,6 +26072,9 @@ const MATERIALS = [];
         '<div class="pcard__b"' + (open ? '' : ' hidden') + '>' +
           (g.note ? '<div class="note pcard__note">' + esc(g.note) + '</div>' : '') +
           '<div class="pcard__in">' + pdInputRows(g.keys) + '</div>' +
+          (g.cor ? '<div class="corbar">' +
+            '<button type="button" class="corbar__btn" data-cor-alt="1"></button>' +
+            '<span class="corbar__h">默认深圳 SZ · 选择会记住</span></div>' : '') +
           '<div class="pres"></div>' +
         '</div>' +
       '</div>';
@@ -25992,6 +26099,26 @@ const MATERIALS = [];
         hd.querySelector('.pcard__f').textContent = pdGroupOpen[i] ? '收起' : '展开';
         pdSaveOpen();   // 记住这次选择，下次进页面照旧
       });
+    });
+
+    // 冠脉组：只切一个容器 class，不重建 DOM —— 输入内容、焦点、折叠状态都不受影响
+    box.querySelectorAll('[data-cor-alt]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        pdCorAlt = !pdCorAlt;
+        try { window.localStorage.setItem(PD_COR_KEY, pdCorAlt ? '1' : '0'); } catch (e) { /* 存不下就算了 */ }
+        pdApplyCorAlt();
+      });
+    });
+    pdApplyCorAlt();
+  }
+
+  /** 按 pdCorAlt 刷新「另一套」的显隐与按钮文案（不改 DOM 结构） */
+  function pdApplyCorAlt() {
+    const box = $('pdGroups');
+    if (!box) return;
+    box.classList.toggle('pdGroups--noalt', !pdCorAlt);
+    box.querySelectorAll('[data-cor-alt]').forEach(function (btn) {
+      btn.textContent = pdCorAlt ? '收起另一套（四川 2025）' : '显示另一套方程（四川 2025）';
     });
   }
 
@@ -26020,7 +26147,7 @@ const MATERIALS = [];
    * 与公式集「参考文献」用同一种条目样式（.ref-item），点一条跳到总表对应位置并高亮 ——
    * 原来把 8 条文献挤成一段文字，手机上就是一大坨，读不了也点不了（用户 2026-11-06 反馈）。
    */
-  const PD_REF_IDS = ['R8', 'R76', 'R77', 'R78', 'R79', 'R80', 'R83'];
+  const PD_REF_IDS = ['R8', 'R76', 'R77', 'R78', 'R79', 'R80', 'R83', 'R119'];
 
   function buildPdRefs() {
     const box = $('pdRefs');

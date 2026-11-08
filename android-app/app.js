@@ -1184,13 +1184,28 @@
     let h = '';
     const toc = [];
     let secIdx = -1;
+    let infoIdx = -1;
     const uid = prefix ? String(prefix) : '';
+    // ★ 2026-11-08：小节序号与小程序共用 ExtraData.secList，三端同一套规则
+    const _EXD2 = window.ExtraData || {};
+    const SINFO = _EXD2.secList ? _EXD2.secList(blocks) : null;
     (blocks || []).forEach(function (b) {
       if (b.kind === 'h') {
         secIdx += 1;
+        infoIdx += 1;
+        const si = SINFO && SINFO[infoIdx];
         const id = 'sec-' + secIdx + (uid ? '-' + uid : '');
-        toc.push({ id: id, t: String(b.text || '').replace(/\*\*/g, '') });
-        h += '<div class="fx-h" id="' + id + '">' + mdInline(b.text) + '</div>';
+        toc.push({
+          id: id,
+          t: si ? si.short : String(b.text || '').replace(/\*\*/g, ''),
+          no: si ? si.listNo : String(secIdx + 1),
+          sub: si ? si.sub : false,
+        });
+        const no = si ? si.no : '';
+        const body = si ? si.text : String(b.text || '');
+        h += '<div class="fx-h' + (si && si.sub ? ' fx-h--sub' : '') + '" id="' + id + '">' +
+          (no ? '<span class="fx-h__no">' + esc(no) + '</span>' : '') +
+          mdInline(body) + '</div>';
         return;
       }
       if (b.kind === 'note') {
@@ -1284,10 +1299,13 @@
     h += '<div class="ftoc__panel"><div class="ftoc__hd">本条目小节 · ' + toc.length + '</div><div class="ftoc__list">';
     toc.forEach(function (s, i) {
       // ★ v1.14.2：只显示「序号 + 主标题」，冒号后的副标题剪掉；完整名称在 title 里
+      // ★ 2026-11-08：序号直接用 secList 给的（顶层 1/2/3、子级 ·），与正文「一、二、三」对齐
       const full = String(s.t || '');
       const short = full.split(/[：:]/)[0] || full;
-      h += '<button type="button" class="ftoc__i" title="' + esc(full) + '" data-sec="' + esc(s.id) + '">' +
-        '<span class="ftoc__no">' + (i + 1) + '</span><span class="ftoc__t">' + esc(short) + '</span></button>';
+      h += '<button type="button" class="ftoc__i' + (s.sub ? ' ftoc__i--sub' : '') +
+        '" title="' + esc(full) + '" data-sec="' + esc(s.id) + '">' +
+        '<span class="ftoc__no">' + esc(s.no || String(i + 1)) + '</span>' +
+        '<span class="ftoc__t">' + esc(short) + '</span></button>';
     });
     h += '</div></div>';
     h += '<button type="button" class="ftoc__dot" data-ftoc-toggle="1" aria-label="小节目录" title="小节目录"><span class="ftoc__ic">≡</span></button>';
@@ -1820,9 +1838,9 @@
       secs.splice(vvIdx + 1, 0, secs.splice(chdIdx, 1)[0]);
     }
 
-    // ★ v1.15.4：右心 / 左心「总论」各自置组首，不再挂在心腔组
+    // ★ 2026-11-08：左室舒张功能专条置血流动力学组组首，左心总论次之
     headItems('right', ['rv']);
-    headItems('hemo', ['lv']);
+    headItems('hemo', ['dfun', 'lv']);
 
     // ★ v1.13.10：先心组「ASD / VSD / PDA」三条置顶（用户指定；sec:'chd' 的计算器排其后）
     const cSec = secs.filter(function (s) { return s.id === 'chd'; })[0];
@@ -3511,22 +3529,8 @@
         parts.push('RWT ' + Calc.fmt(v.rwt, 2) + ' · ' +
           (v.rwt > 0.42 ? '升高：向心性肥厚' : '正常或偏低：离心性重构'));
       }
-      // 左室充盈压（原独立条目已并入本组）
-      const f = Calc.lvFilling({
-        e: v.dge === undefined ? null : v.dge,
-        a: v.dga === undefined ? null : v.dga,
-        es: v.dges === undefined ? null : v.dges,
-        el: v.dgel === undefined ? null : v.dgel,
-        lavi: v.dglavi === undefined ? null : v.dglavi,
-        trv: v.dgtrv === undefined ? null : v.dgtrv,
-      });
-      if (f.ea !== undefined) parts.push('E/A ' + Calc.fmt(f.ea));
-      if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + Calc.fmt(f.avgEe));
-      if (f.count > 0) parts.push('充盈压升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
-      else if (v.dglavi !== undefined || v.dgtrv !== undefined) {
-        parts.push('充盈压升高指标 0 项');
-      }
-      if (f.text) parts.push('→ ' + f.text);
+      // ★ 2026-11-08：舒张功能（E/A · e′ · LAVi · TR Vmax）整体并入 dfun 专条，
+      //   这里不再重复跑 lvFilling，避免同一算法两处口径不同步（与小程序同改）。
       put('lv', partsOf(parts));
     }
 
@@ -4054,6 +4058,16 @@
   const pdVal = {};        // 儿童页测量值（界面单位，冠脉也存这里）
   let pdGroupOpen = null;  // 组卡折叠状态 { 0: true, 4: true, ... }
 
+  /**
+   * 冠脉「另一套方程」显不显示（2026-11-08）
+   * 默认 false：只显示国内最通用的深圳 SZ；四川 2025 点按钮才出现。
+   * 这是阅读偏好，和折叠状态一样单独记，不跟「记住 / 重置本页」的病例数据绑一起。
+   */
+  const PD_COR_KEY = 'echoref:corAlt';
+  let pdCorAlt = (function () {
+    try { return window.localStorage.getItem(PD_COR_KEY) === '1'; } catch (e) { return false; }
+  })();
+
   // ★ v1.8.1 新生儿（0–28 天）体重法：只认体重，不依赖 BSA
   const pdNeoVal = {};     // 本组另需自填的 8 项
   let pdNeoOpen = false;
@@ -4205,6 +4219,9 @@
         '<div class="pcard__b"' + (open ? '' : ' hidden') + '>' +
           (g.note ? '<div class="note pcard__note">' + esc(g.note) + '</div>' : '') +
           '<div class="pcard__in">' + pdInputRows(g.keys) + '</div>' +
+          (g.cor ? '<div class="corbar">' +
+            '<button type="button" class="corbar__btn" data-cor-alt="1"></button>' +
+            '<span class="corbar__h">默认深圳 SZ · 选择会记住</span></div>' : '') +
           '<div class="pres"></div>' +
         '</div>' +
       '</div>';
@@ -4229,6 +4246,26 @@
         hd.querySelector('.pcard__f').textContent = pdGroupOpen[i] ? '收起' : '展开';
         pdSaveOpen();   // 记住这次选择，下次进页面照旧
       });
+    });
+
+    // 冠脉组：只切一个容器 class，不重建 DOM —— 输入内容、焦点、折叠状态都不受影响
+    box.querySelectorAll('[data-cor-alt]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        pdCorAlt = !pdCorAlt;
+        try { window.localStorage.setItem(PD_COR_KEY, pdCorAlt ? '1' : '0'); } catch (e) { /* 存不下就算了 */ }
+        pdApplyCorAlt();
+      });
+    });
+    pdApplyCorAlt();
+  }
+
+  /** 按 pdCorAlt 刷新「另一套」的显隐与按钮文案（不改 DOM 结构） */
+  function pdApplyCorAlt() {
+    const box = $('pdGroups');
+    if (!box) return;
+    box.classList.toggle('pdGroups--noalt', !pdCorAlt);
+    box.querySelectorAll('[data-cor-alt]').forEach(function (btn) {
+      btn.textContent = pdCorAlt ? '收起另一套（四川 2025）' : '显示另一套方程（四川 2025）';
     });
   }
 
@@ -4257,7 +4294,7 @@
    * 与公式集「参考文献」用同一种条目样式（.ref-item），点一条跳到总表对应位置并高亮 ——
    * 原来把 8 条文献挤成一段文字，手机上就是一大坨，读不了也点不了（用户 2026-11-06 反馈）。
    */
-  const PD_REF_IDS = ['R8', 'R76', 'R77', 'R78', 'R79', 'R80', 'R83'];
+  const PD_REF_IDS = ['R8', 'R76', 'R77', 'R78', 'R79', 'R80', 'R83', 'R119'];
 
   function buildPdRefs() {
     const box = $('pdRefs');

@@ -155,6 +155,12 @@
           </view>
         </view>
 
+        <!-- 冠脉：默认只显示国内最通用的深圳 SZ，另一套点按钮才出现 -->
+        <view wx:if="{{item.cor && hasBsa}}" class="corbar">
+          <view class="corbar__btn" bindtap="onToggleCorAlt">{{corAlt ? '收起另一套（四川 2025）' : '显示另一套方程（四川 2025）'}}</view>
+          <text class="corbar__h">默认深圳 SZ · 选择会记住</text>
+        </view>
+
         <!-- 该组结果 -->
         <block wx:if="{{hasBsa}}">
           <view class="z-row z-row--head">
@@ -182,7 +188,7 @@
             </view>
 
             <!-- 冠脉的第二套中国方程 -->
-            <view wx:if="{{row.alt}}" class="z-row z-row--alt {{row.hasValue ? '' : 'z-row--none'}}">
+            <view wx:if="{{row.alt && corAlt}}" class="z-row z-row--alt {{row.hasValue ? '' : 'z-row--none'}}">
               <view class="z-row__name">
                 {{row.altLabel}}<text wx:if="{{row.alt.extrap}}" class="z-row__ext">外推</text>
                 <text class="z-row__name-sub">均值 {{row.alt.subText}} · {{row.alt.r2Text}}</text>
@@ -367,9 +373,11 @@
         </view>
       </view>
 
-      <view class="note">
-        四川 2025（无 R 编号）：王永, 蒋佳颖, 邓燕, 等. 中国当代儿科杂志. 2025;27(2):176-182.
-        （n=744，0–18 岁，四段齐全含左回旋支）
+      <view class="note note--strong">
+        <view class="note__t">冠脉默认口径</view>
+        国内无统一标准（2025 中国专家共识）。本页默认显示深圳 SZ（R79，6 省 9 中心 842 例）；
+        点冠脉组「显示另一套」可并列四川 2025（R119），LCX 深圳未测处用四川。
+        两套按 ln 尺度建模，±2SD 上下不对称；同一患儿随访请固定一套，勿跨套比较。
       </view>
     </block>
   </view>

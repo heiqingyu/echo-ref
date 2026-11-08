@@ -70,10 +70,23 @@ function saveOpen(open) {
 /**
  * 本页引用的文献（顺序＝正文出现顺序）
  *
- * 前 7 篇在「公式集 · 参考文献」总表里有编号，点条目直接跳过去看全文入口；
- * 四川 2025 发表较新、暂未进总表，界面上用一段文字单列。
+ * ★ 2026-11-08：四川 2025 核验原文后入库为 R119，8 篇全部在总表里，
+ *   全都可以点条目跳到公式集看全文入口，不再用一段灰字单列。
  */
-const PEDS_REF_IDS = ['R8', 'R76', 'R77', 'R78', 'R79', 'R80', 'R83'];
+const PEDS_REF_IDS = ['R8', 'R76', 'R77', 'R78', 'R79', 'R80', 'R83', 'R119'];
+
+/**
+ * 冠脉「另一套方程」显不显示 —— 这是阅读偏好，不是病例数据，
+ * 所以跟折叠状态一样单独记，不受页首「记住 / 重置」开关影响。
+ * 默认 false：**只显示国内最通用的深圳 SZ**。
+ */
+const COR_ALT_KEY = 'echoref:corAlt';
+function loadCorAlt() {
+  try { return wx.getStorageSync(COR_ALT_KEY) === true; } catch (e) { return false; }
+}
+function saveCorAlt(v) {
+  try { wx.setStorageSync(COR_ALT_KEY, v); } catch (e) { /* 存不下就算了 */ }
+}
 
 const PEDS_REFS = (function () {
   const map = {};
@@ -144,6 +157,8 @@ Page({
     neoTooOld: false,
     neoAgeText: '',
 
+    // 冠脉第二套方程：默认收起，只显示国内最通用的深圳 SZ
+    corAlt: false,
     // 说明区
     refs: PEDS_REFS,
     infoOpen: false,
@@ -162,9 +177,17 @@ Page({
       age: (sv && sv.age) || '',
       sex: (sv && sv.sex) || 'male',
       collapsed: toCollapsed(this._open),
+      corAlt: loadCorAlt(),
       neoInputs: this.mkNeoRows(sv && sv.neo),
     });
     this.refresh();
+  },
+
+  /** 冠脉组「显示另一套 / 收起另一套」——只切显隐，不重算、不重建输入框 */
+  onToggleCorAlt() {
+    const v = !this.data.corAlt;
+    this.setData({ corAlt: v });
+    saveCorAlt(v);
   },
 
   /* ---------------- 记住 / 重置 ---------------- */
@@ -424,6 +447,7 @@ Page({
       return {
         idx: i,
         title: g.title,
+        cor: !!g.cor,
         note: g.note || '',
         inputs: inputs,
         results: rows,

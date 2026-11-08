@@ -333,6 +333,46 @@ function check(name, ok, detail) {
   // 41 个主行（冠脉的「四川 2025」次行没有缩写，不计入）
   check('Z 值行均带英文缩写', zAbbr === 41, zAbbr + ' / 41 行');
 
+  // 2026-11-08：冠脉两套方程 —— 默认只出深圳 SZ，点按钮才展开四川 2025，偏好落本机
+  const corToggle = JSON.parse(await c.evalJs(`(function(){
+    var box = document.getElementById('pdGroups');
+    var btn = box && box.querySelector('.corbar__btn');
+    var alt = box && box.querySelector('.zrow--alt');
+    function vis(e){ return e ? getComputedStyle(e).display !== 'none' : false; }
+    var before = {noalt: box && box.classList.contains('pdGroups--noalt'),
+                  shown: vis(alt), label: btn ? btn.textContent : ''};
+    if (btn) btn.click();
+    var after = {noalt: box && box.classList.contains('pdGroups--noalt'),
+                 shown: vis(alt), label: btn ? btn.textContent : '',
+                 saved: localStorage.getItem('echoref:corAlt')};
+    if (btn) btn.click();
+    var back = {shown: vis(alt)};
+    return JSON.stringify({before: before, after: after, back: back});
+  })()`));
+  check('冠脉默认只显示深圳 SZ，四川 2025 次行默认隐藏',
+    corToggle.before.noalt === true && corToggle.before.shown === false,
+    JSON.stringify(corToggle.before));
+  check('点「显示另一套」展开四川 2025 且记住偏好、再点收起',
+    corToggle.after.shown === true && corToggle.after.saved === '1' && corToggle.back.shown === false,
+    JSON.stringify(corToggle.after));
+  // ★ 2026-11-08：考证长文只在对话里讨论，工具里只留「默认哪套 + 怎么切换」
+  const corNote = await c.evalJs(`(function(){
+    var e = document.getElementById('pdInfo');
+    var s = e ? e.textContent : '';
+    return JSON.stringify({
+      short: s.indexOf('冠脉默认口径') >= 0 &&
+             s.indexOf('默认显示深圳 SZ') >= 0 &&
+             s.indexOf('勿跨套比较') >= 0,
+      noEssay: s.indexOf('哪个版本最通用') < 0 &&
+               s.indexOf('国际口径对照') < 0 &&
+               s.indexOf('Kobayashi') < 0 &&
+               s.indexOf('kwsd.info') < 0
+    });
+  })()`);
+  const corNoteObj = JSON.parse(corNote);
+  check('儿童页说明区只留默认口径一段，考证长文已移出工具',
+    corNoteObj.short === true && corNoteObj.noEssay === true, corNote);
+
   // ★ 输入框与该组结果必须在同一张卡里（改版前输入一大块、结果另一大块）
   const pdPair = await c.evalJs(`(function(){
     var bad = [];
@@ -501,9 +541,9 @@ function check(name, ok, detail) {
     });
   })()`);
   const pdInfo = JSON.parse(pdRefs);
-  check('说明区文献改为导航条目（7 条）', pdInfo.n === 7, pdRefs);
+  check('说明区文献改为导航条目（8 条，含 R119 四川 2025）', pdInfo.n === 8, pdRefs);
   check('文献编号按引用顺序 R8/R76/R77/R78/R79/R80/R83',
-    pdInfo.ids === 'R8,R76,R77,R78,R79,R80,R83', pdInfo.ids);
+    pdInfo.ids === 'R8,R76,R77,R78,R79,R80,R83,R119', pdInfo.ids);
   check('文献条目带中文题名与期刊出处', pdInfo.hasZh === true && pdInfo.hasWhere === true, pdRefs);
 
   // 点第一条 → 切到公式集、展开参考文献、高亮该条
@@ -969,6 +1009,12 @@ function check(name, ok, detail) {
         var lst = card ? card.querySelector('.fx-list') : null;
         return lst ? lst.querySelectorAll('.fx-item[data-kind="calc"]').length : -1;
       })(),
+      hemoFirst: (function () {
+        var g = document.getElementById('g-hemo');
+        var card = g && g.closest ? g.closest('.fx-card') : null;
+        var first = card ? card.querySelector('.fx-list .fx-item') : null;
+        return first ? (first.getAttribute('data-id') || '') : '';
+      })(),
       album: idx.querySelectorAll('.fx-item[data-kind="album"]').length,
       albumTxt: (idx.querySelector('.fx-item[data-kind="album"]') || {}).textContent || '',
       segOnlyLeak: ['tee-20','tte-std','tte-measure'].filter(function(id){
@@ -994,6 +1040,8 @@ function check(name, ok, detail) {
     check('公式集分组 = 瓣膜疾病 + 瓣膜介入 + 先心病 + 3 个计算组 + 4 组评估（v1.15.4 瓣膜拆两组）',
       d.groups.join('|') === '瓣膜疾病与定量|瓣膜介入与人工瓣|先天性心脏病（含术后）|血流动力学、舒张与心功能|右心与肺循环|重构、室壁运动与心肌功能|图像质控与规范|心腔、心肌与应变|急症与特殊场景',
       d.groups.join('|'));
+    check('血流动力学组首条＝左室舒张功能 dfun（2026-11-08）',
+      d.hemoFirst === 'dfun', d.hemoFirst);
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
     check('条目 121 条（计算 40 + 评估判读 81；v1.14.5 新增「下腔静脉」判读条目）', d.items === 121, d.items);
@@ -1010,7 +1058,7 @@ function check(name, ok, detail) {
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜疾病组只含 1 条计算（TR 定量）', d.valveCalc === 1, d.valveCalc);
     check('发布版瓣膜介入组含 3 条计算（PPM / TAVR 瓣环 / 人工瓣术后）', d.valveIntervCalc === 3, d.valveIntervCalc);
-    check('参考文献 118 条', d.refs === 118, d.refs);
+    check('参考文献 119 条', d.refs === 119, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
 
@@ -1188,8 +1236,14 @@ function check(name, ok, detail) {
   check('左心评估含三对矛盾判读法', lvTxt.indexOf('三对矛盾') >= 0, '');
   check('lv-LVMI 男正常上限统一为 115（与 calc-groups:70 / 1478 / ASE 2D 一致，旧 ≤95 已删）',
     lvTxt.indexOf("LVMI 男（g/m²）', '≤95'") === -1 && lvTxt.indexOf('≤115') >= 0, '');
-  check('lv-E/e′ 舒张分级阈值与全库一致（>14 而非旧 >8）',
-    lvTxt.indexOf('平均 E/e′ >14 或升高指标') >= 0, '');
+  // v1.16.x：左心评估不再重复舒张分级（用户 2026-11-07 反馈与「左室舒张功能」专条重叠），
+  // 改为指向 dfun 专条；>14 阈值仍由专条与全库保持一致，旧 >8 不许回流。
+  check('lv 不再重复舒张分级，改为指向「左室舒张功能」专条',
+    lvTxt.indexOf('左室舒张功能') >= 0 &&
+    lvTxt.indexOf('平均 E/e′ >14 或升高指标') === -1, lvTxt.slice(0, 40));
+  const pageHtml = fs.readFileSync(path.join(__dirname, 'docs', 'index.html'), 'utf8');
+  check('全库 E/e′ 舒张阈值与 dfun 专条一致（>14 而非旧 >8）',
+    pageHtml.indexOf('平均 E/e′ >14') >= 0 && pageHtml.indexOf('平均 E/e′ >8') === -1, '');
   await openBrief('zh-normal');
   const znTxt = await briefText('zh-normal');
   check('zh-normal-GLS 注统一为 ASE 2016(−20%)→2025(−18%)，与 GLS 条目一致',
@@ -2100,7 +2154,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 118 条', /118/.test(ri.cnt), refsInit);
+  check('折叠头显示 119 条', /119/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -2119,7 +2173,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 118 条', ro.hidden === false && ro.n === 118 && ro.h > 0, refsOpen);
+  check('点击后展开全部 119 条', ro.hidden === false && ro.n === 119 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 
@@ -2447,6 +2501,25 @@ function check(name, ok, detail) {
     '[].forEach.call(l,function(a){ if(a.tagName!=="BUTTON") bad++; if(a.hasAttribute("href")) href++; });' +
     'return l.length+"/"+bad+"/"+href;})()'));
   check('悬浮目录的小节项用 button 且不带 href（v1.15.4）', tocTag.split('/')[1] === '0' && tocTag.split('/')[2] === '0', tocTag);
+
+  // 2026-11-08：多条目小节序号统一 —— 顶层标题一律带编号，子级（① / 2.1 /（一））不重复编号
+  // ★ 回归锁：已有编号的条目不许被自动编号挤位（人工瓣「一…十二」必须原样保留）
+  const secNoChk = JSON.parse(await c.evalJs(`(function(){
+    var hs = document.querySelectorAll('#calcGroups .fx-h');
+    var top = 0, sub = 0, bad = [];
+    [].forEach.call(hs, function(h){
+      // 只统计 blocksHtml 生成的小节标题（带 id="sec-N"）；卡片底部
+      // 「相关内容」「本条目引用」也是 .fx-h，但不是小节，不受统一编号约束。
+      if (!/^sec-/.test(h.id || '')) return;
+      if (h.classList.contains('fx-h--sub')) { sub++; return; }
+      top++;
+      var n = h.querySelector('.fx-h__no');
+      if (!n || !n.textContent.trim()) bad.push(h.textContent.slice(0, 18));
+    });
+    return JSON.stringify({top: top, sub: sub, bad: bad.slice(0, 3)});
+  })()`));
+  check('小节序号统一：顶层标题全带编号、子级不重复编号',
+    secNoChk.top > 100 && secNoChk.bad.length === 0, JSON.stringify(secNoChk));
   // v1.15.4：默认只有一个圆点（面板 display:none），点开才展开列表
   const ftocClosed = String(await c.evalJs('(function(){var p=document.querySelector("#calcGroups .ftoc__panel");' +
     'return p ? getComputedStyle(p).display : "no";})()'));
@@ -2502,6 +2575,18 @@ function check(name, ok, detail) {
     headHtml.indexOf('noindex,nofollow') !== -1, 1);
   const robotsTxt = require('fs').readFileSync(__dirname + '/docs/robots.txt', 'utf8');
   check('docs/robots.txt 全站 Disallow: /', robotsTxt.indexOf('Disallow: /') !== -1, 1);
+
+  // ★ 2026-11-08 回归：新增 CSS 必须写在 app.css 的「瓣膜专页」标记之前。
+  //   曾把 .corbar / .fx-h__no append 到文件末尾，stripCssBlock 把它们从发布版
+  //   整段裁掉 —— www 有样式、docs（= APK 内嵌页 / Pages）没有，四川次行默认关不住。
+  const cssMust = [
+    '.pdGroups--noalt .zrow--alt',
+    '.corbar {', '.corbar__btn {',
+    '.fx-h__no {', '.fx-h--sub {', '.ftoc__i--sub {',
+  ];
+  const cssMissing = cssMust.filter((s) => pageHtml.indexOf(s) === -1);
+  check('发布版 CSS 未被 stripCssBlock 裁掉（冠脉按钮 / 统一小节序号）',
+    cssMissing.length === 0, cssMissing.join(','));
 
   console.log('\n════════ 汇总 ════════');
   const pass = results.filter((r) => r.ok).length;

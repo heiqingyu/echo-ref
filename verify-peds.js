@@ -569,7 +569,15 @@ check('新生儿段 LAD 主行带 extrap 标记',
 const corGroup = peds.PEDS_GROUPS.filter(function (g) { return g.title === '冠状动脉'; })[0];
 check('冠脉组带双法说明', !!(corGroup && corGroup.note && corGroup.note.indexOf('SZ') !== -1), true);
 check('冠脉组说明含「不可跨套比较」', corGroup.note.indexOf('不可跨套比较') !== -1, true);
-check('冠脉组说明点明深圳小程序不同源', corGroup.note.indexOf('深圳儿童医院自家小程序') !== -1, true);
+// ★ 2026-11-08：考证长文（夏焙 2012/2013、Kobayashi、PHN、kwsd.info、数值举例）
+//   只在对话里讨论，工具里只留操作说明，避免儿童页上下重复
+check('冠脉组说明只讲操作、不再塞考证长文',
+  (corGroup.note.indexOf('深圳儿童医院自家小程序') === -1 &&
+   corGroup.note.indexOf('kwsd.info') === -1 &&
+   corGroup.note.indexOf('Kobayashi') === -1 &&
+   corGroup.note.indexOf('PHN') === -1 &&
+   corGroup.note.indexOf('国内最通用') === -1 &&
+   corGroup.note.length < 180), true);
 
 /* ================================================================== *
  * 14b. 四川 2025 冠脉方程（中国当代儿科杂志，n=744）

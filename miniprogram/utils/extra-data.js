@@ -982,8 +982,6 @@ const REFS = [
     dl: [
       { t: '免费页面', u: 'https://publications.ersnet.org/content/erj/61/1/2200879' },
       { t: '文章页（看订阅）', u: 'https://doi.org/10.1183/13993003.00879-2022' },
-      // ★ 2026-11-06：中文解读（中华结核和呼吸杂志 2023;46(5):537-542，马双双等），链接实测 200
-      { t: '文章页（中文解读）', u: 'https://cs.medjournals.cn/article/doi/full/10.3760/cma.j.cn112147-20221020-00833' },
     ],
   },
   {
@@ -1015,7 +1013,6 @@ const REFS = [
     where: 'J Am Soc Echocardiogr, 2016, 29(4): 277–314',
     use: '舒张功能分级四步法与灰区处理（ASE 2025 已发布更新，见 R39）',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.yxj.org.cn/detailPage?articleId=416587' },
       { t: 'ASE PDF', u: 'https://www.asecho.org/wp-content/uploads/2025/07/Eval-of-Left-Ventricular-Diastolic-Function-by-Echo-superseded.pdf' },
     ],
   },
@@ -1047,7 +1044,6 @@ const REFS = [
     where: 'Eur Heart J, 2023, 44(39): 3948–4042',
     use: '赘生物大小与栓塞风险、TEE 指征、重复超声时机',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://circ.cmt.com.cn/detail/1466208.html' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/advance-article-pdf/doi/10.1093/eurheartj/ehad193/51716381/ehad193.pdf' },
     ],
   },
@@ -1058,7 +1054,6 @@ const REFS = [
     where: 'Circulation, 2020, 142(25): e558–e631',
     use: '最大壁厚诊断阈值、LVOT 梗阻分级与猝死风险因素',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.cn-healthcare.com/article/20210607/wap-content-555712.html' },
       { t: '官网 PDF', u: 'https://www.ahajournals.org/doi/pdf/10.1161/CIR.0000000000000937' },
     ],
   },
@@ -1091,7 +1086,6 @@ const REFS = [
     where: 'Eur Heart J, 2015, 36(42): 2921–2964',
     use: '缩窄性心包炎的呼吸变异、瓣环反转与鉴别路径',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.mdweekly.com.cn/index/article/detail?id=9762' },
       { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7539677/' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/36/42/2921/33342779/ehv318.pdf' },
     ],
@@ -1169,7 +1163,6 @@ const REFS = [
     where: 'Eur Heart J, 2020, 41(4): 543–603',
     use: '右心功能不全的危险分层地位、McConnell 征与随访',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.cmtopdr.com/post/detail/c21854ba-d1cd-4663-bb5a-c13e3b660598' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/41/4/543/34306708/ehz405.pdf' },
     ],
   },
@@ -1222,7 +1215,6 @@ const REFS = [
     where: 'Eur Heart J, 2021, 42(6): 563–645',
     use: '分流性肺高压的可手术性评估、艾森曼格综合征管理',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.peopleapp.com/rmharticle/30017663975' },
       { t: '官网 PDF', u: 'https://academic.oup.com/eurheartj/article-pdf/42/6/563/39353654/ehaa554.pdf' },
     ],
   },
@@ -1435,7 +1427,6 @@ const REFS = [
     where: 'Eur Heart J, 2025, 46(43): 4462–4568',
     use: 'pregnancy-echo 判读页：mWHO 2.0 风险分级与随访强度（I 级 1–2 次 / II–III 级每季度 / IV 级劝阻妊娠）、妊娠 Heart Team 职责、围产期心肌病章节、主动脉病与妊娠',
     dl: [
-      { t: '文章页（中文解读）', u: 'https://www.cmtopdr.com/post/detail/a876decf-9f9c-4f55-bd80-b2c1e4d5a61c' },
       { t: 'ESC 指南页', u: 'https://www.escardio.org/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/cardiovascular-diseases-during-pregnancy-management-of/' },
     ],
   },
@@ -2089,8 +2080,6 @@ const REFS = [
     dl: [
       { t: 'DOI（需订阅）', u: 'https://doi.org/10.1161/CIR.0000000000001250' },
       { t: '官网文章页（需订阅）', u: 'https://www.ahajournals.org/doi/10.1161/CIR.0000000000001250' },
-      // ★ 2026-11-06：中文解读（中国医学论坛报 / 医学论坛网），链接实测 200
-      { t: '文章页（中文解读）', u: 'https://m.cmt.com.cn/detail/1467615.html' },
     ],
   },
   {
@@ -2153,6 +2142,28 @@ const REFS = [
     ],
   },
 
+  /* ★ 2026-11-08：四川 2025 冠脉 Z 值方程，用户把原文 PDF 放进 refs/ 后逐项核对入库。
+     逐字核过：式(1)–(4) 的 a / b / √MSE 与表 3–6 幂函数行完全一致（见 use）。 */
+  {
+    id: 'R119',
+    zh: '四川地区儿童冠状动脉内径 Z 值回归方程（744 例）',
+    en: 'Wang Y, Jiang JY, Deng Y, et al. Diagnosis of Coronary Artery Lesions in Children Based on Z-Score Regression Model.',
+    where: '中国当代儿科杂志, 2025, 27(2): 176–183. DOI: 10.7499/j.issn.1008-8830.2405030',
+    use: '四川省人民医院 2020–2022 年 744 名 0–18 岁健康儿童建模、2018–2022 年 251 例川崎病验证；' +
+      '与 BSA 相关系数最高（LMCA 0.815 / LAD 0.793 / LCX 0.704 / RCA 0.802），七种回归中幂函数 R² 最优、MSE 最小。' +
+      '式(1)–(4)：Z=[ln(实测) − a − b·ln(BSA)] / √MSE，' +
+      'LMCA a=0.96623 b=0.358 √MSE=0.111616；LAD 0.64763 / 0.353 / 0.126832；' +
+      'LCX 0.44340 / 0.319 / 0.145414；RCA 0.78299 / 0.378 / 0.126883。' +
+      '四段齐全（含 LCX，深圳 SZ 队列无 LCX）。★ 单中心地区性常模，不宜与深圳 SZ、' +
+      'Kobayashi ZSP、AHA/PHN 跨套比较；同一患儿随访固定一套。' +
+      '★ 原文方法段写 Z=(M−y)/√MSE，式(1)–(4) 实际用 ln 尺度，本页按式(1)–(4) 实现。',
+    dl: [
+      { t: '中文全文（期刊官网）', u: 'https://www.zgddek.com/fileup/1008-8830/HTML/2025-2-176.htm' },
+      { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11838035/' },
+      { t: 'DOI', u: 'https://doi.org/10.7499/j.issn.1008-8830.2405030' },
+    ],
+  },
+
 ];
 
 /* ══════════════════════════════════════════════════════════════
@@ -2178,7 +2189,7 @@ var CALC_HINTS = {
   hcm: '重构与心肌功能 · 左室重构四联；左室质量与几何构型；心尖保留比值 RAS；每搏功 SW / SWi',
   infiltr: '重构与心肌功能 · 心尖保留比值 RAS；左房应变三值；左室重构四联；应变离散度 MDS',
   /* 心腔与应变 */
-  lv: '血流动力学与心功能 · 左室容积与射血分数；LVOT 每搏量与心排量；M 型三合一',
+  lv: '血流动力学与心功能 · 左室容积与射血分数；LVOT 每搏量与心排量；M 型三合一；左室舒张功能（舒张与左房压专条）',
   rv: '右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP）；PAPi 肺动脉搏动指数；右室容积指数 RVEDVi/RVESVi；快速比值 RV/LV',
   ivc: '右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP，RAP 由 IVC 取值）；右心评估',
   rvfun: '右心与肺循环 · 右室收缩功能三合一；右室容积指数 RVEDVi / RVESVi',
@@ -2271,7 +2282,7 @@ var CALC_HINTS = {
 var CALC_LINKS = {
   'ped-base': ['aortaz', 'paidx'],
   /* 心腔与应变 */
-  lv: ['ef', 'flow', 'mtype'],
+  lv: ['ef', 'flow', 'mtype', 'dfun'],
   rv: ['rvvol', 'quickratio', 'mpap', 'papi'],
   ivc: ['mpap', 'rv'],
   rvfun: ['rvsyst', 'rvvol'],
@@ -2494,6 +2505,70 @@ function abbrHits(text, withMeasure) {
     if (re.test(text)) out.push({ ab: ab, zh: ABBR[i][1] });
     if (out.length >= 6) break;
   }
+  return out;
+}
+
+/* ══════════ 统一小节序号（2026-11-08）══════════
+   起因：用户截图对比发现「感染性心内膜炎赘生物评估」的小节标题都带
+   「一、二、三…」，而「TR 三尖瓣反流量」等条目（多为 calc-notes 生成的
+   计算器说明块）标题是裸的，小节目录里前者还叠成「1 一、xxx」双重编号。
+
+   做法：不在 637 处数据里逐个补前缀（改不全、也容易和已有编号打架），
+   改由渲染时统一生成：
+     - 顶层 h  → 按出现顺序统一给「一、二、三…」，并剥掉数据里原有的中文序号；
+     - 子级 h  → 以 ① / 2.1 / （一）开头的保持原样、不占顶层序号；
+     - 目录弹层 → 顶层显示与正文同一个阿拉伯序号，子级显示「·」并缩进。
+   小程序与网页/APK 共用本函数，保证三端一致。
+   ══════════════════════════════════════════════════════════════ */
+var CN_ONES = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+function cnNo(n) {
+  if (n < 10) return CN_ONES[n];
+  if (n < 20) return '十' + (n % 10 ? CN_ONES[n % 10] : '');
+  if (n < 100) return CN_ONES[Math.floor(n / 10)] + '十' + (n % 10 ? CN_ONES[n % 10] : '');
+  return String(n);
+}
+
+/** 返回与 blocks 里每个 h 一一对应的序号信息（顺序对齐，非 h 不占位） */
+function secList(blocks) {
+  var out = [];
+  var top = 0;
+  var numRe = /^[一二三四五六七八九十百]+[、．.]\s*/;
+  var heads = (blocks || []).filter(function (b) { return b && b.kind === 'h'; });
+  // ★ 2026-11-08：条目里只要已有中文编号，就保留原编号体系，无编号小标题一律降为
+  //   子级（不补号）。否则像人工瓣那样，一个「尺寸决定本底压差」的无编号小标题
+  //   会把后面 12 节整体挤后一位，正文「见第 X 节」交叉引用全部错位。
+  //   只有整条都没有编号时，才统一自动编号（用户反馈「有的有序号、有的没有」）。
+  var hasNum = heads.some(function (b) {
+    return numRe.test(String(b.text || '').replace(/\*\*/g, ''));
+  });
+  (blocks || []).forEach(function (b) {
+    if (!b || b.kind !== 'h') return;
+    var raw = String(b.text || '');
+    var plain = raw.replace(/\*\*/g, '');
+    var m = plain.match(numRe);
+    // 子级：圈号 ① …、小数编号 2.1 …、括号中文（一）…
+    var sub = /^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]/.test(plain) ||
+              /^\d+\.\d/.test(plain) ||
+              /^（[一二三四五六七八九十]+）/.test(plain);
+    if (hasNum && !m) sub = true;   // 已有编号体系里的无编号小标题，保持原样不加号
+    var no = '', text = raw, listNo = '·';
+    if (!sub) {
+      top += 1;
+      no = hasNum ? m[0] : (cnNo(top) + '、');
+      listNo = String(top);
+      text = m ? raw.replace(numRe, '') : raw;
+    }
+    var label = String(text).replace(/\*\*/g, '');
+    out.push({
+      no: no,
+      text: text,                                  // 正文用（保留 ** 加粗）
+      label: label,                                // 目录用（去 **）
+      short: label.split(/[：:]/)[0] || label,     // 目录只显示冒号前主标题
+      sub: sub,
+      top: top,
+      listNo: listNo,
+    });
+  });
   return out;
 }
 
@@ -2915,4 +2990,6 @@ module.exports = {
   kwOf: kwOf,
   abbrHits: abbrHits,
   blockText: blockText,
+  secList: secList,
+  cnNo: cnNo,
 };

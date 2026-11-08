@@ -281,7 +281,7 @@ EX.BRIEF_SECTIONS.forEach(sec => sec.items.forEach(it => {
 }));
 if (!missCite.length) ok('正文提到的文献编号均已挂进 source');
 else bad('正文提到但未挂引用: ' + missCite.join(' | '));
-if (EX.REFS.length === 118) ok('参考文献 118 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声）');
+if (EX.REFS.length === 119) ok('参考文献 119 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 // v1.15.7：公众号 / 第三方转载 / 机构仓储这类易失效链接，不能是文献的唯一入口
@@ -1447,10 +1447,10 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
 
 /* ── v1.15.1：R109–R112 入库 + ped-base 两节（EACVI 报告要素 / ISHLT 心衰分级）── */
 {
-  const ids = EX.REFS.slice(-5).map(function (r) { return r.id; }).join(',');
-  (ids === 'R114,R115,R116,R117,R118')
-    ? ok('R114–R118 五条按序排在文献表末尾')
-    : bad('文献表末尾不是 R114–R118：' + ids);
+  const ids = EX.REFS.slice(-6).map(function (r) { return r.id; }).join(',');
+  (ids === 'R114,R115,R116,R117,R118,R119')
+    ? ok('R114–R119 六条按序排在文献表末尾')
+    : bad('文献表末尾不是 R114–R119：' + ids);
 
   const byId = {};
   EX.REFS.forEach(function (r) { byId[r.id] = r; });
@@ -1493,9 +1493,26 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   const ped = pedAll.filter(function (i) { return i.id === 'ped-base'; })[0];
   const pedHeads = (ped.blocks || []).filter(function (b) { return b.kind === 'h'; }).map(function (b) { return b.text; });
   const pedTxt = JSON.stringify(ped.blocks || []);
-  (pedHeads.length === 6 && pedHeads[4].indexOf('五、') === 0 && pedHeads[5].indexOf('六、') === 0)
-    ? ok('ped-base 由 4 节扩为 6 节（五、报告该写什么；六、心衰分级用哪套）')
+  (pedHeads.length === 7 && pedHeads[4].indexOf('五、') === 0 &&
+   pedHeads[5].indexOf('六、') === 0 && pedHeads[6].indexOf('七、') === 0)
+    ? ok('ped-base 共 7 节（五、报告该写什么；六、心衰分级用哪套；七、冠脉 Z 值用哪一套）')
     : bad('ped-base 节数不对：' + pedHeads.join(' / '));
+
+  // 第七节（2026-11-08 精简）：只留「无统一标准 + 国际口径 + 国内默认 + 勿跨套比较」
+  [
+    ['kwsd.info 在线计算器', 'kwsd.info/zsp_form.cgi'],
+    ['ZSP version 4 / LMS 4 默认项', 'LMS 4 / ZSP version 4'],
+    ['北美 PHN 风险分层口径', '北美 PHN'],
+    ['国内外尚无统一标准', '国内外尚无统一标准'],
+    ['国内默认显示深圳 SZ', '默认显示深圳 SZ'],
+    ['四川 2025 题录 R119', 'R119'],
+  ].forEach(function (pair) {
+    (pedTxt.indexOf(pair[1]) !== -1) ? ok('ped-base 第七节含' + pair[0])
+      : bad('ped-base 第七节缺' + pair[0] + '：' + pair[1]);
+  });
+  (pedTxt.indexOf('没有全球唯一答案') === -1 && pedTxt.indexOf('哪个版本最通用') === -1)
+    ? ok('ped-base 第七节已精简，考证结论不再在工具里重复')
+    : bad('ped-base 第七节仍有重复长文');
 
   [
     ['EACVI 三处未验证', '未完全验证'],
@@ -1514,6 +1531,9 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   (pedSrc.indexOf('R109') !== -1 && pedSrc.indexOf('R110') !== -1 && pedSrc.indexOf('R111') !== -1)
     ? ok('ped-base source 已挂 R109 / R110 / R111')
     : bad('ped-base source 缺新文献：' + pedSrc);
+  (pedSrc.indexOf('R79') !== -1 && pedSrc.indexOf('R83') !== -1 && pedSrc.indexOf('R119') !== -1)
+    ? ok('ped-base source 已挂冠脉三文献 R79 / R83 / R119（R119 不作孤儿）')
+    : bad('ped-base source 缺冠脉文献：' + pedSrc);
 }
 
 /* ── v1.15.2：P2–P4（ASD/VSD/PDA 儿童限定语、负荷四模式、身高指数 mm/m）── */
