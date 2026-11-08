@@ -176,7 +176,26 @@ html, body {
   font-size: 13px;
   color: var(--sub);
   margin-bottom: 6px;
+  min-height: 34px;
 }
+
+/* 两行标签：英文缩写在上、中文在下（2026-11-08，避免长标签折成三行） */
+.field__l-ab {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--brand);
+}
+
+.field__l-cn {
+  display: block;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--sub);
+}
+
+.field__l-opt { font-size: 10px; color: #94a3b8; }
 
 .field__i {
   width: 100%;
@@ -2379,6 +2398,64 @@ button.fx-nav__c {
 .fx-h--sub { font-size: 13px; padding-left: 14px; border-left-color: #93b4ea; }
 .ftoc__i--sub { padding-left: 30px; }
 .ftoc__i--sub .ftoc__t { font-size: 11.5px; color: var(--sub); }
+
+/* ── 中国成人标准：按年龄分层（2026-11-08）── */
+.agebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.agebar__btn {
+  flex: none;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #c9dcf5;
+  background: var(--brand-soft, #eaf2fb);
+  color: var(--brand, #1f6fd0);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.agebar__btn--on {
+  background: var(--brand, #1f6fd0);
+  border-color: var(--brand, #1f6fd0);
+  color: #fff;
+}
+
+.agebar__h { flex: 1 1 160px; font-size: 11px; color: var(--sub, #9aa3ad); }
+
+/* hidden 必须显式压过上面的 display:flex（UA 的 [hidden] 优先度低于类选择器） */
+.agebar[hidden] { display: none; }
+
+.agebands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.agebands__i {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line, #e3e6ea);
+  background: #fbfcfd;
+  font-size: 12px;
+  color: #445;
+  cursor: pointer;
+}
+
+.agebands__i--on {
+  background: var(--brand, #1f6fd0);
+  border-color: var(--brand, #1f6fd0);
+  color: #fff;
+  font-weight: 600;
+}
+
+.agebands[hidden] { display: none; }
 
 /* 瓣膜评估页（AS / AR / MS / MR / TR） */
 

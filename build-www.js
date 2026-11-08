@@ -337,24 +337,24 @@ const html = `<!DOCTYPE html>
     <!-- ══ EF 计算（合并自原「EF 计算」页，置于最上） ══ -->
     <div class="card">
       <div class="card__t">M 型 / 二维内径测量</div>
-      <div class="card__d">输入内径即可推算容积与收缩功能；室壁厚度为选填，填了才追加 RWT 与左室质量</div>
+      <div class="card__d">单位：mm。填完内径自动出结果；舒张末应大于收缩末。室壁厚度选填，填了才追加 RWT 与左室质量</div>
       <div class="row">
         <div class="field">
-          <label class="field__l">LVIDd 舒张末内径 / mm</label>
+          <label class="field__l"><span class="field__l-ab">LVIDd</span><span class="field__l-cn">舒张末内径</span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvedd" placeholder="如 50" step="0.1">
         </div>
         <div class="field">
-          <label class="field__l">LVIDs 收缩末内径 / mm</label>
+          <label class="field__l"><span class="field__l-ab">LVIDs</span><span class="field__l-cn">收缩末内径</span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvesd" placeholder="如 32" step="0.1">
         </div>
       </div>
       <div class="row">
         <div class="field">
-          <label class="field__l">IVSd 室间隔厚度 / mm（选填）</label>
+          <label class="field__l"><span class="field__l-ab">IVSd</span><span class="field__l-cn">室间隔厚度 <span class="field__l-opt">选填</span></span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efIvsd" placeholder="如 9" step="0.1">
         </div>
         <div class="field">
-          <label class="field__l">LVPWd 后壁厚度 / mm（选填）</label>
+          <label class="field__l"><span class="field__l-ab">LVPWd</span><span class="field__l-cn">后壁厚度 <span class="field__l-opt">选填</span></span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvpwd" placeholder="如 9" step="0.1">
         </div>
       </div>
@@ -430,6 +430,21 @@ const html = `<!DOCTYPE html>
         <div class="seg__i" data-v="ASE">ASE 国际标准</div>
       </div>
       <div class="note" id="stdNote">《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围</div>
+
+      <!-- ★ 中国成人标准：按年龄分层（开关只在 CN 下出现；选择记在本机） -->
+      <div class="agebar" id="ageWrap" hidden>
+        <button class="agebar__btn" id="ageToggle" type="button">按年龄分层</button>
+        <span class="agebar__h" id="ageHint">默认：6 段合并的总人群范围</span>
+      </div>
+      <div class="agebands" id="ageBands" hidden>
+        <div class="agebands__i" data-i="0">18~29 岁</div>
+        <div class="agebands__i" data-i="1">30~39 岁</div>
+        <div class="agebands__i" data-i="2">40~49 岁</div>
+        <div class="agebands__i" data-i="3">50~59 岁</div>
+        <div class="agebands__i" data-i="4">60~69 岁</div>
+        <div class="agebands__i" data-i="5">70~79 岁</div>
+      </div>
+      <div class="note note--strong" id="ageNote" hidden></div>
     </div>
 
     <!-- ══ 参考值列表 ══ -->

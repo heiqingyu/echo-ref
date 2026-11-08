@@ -187,7 +187,26 @@ html, body {
   font-size: 13px;
   color: var(--sub);
   margin-bottom: 6px;
+  min-height: 34px;
 }
+
+/* 两行标签：英文缩写在上、中文在下（2026-11-08，避免长标签折成三行） */
+.field__l-ab {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--brand);
+}
+
+.field__l-cn {
+  display: block;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--sub);
+}
+
+.field__l-opt { font-size: 10px; color: #94a3b8; }
 
 .field__i {
   width: 100%;
@@ -2391,6 +2410,64 @@ button.fx-nav__c {
 .ftoc__i--sub { padding-left: 30px; }
 .ftoc__i--sub .ftoc__t { font-size: 11.5px; color: var(--sub); }
 
+/* ── 中国成人标准：按年龄分层（2026-11-08）── */
+.agebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.agebar__btn {
+  flex: none;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #c9dcf5;
+  background: var(--brand-soft, #eaf2fb);
+  color: var(--brand, #1f6fd0);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.agebar__btn--on {
+  background: var(--brand, #1f6fd0);
+  border-color: var(--brand, #1f6fd0);
+  color: #fff;
+}
+
+.agebar__h { flex: 1 1 160px; font-size: 11px; color: var(--sub, #9aa3ad); }
+
+/* hidden 必须显式压过上面的 display:flex（UA 的 [hidden] 优先度低于类选择器） */
+.agebar[hidden] { display: none; }
+
+.agebands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.agebands__i {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line, #e3e6ea);
+  background: #fbfcfd;
+  font-size: 12px;
+  color: #445;
+  cursor: pointer;
+}
+
+.agebands__i--on {
+  background: var(--brand, #1f6fd0);
+  border-color: var(--brand, #1f6fd0);
+  color: #fff;
+  font-weight: 600;
+}
+
+.agebands[hidden] { display: none; }
+
 </style>
 </head>
 <body>
@@ -2417,24 +2494,24 @@ button.fx-nav__c {
     <!-- ══ EF 计算（合并自原「EF 计算」页，置于最上） ══ -->
     <div class="card">
       <div class="card__t">M 型 / 二维内径测量</div>
-      <div class="card__d">输入内径即可推算容积与收缩功能；室壁厚度为选填，填了才追加 RWT 与左室质量</div>
+      <div class="card__d">单位：mm。填完内径自动出结果；舒张末应大于收缩末。室壁厚度选填，填了才追加 RWT 与左室质量</div>
       <div class="row">
         <div class="field">
-          <label class="field__l">LVIDd 舒张末内径 / mm</label>
+          <label class="field__l"><span class="field__l-ab">LVIDd</span><span class="field__l-cn">舒张末内径</span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvedd" placeholder="如 50" step="0.1">
         </div>
         <div class="field">
-          <label class="field__l">LVIDs 收缩末内径 / mm</label>
+          <label class="field__l"><span class="field__l-ab">LVIDs</span><span class="field__l-cn">收缩末内径</span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvesd" placeholder="如 32" step="0.1">
         </div>
       </div>
       <div class="row">
         <div class="field">
-          <label class="field__l">IVSd 室间隔厚度 / mm（选填）</label>
+          <label class="field__l"><span class="field__l-ab">IVSd</span><span class="field__l-cn">室间隔厚度 <span class="field__l-opt">选填</span></span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efIvsd" placeholder="如 9" step="0.1">
         </div>
         <div class="field">
-          <label class="field__l">LVPWd 后壁厚度 / mm（选填）</label>
+          <label class="field__l"><span class="field__l-ab">LVPWd</span><span class="field__l-cn">后壁厚度 <span class="field__l-opt">选填</span></span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvpwd" placeholder="如 9" step="0.1">
         </div>
       </div>
@@ -2510,6 +2587,21 @@ button.fx-nav__c {
         <div class="seg__i" data-v="ASE">ASE 国际标准</div>
       </div>
       <div class="note" id="stdNote">《中国成年人超声心动图检查测量指南》(2016) · 95% 参考范围</div>
+
+      <!-- ★ 中国成人标准：按年龄分层（开关只在 CN 下出现；选择记在本机） -->
+      <div class="agebar" id="ageWrap" hidden>
+        <button class="agebar__btn" id="ageToggle" type="button">按年龄分层</button>
+        <span class="agebar__h" id="ageHint">默认：6 段合并的总人群范围</span>
+      </div>
+      <div class="agebands" id="ageBands" hidden>
+        <div class="agebands__i" data-i="0">18~29 岁</div>
+        <div class="agebands__i" data-i="1">30~39 岁</div>
+        <div class="agebands__i" data-i="2">40~49 岁</div>
+        <div class="agebands__i" data-i="3">50~59 岁</div>
+        <div class="agebands__i" data-i="4">60~69 岁</div>
+        <div class="agebands__i" data-i="5">70~79 岁</div>
+      </div>
+      <div class="note note--strong" id="ageNote" hidden></div>
     </div>
 
     <!-- ══ 参考值列表 ══ -->
@@ -2552,7 +2644,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.16.0</div>
+    <div class="verline">心脏超声参考值 · v1.16.1</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2610,7 +2702,7 @@ button.fx-nav__c {
         <div id="aliasList" hidden></div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.16.0</div>
+      <div class="verline">心脏超声参考值 · v1.16.1</div>
       <div class="note note--warn">
         公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
@@ -3273,6 +3365,160 @@ const PARAM_UNIT_ASE = {
   TAPSE: 'cm', 'IVC-d': 'cm',
 };
 
+/* ------------------------------------------------------------------ *
+ * 2b. 中国成人指南按年龄分层的 95% 参考范围（2016，表 2～表 9）
+ *   数据逐行取自指南原文：每行 14 个数 = 总人群下限/上限 + 6 个年龄段各下限/上限。
+ *   ★ 每项的「总人群」两数已与 REFERENCE.CN 逐项比对一致才收录，防止串列/错行。
+ *   ★ 派生项（LVM/BSA、LVM/H2.7、LVEDD/H、LVRWT）原表无年龄分层，仍用总人群值。
+ *   ★ 年龄段样本量小（男 83~138 / 女 88~141），仅供参照，报告需注明所用年龄段。
+ * ------------------------------------------------------------------ */
+const AGE_BANDS = [
+  { t: '18~29 岁', n: { male: 128, female: 116 } },
+  { t: '30~39 岁', n: { male: 118, female: 139 } },
+  { t: '40~49 岁', n: { male: 138, female: 135 } },
+  { t: '50~59 岁', n: { male: 106, female: 141 } },
+  { t: '60~69 岁', n: { male: 105, female: 97 } },
+  { t: '70~79 岁', n: { male: 83, female: 88 } },
+];
+
+/** CN 参数在 6 个年龄段的 95% 参考范围；缺省键表示原表无分层数据 */
+const CN_AGE = {
+  male: {
+    "LA-ap": [[21.9,36.7],[23.8,37.2],[24.2,38.8],[23.7,39.3],[24.6,39.2],[25.5,40.3]],
+    "LA-l": [[33.2,56.4],[34.7,57.1],[35,57],[36.9,58.9],[37.5,58.7],[37.1,61.7]],
+    "LA-t": [[26,44],[26,45.6],[26.9,44.1],[27.3,44.5],[26.2,44.6],[28.6,45.8]],
+    "LAA": [[8.3,19.7],[8.4,20.2],[8.8,19.4],[8.6,22],[8.5,21.9],[9.9,22.9]],
+    "LAV": [[14.9,57.7],[15.6,57.2],[18.3,54.7],[13.5,64.1],[13.1,65.7],[19.5,65.3]],
+    "LVOT": [[13.9,25.3],[12.8,25.4],[13.9,24.9],[14.1,24.7],[13.4,24.8],[13.3,24.3]],
+    "IVSd": [[6.3,10.7],[6.2,11.2],[6.4,11.4],[6.6,11.4],[6.8,11.6],[7,11.8]],
+    "IVSs": [[8.7,14.9],[8.8,15.4],[9,15.6],[9.6,16.2],[9,16.8],[10.1,16.3]],
+    "LVPWd": [[5.9,10.7],[6.2,10.6],[6.3,11.1],[6.2,11.2],[6.5,11.3],[6.7,11.7]],
+    "LVPWs": [[8.7,15.7],[8.5,15.9],[8.9,15.5],[9.4,16.4],[8.9,16.7],[9.6,17]],
+    "LVEDD": [[38.9,54.1],[39.4,54],[38.4,53.6],[38.9,54.5],[37.9,53.9],[36.9,53.3]],
+    "LVESD": [[24,38.8],[24.1,38.7],[23.5,38.3],[21.8,39.4],[21.7,37.7],[20.2,37.8]],
+    "LVEDV": [[50.9,133.7],[49.2,133],[50.7,127.5],[41.6,126.2],[42.8,118],[43.7,116.3]],
+    "LVESV": [[16.2,52.6],[15.6,50.8],[14.8,49.2],[7.8,54],[12.1,43.5],[11,42.8]],
+    "LVEF": [[51.2,74.4],[52.1,74.5],[53,75.8],[52.8,77.4],[54.6,76.2],[53,79.2]],
+    "LVM": [[75.1,183.7],[85.3,178.3],[75.7,192.9],[73.4,206.6],[79.7,201.7],[81.4,201.4]],
+    "RA-l": [[34.5,50.9],[34.4,52.4],[35.8,52.2],[35.5,54.7],[35.7,55.7],[37.6,54.8]],
+    "RA-t": [[27,44.6],[26.4,45.2],[26.9,44.1],[25.2,44.8],[25.7,43.7],[26.6,43.8]],
+    "RV-ap": [[14.1,28.9],[14.2,28.8],[15,29.8],[14.9,30.9],[15,30.2],[14.9,31.3]],
+    "RV-tb": [[21.6,42.4],[21.4,42.6],[22.6,41],[21.9,42.7],[22.4,42.4],[23.5,42.3]],
+    "RV-tm": [[16.4,38.4],[17.1,37.1],[17.7,36.1],[16.8,35.2],[15.6,37.6],[15.3,36.5]],
+    "RV-l": [[37.5,77.5],[38.3,79.5],[37.7,73.7],[37.5,73.1],[36.9,72.1],[35.3,72.1]],
+    "RVOT": [[14.4,30.8],[15.9,31.1],[15,31.4],[15.2,32],[14.2,32.6],[16,32.8]],
+    "RVAW": [[2.3,5.5],[2.2,5.8],[2.3,5.9],[2.3,5.9],[2.2,6.6],[2.6,6.2]],
+    "RVFW": [[2.2,6.6],[2.2,6.6],[2.5,6.5],[2.3,6.7],[2.3,6.7],[2.2,6.6]],
+    "ANN": [[16.7,25.3],[16.6,26],[16.6,26.4],[16.6,26.8],[16.7,26.5],[16.9,26.7]],
+    "ROOT": [[22.9,34.3],[23.3,34.7],[24.5,36.3],[24.2,37.6],[25,36.8],[24.2,38]],
+    "AAO": [[19.9,31.3],[20.5,32.7],[21,35.2],[21.3,35.5],[21.9,36.1],[22.7,36.5]],
+    "ARCH": [[15.8,29.2],[17.5,29.7],[17.6,31],[17.7,32.5],[18.8,32.6],[18.7,32.9]],
+    "DAO": [[12.1,25.1],[12.7,25.7],[12.5,27.1],[12.3,28.3],[14.3,28.1],[13.9,27.7]],
+    "PVANN": [[13.5,25.3],[14.3,25.3],[13.5,26.5],[13.7,26.7],[13.8,26.8],[14.3,27.7]],
+    "MPA": [[15.2,25.4],[15.3,25.1],[15.4,26],[15.1,27.3],[14.8,27.4],[15.6,27.8]],
+    "RPA": [[7.7,16.3],[7.4,16],[7.9,16.9],[7.4,18.4],[7.5,18.1],[7.8,20]],
+    "LPA": [[8,16.2],[8.1,16.7],[7.7,17.5],[7.9,17.7],[8.5,17.5],[8.8,19.4]],
+    "MV-E": [[0.52,1.26],[0.54,1.2],[0.42,1.16],[0.41,1.15],[0.42,1.12],[0.42,1.08]],
+    "MV-A": [[0.28,0.82],[0.33,0.83],[0.29,0.95],[0.32,1.06],[0.4,1.18],[0.51,1.25]],
+    "MV-E/A": [[0.81,2.57],[0.85,2.23],[0.59,2.07],[0.48,1.9],[0.33,1.75],[0.29,1.51]],
+    "MV-DT": [[71,257],[75,261],[80,256],[86,265],[92,256],[73,290]],
+    "MV-Ad": [[66,224],[60,239],[39,271],[73,238],[74,230],[74,221]],
+    // ★ 男性 Ar-d 原表 30~39 岁下限印作「-51」ms（持续时间不可能为负），
+    //   指南正文亦写明「Ar-d 在男性无年龄差异」，故该项男性不分层、回落总人群 60~163；
+    //   按「不自行改数」原则不猜成 51，女性数据正常保留。
+    "MV-ArA": [[-124,46],[-132,56],[-158,65],[-121,40],[-117,43],[-114,50]],
+    "LVOT-v": [[0.59,1.33],[0.59,1.37],[0.55,1.37],[0.5,1.4],[0.58,1.52],[0.57,1.55]],
+    "AV-v": [[0.82,1.6],[0.8,1.58],[0.78,1.6],[0.73,1.67],[0.81,1.79],[0.83,1.73]],
+    "RVOT-v": [[0.46,1.08],[0.43,1.09],[0.38,1.08],[0.43,0.97],[0.36,1.18],[0.39,1.01]],
+    "PV-v": [[0.67,1.37],[0.65,1.35],[0.59,1.33],[0.57,1.35],[0.63,1.45],[0.64,1.34]],
+    "TV-E": [[0.38,0.88],[0.35,0.85],[0.33,0.77],[0.29,0.79],[0.29,0.73],[0.28,0.72]],
+    "TV-A": [[0.18,0.58],[0.22,0.58],[0.19,0.63],[0.19,0.67],[0.19,0.73],[0.22,0.66]],
+    "TV-E/A": [[0.9,2.5],[0.8,2.4],[0.8,2],[0.5,2.1],[0.4,2],[0.4,2]],
+    "TDI-s-tv": [[8.6,18],[8.7,17.3],[8.5,17.1],[8.1,17.5],[7.9,18.9],[8.2,19.6]],
+    "TDI-e-tv": [[7.9,20.1],[7,19.2],[6.2,17.2],[4.4,18.2],[5.2,16.2],[3.7,16.3]],
+    "TDI-a-tv": [[5.1,15.7],[5.3,17.9],[5.8,18.8],[5.9,22.3],[7.1,22.7],[7.2,23.2]],
+    "TDI-e/a-tv": [[0.5,2.5],[0.6,1.8],[0.4,1.6],[0.1,1.7],[0.2,1.4],[0.1,1.3]],
+    "TDI-E/e-tv": [[2,7.4],[1.7,7.9],[2,7.8],[1.5,8.9],[2,8.2],[1.8,9.2]],
+    "TDI-s-sept": [[6.4,11.8],[5.6,12.6],[5.1,12.5],[5.3,11.9],[5.2,12.2],[5,11.6]],
+    "TDI-e-sept": [[8.3,16.9],[6.5,15.9],[4.4,15.4],[3.5,14.9],[4,11.8],[2.2,12.8]],
+    "TDI-a-sept": [[4.9,11.5],[5.1,12.5],[5.8,12.8],[5.8,14],[6.2,14],[6.2,14.4]],
+    "TDI-e/a-sept": [[0.8,2.4],[0.5,2.1],[0.5,1.7],[0.4,1.6],[0.2,1.4],[0,1.6]],
+    "TDI-E/e-sept": [[3.9,10.5],[4.1,11.9],[3.5,13.3],[3.3,14.7],[4.3,16.1],[4.5,17.1]],
+    "TDI-s-lat": [[6.7,16.9],[6.4,16.6],[6,15.4],[5.9,14.9],[4.7,15.7],[4.9,14.7]],
+    "TDI-e-lat": [[10.3,22.9],[7.4,21.6],[6.9,18.7],[5.8,18.4],[5.4,16],[3.2,16.2]],
+  },
+  female: {
+    "LA-ap": [[21,34.4],[21.3,34.7],[22.1,37.3],[22.7,36.5],[23.5,38.3],[24,38.6]],
+    "LA-l": [[31.9,53.9],[33.1,54.7],[33.4,57],[35.4,55.8],[36.8,57.2],[34.9,59.3]],
+    "LA-t": [[26.1,42.1],[25.5,41.1],[26.5,44.1],[25.9,43.1],[26.3,43.1],[27.7,44.1]],
+    "LAA": [[8,17.8],[7.7,18.3],[8.4,19.4],[8.6,20],[9.6,19.8],[9.1,21.3]],
+    "LAV": [[12.9,49.3],[10.7,53.1],[16.3,54.3],[15.4,55.8],[17.3,57.3],[15.1,62.9]],
+    "LVOT": [[11.2,23.4],[12.1,23.1],[12.4,23],[12.2,22.8],[12.1,23.1],[12.1,23.1]],
+    "IVSd": [[5.3,9.3],[5.4,10.2],[7.7,8.5],[5.6,11],[6.2,11.2],[6.6,11]],
+    "IVSs": [[7.5,13.7],[7.9,14.1],[8.3,14.5],[8.7,14.9],[8.9,15.5],[8.8,15.8]],
+    "LVPWd": [[5.4,9],[5.5,9.5],[5.5,10.3],[5.4,10.4],[6.2,10.6],[6.2,11]],
+    "LVPWs": [[7.5,14.5],[7.7,14.7],[8.5,14.7],[8.5,15.1],[8.6,15.6],[9.1,16.1]],
+    "LVEDD": [[36.7,48.5],[37.6,49.4],[37,50.8],[36.6,50.4],[36.8,49.4],[35,49.6]],
+    "LVESD": [[21.6,33.8],[21.7,35.5],[21.1,35.9],[21.1,35.3],[20.8,35.4],[18.1,36.5]],
+    "LVEDV": [[41,106.4],[42,103.2],[40.9,111.5],[38,104.2],[37.4,104],[25.6,109]],
+    "LVESV": [[7.6,45.6],[9.7,43.1],[10.2,45],[9.9,40.9],[8.6,41.6],[3.1,45.9]],
+    "LVEF": [[52.5,77.1],[52.3,76.9],[53.1,75.9],[52.2,77.6],[54.5,78.1],[53.5,77.1]],
+    "LVM": [[55.9,127.7],[59.5,145.3],[61.2,158],[55.4,167.2],[68.3,165.1],[62.8,168.2]],
+    "RA-l": [[29.7,48.9],[32,48.8],[31.3,51.3],[34.2,50.6],[35.3,50.5],[34.4,52.4]],
+    "RA-t": [[23.8,39.4],[23.5,39.9],[23.7,41.3],[25.3,40.5],[23.8,41],[23.8,41.8]],
+    "RV-ap": [[13.5,26.1],[13.6,27.4],[14.2,29],[15.4,28],[14.8,28.6],[13.7,29.3]],
+    "RV-tb": [[18.2,38.2],[18.6,40.2],[19.7,39.3],[20,39.2],[21.8,37.8],[20.9,39.7]],
+    "RV-tm": [[14.8,34],[15.3,34.1],[14.8,34],[13.6,34],[14.9,32.5],[15.3,32.5]],
+    "RV-l": [[36.1,68.3],[35.1,68.5],[34.9,70.5],[34.1,70.1],[34.1,67.1],[34.8,65.4]],
+    "RVOT": [[14.2,28.8],[15,29.6],[14.9,29.7],[14.3,31.1],[13.4,30.2],[14.7,30.7]],
+    "RVAW": [[2.1,5.3],[2,5.6],[2,6],[2.1,6.1],[2.6,5.8],[2.5,6.5]],
+    "RVFW": [[2,6],[2.1,6.1],[2.1,6.1],[2.1,6.5],[2.3,6.7],[2.1,6.5]],
+    "ANN": [[14.5,23.5],[15.2,23.4],[14.8,24.6],[15.5,24.1],[15.5,24.9],[15.4,24.8]],
+    "ROOT": [[19.7,31.5],[20.6,32.8],[21.1,34.5],[22.7,33.3],[22.9,33.9],[22,35.4]],
+    "AAO": [[16.5,30.3],[18.9,30.7],[19.3,33.1],[20.2,32.8],[21.2,33.8],[21.1,34.1]],
+    "ARCH": [[15.9,26.5],[16.5,28.3],[16.7,29.7],[17.2,30.2],[18,31.4],[18.1,31.1]],
+    "DAO": [[11.5,22.5],[12,23.8],[13,24.4],[12.9,25.5],[14.1,25.9],[14,26.2]],
+    "PVANN": [[12.6,24.8],[13.1,24.5],[13.7,25.9],[13.2,25.4],[13.6,25.8],[13.7,25.9]],
+    "MPA": [[14.2,24.8],[14.1,24.7],[14.6,26.4],[14.2,26.4],[14.5,27.1],[15.5,26.9]],
+    "RPA": [[6.8,15.4],[7,15.6],[7.1,16.5],[7.4,16.8],[6.8,18.2],[7.6,18.6]],
+    "LPA": [[6.8,15.8],[7.6,15.8],[7.5,16.9],[8.1,16.7],[8,17.4],[8.5,18.3]],
+    "MV-E": [[0.63,1.33],[0.55,1.33],[0.56,1.3],[0.47,1.25],[0.44,1.18],[0.34,1.24]],
+    "MV-A": [[0.22,0.92],[0.28,0.94],[0.37,0.99],[0.34,1.16],[0.43,1.33],[0.43,1.45]],
+    "MV-E/A": [[0.88,2.76],[0.8,2.4],[0.61,2.25],[0.44,2],[0.3,1.64],[0.24,1.54]],
+    "MV-DT": [[72,247],[82,240],[86,241],[85,254],[90,258],[82,286]],
+    "MV-Ad": [[65,219],[27,296],[44,285],[48,271],[73,227],[79,226]],
+    "MV-Ard": [[49,159],[57,165],[67,160],[72,155],[76,153],[68,165]],
+    "MV-ArA": [[-116,43],[-183,80],[-179,73],[-145,53],[-120,48],[-118,48]],
+    "LVOT-v": [[0.55,1.33],[0.57,1.39],[0.55,1.37],[0.59,1.45],[0.54,1.52],[0.6,1.54]],
+    "AV-v": [[0.86,1.6],[0.78,1.76],[0.86,1.68],[0.84,1.7],[0.9,1.84],[0.8,1.9]],
+    "RVOT-v": [[0.46,1.08],[0.43,1.05],[0.46,0.96],[0.43,1.05],[0.41,1.11],[0.4,1.02]],
+    "PV-v": [[0.66,1.28],[0.64,1.3],[0.64,1.26],[0.59,1.33],[0.59,1.41],[0.64,1.34]],
+    "TV-E": [[0.45,0.95],[0.37,0.87],[0.34,0.84],[0.34,0.78],[0.33,0.77],[0.27,0.75]],
+    "TV-A": [[0.17,0.65],[0.16,0.66],[0.2,0.6],[0.2,0.68],[0.19,0.73],[0.22,0.72]],
+    "TV-E/A": [[0.8,2.8],[0.8,2.4],[0.7,2.3],[0.6,2.2],[0.7,1.9],[0.4,2]],
+    "TDI-s-tv": [[8.7,17.7],[8.2,17.6],[8.7,16.9],[8,17],[7.2,17.4],[8.3,17.7]],
+    "TDI-e-tv": [[8.7,22.1],[8.3,20.5],[6.3,19.3],[5.6,18.6],[4.5,15.5],[3.8,16.8]],
+    "TDI-a-tv": [[5,15.2],[5.8,16.8],[6.5,19.1],[7,21.2],[8.4,21.8],[8.3,22.9]],
+    "TDI-e/a-tv": [[0.6,2.6],[0.5,2.1],[0.3,1.9],[0.3,1.5],[0.1,1.3],[0.1,1.3]],
+    "TDI-E/e-tv": [[2.4,7.2],[2,7],[2.2,7.6],[1.9,8.1],[2.2,9.6],[1.8,8.8]],
+    "TDI-s-sept": [[5.4,12],[5.4,12],[5.6,11.8],[5.2,11.4],[4.9,11.1],[4.3,11.3]],
+    "TDI-e-sept": [[7.9,18.1],[6.6,16.8],[5.3,15.9],[4.3,14.5],[2.4,12.6],[2.7,11.7]],
+    "TDI-a-sept": [[4.3,10.5],[4.2,12],[5,13.2],[5.3,13.5],[6.6,13.2],[5.7,13.9]],
+    "TDI-e/a-sept": [[0.8,2.8],[0.7,2.3],[0.4,2],[0.4,1.6],[0.2,1.4],[0.2,1.4]],
+    "TDI-E/e-sept": [[3.8,12],[3.7,13.1],[3.7,14.7],[4.1,15.5],[4.5,18.3],[4.3,19.1]],
+    "TDI-s-lat": [[5.7,17.5],[6.5,15.9],[5.9,14.5],[5.9,14.5],[4.9,13.9],[5.1,12.9]],
+    "TDI-e-lat": [[9.4,25],[9.2,21.4],[7.5,19.7],[6.4,17.4],[4.4,15.8],[3.8,14.4]],
+  },
+};
+
+/** 取某个 CN 参数在指定年龄段的参考区间；无分层数据时回落总人群 */
+function ageRef(sex, key, band) {
+  const t = (CN_AGE[sex] || CN_AGE.male)[key];
+  if (t && band >= 0 && band < AGE_BANDS.length) return t[band];
+  return (REFERENCE.CN[sex] || REFERENCE.CN.male)[key];
+}
+
+
 /** 参数元信息：中文名、界面显示单位、小数位 */
 const PARAM_META = {
   'LA-ap':    { name: '左房前后径（收缩末）',             unit: 'mm',    dec: 1 },
@@ -3657,7 +3903,7 @@ function nativeUnit(key, standard) {
  * @param {string} standard 'CN' | 'ASE'
  * @returns {Array} 可直接渲染的列表项
  */
-function buildReferenceList(sex, measured, standard, bsa) {
+function buildReferenceList(sex, measured, standard, bsa, ageBand) {
   const std = REFERENCE[standard] || REFERENCE.CN;
   const table = std[sex] || std.male;
   const fields = standard === 'ASE' ? ASE_FIELDS : CN_FIELDS;
@@ -3665,7 +3911,11 @@ function buildReferenceList(sex, measured, standard, bsa) {
 
   for (let i = 0; i < fields.length; i++) {
     const key = fields[i];
-    const ref = table[key];
+    // ★ CN 标准且选了年龄段时，改用该年龄段的 95% 参考范围；
+    //   原表无分层数据的派生项（LVM/BSA 等）由 ageRef 自动回落总人群。
+    const ref = (standard === 'CN' && ageBand >= 0 && ageBand < AGE_BANDS.length)
+      ? ageRef(sex, key, ageBand)
+      : table[key];
     if (!ref) continue;
 
     const meta = PARAM_META[key] || { name: key, unit: '', dec: 1 };
@@ -3780,6 +4030,9 @@ function fmt(n, dec) {
     bmiClass: bmiClass,
     REFERENCE: REFERENCE,
     PARAM_UNIT_ASE: PARAM_UNIT_ASE,
+    AGE_BANDS: AGE_BANDS,
+    CN_AGE: CN_AGE,
+    ageRef: ageRef,
     PARAM_META: PARAM_META,
     PHASE_NOTE: PHASE_NOTE,
     CN_GROUPS: CN_GROUPS,
@@ -21799,6 +22052,21 @@ const MATERIALS = [];
   const ValveCalc = window.ValveCalc;
 
   /* ══════════ 全局状态（对应小程序的 app.globalData） ══════════ */
+  /* ★ 中国成人标准「按年龄分层」是阅读偏好，与「记住本次输入」独立，单独存本机
+     （键名与小程序端完全一致：echoref:ageOn / echoref:ageBand） */
+  const AGE_ON_KEY = 'echoref:ageOn';
+  const AGE_BAND_KEY = 'echoref:ageBand';
+
+  function loadAgePref() {
+    try {
+      const on = window.localStorage.getItem(AGE_ON_KEY) === '1';
+      const b = parseInt(window.localStorage.getItem(AGE_BAND_KEY), 10);
+      return { on: on, band: (b >= 0 && b < 6) ? b : 0 };
+    } catch (e) { return { on: false, band: 0 }; }
+  }
+
+  const _agePref = loadAgePref();
+
   const state = {
     sex: 'male',
     height: 170,
@@ -21806,6 +22074,8 @@ const MATERIALS = [];
     bsa: 0,
     formula: 'mosteller',   // mosteller | dubois
     standard: 'CN',         // CN | ASE
+    ageOn: _agePref.on,     // 中国成人标准是否按年龄分层显示
+    ageBand: _agePref.band, // 0..5 对应 18~29 … 70~79
     measurements: null,      // EF 页的测量值
     peds: null,
   };
@@ -22220,12 +22490,18 @@ const MATERIALS = [];
       hasM = true;
     }
 
-    const rows = Core.buildReferenceList(state.sex, measured, state.standard, state.bsa);
+    // ★ 只有「中国成人标准 + 开关打开」才按年龄段取区间；ASE 与关闭状态都用总人群
+    const band = (state.standard === 'CN' && state.ageOn) ? state.ageBand : -1;
+    const rows = Core.buildReferenceList(state.sex, measured, state.standard, state.bsa, band);
+    renderAgeBar(band);
+
+    const ab = band >= 0 ? Core.AGE_BANDS[band] : null;
+    const bandDesc = ab ? ' · ' + ab.t + '组（男 n=' + ab.n.male + ' / 女 n=' + ab.n.female + '）' : '';
 
     $('refTitle').textContent = hasM ? '实测值对照' : '正常参考范围';
-    $('refDesc').textContent = hasM
+    $('refDesc').textContent = (hasM
       ? '已关联上方 EF 计算的测量值，下表显示实测值与参考范围的对照结果。'
-      : (state.sex === 'male' ? '男性' : '女性') + ' · ' + STD_NOTE[state.standard];
+      : (state.sex === 'male' ? '男性' : '女性') + ' · ' + STD_NOTE[state.standard]) + bandDesc;
 
     $('refSource').textContent = '参考值来源：' + STD_SOURCE[state.standard];
 
@@ -22274,6 +22550,85 @@ const MATERIALS = [];
     h += '</div>';
     return h;
   }
+
+  /* ★ 中国成人标准：按年龄分层（2026-11-08）
+     开关只在 CN 标准下出现；选中的年龄段存在本机，下次打开还是这一段。
+     派生项（LVM/BSA、LVM/H2.7、LVEDD/H、RWT）原表未分层，引擎自动回落总人群。 */
+  function saveAgePref() {
+    try {
+      window.localStorage.setItem(AGE_ON_KEY, state.ageOn ? '1' : '0');
+      window.localStorage.setItem(AGE_BAND_KEY, String(state.ageBand));
+    } catch (e) { /* 存不下就算了 */ }
+  }
+
+  function ageNoteText(ab) {
+    return '当前按 ' + ab.t + '组的 95% 参考范围显示，实测值判定也按这一组。' +
+      '年龄段样本量较小，仅作参照；' +
+      'LVM/BSA、LVM/H2.7、LVEDD/H、RWT 四项原表未给年龄分层，仍用总人群值。' +
+      '指南只覆盖 18~79 岁，超出范围请回到总人群。';
+  }
+
+  /** band：-1 表示不分层（ASE 或开关关闭） */
+  function renderAgeBar(band) {
+    const isCN = state.standard === 'CN';
+    const wrap = q('ageWrap');
+    if (wrap) wrap.hidden = !isCN;
+
+    const bands = q('ageBands');
+    const showBands = isCN && state.ageOn;
+    if (bands) {
+      bands.hidden = !showBands;
+      bands.querySelectorAll('.agebands__i').forEach(function (el) {
+        el.classList.toggle('agebands__i--on', showBands && +el.dataset.i === state.ageBand);
+      });
+    }
+
+    const btn = q('ageToggle');
+    if (btn) {
+      btn.textContent = state.ageOn ? '已分层 · 点此关闭' : '按年龄分层';
+      btn.classList.toggle('agebar__btn--on', !!state.ageOn);
+    }
+
+    const hint = q('ageHint');
+    if (hint) {
+      hint.textContent = state.ageOn ? '选年龄段，表格与实测判定同步切换' : '默认：6 段合并的总人群范围';
+    }
+
+    const noteEl = q('ageNote');
+    if (noteEl) {
+      const ab = (isCN && state.ageOn && band >= 0) ? Core.AGE_BANDS[band] : null;
+      noteEl.hidden = !ab;
+      noteEl.textContent = ab ? ageNoteText(ab) : '';
+    }
+  }
+
+  (function bindAgeBar() {
+    const btn = q('ageToggle');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        state.ageOn = !state.ageOn;
+        if (state.ageOn && !(state.ageBand >= 0 && state.ageBand < Core.AGE_BANDS.length)) {
+          state.ageBand = 0;
+        }
+        saveAgePref();
+        renderReference();
+      });
+    }
+    const bands = q('ageBands');
+    if (bands) {
+      Array.prototype.forEach.call(bands.querySelectorAll('.agebands__i'), function (el) {
+        el.addEventListener('click', function () {
+          const i = parseInt(el.dataset.i, 10);
+          if (!(i >= 0 && i < Core.AGE_BANDS.length)) return;
+          if (i === state.ageBand && state.ageOn) return;
+          state.ageOn = true;
+          state.ageBand = i;
+          saveAgePref();
+          renderReference();
+        });
+      });
+    }
+  })();
 
   /* 五、Tab1 EF 计算（与参考值同页，置于卡片最上方） */
 

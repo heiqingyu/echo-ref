@@ -511,6 +511,45 @@ console.log('\n=== 21. 合并后首页（EF 计算 + 参考值同页）===');
   check('首页每次输入都存快照（saveSnapshot 6 处，含开启记住那一次）',
     (idxJs.match(/this\.saveSnapshot\(\)/g) || []).length, 6, 0);
 
+  // ★ 2026-11-08：EF 卡标签两行、不再重复「/ mm」、输入即算
+  check('EF 标签不再重复写「/ mm」（卡顶已标单位）',
+    (idxWxml.indexOf('内径 / mm') === -1 && idxWxml.indexOf('厚度 / mm') === -1) ? 1 : 0, 1, 0);
+  check('EF 四个标签为「缩写 + 中文」两行',
+    (idxWxml.match(/class="field__ab"/g) || []).length, 4, 0);
+  check('EF 页已无「计算 EF / FS」按钮', idxWxml.indexOf('计算 EF') === -1 ? 1 : 0, 1, 0);
+  const iCond = idxJs.indexOf('s < d) {');
+  check('输入内径即自动计算（onInput 内直接调 doCalc）',
+    (iCond > 0 && idxJs.indexOf('this.doCalc();', iCond) > iCond) ? 1 : 0, 1, 0);
+
+  // ★ 2026-11-08：中国成人标准「按年龄分层」——开关 + 6 段 + 本机记住
+  const appWxss = fsW.readFileSync(pathW.join(__dirname, 'miniprogram', 'app.wxss'), 'utf8');
+  check('首页记住年龄分层偏好（echoref:ageOn / echoref:ageBand）',
+    (idxJs.indexOf("'echoref:ageOn'") !== -1 && idxJs.indexOf("'echoref:ageBand'") !== -1) ? 1 : 0, 1, 0);
+  check('年龄分层开关只在 CN 下渲染',
+    idxWxml.indexOf('wx:if="{{standard === \'CN\'}}" class="agebar"') !== -1 ? 1 : 0, 1, 0);
+  check('6 个年龄段可点选并回写',
+    (idxWxml.indexOf('wx:for="{{ageBands}}"') !== -1 &&
+     idxWxml.indexOf('bindtap="onAgeBand"') !== -1) ? 1 : 0, 1, 0);
+  check('分层开关与胶囊有两端样式（app.wxss）',
+    (appWxss.indexOf('.agebar {') !== -1 && appWxss.indexOf('.agebands__i {') !== -1) ? 1 : 0, 1, 0);
+
+  pg.data.lvedd = '50'; pg.data.lvesd = '32';
+  pg.doCalc();
+  const rangeAll = (pg.data.rows.find(r => r.key === 'LVEDD') || {}).range;
+  pg.onToggleAge();
+  check('开关打开后 ageOn = true', pg.data.ageOn ? 1 : 0, 1, 0);
+  pg.onAgeBand({ currentTarget: { dataset: { i: 1 } } });
+  const rangeB1 = (pg.data.rows.find(r => r.key === 'LVEDD') || {}).range;
+  check('选 30~39 岁后 LVEDD 区间真的换了（≠ 总人群）',
+    (rangeAll && rangeB1 && rangeAll !== rangeB1) ? 1 : 0, 1, 0);
+  check('年龄分层说明写明派生项仍用总人群',
+    ((pg.data.ageNote || '').indexOf('仍用总人群值') !== -1) ? 1 : 0, 1, 0);
+  check('参考值说明标明年龄段与样本量',
+    ((pg.data.refDesc || '').indexOf('30~39 岁组') !== -1) ? 1 : 0, 1, 0);
+  pg.onToggleAge();   // 关掉，后面的断言按总人群走
+  check('关闭分层后区间回到总人群',
+    ((pg.data.rows.find(r => r.key === 'LVEDD') || {}).range === rangeAll) ? 1 : 0, 1, 0);
+
   // 非法输入：结果隐藏、实测对照退回正常参考范围
   pg.data.lvedd = '30'; pg.data.lvesd = '40';
   pg.doCalc();

@@ -765,6 +765,64 @@ const b1 = core.buildReferenceList('female', { LVEDD: 54 }, 'ASE').find(r => r.k
 // --- 异常输入不应崩溃 ---
 const hostile = core.buildReferenceList('male', { LVEDD: 0, LVEF: null, LVESV: undefined }, 'CN');
 (hostile.length === core.CN_FIELDS.length) ? ok('reference: 含空值/0 输入不崩溃') : bad('reference: 异常输入处理失败');
+
+// --- 中国成人标准 · 按年龄分层（2026-11-08，数据来自 R1 指南表 2～9）---
+{
+  const B = core.AGE_BANDS;
+  (B.length === 6) ? ok('ageband: 共 6 个年龄段') : bad('ageband: 年龄段 ' + B.length + ' 段');
+  const labels = B.map(b => b.t).join(' / ');
+  (labels === '18~29 岁 / 30~39 岁 / 40~49 岁 / 50~59 岁 / 60~69 岁 / 70~79 岁')
+    ? ok('ageband: 分段与指南一致（18~79 岁）') : bad('ageband: 分段不对 ' + labels);
+  // ★ 硬校验：6 段样本量相加必须等于指南总样本（男 678 / 女 716）
+  const sum = g => B.reduce((n, b) => n + b.n[g], 0);
+  (sum('male') === 678 && sum('female') === 716)
+    ? ok('ageband: 各段样本量合计 = 男 678 / 女 716（对齐指南总数）')
+    : bad('ageband: 样本量合计 ' + sum('male') + ' / ' + sum('female'));
+
+  ['male', 'female'].forEach(function (g) {
+    const keys = Object.keys(core.CN_AGE[g]);
+    // 男性少 1 项：Ar-d 原表 30~39 岁下限印成 -51 ms（不可能为负），按不自行改数原则回落总人群
+    const expect = g === 'male' ? 59 : 60;
+    (keys.length === expect) ? ok('ageband: ' + g + ' ' + expect + ' 项有分层数据')
+      : bad('ageband: ' + g + ' 分层项 ' + keys.length + ' 项（期望 ' + expect + '）');
+    let badRow = '';
+    keys.forEach(function (k) {
+      const arr = core.CN_AGE[g][k];
+      if (!(arr && arr.length === 6)) { badRow = badRow || k + ' 段数不对'; return; }
+      arr.forEach(function (p) {
+        if (p[1] <= p[0]) badRow = badRow || k + ' 下限≥上限';
+      });
+    });
+    badRow ? bad('ageband: ' + g + ' 数据异常 ' + badRow) : ok('ageband: ' + g + ' 全部分层区间合法（下限 < 上限）');
+  });
+
+  // 原文排印异常的那一项必须回落总人群，绝不能显示负的持续时间
+  const ardM = core.ageRef('male', 'MV-Ard', 1);
+  const ardMTotal = core.REFERENCE.CN.male['MV-Ard'];
+  (ardM && ardM[0] === ardMTotal[0] && ardM[0] > 0)
+    ? ok('ageband: 男性 Ar-d 回落总人群（原表 -51 不作数）')
+    : bad('ageband: 男性 Ar-d 仍为 ' + JSON.stringify(ardM));
+
+  // 派生项原表未分层，必须自动回落总人群，不能算出 undefined
+  ['LVM/BSA', 'LVM/H2.7', 'LVEDD/H'].forEach(function (k) {
+    const a = core.ageRef('male', k, 3);
+    const t = core.REFERENCE.CN.male[k];
+    (a && t && a[0] === t[0] && a[1] === t[1]) ? ok('ageband: 派生项 ' + k + ' 回落总人群')
+      : bad('ageband: 派生项 ' + k + ' 回落失败');
+  });
+
+  // 引擎真按年龄段取区间
+  const all = core.buildReferenceList('male', null, 'CN', 1.73, -1).find(r => r.key === 'LVEDD');
+  const b1 = core.buildReferenceList('male', null, 'CN', 1.73, 1).find(r => r.key === 'LVEDD');
+  (all && b1 && all.range !== b1.range)
+    ? ok('ageband: 选段后区间切换（LVEDD ' + all.range + ' → ' + b1.range + '）')
+    : bad('ageband: 区间没切换');
+  // ASE 标准不吃 band（即使传了也不该变）
+  const aseA = core.buildReferenceList('male', null, 'ASE', 1.73, -1).find(r => r.key === 'LVEDD');
+  const aseB = core.buildReferenceList('male', null, 'ASE', 1.73, 1).find(r => r.key === 'LVEDD');
+  (aseA && aseB && aseA.range === aseB.range)
+    ? ok('ageband: ASE 标准忽略年龄段参数') : bad('ageband: ASE 被年龄段影响');
+}
 const hostileAse = core.buildReferenceList('male', { LVEDD: 0, EF: null }, 'ASE');
 (hostileAse.length === core.ASE_FIELDS.length) ? ok('reference: ASE 含空值输入不崩溃') : bad('reference: ASE 异常输入处理失败');
 

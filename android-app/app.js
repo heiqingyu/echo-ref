@@ -11,6 +11,21 @@
   const ValveCalc = window.ValveCalc;
 
   /* ══════════ 全局状态（对应小程序的 app.globalData） ══════════ */
+  /* ★ 中国成人标准「按年龄分层」是阅读偏好，与「记住本次输入」独立，单独存本机
+     （键名与小程序端完全一致：echoref:ageOn / echoref:ageBand） */
+  const AGE_ON_KEY = 'echoref:ageOn';
+  const AGE_BAND_KEY = 'echoref:ageBand';
+
+  function loadAgePref() {
+    try {
+      const on = window.localStorage.getItem(AGE_ON_KEY) === '1';
+      const b = parseInt(window.localStorage.getItem(AGE_BAND_KEY), 10);
+      return { on: on, band: (b >= 0 && b < 6) ? b : 0 };
+    } catch (e) { return { on: false, band: 0 }; }
+  }
+
+  const _agePref = loadAgePref();
+
   const state = {
     sex: 'male',
     height: 170,
@@ -18,6 +33,8 @@
     bsa: 0,
     formula: 'mosteller',   // mosteller | dubois
     standard: 'CN',         // CN | ASE
+    ageOn: _agePref.on,     // 中国成人标准是否按年龄分层显示
+    ageBand: _agePref.band, // 0..5 对应 18~29 … 70~79
     measurements: null,      // EF 页的测量值
     peds: null,
   };
@@ -432,12 +449,18 @@
       hasM = true;
     }
 
-    const rows = Core.buildReferenceList(state.sex, measured, state.standard, state.bsa);
+    // ★ 只有「中国成人标准 + 开关打开」才按年龄段取区间；ASE 与关闭状态都用总人群
+    const band = (state.standard === 'CN' && state.ageOn) ? state.ageBand : -1;
+    const rows = Core.buildReferenceList(state.sex, measured, state.standard, state.bsa, band);
+    renderAgeBar(band);
+
+    const ab = band >= 0 ? Core.AGE_BANDS[band] : null;
+    const bandDesc = ab ? ' · ' + ab.t + '组（男 n=' + ab.n.male + ' / 女 n=' + ab.n.female + '）' : '';
 
     $('refTitle').textContent = hasM ? '实测值对照' : '正常参考范围';
-    $('refDesc').textContent = hasM
+    $('refDesc').textContent = (hasM
       ? '已关联上方 EF 计算的测量值，下表显示实测值与参考范围的对照结果。'
-      : (state.sex === 'male' ? '男性' : '女性') + ' · ' + STD_NOTE[state.standard];
+      : (state.sex === 'male' ? '男性' : '女性') + ' · ' + STD_NOTE[state.standard]) + bandDesc;
 
     $('refSource').textContent = '参考值来源：' + STD_SOURCE[state.standard];
 
@@ -486,6 +509,85 @@
     h += '</div>';
     return h;
   }
+
+  /* ★ 中国成人标准：按年龄分层（2026-11-08）
+     开关只在 CN 标准下出现；选中的年龄段存在本机，下次打开还是这一段。
+     派生项（LVM/BSA、LVM/H2.7、LVEDD/H、RWT）原表未分层，引擎自动回落总人群。 */
+  function saveAgePref() {
+    try {
+      window.localStorage.setItem(AGE_ON_KEY, state.ageOn ? '1' : '0');
+      window.localStorage.setItem(AGE_BAND_KEY, String(state.ageBand));
+    } catch (e) { /* 存不下就算了 */ }
+  }
+
+  function ageNoteText(ab) {
+    return '当前按 ' + ab.t + '组的 95% 参考范围显示，实测值判定也按这一组。' +
+      '年龄段样本量较小，仅作参照；' +
+      'LVM/BSA、LVM/H2.7、LVEDD/H、RWT 四项原表未给年龄分层，仍用总人群值。' +
+      '指南只覆盖 18~79 岁，超出范围请回到总人群。';
+  }
+
+  /** band：-1 表示不分层（ASE 或开关关闭） */
+  function renderAgeBar(band) {
+    const isCN = state.standard === 'CN';
+    const wrap = q('ageWrap');
+    if (wrap) wrap.hidden = !isCN;
+
+    const bands = q('ageBands');
+    const showBands = isCN && state.ageOn;
+    if (bands) {
+      bands.hidden = !showBands;
+      bands.querySelectorAll('.agebands__i').forEach(function (el) {
+        el.classList.toggle('agebands__i--on', showBands && +el.dataset.i === state.ageBand);
+      });
+    }
+
+    const btn = q('ageToggle');
+    if (btn) {
+      btn.textContent = state.ageOn ? '已分层 · 点此关闭' : '按年龄分层';
+      btn.classList.toggle('agebar__btn--on', !!state.ageOn);
+    }
+
+    const hint = q('ageHint');
+    if (hint) {
+      hint.textContent = state.ageOn ? '选年龄段，表格与实测判定同步切换' : '默认：6 段合并的总人群范围';
+    }
+
+    const noteEl = q('ageNote');
+    if (noteEl) {
+      const ab = (isCN && state.ageOn && band >= 0) ? Core.AGE_BANDS[band] : null;
+      noteEl.hidden = !ab;
+      noteEl.textContent = ab ? ageNoteText(ab) : '';
+    }
+  }
+
+  (function bindAgeBar() {
+    const btn = q('ageToggle');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        state.ageOn = !state.ageOn;
+        if (state.ageOn && !(state.ageBand >= 0 && state.ageBand < Core.AGE_BANDS.length)) {
+          state.ageBand = 0;
+        }
+        saveAgePref();
+        renderReference();
+      });
+    }
+    const bands = q('ageBands');
+    if (bands) {
+      Array.prototype.forEach.call(bands.querySelectorAll('.agebands__i'), function (el) {
+        el.addEventListener('click', function () {
+          const i = parseInt(el.dataset.i, 10);
+          if (!(i >= 0 && i < Core.AGE_BANDS.length)) return;
+          if (i === state.ageBand && state.ageOn) return;
+          state.ageOn = true;
+          state.ageBand = i;
+          saveAgePref();
+          renderReference();
+        });
+      });
+    }
+  })();
 
   /* 五、Tab1 EF 计算（与参考值同页，置于卡片最上方） */
 

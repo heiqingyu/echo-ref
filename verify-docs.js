@@ -165,6 +165,29 @@ function check(name, ok, detail) {
   check('参考值列表切到实测值对照',
     (await c.evalJs('document.getElementById("refTitle").textContent')) === '实测值对照');
 
+  // ── EF 卡版式（2026-11-08）：标签两行、不再重复「/ mm」、输入即算 ──
+  const labTxt = await c.evalJs(
+    '[...document.querySelectorAll("#page-index .field__l")].map(function(e){return e.textContent;}).join("|")');
+  check('EF 标签不再重复写「/ mm」（卡顶已标单位）',
+    labTxt.indexOf('/ mm') === -1 && labTxt.indexOf('/mm') === -1, labTxt.slice(0, 80));
+  check('EF 四个标签均为「缩写 + 中文」两行',
+    (await c.evalJs('document.querySelectorAll("#page-index .field__l-ab").length')) === 4 &&
+    (await c.evalJs('document.querySelectorAll("#page-index .field__l-cn").length')) === 4);
+  check('EF 页不再有「计算 EF / FS」按钮（输入即算）',
+    (await c.evalJs('document.getElementById("page-index").textContent.indexOf("计算 EF / FS")')) === -1);
+  // 只输内径、不点任何按钮，结果必须自己出来
+  await set('efLvedd', ''); await set('efLvesd', '');
+  await new Promise((r) => setTimeout(r, 300));
+  check('清空内径后结果卡片收起',
+    (await c.evalJs('document.getElementById("efResult").hidden')) === true);
+  await set('efLvedd', 50); await set('efLvesd', 32);
+  await new Promise((r) => setTimeout(r, 400));
+  check('只输入内径即自动出结果（无需点计算）',
+    (await c.evalJs('document.getElementById("efResult").hidden')) === false);
+  // 还原室壁厚度，后面的 LVM/BSA 联动断言需要它
+  await set('efIvsd', 9); await set('efLvpwd', 9);
+  await new Promise((r) => setTimeout(r, 300));
+
   // 同页后 BSA 变化必须联动 EF 结果的 LVM/BSA
   const kvBefore = await c.evalJs('document.getElementById("efKv").textContent');
   await set('inHeight', 180);
@@ -232,6 +255,61 @@ function check(name, ok, detail) {
   check('可切换到 ASE 标准',
     (await c.evalJs('document.getElementById("stdNote").textContent')).indexOf('ASE') !== -1);
   await c.evalJs('document.querySelector(\'[data-seg="standard"] [data-v="CN"]\').click()');
+
+  // ── 中国成人标准：按年龄分层（2026-11-08）──
+  const ageBtn = () => c.evalJs('document.getElementById("ageToggle").textContent');
+  const lveddRange = () => c.evalJs(
+    '(function(){var r=[].slice.call(document.querySelectorAll("#refList .list-row"));' +
+    'for(var i=0;i<r.length;i++){var n=r[i].querySelector(".list-row__n");' +
+    'if(n&&n.textContent.indexOf("（LVEDD）")>=0)' +
+    'return r[i].querySelector(".list-row__r").textContent;}return "";})()');
+
+  // 可能留有上次运行的偏好，先归零
+  if ((await ageBtn()).indexOf('已分层') === 0) {
+    await c.evalJs('document.getElementById("ageToggle").click()');
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  check('CN 标准下出现「按年龄分层」开关',
+    (await c.evalJs('!document.getElementById("ageWrap").hidden')) === true &&
+    (await ageBtn()) === '按年龄分层', await ageBtn());
+  check('默认不分层：胶囊与说明都隐藏',
+    (await c.evalJs('document.getElementById("ageBands").hidden')) === true &&
+    (await c.evalJs('document.getElementById("ageNote").hidden')) === true);
+
+  const rangeAll = await lveddRange();
+  await c.evalJs('document.getElementById("ageToggle").click()');
+  await new Promise((r) => setTimeout(r, 300));
+  check('点开关后展开 6 个年龄段',
+    (await c.evalJs('document.querySelectorAll("#ageBands .agebands__i").length')) === 6 &&
+    (await c.evalJs('document.getElementById("ageBands").hidden')) === false);
+
+  await c.evalJs('document.querySelectorAll("#ageBands .agebands__i")[1].click()');
+  await new Promise((r) => setTimeout(r, 300));
+  const rangeB1 = await lveddRange();
+  check('选 30~39 岁后 LVEDD 区间真的换了', rangeB1 && rangeB1 !== rangeAll,
+    rangeAll + ' → ' + rangeB1);
+  check('选中年龄段唯一高亮',
+    (await c.evalJs('document.querySelectorAll("#ageBands .agebands__i--on").length')) === 1);
+  check('年龄分层说明写明派生项仍用总人群',
+    (await c.evalJs('document.getElementById("ageNote").hidden')) === false &&
+    (await c.evalJs('document.getElementById("ageNote").textContent.indexOf("仍用总人群值")')) >= 0);
+  check('参考值说明标明年龄段与样本量',
+    (await c.evalJs('document.getElementById("refDesc").textContent')).indexOf('30~39 岁组') >= 0,
+    await c.evalJs('document.getElementById("refDesc").textContent'));
+
+  await c.evalJs('document.querySelector(\'[data-seg="standard"] [data-v="ASE"]\').click()');
+  await new Promise((r) => setTimeout(r, 250));
+  check('ASE 标准下不显示年龄分层开关',
+    (await c.evalJs('document.getElementById("ageWrap").hidden')) === true);
+  await c.evalJs('document.querySelector(\'[data-seg="standard"] [data-v="CN"]\').click()');
+  await new Promise((r) => setTimeout(r, 250));
+
+  if ((await ageBtn()).indexOf('已分层') === 0) {
+    await c.evalJs('document.getElementById("ageToggle").click()');
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  check('关闭分层后区间回到总人群', (await lveddRange()) === rangeAll, await lveddRange());
+  await c.evalJs('try{localStorage.removeItem("echoref:ageOn");localStorage.removeItem("echoref:ageBand");}catch(e){}');
 
 
   console.log('\n【三】Tab3 儿童 Z 值');
@@ -2585,9 +2663,12 @@ function check(name, ok, detail) {
     '.pdGroups--noalt .zrow--alt',
     '.corbar {', '.corbar__btn {',
     '.fx-h__no {', '.fx-h--sub {', '.ftoc__i--sub {',
+    '.agebar {', '.agebar__btn {', '.agebands__i {',
+    '.agebar[hidden] {', '.agebands[hidden] {',
+    '.field__l-ab {', '.field__l-cn {',
   ];
   const cssMissing = cssMust.filter((s) => pageHtml.indexOf(s) === -1);
-  check('发布版 CSS 未被 stripCssBlock 裁掉（冠脉按钮 / 统一小节序号）',
+  check('发布版 CSS 未被 stripCssBlock 裁掉（冠脉按钮 / 小节序号 / 年龄分层 / 两行标签）',
     cssMissing.length === 0, cssMissing.join(','));
 
   console.log('\n════════ 汇总 ════════');

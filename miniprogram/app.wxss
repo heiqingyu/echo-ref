@@ -107,11 +107,87 @@ page {
   margin-bottom: 0;
 }
 
+/* ★ 2026-11-08：四个内径标签统一两行（缩写 / 中文名），
+   不再在每个标签重复写「/ mm」，也不会一个折行一个不折行 */
 .field__label {
   display: block;
-  font-size: 25rpx;
-  color: var(--sub);
+  min-height: 68rpx;
   margin-bottom: 12rpx;
+}
+
+.field__ab {
+  display: block;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--brand);
+}
+
+.field__cn {
+  display: block;
+  font-size: 23rpx;
+  line-height: 1.35;
+  color: var(--sub);
+}
+
+.field__opt {
+  font-size: 20rpx;
+  color: #94a3b8;
+}
+
+/* 中国成人标准 · 按年龄分层 */
+.agebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14rpx;
+  margin-top: 20rpx;
+}
+
+.agebar__btn {
+  flex: none;
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid #c9dcf5;
+  background: #eaf2fb;
+  color: #1f6fd0;
+  font-size: 23rpx;
+  font-weight: 600;
+}
+
+.agebar__btn--on {
+  background: #1f6fd0;
+  border-color: #1f6fd0;
+  color: #fff;
+}
+
+.agebar__h {
+  flex: 1 1 240rpx;
+  font-size: 21rpx;
+  color: var(--sub);
+}
+
+.agebands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.agebands__i {
+  padding: 10rpx 18rpx;
+  border-radius: 12rpx;
+  border: 1rpx solid var(--line);
+  background: #fbfcfd;
+  color: #475569;
+  font-size: 22rpx;
+}
+
+.agebands__i--on {
+  border-color: #1f6fd0;
+  background: #eaf2fb;
+  color: #1f6fd0;
+  font-weight: 600;
 }
 
 .field__input {

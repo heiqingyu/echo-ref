@@ -14,6 +14,25 @@ const KEEP_ON = 'echoref:keep:index';
 const KEEP_DATA = 'echoref:data:index';
 const KEEP_FIELDS = ['sex', 'height', 'weight', 'formula', 'lvedd', 'lvesd', 'ivsd', 'lvpwd'];
 
+/* ★ 中国成人标准的「按年龄分层」是阅读偏好，不随本页输入重置；单独记在本机 */
+const AGE_ON_KEY = 'echoref:ageOn';
+const AGE_BAND_KEY = 'echoref:ageBand';
+function loadAgeOn() {
+  try { return wx.getStorageSync(AGE_ON_KEY) === true; } catch (e) { return false; }
+}
+function loadAgeBand() {
+  try {
+    const v = wx.getStorageSync(AGE_BAND_KEY);
+    return (typeof v === 'number' && v >= 0 && v < 6) ? v : 0;
+  } catch (e) { return 0; }
+}
+function saveAge(on, band) {
+  try {
+    wx.setStorageSync(AGE_ON_KEY, on);
+    wx.setStorageSync(AGE_BAND_KEY, band);
+  } catch (e) { /* 存不下就算了，不影响本页使用 */ }
+}
+
 /* EF 分级配色（ASE 2015 阈值） */
 const EF_COLOR = {
   normal: '#0f9d58',
@@ -62,6 +81,11 @@ Page({
     formula: 'mosteller',
     standard: 'CN',
     standardNote: '',
+    /* —— 中国成人标准：按年龄分层（默认关 = 6 段合并总人群）—— */
+    ageOn: false,
+    ageBand: -1,
+    ageBands: [],
+    ageNote: '',
     /* —— EF 计算（合并自原「EF 计算」页） —— */
     lvedd: '50',
     lvesd: '32',
@@ -103,6 +127,9 @@ Page({
       weight: String(pick('weight', p.weight)),
       formula: pick('formula', this.data.formula),
       standard: app.globalData.standard,
+      ageOn: loadAgeOn(),
+      ageBand: loadAgeBand(),
+      ageBands: core.AGE_BANDS,
       showReward: rewardReady(),
       lvedd: pick('lvedd', m && m.lvedd ? String(m.lvedd) : this.data.lvedd),
       lvesd: pick('lvesd', m && m.lvesd ? String(m.lvesd) : this.data.lvesd),
@@ -221,6 +248,27 @@ Page({
     this.setData({ standardNote: core.REFERENCE[this.data.standard].note });
   },
 
+  /* ══════ 中国成人标准：按年龄分层（2026-11-08） ══════ */
+
+  /** 开关：关＝6 段合并的总人群 95% 参考范围；开＝按所选年龄段显示 */
+  onToggleAge() {
+    const on = !this.data.ageOn;
+    const band = this.data.ageBand < 0 ? 0 : this.data.ageBand;
+    saveAge(on, band);
+    this.setData({ ageOn: on, ageBand: band });
+    this.rebuildRef();
+  },
+
+  /** 选年龄段：表格区间与「实测值对照」的判定同步切换 */
+  onAgeBand(e) {
+    const band = parseInt(e.currentTarget.dataset.i, 10);
+    if (!(band >= 0 && band < core.AGE_BANDS.length)) return;
+    if (band === this.data.ageBand && this.data.ageOn) return;
+    saveAge(true, band);
+    this.setData({ ageOn: true, ageBand: band });
+    this.rebuildRef();
+  },
+
   /** 重新计算 BSA / BMI，写入全局状态 */
   refresh() {
     const h = parseFloat(this.data.height);
@@ -267,11 +315,22 @@ Page({
     const v = e.detail.value;
     // 同值不回写：否则 setData 写回输入框会再抛一次 bindinput，形成递归更新
     if ((this.data[k] === undefined ? '' : this.data[k]) === v) return;
-    const patch = {};
-    patch[k] = v;
-    this.setData(patch);
+    // ★ 直接更新 data、不单独 setData：用户刚输的值本来就在输入框里，
+    //   回写只会触发基础库再抛一次 bindinput（2026-11-06 递归更新告警）。
+    //   结果由 doCalc 一次性下发，且不带输入字段，输入框 DOM 不动。
+    this.data[k] = v;
     this.saveSnapshot();
-    if (this.data.hasResult) this.doCalc();
+    // ★ 输入即出结果：两个内径填齐就自动算，不用再点「计算」按钮。
+    //   清空 / 未填齐时收起旧结果，避免留着上一份数字误导。
+    const d = parseFloat(this.data.lvedd);
+    const s = parseFloat(this.data.lvesd);
+    if (d > 0 && s > 0 && s < d) {
+      this.doCalc();
+    } else if (this.data.hasResult) {
+      app.globalData.measurements = null;
+      this.setData({ hasResult: false, efValid: false, efHint: '请输入有效的舒张末与收缩末内径' });
+      this.rebuildRef();
+    }
   },
 
   doCalc() {
@@ -389,15 +448,27 @@ Page({
       });
     }
 
-    const rows = core.buildReferenceList(sex, measured, standard, p.bsa);
+    // ★ 只有「中国成人标准 + 开关打开」才按年龄段取区间；ASE 与关闭状态都用总人群
+    const band = (standard === 'CN' && this.data.ageOn) ? this.data.ageBand : -1;
+    const rows = core.buildReferenceList(sex, measured, standard, p.bsa, band);
     const std = core.REFERENCE[standard];
+    const ab = band >= 0 ? core.AGE_BANDS[band] : null;
+    const bandDesc = ab
+      ? ' · ' + ab.t + '组（男 n=' + ab.n.male + ' / 女 n=' + ab.n.female + '）'
+      : '';
 
     this.setData({
       rows,
       hasMeasurements: hasM,
-      refDesc: hasM
+      refDesc: (hasM
         ? '已关联上方 EF 计算的测量值，实测列显示对照判定'
-        : (sex === 'male' ? '男性' : '女性') + ' · ' + std.note,
+        : (sex === 'male' ? '男性' : '女性') + ' · ' + std.note) + bandDesc,
+      ageNote: ab
+        ? '当前按 ' + ab.t + '组的 95% 参考范围显示，实测值判定也按这一组。' +
+          '年龄段样本量较小，仅作参照；' +
+          'LVM/BSA、LVM/H2.7、LVEDD/H、RWT 四项原表未给年龄分层，仍用总人群值。' +
+          '指南只覆盖 18~79 岁，超出范围请回到总人群。'
+        : '',
       phaseNote: core.PHASE_NOTE,
       sourceText: standard === 'CN'
         ? '中华医学会超声医学分会《中国成年人超声心动图检查测量指南》（2016，男 678 / 女 716，表 2～表 9 共 64 项 95% 参考范围；LVM/身高^2.7、内径/身高两行为派生值）'
