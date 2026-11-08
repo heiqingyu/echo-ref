@@ -1004,7 +1004,7 @@
     mustard: 'MUS', fontan: 'Fontan', 'as-switch': 'ASO',
     aorta: '主动脉', pe: 'PE', thrombus: '血栓', 'zh-ph': 'PH', 'ami-comp': 'AMI并',
     takotsubo: 'TTS', osa: 'OSA', myowork: 'MW', ecmo: 'ECMO', 'pregnancy-echo': '妊娠',
-    ppcm: 'PPCM', sepsis: '脓毒', 'postop-icu': 'ICU', 'lung-us': 'LUS', lvad: 'LVAD',
+    ppcm: 'PPCM', sepsis: '脓毒', 'postop-icu': 'ICU', lvad: 'LVAD',
   };
 
   /** 目录里每条公式的一句话说明 */

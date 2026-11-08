@@ -1020,6 +1020,7 @@ function check(name, ok, detail) {
       segOnlyLeak: ['tee-20','tte-std','tte-measure'].filter(function(id){
         return !!idx.querySelector('.fx-item[data-id="'+id+'"]');
       }).length,
+      lungUs: idx.querySelectorAll('.fx-item[data-id="lung-us"]').length,
       search: !!document.getElementById('fxSearch'),
       albumView: !!document.getElementById('calcAlbum'),
       refs: document.querySelectorAll('#calcRefList .ref-item').length,
@@ -1044,7 +1045,8 @@ function check(name, ok, detail) {
       d.hemoFirst === 'dfun', d.hemoFirst);
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
-    check('条目 121 条（计算 40 + 评估判读 81；v1.14.5 新增「下腔静脉」判读条目）', d.items === 121, d.items);
+    check('条目 120 条（计算 40 + 评估判读 80；2026-11-08 删除「肺超声」判读条目）', d.items === 120, d.items);
+    check('发布版目录已无肺超声 lung-us 条目', d.lungUs === 0, d.lungUs);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
       d.resistOuts + ' / ' + d.lvgeomOuts);

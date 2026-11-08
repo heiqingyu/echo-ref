@@ -754,7 +754,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 121 条（计算 40 + 判读 81；v1.14.5 新增「下腔静脉」判读条目，计算器内嵌其中）', nItems, 121, 0);
+  check('目录共 120 条（计算 40 + 判读 80；2026-11-08 删除「肺超声」判读条目，计算器内嵌其中）', nItems, 120, 0);
+  check('肺超声 lung-us 已从所有分组移除（2026-11-08）',
+    dirs.every(g => !g.items.some(i => i.id === 'lung-us')) ? 1 : 0, 1, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
@@ -1086,7 +1088,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     ['hcm', 'infiltr', 'dcm', 'athlete', 'arvc', 'myocarditis', 'sarcoid']
       .every(id => dirById('chamber').items.some(i => i.id === id)) &&
     !dirs.some(g => g.id === 'myopathy') ? 1 : 0, 1, 0);
-  check('急症与特殊场景 15 条（大血管与急症 + 特殊人群 + 肺超声 + LVAD；肺高压判读已并入 mpap）', dirById('vascular').items.length, 15, 0);
+  check('急症与特殊场景 14 条（大血管与急症 + 特殊人群 + LVAD；2026-11-08 删除肺超声）', dirById('vascular').items.length, 14, 0);
   ['aorta', 'pe', 'thrombus'].forEach(id => {
     check('大血管与急症含 ' + id,
       dirById('vascular').items.some(i => i.id === id) ? 1 : 0, 1, 0);

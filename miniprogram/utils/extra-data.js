@@ -2267,7 +2267,6 @@ var CALC_HINTS = {
   ppcm: '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · TAPSE/PASP 耦联比；肺动脉压（sPAP·dPAP·mPAP）',
   sepsis: '血流动力学与心功能 · LVOT 每搏量与心排量；左室容积与射血分数；右心与肺循环 · PAPi 肺动脉搏动指数',
   'postop-icu': '血流动力学与心功能 · LVOT 每搏量与心排量；左室容积与射血分数；右心与肺循环 · PAPi 肺动脉搏动指数',
-  'lung-us': '舒张功能定量 · 左室舒张功能（E/A · E/e′ · E/Vp · 分级）；右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP，RAP 由 IVC 取值）',
   'tte-measure': '血流动力学与心功能 · 左室容积与射血分数；左室质量与几何构型；MAPSE 长轴收缩',
 
 };
@@ -2370,7 +2369,6 @@ var CALC_LINKS = {
   ppcm: ['ef', 'rv', 'mpap'],
   sepsis: ['flow', 'ef', 'papi'],
   'postop-icu': ['flow', 'ef', 'papi'],
-  'lung-us': ['dfun', 'mpap'],
 
 };
 
