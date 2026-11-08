@@ -778,6 +778,9 @@
     $(id).addEventListener('input', renderEF);
   });
 
+  /* ★ 2026-11-08：输入即算，但「计算 EF / FS」按钮保留，想手动点一下也能重算 */
+  if ($('efCalc')) $('efCalc').addEventListener('click', renderEF);
+
 /*<<<PUBLIC-CUT:calc>>>*/
   /* 五B、Tab3 公式集（目录 + 单个公式详情） */
 
@@ -852,7 +855,7 @@
 
     /* ── 瓣膜专用定量（v1.4.1 起与小程序 calc-groups.js 同源，走 valve-calc 引擎）
        ★ v1.4.4：AS / AR / MS / MR 并入两个评估页，此处只留 TR ── */
-    { id: 'tr', sec: 'valve', title: 'TR 三尖瓣反流定量',
+    { id: 'tr', sec: 'valve', title: 'TR 三尖瓣反流定量', rel: ['tr-interv'],
       fields: [['tr_radius', 'PISA 半径', 'cm'], ['tr_aliasVa', '混叠速度 Va', 'cm/s'],
         ['tr_regV', '反流峰速', 'm/s'], ['tr_regVti', '反流 VTI', 'cm'],
         ['tr_vc', '缩流颈 VC（可选）', 'cm'], ['tr_trV', 'TR 峰速（可选）', 'm/s'],
@@ -1930,7 +1933,7 @@
       const v0 = secs.map(function (s) { return s.id; }).indexOf('valve');
       secs.splice(v0 + 1, 0, vi);
     }
-    headItems('valve', ['mitral', 'aortic', 'bav', 'rheumatic', 'ie', 'aortic-root', 'tr', 'asload']);
+    headItems('valve', ['mitral', 'aortic', 'tr', 'bav', 'rheumatic', 'ie', 'aortic-root', 'asload']);
     headItems('valve-interv', ['mv-interv', 'tr-interv', 'tavr', 'tavrsz', 'prosthetic', 'ppm', 'pvfu']);
 
     // ★ v1.13.10：先心病整组紧跟瓣膜（v1.15.4 起跟在「瓣膜介入与人工瓣」后面）

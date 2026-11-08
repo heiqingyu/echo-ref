@@ -194,7 +194,9 @@ function buildSections() {
   moveSectionFirst(sections, 'valve');
   // ★ v1.15.4：瓣膜评估拆成「瓣膜疾病与定量」+「瓣膜介入与人工瓣」，两组相邻
   moveSectionAfter(sections, 'valve-interv', 'valve');
-  headItems(sections, 'valve', ['mitral', 'aortic', 'bav', 'rheumatic', 'ie', 'aortic-root', 'tr', 'asload']);
+  // ★ 2026-11-08：三尖瓣提到组内第三（二尖瓣 → 主动脉瓣 → 三尖瓣），
+  //   与「三尖瓣介入」条目在相邻组形成前后呼应；其余条目仍按临床路径排。
+  headItems(sections, 'valve', ['mitral', 'aortic', 'tr', 'bav', 'rheumatic', 'ie', 'aortic-root', 'asload']);
   headItems(sections, 'valve-interv', ['mv-interv', 'tr-interv', 'tavr', 'tavrsz', 'prosthetic', 'ppm', 'pvfu']);
 
   // ★ v1.13.10：先心病整组紧跟瓣膜（v1.15.4 起跟在「瓣膜介入与人工瓣」后面）

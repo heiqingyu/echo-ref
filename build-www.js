@@ -337,28 +337,29 @@ const html = `<!DOCTYPE html>
     <!-- ══ EF 计算（合并自原「EF 计算」页，置于最上） ══ -->
     <div class="card">
       <div class="card__t">M 型 / 二维内径测量</div>
-      <div class="card__d">单位：mm。填完内径自动出结果；舒张末应大于收缩末。室壁厚度选填，填了才追加 RWT 与左室质量</div>
+      <div class="card__d">单位：mm。填完内径自动出结果，也可点「计算」重算；舒张末应大于收缩末。室壁厚度选填，填了才追加 RWT 与左室质量</div>
       <div class="row">
         <div class="field">
-          <label class="field__l"><span class="field__l-ab">LVIDd</span><span class="field__l-cn">舒张末内径</span></label>
+          <label class="field__l field__l--ef"><span class="field__l-ab">LVIDd</span><span class="field__l-cn">舒张末内径</span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvedd" placeholder="如 50" step="0.1">
         </div>
         <div class="field">
-          <label class="field__l"><span class="field__l-ab">LVIDs</span><span class="field__l-cn">收缩末内径</span></label>
+          <label class="field__l field__l--ef"><span class="field__l-ab">LVIDs</span><span class="field__l-cn">收缩末内径</span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvesd" placeholder="如 32" step="0.1">
         </div>
       </div>
       <div class="row">
         <div class="field">
-          <label class="field__l"><span class="field__l-ab">IVSd</span><span class="field__l-cn">室间隔厚度 <span class="field__l-opt">选填</span></span></label>
+          <label class="field__l field__l--ef"><span class="field__l-ab">IVSd</span><span class="field__l-cn">室间隔厚度 <span class="field__l-opt">选填</span></span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efIvsd" placeholder="如 9" step="0.1">
         </div>
         <div class="field">
-          <label class="field__l"><span class="field__l-ab">LVPWd</span><span class="field__l-cn">后壁厚度 <span class="field__l-opt">选填</span></span></label>
+          <label class="field__l field__l--ef"><span class="field__l-ab">LVPWd</span><span class="field__l-cn">后壁厚度 <span class="field__l-opt">选填</span></span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvpwd" placeholder="如 9" step="0.1">
         </div>
       </div>
       <div class="hint" id="efHint"></div>
+      <button class="btn btn--ghost" id="efCalc" style="margin-top:10px;height:42px">计算 EF / FS</button>
     </div>
 
     <div class="card" id="efResult" hidden>

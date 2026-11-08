@@ -165,16 +165,20 @@ function check(name, ok, detail) {
   check('参考值列表切到实测值对照',
     (await c.evalJs('document.getElementById("refTitle").textContent')) === '实测值对照');
 
-  // ── EF 卡版式（2026-11-08）：标签两行、不再重复「/ mm」、输入即算 ──
+  // ── EF 卡版式（2026-11-08 回修）：标签一行、不再重复「/ mm」、输入即算 + 手动按钮 ──
   const labTxt = await c.evalJs(
     '[...document.querySelectorAll("#page-index .field__l")].map(function(e){return e.textContent;}).join("|")');
   check('EF 标签不再重复写「/ mm」（卡顶已标单位）',
     labTxt.indexOf('/ mm') === -1 && labTxt.indexOf('/mm') === -1, labTxt.slice(0, 80));
-  check('EF 四个标签均为「缩写 + 中文」两行',
+  check('EF 四个标签均为「缩写 + 中文」且排成一行',
     (await c.evalJs('document.querySelectorAll("#page-index .field__l-ab").length')) === 4 &&
-    (await c.evalJs('document.querySelectorAll("#page-index .field__l-cn").length')) === 4);
-  check('EF 页不再有「计算 EF / FS」按钮（输入即算）',
-    (await c.evalJs('document.getElementById("page-index").textContent.indexOf("计算 EF / FS")')) === -1);
+    (await c.evalJs('document.querySelectorAll("#page-index .field__l-cn").length')) === 4 &&
+    (await c.evalJs('document.querySelectorAll("#page-index .field__l--ef").length')) === 4 &&
+    (await c.evalJs('getComputedStyle(document.querySelector("#page-index .field__l--ef")).whiteSpace')) === 'nowrap' &&
+    (await c.evalJs('[...document.querySelectorAll("#page-index .field__l--ef")].every(function(e){return e.getBoundingClientRect().height <= 24;})')) === true);
+  check('EF 页保留「计算 EF / FS」按钮（自动算之外可手动点）',
+    (await c.evalJs('!!document.getElementById("efCalc")')) === true &&
+    (await c.evalJs('document.getElementById("page-index").textContent.indexOf("计算 EF / FS")')) !== -1);
   // 只输内径、不点任何按钮，结果必须自己出来
   await set('efLvedd', ''); await set('efLvesd', '');
   await new Promise((r) => setTimeout(r, 300));
@@ -1093,6 +1097,12 @@ function check(name, ok, detail) {
         var first = card ? card.querySelector('.fx-list .fx-item') : null;
         return first ? (first.getAttribute('data-id') || '') : '';
       })(),
+      valveOrder: (function () {
+        var g = document.getElementById('g-valve');
+        var card = g && g.closest ? g.closest('.fx-card') : null;
+        var lst = card ? card.querySelectorAll('.fx-list .fx-item') : [];
+        return [...lst].map(function(e){return e.getAttribute('data-id') || '';}).join(',');
+      })(),
       album: idx.querySelectorAll('.fx-item[data-kind="album"]').length,
       albumTxt: (idx.querySelector('.fx-item[data-kind="album"]') || {}).textContent || '',
       segOnlyLeak: ['tee-20','tte-std','tte-measure'].filter(function(id){
@@ -1121,6 +1131,8 @@ function check(name, ok, detail) {
       d.groups.join('|'));
     check('血流动力学组首条＝左室舒张功能 dfun（2026-11-08）',
       d.hemoFirst === 'dfun', d.hemoFirst);
+    check('瓣膜疾病与定量组 TR 排第三（2026-11-08）',
+      d.valveOrder === 'mitral,aortic,tr,bav,rheumatic,ie,aortic-root,asload', d.valveOrder);
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
     check('条目 120 条（计算 40 + 评估判读 80；2026-11-08 删除「肺超声」判读条目）', d.items === 120, d.items);
@@ -1792,6 +1804,15 @@ function check(name, ok, detail) {
   o = await outOf('mpap');
   check('网页 肺动脉压：PR 早期峰速 2.8 + RAP 5 → mPAP 36.4 且标明取点',
     /mPAP 36\.4/.test(o) && o.indexOf('PR 舒张早期峰速法') !== -1, o);
+
+  // ★ 2026-11-08：TR 定量详情里要有跳到「三尖瓣介入」的可点胶囊
+  await openCalc('tr');
+  const trRel = await c.evalJs(`(function(){
+    var card=document.querySelector('#calcGroups .card[data-g="tr"]');
+    var a=card && card.querySelector('.chip[data-rel="tr-interv"]');
+    return a ? a.textContent : '';
+  })()`);
+  check('TR 定量详情有「三尖瓣介入」跳转胶囊', trRel.indexOf('三尖瓣介入') !== -1, trRel);
 
   // —— v1.3.12：随访与术中评估 ——
   await openCalc('aortagrow');
@@ -2665,10 +2686,10 @@ function check(name, ok, detail) {
     '.fx-h__no {', '.fx-h--sub {', '.ftoc__i--sub {',
     '.agebar {', '.agebar__btn {', '.agebands__i {',
     '.agebar[hidden] {', '.agebands[hidden] {',
-    '.field__l-ab {', '.field__l-cn {',
+    '.field__l-ab {', '.field__l-cn {', '.field__l--ef {',
   ];
   const cssMissing = cssMust.filter((s) => pageHtml.indexOf(s) === -1);
-  check('发布版 CSS 未被 stripCssBlock 裁掉（冠脉按钮 / 小节序号 / 年龄分层 / 两行标签）',
+  check('发布版 CSS 未被 stripCssBlock 裁掉（冠脉按钮 / 小节序号 / 年龄分层 / 一行标签）',
     cssMissing.length === 0, cssMissing.join(','));
 
   console.log('\n════════ 汇总 ════════');

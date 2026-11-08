@@ -511,18 +511,25 @@ console.log('\n=== 21. 合并后首页（EF 计算 + 参考值同页）===');
   check('首页每次输入都存快照（saveSnapshot 6 处，含开启记住那一次）',
     (idxJs.match(/this\.saveSnapshot\(\)/g) || []).length, 6, 0);
 
-  // ★ 2026-11-08：EF 卡标签两行、不再重复「/ mm」、输入即算
+  // ★ 2026-11-08 回修：EF 卡标签压回一行、不再重复「/ mm」；输入即算 + 手动按钮都在
   check('EF 标签不再重复写「/ mm」（卡顶已标单位）',
     (idxWxml.indexOf('内径 / mm') === -1 && idxWxml.indexOf('厚度 / mm') === -1) ? 1 : 0, 1, 0);
-  check('EF 四个标签为「缩写 + 中文」两行',
+  check('EF 四个标签均为「缩写 + 中文」',
     (idxWxml.match(/class="field__ab"/g) || []).length, 4, 0);
-  check('EF 页已无「计算 EF / FS」按钮', idxWxml.indexOf('计算 EF') === -1 ? 1 : 0, 1, 0);
+  check('EF 页保留「计算 EF / FS」按钮（bindtap="doCalc"）',
+    (idxWxml.indexOf('bindtap="doCalc"') !== -1 && idxWxml.indexOf('计算 EF / FS') !== -1) ? 1 : 0, 1, 0);
   const iCond = idxJs.indexOf('s < d) {');
   check('输入内径即自动计算（onInput 内直接调 doCalc）',
     (iCond > 0 && idxJs.indexOf('this.doCalc();', iCond) > iCond) ? 1 : 0, 1, 0);
 
   // ★ 2026-11-08：中国成人标准「按年龄分层」——开关 + 6 段 + 本机记住
   const appWxss = fsW.readFileSync(pathW.join(__dirname, 'miniprogram', 'app.wxss'), 'utf8');
+  check('EF 标签压回一行（nowrap + 去掉固定两行高度）',
+    (appWxss.indexOf('.field__label {') !== -1 &&
+     appWxss.indexOf('white-space: nowrap;') !== -1 &&
+     appWxss.indexOf('min-height: 68rpx;') === -1 &&
+     appWxss.indexOf('.field__ab {') !== -1 &&
+     appWxss.indexOf('margin-right: 8rpx;') !== -1) ? 1 : 0, 1, 0);
   check('首页记住年龄分层偏好（echoref:ageOn / echoref:ageBand）',
     (idxJs.indexOf("'echoref:ageOn'") !== -1 && idxJs.indexOf("'echoref:ageBand'") !== -1) ? 1 : 0, 1, 0);
   check('年龄分层开关只在 CN 下渲染',
@@ -1097,9 +1104,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     ['lv', 'rv'].every(id => !dirById('chamber').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
   // v1.15.4：瓣膜拆两组 —— 疾病与定量 8 条（1 计算 + 7 判读）/ 介入与人工瓣 7 条（3 计算 + 4 判读）
   check('瓣膜疾病与定量 8 条（TR 定量 + 7 条判读）', dirById('valve').items.length, 8, 0);
-  check('瓣膜疾病与定量组顺序（二尖瓣 → 主动脉瓣 → BAV → 风湿性 → IE → 根部 → TR → AS 负荷）',
+  check('瓣膜疾病与定量组顺序（二尖瓣 → 主动脉瓣 → TR 第三 → BAV → 风湿性 → IE → 根部 → AS 负荷）',
     dirById('valve').items.map(i => i.id).join(',') ===
-      'mitral,aortic,bav,rheumatic,ie,aortic-root,tr,asload' ? 1 : 0, 1, 0);
+      'mitral,aortic,tr,bav,rheumatic,ie,aortic-root,asload' ? 1 : 0, 1, 0);
   check('瓣膜介入与人工瓣 7 条（TEER → TTVI → TAVR → 瓣环尺寸 → 人工瓣 → PPM → 术后跨瓣）',
     dirById('valve-interv').items.map(i => i.id).join(',') ===
       'mv-interv,tr-interv,tavr,tavrsz,prosthetic,ppm,pvfu' ? 1 : 0, 1, 0);
@@ -1309,6 +1316,11 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     (pgF.data.rels || []).some(function (r) { return r.id === 'ivc'; }) ? 1 : 0, 1, 0);
   check('肺动脉压「相关内容」含右心评估',
     (pgF.data.rels || []).some(function (r) { return r.id === 'rv'; }) ? 1 : 0, 1, 0);
+
+  // ★ 2026-11-08：三尖瓣定量 → 三尖瓣介入（内容多在介入组）
+  pgF.onLoad({ id: 'tr' });
+  check('TR 定量「相关内容」含三尖瓣介入（tr-interv）',
+    (pgF.data.rels || []).some(function (r) { return r.id === 'tr-interv'; }) ? 1 : 0, 1, 0);
 
   // ★ v1.9.6：合并页（resist / rvsyst / lvgeom）的 { g: '① …' } 必须转成小标题；
   //   calc 分支曾漏转，被当普通字段渲染成「 / 」空标签（v1.8.3–v1.9.5 一直存在）

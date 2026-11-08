@@ -1362,6 +1362,21 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   (mpapG && (mpapG.rel || []).indexOf('ivc') !== -1)
     ? ok('肺动脉压计算器可反查下腔静脉（mpap.rel）')
     : bad('肺动脉压计算器缺 rel: ivc');
+
+  // ★ 2026-11-08：三尖瓣定量 → 三尖瓣介入（介入组里才有机制分型 / 术式 / 术前术后）
+  const trGv = CG.GROUPS.filter(g => g.id === 'tr')[0];
+  (trGv && (trGv.rel || []).indexOf('tr-interv') !== -1 && byId['tr-interv'])
+    ? ok('TR 三尖瓣反流定量 → 三尖瓣介入 有「相关内容」跳转')
+    : bad('TR 定量缺 tr-interv 跳转（或目标条目不存在）');
+
+  // ★ 三尖瓣在瓣膜疾病与定量组里排第三：小程序与网页两份 headItems 白名单必须同改
+  const valveOrder = "['mitral', 'aortic', 'tr', 'bav', 'rheumatic', 'ie', 'aortic-root', 'asload']";
+  const calJs = fs.readFileSync(path.join(MP, 'pages', 'calculators', 'calculators.js'), 'utf8');
+  const webJs = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
+  (calJs.indexOf("headItems(sections, 'valve', " + valveOrder + ")") !== -1 &&
+   webJs.indexOf("headItems('valve', " + valveOrder + ")") !== -1)
+    ? ok('TR 在瓣膜疾病组第三位（mp / web 两份白名单一致）')
+    : bad('瓣膜组 headItems 白名单不一致或 TR 不在第三位');
   (ivcIt.fields && ivcIt.fields.length === 2 && ivcIt.calc === 'ivc')
     ? ok('下腔静脉条目内嵌 Dmax / Dmin 计算器')
     : bad('下腔静脉条目缺内嵌计算器');

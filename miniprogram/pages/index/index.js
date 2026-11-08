@@ -94,6 +94,7 @@ Page({
     efValid: true,
     efHint: '',
     hasResult: false,
+    hasWall: false,
     r: null,
     lvmBsaText: '—',
     efGrade: '',

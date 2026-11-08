@@ -13,7 +13,7 @@
   <!-- ══════ EF 计算（合并自原「EF 计算」页，置于最上） ══════ -->
   <view class="card">
     <view class="card__title">M 型 / 二维内径测量</view>
-    <view class="card__desc">单位：mm。填完内径自动出结果；舒张末应大于收缩末。</view>
+    <view class="card__desc">单位：mm。填完内径自动出结果，也可点「计算」重算；舒张末应大于收缩末。</view>
     <view class="card__desc">室壁厚度选填，填了才追加 RWT 与左室质量。</view>
     <view class="row">
       <view class="field">
@@ -54,6 +54,9 @@
     </view>
 
     <view wx:if="{{!efValid}}" class="hint">{{efHint}}</view>
+
+    <!-- ★ 2026-11-08：输入即算，但「计算」按钮留着，想点一下的时候也能点 -->
+    <view class="btn" bindtap="doCalc" style="margin-top:22rpx">计算 EF / FS{{hasWall ? ' / 左室质量' : ''}}</view>
   </view>
 
   <view wx:if="{{hasResult}}" class="card">

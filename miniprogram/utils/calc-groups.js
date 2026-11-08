@@ -273,6 +273,8 @@ const GROUPS = [
     sec: 'valve',
     title: 'TR 三尖瓣反流定量',
     sub: 'EROA · RVol · TR 峰速 · IVC',
+    // ★ 2026-11-08：三尖瓣介入与术式内容集中在相邻组，从这里给一个可点跳转
+    rel: ['tr-interv'],
     fields: [
       { k: 'tr_radius', n: 'PISA 半径', u: 'cm' },
       { k: 'tr_aliasVa', n: '混叠速度 Va', u: 'cm/s' },

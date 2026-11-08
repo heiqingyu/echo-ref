@@ -187,12 +187,21 @@ html, body {
   font-size: 13px;
   color: var(--sub);
   margin-bottom: 6px;
-  min-height: 34px;
 }
 
-/* 两行标签：英文缩写在上、中文在下（2026-11-08，避免长标签折成三行） */
+/* ★ 2026-11-08 回修：四个内径标签压回一行（缩写 + 中文名），
+   单位只在卡顶写一次；不再固定两行高度，整张卡少占一截。 */
+.field__l--ef {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  min-height: 18px;
+}
+
 .field__l-ab {
-  display: block;
+  flex: none;
+  margin-right: 5px;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.35;
@@ -200,13 +209,12 @@ html, body {
 }
 
 .field__l-cn {
-  display: block;
   font-size: 11.5px;
   line-height: 1.35;
   color: var(--sub);
 }
 
-.field__l-opt { font-size: 10px; color: #94a3b8; }
+.field__l-opt { margin-left: 4px; font-size: 10px; color: #94a3b8; }
 
 .field__i {
   width: 100%;
@@ -2494,28 +2502,29 @@ button.fx-nav__c {
     <!-- ══ EF 计算（合并自原「EF 计算」页，置于最上） ══ -->
     <div class="card">
       <div class="card__t">M 型 / 二维内径测量</div>
-      <div class="card__d">单位：mm。填完内径自动出结果；舒张末应大于收缩末。室壁厚度选填，填了才追加 RWT 与左室质量</div>
+      <div class="card__d">单位：mm。填完内径自动出结果，也可点「计算」重算；舒张末应大于收缩末。室壁厚度选填，填了才追加 RWT 与左室质量</div>
       <div class="row">
         <div class="field">
-          <label class="field__l"><span class="field__l-ab">LVIDd</span><span class="field__l-cn">舒张末内径</span></label>
+          <label class="field__l field__l--ef"><span class="field__l-ab">LVIDd</span><span class="field__l-cn">舒张末内径</span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvedd" placeholder="如 50" step="0.1">
         </div>
         <div class="field">
-          <label class="field__l"><span class="field__l-ab">LVIDs</span><span class="field__l-cn">收缩末内径</span></label>
+          <label class="field__l field__l--ef"><span class="field__l-ab">LVIDs</span><span class="field__l-cn">收缩末内径</span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvesd" placeholder="如 32" step="0.1">
         </div>
       </div>
       <div class="row">
         <div class="field">
-          <label class="field__l"><span class="field__l-ab">IVSd</span><span class="field__l-cn">室间隔厚度 <span class="field__l-opt">选填</span></span></label>
+          <label class="field__l field__l--ef"><span class="field__l-ab">IVSd</span><span class="field__l-cn">室间隔厚度 <span class="field__l-opt">选填</span></span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efIvsd" placeholder="如 9" step="0.1">
         </div>
         <div class="field">
-          <label class="field__l"><span class="field__l-ab">LVPWd</span><span class="field__l-cn">后壁厚度 <span class="field__l-opt">选填</span></span></label>
+          <label class="field__l field__l--ef"><span class="field__l-ab">LVPWd</span><span class="field__l-cn">后壁厚度 <span class="field__l-opt">选填</span></span></label>
           <input class="field__i" type="number" inputmode="decimal" id="efLvpwd" placeholder="如 9" step="0.1">
         </div>
       </div>
       <div class="hint" id="efHint"></div>
+      <button class="btn btn--ghost" id="efCalc" style="margin-top:10px;height:42px">计算 EF / FS</button>
     </div>
 
     <div class="card" id="efResult" hidden>
@@ -22819,6 +22828,9 @@ const MATERIALS = [];
     $(id).addEventListener('input', renderEF);
   });
 
+  /* ★ 2026-11-08：输入即算，但「计算 EF / FS」按钮保留，想手动点一下也能重算 */
+  if ($('efCalc')) $('efCalc').addEventListener('click', renderEF);
+
   /* 五B、Tab3 公式集（目录 + 单个公式详情） */
 
   const CALC_GROUPS = [
@@ -22892,7 +22904,7 @@ const MATERIALS = [];
 
     /* ── 瓣膜专用定量（v1.4.1 起与小程序 calc-groups.js 同源，走 valve-calc 引擎）
        ★ v1.4.4：AS / AR / MS / MR 并入两个评估页，此处只留 TR ── */
-    { id: 'tr', sec: 'valve', title: 'TR 三尖瓣反流定量',
+    { id: 'tr', sec: 'valve', title: 'TR 三尖瓣反流定量', rel: ['tr-interv'],
       fields: [['tr_radius', 'PISA 半径', 'cm'], ['tr_aliasVa', '混叠速度 Va', 'cm/s'],
         ['tr_regV', '反流峰速', 'm/s'], ['tr_regVti', '反流 VTI', 'cm'],
         ['tr_vc', '缩流颈 VC（可选）', 'cm'], ['tr_trV', 'TR 峰速（可选）', 'm/s'],
@@ -23970,7 +23982,7 @@ const MATERIALS = [];
       const v0 = secs.map(function (s) { return s.id; }).indexOf('valve');
       secs.splice(v0 + 1, 0, vi);
     }
-    headItems('valve', ['mitral', 'aortic', 'bav', 'rheumatic', 'ie', 'aortic-root', 'tr', 'asload']);
+    headItems('valve', ['mitral', 'aortic', 'tr', 'bav', 'rheumatic', 'ie', 'aortic-root', 'asload']);
     headItems('valve-interv', ['mv-interv', 'tr-interv', 'tavr', 'tavrsz', 'prosthetic', 'ppm', 'pvfu']);
 
     // ★ v1.13.10：先心病整组紧跟瓣膜（v1.15.4 起跟在「瓣膜介入与人工瓣」后面）
