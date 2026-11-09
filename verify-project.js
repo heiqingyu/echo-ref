@@ -1104,6 +1104,29 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
     ? ok('SEARCH_KW 补齐左右心造影口语别名')
     : bad('SEARCH_KW 未补造影别名');
 
+  // 11.9d ★ 2026-11-09 体检：SEARCH_KW 的键必须是真实条目 id。
+  //   旧键 rapv / as / ar / ms / mr 是条目改名、计算器并入判读后遗留的孤儿键，
+  //   kwOf(it.id) 按 id 查表，永远读不到 → 搜「右房压 / 主动脉瓣狭窄」等中文全称 0 结果。
+  const CGX = require(path.join(MP, 'utils', 'calc-groups.js'));
+  const validIds = {};
+  CGX.GROUPS.forEach(function (g) { validIds[g.id] = 1; });
+  EX.BRIEF_SECTIONS.forEach(function (s3) {
+    (s3.items || []).forEach(function (it3) { validIds[it3.id] = 1; });
+  });
+  (EX.LINK_SECTIONS || []).forEach(function (s3) {
+    (s3.items || []).forEach(function (it3) { validIds[it3.id] = 1; });
+  });
+  const orphanKw = Object.keys(EX.SEARCH_KW).filter(function (k) { return !validIds[k]; });
+  (!orphanKw.length)
+    ? ok('SEARCH_KW 全部 ' + Object.keys(EX.SEARCH_KW).length + ' 个键均指向真实条目（无孤儿键）')
+    : bad('SEARCH_KW 存在孤儿键（同义词永不生效）：' + orphanKw.join(','));
+  (EX.kwOf('aortic').indexOf('主动脉瓣狭窄') !== -1 &&
+    EX.kwOf('mitral').indexOf('二尖瓣反流') !== -1 &&
+    EX.kwOf('mpap').indexOf('右房压') !== -1 &&
+    EX.kwOf('ivc').indexOf('右房压') !== -1)
+    ? ok('SEARCH_KW 补齐瓣膜与右房压中文全称别名')
+    : bad('SEARCH_KW 瓣膜 / 右房压别名缺失');
+
   // 11.10 超声引导下有创操作条目：12 类操作对照表、心包穿刺数据、活检部位、ICE 风险
   const eiSec = EX.BRIEF_SECTIONS.filter(s2 => s2.id === 'views-atlas')[0];
   const ei = eiSec && eiSec.items.filter(i => i.id === 'echo-interv')[0];
