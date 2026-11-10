@@ -1772,6 +1772,41 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     : bad('判读条目编号跳号 / 重号 / 不从一开始：' + briefSeqBad + ' 处');
 }
 
+// ★ 2026-11-10：内容口径「贴指南原话、不加主观思考」回归锁
+{
+  const fsX = require('fs');
+  const pathX = require('path');
+  let tee = null;
+  EX.BRIEF_SECTIONS.forEach(function (s2) {
+    (s2.items || []).forEach(function (it) { if (it.id === 'tee-safety') tee = it; });
+  });
+  const teeTxt = tee ? JSON.stringify(tee.blocks || []) : '';
+  const must = ['检查前准备', '6 h 禁食', '利多卡因胶浆', '咬嘴', '复苏室',
+    '0°～180°', '食管穿孔 0～0.01%', '一次性 TEE 保护套', '检查室与镇静监护要求'];
+  const miss = must.filter(function (k) { return teeTxt.indexOf(k) === -1; });
+  (tee && tee.title.indexOf('检查流程') !== -1 && miss.length === 0)
+    ? ok('TEE 条目按 R60 指南补齐检查流程 / 注意事项（' + must.length + ' 项关键口径齐全）')
+    : bad('TEE 检查流程缺关键口径：' + miss.join('、'));
+
+  const BAN = [
+    '价值被低估', '省时间', '直接上 TEE', '土办法', '一句话定位', '喊一声',
+    '唯一的客观证据', '比手法熟练更重要', '最危险的并发症是', '这个顺序要提前跟团队说好',
+    '省事得多', '别急着', '全篇最没有共识', '其实是一条筛查线', '常见的偏差',
+    '第二术者', '该多紧张', '相对禁忌不等于不能做', '按「杀伤力」排序', '永远不如 2D',
+    '最容易漏诊的四种', '一眼分开', '别忘了左室', '看不清，但不能不看',
+    '最省事', '有用得多', '才敢排台', '下台', '多看一眼'
+  ];
+  const files = ['brief-a.js', 'brief-b.js', 'brief-c.js', 'calc-notes.js'];
+  const hits = [];
+  files.forEach(function (f) {
+    const src = fsX.readFileSync(pathX.join(__dirname, 'miniprogram', 'utils', f), 'utf8');
+    BAN.forEach(function (w) { if (src.indexOf(w) !== -1) hits.push(f + ':' + w); });
+  });
+  (hits.length === 0)
+    ? ok('判读 / 计算器文案无主观评断句式（' + BAN.length + ' 条黑名单全库扫描）')
+    : bad('仍有主观评断残留：' + hits.slice(0, 15).join(' / '));
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {

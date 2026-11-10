@@ -1928,7 +1928,7 @@ function check(name, ok, detail) {
   check('二尖瓣脱垂：Barlow 与 FED 的修复难度差别',
     ['Barlow 病', '纤维弹性缺陷（FED）', '多段脱垂', '局限单段'].every((w) => mrTxt.indexOf(w) >= 0), '');
   check('二尖瓣脱垂：P2 最常见、报告要写段与瓣叶长度',
-    /P2 段最常见/.test(mrTxt) && /后叶长 18 mm/.test(mrTxt), '');
+    /P2 段最常见/.test(mrTxt) && /报告应记录瓣叶分区与后叶长度/.test(mrTxt), '');
   check('二尖瓣脱垂：两个混点（SAM 与 MAC）',
     ['SAM（收缩期前向运动）', '二尖瓣环钙化（MAC）'].every((w) => mrTxt.indexOf(w) >= 0), '');
   /* v1.12.0：MAD 与室性心律失常 */
@@ -1943,7 +1943,7 @@ function check(name, ok, detail) {
   check('MVP 心律失常：四个坑（MAD≠瓣环扩张 / 四腔测不到 / 反流轻 / 舒张期）',
     /把 MAD 写成「瓣环扩张」/.test(mrTxt) && /只在心尖四腔量/.test(mrTxt), '');
   check('MVP 心律失常：报告要写后瓣环分离与瓣叶长度',
-    /后瓣环分离 X mm/.test(mrTxt), '');
+    /后瓣环分离（收缩末期，mm）/.test(mrTxt), '');
 
   // 实填：PISA + 容积法 + LVEDV 同时给，两条路应互相印证
   await openBrief('mitral');
