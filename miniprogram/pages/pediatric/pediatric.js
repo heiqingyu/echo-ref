@@ -128,6 +128,7 @@ Page({
     //   且绝大多数字段都停用，占一个导航位反而碍事 —— 用户 2026-11-06 反馈）
     nav: [
       { id: 'sec-person', title: '受检者' },
+      { id: 'sec-func', title: '心功能' },
       { id: 'sec-measure', title: '测量与结果' },
       { id: 'sec-info', title: '说明与来源' },
     ],
@@ -400,7 +401,14 @@ Page({
     let zMeasured = measured;
     if (hasBsa && measured.LVEDD > 0 && measured.LVESD > 0 && measured.LVEDD > measured.LVESD) {
       func = core.computeLVFunction(measured.LVEDD, measured.LVESD);
+      func.lvedd = measured.LVEDD;
+      func.lvesd = measured.LVESD;
       func.efGrade = core.gradeEF(func.EF);
+      // ★ gradeEF 只给 { level, text }，没有 cls；标签颜色按 level 映射（与网页 gradeCls 同口径）
+      func.efGradeCls = {
+        normal: 'tag--normal', mild: 'tag--mild',
+        moderate: 'tag--moderate', severe: 'tag--severe',
+      }[func.efGrade.level] || 'tag--none';
       const fsSt = func.FS < 28 ? 'low' : (func.FS > 44 ? 'high' : 'normal');
       func.fsStatusText = core.STATUS_TEXT[fsSt].text;
       func.fsStatusCls = core.STATUS_TEXT[fsSt].cls;

@@ -75,6 +75,39 @@
     <view wx:for="{{warnings}}" wx:key="*this" class="hint">{{item}}</view>
   </view>
 
+  <!-- ★ 收缩功能：填 LVEDD + LVESD 即自动推算 EF / FS / SV（与网页、APK 同） -->
+  <view class="card" wx:if="{{func}}" id="sec-func">
+    <view class="card__title">收缩功能（自动推算）</view>
+    <view class="card__desc">
+      由左室舒张末期内径 {{func.lvedd}} 与收缩末期内径 {{func.lvesd}} mm 经 Teichholz 公式推算。
+    </view>
+
+    <view class="func-ef">
+      <view class="func-ef__v">{{func.EF}}<text class="func-ef__u">%</text></view>
+      <view class="func-ef__side">
+        <view>左室射血分数 EF</view>
+        <text class="tag {{func.efGradeCls}}">{{func.efGrade.text}}</text>
+      </view>
+    </view>
+
+    <view class="kv">
+      <view class="kv__item">
+        <view class="kv__k">缩短分数 FS（参考 28–44%）</view>
+        <text class="kv__v">{{func.FS}}%</text>
+        <text class="tag {{func.fsStatusCls}}" style="margin-left:10rpx">{{func.fsStatusText}}</text>
+      </view>
+      <view class="kv__item">
+        <view class="kv__k">每搏输出量 SV</view>
+        <text class="kv__v">{{func.SV}}</text><text class="kv__u">mL</text>
+      </view>
+    </view>
+
+    <view class="note">
+      推算的 EDV {{func.EDV}} mL / ESV {{func.ESV}} mL
+      已代入「左心室容积与质量」组的 Z 值对照（未手动填容积时）。
+    </view>
+  </view>
+
   <!-- ② 结果摘要：填完抬头就能看到「测了几项、几项异常、哪项偏得最多」 -->
   <view class="card" wx:if="{{summary && summary.measuredCount > 0}}" id="sec-summary">
     <view class="card__title">结果摘要</view>

@@ -455,8 +455,27 @@ check('冠脉主行来源徽章渲染（z-row__src）',
 check('文献条目样式已进 pediatric.wxss',
   (fsW.readFileSync(pathW.join(__dirname, 'miniprogram', 'pages', 'pediatric',
     'pediatric.wxss'), 'utf8').indexOf('.ref-item__id') !== -1) ? 1 : 0, 1, 0);
-check('顶部导航 3 项（新生儿不单列）',
-  (pedJs.match(/\{ id: 'sec-/g) || []).length, 3, 0);
+check('顶部导航 4 项（受检者 / 心功能 / 测量与结果 / 说明与来源，新生儿不单列）',
+  (pedJs.match(/\{ id: 'sec-/g) || []).length, 4, 0);
+// ★ 2026-11-10：v1.15.9 儿童页重构把「收缩功能」卡整块删了，但 js 仍在算 func
+//   （EDV/ESV 还自动回填进 Z 值），网页 / APK 也一直有 pdFuncCard → 三端不一致。
+//   用户报「新生儿输入后没有出来心功能」即此。加回卡并锁死，防止重构再丢。
+check('儿童页有收缩功能卡（id="sec-func" + wx:if="{{func}}"）',
+  (wxmlPeds.indexOf('id="sec-func"') !== -1 &&
+   wxmlPeds.indexOf('wx:if="{{func}}"') !== -1) ? 1 : 0, 1, 0);
+check('收缩功能卡显示 EF 大数字与分级标签',
+  (wxmlPeds.indexOf('{{func.EF}}') !== -1 &&
+   wxmlPeds.indexOf('{{func.efGradeCls}}') !== -1 &&
+   wxmlPeds.indexOf('{{func.efGrade.text}}') !== -1) ? 1 : 0, 1, 0);
+check('收缩功能卡显示 FS / SV / EDV / ESV',
+  ['{{func.FS}}', '{{func.SV}}', '{{func.EDV}}', '{{func.ESV}}']
+    .every(function (k) { return wxmlPeds.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);
+check('func 带实测内径与 EF 分级色（gradeEF 本身无 cls 字段）',
+  (pedJs.indexOf('func.lvedd = measured.LVEDD') !== -1 &&
+   pedJs.indexOf('func.efGradeCls =') !== -1) ? 1 : 0, 1, 0);
+check('三端一致：网页 / APK 的 pdFuncCard 与小程序 func 卡并存',
+  fsW.readFileSync(pathW.join(__dirname, 'android-app', 'app.js'), 'utf8')
+    .indexOf("'pdFuncCard'") !== -1 ? 1 : 0, 1, 0);
 check('新生儿超期只留一句（模板走 wx:else 分支）',
   (wxmlPeds.indexOf('wx:if="{{neoTooOld}}"') !== -1 &&
    wxmlPeds.indexOf('<block wx:else>') !== -1) ? 1 : 0, 1, 0);
