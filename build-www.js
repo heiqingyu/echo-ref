@@ -106,6 +106,8 @@ const calcSrc = wrapEngine(path.join(MP, 'utils', 'echo-calc.js'), 'Calc');
 const segSrc = wrapEngine(path.join(MP, 'utils', 'segment-svg.js'), 'SegSvg');
 // 瓣膜解剖示意图（分区 / 分叶 / 分段），与小程序同源
 const valveSvgSrc = wrapEngine(path.join(MP, 'utils', 'valve-svg.js'), 'ValveSvg');
+// 室间隔缺损短轴钟点示意图（与小程序同源）
+const vsdSvgSrc = wrapEngine(path.join(MP, 'utils', 'vsd-svg.js'), 'VsdSvg');
 const valveSrc = wrapEngine(path.join(MP, 'utils', 'valve-calc.js'), 'ValveCalc');
 // 行内标记解析（**加粗**）—— 小程序与网页共用同一份，避免两端表现不一致
 const mdSrc = wrapEngine(path.join(MP, 'utils', 'inline-md.js'), 'InlineMd');
@@ -823,6 +825,8 @@ ${calcSrc}
 ${segSrc}
 
 ${valveSvgSrc}
+
+${vsdSvgSrc}
 
 ${valveSrc}
 

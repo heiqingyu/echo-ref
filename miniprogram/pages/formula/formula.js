@@ -14,6 +14,8 @@ const Core = require('../../utils/echo-core.js');
 const VC = require('../../utils/valve-calc.js');
 const MD = require('../../utils/inline-md.js');
 const CN = require('../../utils/calc-notes.js');
+// 示意图（室间隔缺损短轴钟点图等单位图）——纯函数生成，与网页同源
+const VSDSVG = require('../../utils/vsd-svg.js');
 const app = getApp();
 
 /**
@@ -82,6 +84,21 @@ function toBlocks(blocks) {
   const infos = EX.secList ? EX.secList(blocks) : [];
   let infoIdx = -1;
   return (blocks || []).map(function (b) {
+    // ★ 2026-11-11：示意图块（vsd-svg.js 生成的 SVG）→ data URI 交给 <image>
+    //   viewBox 比例由 mode="widthFix" 自适应，不需要另存图片资源。
+    if (b.kind === 'img') {
+      const svg = VSDSVG.svgOf(b.id || '');
+      return {
+        kind: 'img',
+        src: svg ? 'data:image/svg+xml;base64,' + VSDSVG.utf8ToBase64(svg) : '',
+        cap: b.cap || '',
+        width: 0,
+        height: 0,
+        text: b.cap || '',
+        segs: [],
+        paras: [],
+      };
+    }
     if (b.kind === 'table') {
       // ★ 表格单元格也要拆行内标记：以前直接 {{c}} 输出，219 个格子会把
       //   字面量 ** 漏到屏幕上（用户 2026-10-22 第二次反馈）

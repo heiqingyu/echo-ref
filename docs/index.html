@@ -936,6 +936,30 @@ html, body {
   line-height: 1.6;
 }
 
+/* 示意图（vsd-svg.js 生成，SVG 内联） */
+.fx-fig {
+  margin: 12px 0 14px;
+  padding: 6px 4px 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.fx-fig svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fx-fig__cap {
+  margin-top: 4px;
+  padding: 0 6px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: #64748b;
+  text-align: center;
+}
+
 .fx-tbl {
   margin: 10px 0;
   border: 1px solid var(--line);
@@ -9924,6 +9948,190 @@ function utf8ToBase64(str) {
   };
 })();
 
+/* ── 引擎：vsd-svg.js（由小程序源码自动抽取，勿手改）── */
+(function () {
+/**
+ * vsd-svg.js — 室间隔缺损「主动脉瓣短轴钟点」示意图（纯函数，三端共用）
+ *
+ * 仿 valve-svg.js 的模式：小程序端转 data URI 给 <image>，网页端直接插 SVG 字符串。
+ *
+ * ★ 这张图只画坐标，不画解剖轮廓，理由有两条：
+ *   1) 钟点的实际读数随探头角度、左右显示约定而变，把三叶画死在固定方位上，
+ *      换一台机器就会与图不符；
+ *   2) 各教材给的弧段本身就不一致（9～11 / 9～12 / 10～11 三套口径，12 点有的
+ *      算嵴内、有的算嵴下），图只能表达「钟点 → 类型」的对应，不能替教材定论。
+ *   所以：中心圆 = 主动脉瓣短轴（读钟点的基准），外圈 = 时钟读数，
+ *   三段彩色环带 = 本切面能定位的三类缺损，3～7 点一段 = 左房 / 房间隔侧。
+ *   图注（条目正文）必须写明「分型以缺损边缘为准」。
+ */
+
+/** 画布：720×430，圆心 (360,205)，主动脉瓣短轴半径 90，环带厚 16 */
+const BOX = '110 0 520 380';
+const CX = 360;
+const CY = 205;
+const R = 90;
+const BAND = 16;
+
+function f1(n) {
+  return Math.round(n * 10) / 10;
+}
+
+/** 钟点 → 坐标（12 点在上，顺时针；h 可为小数，如 10.5） */
+function pt(h, r) {
+  const t = (h * Math.PI) / 6;
+  return [CX + r * Math.sin(t), CY - r * Math.cos(t)];
+}
+
+/** 环带扇段：h1 → h2 顺时针（跨度均 < 180°，故 large-arc 恒为 0） */
+function band(h1, h2, fill) {
+  const r1 = R;
+  const r2 = R + BAND;
+  const a = pt(h1, r1);
+  const b = pt(h2, r1);
+  const c = pt(h2, r2);
+  const d = pt(h1, r2);
+  return '<path d="M' + f1(a[0]) + ' ' + f1(a[1]) +
+    ' A' + r1 + ' ' + r1 + ' 0 0 1 ' + f1(b[0]) + ' ' + f1(b[1]) +
+    ' L' + f1(c[0]) + ' ' + f1(c[1]) +
+    ' A' + r2 + ' ' + r2 + ' 0 0 0 ' + f1(d[0]) + ' ' + f1(d[1]) + ' Z"' +
+    ' fill="' + fill + '" stroke="#ffffff" stroke-width="1"/>';
+}
+
+/** 整点刻度 */
+function tick(h) {
+  const a = pt(h, R + BAND + 2);
+  const b = pt(h, R + BAND + 10);
+  return '<line x1="' + f1(a[0]) + '" y1="' + f1(a[1]) + '" x2="' + f1(b[0]) + '" y2="' + f1(b[1]) +
+    '" stroke="#cbd5e1" stroke-width="1.4"/>';
+}
+
+/** 钟点数字（只标 12 / 3 / 6 / 9） */
+function hourNum(h, t) {
+  const p = pt(h, R + 42);
+  return '<text x="' + f1(p[0]) + '" y="' + f1(p[1] + 4.5) + '" text-anchor="middle"' +
+    ' font-size="12" font-weight="600" fill="#94a3b8">' + t + '</text>';
+}
+
+/** 图外标签：主行（类型）+ 次行（钟点与毗邻），用虚线引到环带中点 */
+function label(o) {
+  const p = pt(o.h, R + BAND - 4);
+  const x2 = o.anchor === 'end' ? o.x - 6 : o.x + 6;
+  const tie = '<line x1="' + f1(x2) + '" y1="' + f1(o.y - 5) + '" x2="' + f1(p[0]) + '" y2="' + f1(p[1]) +
+    '" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>';
+  const t1 = '<text x="' + o.x + '" y="' + o.y + '" text-anchor="' + o.anchor + '"' +
+    ' font-size="13" font-weight="700" fill="' + o.color + '">' + o.t1 + '</text>';
+  const t2 = '<text x="' + o.x + '" y="' + (o.y + 17) + '" text-anchor="' + o.anchor + '"' +
+    ' font-size="10.5" fill="#64748b">' + o.t2 + '</text>';
+  return tie + t1 + t2;
+}
+
+/** 主动脉瓣短轴钟点图（唯一一张） */
+function clockSvg() {
+  const COLOR = { mem: '#2563eb', out: '#d97706', in: '#0f9d58', none: '#e2e8f0' };
+  let s = '';
+
+  s += '<rect x="100" y="0" width="540" height="380" fill="#fafbfc"/>';
+
+  // 中心圆：主动脉瓣短轴（读钟点的基准）
+  s += '<circle cx="' + CX + '" cy="' + CY + '" r="' + R + '" fill="#eef2f7" stroke="#94a3b8" stroke-width="1.5"/>';
+
+  // 环带：膜周部 9–12、流出道 12–3、流入道 7–9、3–7 无缺损
+  s += band(9, 12, COLOR.mem);
+  s += band(12, 3, COLOR.out);
+  s += band(7, 9, COLOR.in);
+  s += band(3, 7, COLOR.none);
+
+  // 刻度（逐点）
+  for (let h = 0; h < 12; h++) s += tick(h);
+  s += hourNum(12, '12');
+  s += hourNum(3, '3');
+  s += hourNum(6, '6');
+  s += hourNum(9, '9');
+
+  // 圆心文字
+  s += '<text x="' + CX + '" y="' + (CY - 4) + '" text-anchor="middle" font-size="14" font-weight="700" fill="#475569">主动脉瓣</text>';
+  s += '<text x="' + CX + '" y="' + (CY + 15) + '" text-anchor="middle" font-size="10.5" fill="#94a3b8">短轴</text>';
+
+  // 四组标签
+  s += label({ h: 10.5, x: 247, y: 104, anchor: 'end', color: COLOR.mem,
+    t1: '膜周部', t2: '9–12 点 · 邻三尖瓣隔瓣' });
+  s += label({ h: 1.5, x: 473, y: 100, anchor: 'start', color: COLOR.out,
+    t1: '流出道型', t2: '12–3 点 · 12 点嵴内、1–2 点干下' });
+  s += label({ h: 8, x: 247, y: 292, anchor: 'end', color: COLOR.in,
+    t1: '流入道型', t2: '7–9 点 · 三尖瓣隔瓣后' });
+  s += label({ h: 5, x: 473, y: 300, anchor: 'start', color: '#64748b',
+    t1: '无缺损区', t2: '3–7 点' });
+
+  // 脚注：肌部不在本切面，避免「图上没画＝没有这一类」的误读
+  s += '<text x="' + CX + '" y="372" text-anchor="middle" font-size="11.5" fill="#94a3b8">' +
+    '肌部（小梁部）缺损不在本切面定位，需心尖四腔 / 左室短轴小梁部扫查</text>';
+
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + BOX + '" width="100%"' +
+    ' preserveAspectRatio="xMidYMid meet" role="img"' +
+    ' aria-label="主动脉瓣短轴切面钟点与室间隔缺损分型的对应示意图">' + s + '</svg>';
+}
+
+const FIGS = {
+  'vsd-clock': clockSvg,
+};
+
+/** 取图（id 不存在时返回空串，渲染端跳过） */
+function svgOf(id) {
+  const fn = FIGS[id];
+  return fn ? fn() : '';
+}
+
+/**
+ * UTF-8 → Base64（小程序 <image src="data:image/svg+xml;base64,...">）
+ *
+ * ★ 必须在本地定义，不能 require 别的模块：build-www.js 的 wrapEngine 用静态
+ *   分析提取 module.exports 成员名，写成表达式会把整个引擎抽成空对象。
+ */
+function utf8ToBase64(str) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  const bytes = [];
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i);
+    if (c < 0x80) {
+      bytes.push(c);
+    } else if (c < 0x800) {
+      bytes.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f));
+    } else {
+      bytes.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
+    }
+  }
+  let out = '';
+  for (let i = 0; i < bytes.length; i += 3) {
+    const b0 = bytes[i];
+    const b1 = bytes[i + 1];
+    const b2 = bytes[i + 2];
+    out += chars[b0 >> 2];
+    out += chars[((b0 & 3) << 4) | ((b1 || 0) >> 4)];
+    out += b1 === undefined ? '=' : chars[((b1 & 15) << 2) | ((b2 || 0) >> 6)];
+    out += b2 === undefined ? '=' : chars[b2 & 63];
+  }
+  return out;
+}
+
+  window.VsdSvg = {
+    BOX: BOX,
+    CX: CX,
+    CY: CY,
+    R: R,
+    BAND: BAND,
+    f1: f1,
+    pt: pt,
+    band: band,
+    tick: tick,
+    hourNum: hourNum,
+    label: label,
+    clockSvg: clockSvg,
+    FIGS: FIGS,
+    svgOf: svgOf,
+    utf8ToBase64: utf8ToBase64,
+  };
+})();
+
 /* ── 引擎：valve-calc.js（由小程序源码自动抽取，勿手改）── */
 (function () {
 /**
@@ -15216,23 +15424,42 @@ const SECTIONS_B = [
         id: 'vsd',
         ab: 'VSD',
         title: '室间隔缺损：分型、封堵与术后',
-        sub: '四型定位 · 限制性与 RVSP · 主动脉瓣脱垂 · 封堵禁忌 · 术后传导阻滞',
+        sub: '解剖四型与短轴钟点 · 限制性与 RVSP · 主动脉瓣脱垂 · 封堵禁忌 · 术后传导阻滞',
         source: ['R32', 'R33', 'R38', 'R91', 'R109'],
         rel: ['asd', 'pda', 'pht-rev', 'aortic', 'ie'],
         blocks: [
-          { kind: 'h', text: '一、分型：四型之外先排「对位不良型」' },
+          { kind: 'h', text: '一、分型：解剖口径是分类，短轴钟点只是坐标' },
+          { kind: 'text', text: '**两套语言，作用不同。** 一套是**解剖 / 外科口径**，按缺损边缘由什么组织构成来分：边缘含房室瓣与动脉瓣之间纤维延续的为**膜周部**，四周均为肌性的为**肌部**，上缘由主动脉瓣与肺动脉瓣环连接部构成的为**双动脉下**（干下 / 嵴上）。流入道、小梁部、流出道是**部位**描述——膜周部与肌部都可以长在这三个部位上。另一套是**大动脉短轴钟点**，把主动脉瓣短轴当钟面读方位，用来在报告里写位置，不判断类型。' },
           {
             kind: 'table',
-            heads: ['类型', '位置', '特点'],
+            heads: ['解剖类型', '边缘构成', '占单纯 VSD', '要点'],
             rows: [
-              ['膜周部', '三尖瓣隔瓣下', '最常见（约 70%）；部分可自愈；易伴 TR 与主动脉瓣脱垂'],
-              ['流出道型（双动脉下 / 嵴下）', 'RVOT 内，紧贴主动脉瓣环', '亚洲人多见；易伴主动脉瓣脱垂与反流，需尽早干预'],
-              ['流入道型', '三尖瓣隔瓣后', '常合并房室通道畸形，需按房室通道整体评估'],
-              ['肌部', '小梁部', '可多发（瑞士奶酪样）；部分自愈，封堵难度大'],
+              ['膜周部', '含房室瓣与动脉瓣间的纤维延续', '约 70%', '可自愈；易伴 TR 与主动脉瓣脱垂'],
+              ['肌部（小梁部）', '四周均为肌性', '少于膜周部', '可多发；部分自愈；封堵难度大'],
+              ['双动脉下（干下 / 嵴上）', '主动脉瓣与肺动脉瓣环的连接部', '西方 <10%，亚洲可达 30%', '不闭合；易脱垂与反流；不做封堵'],
+              ['流入道', '三尖瓣隔瓣后下方', '约 5%', '常为房室通道畸形的一部分'],
             ],
           },
+          {
+            kind: 'table',
+            heads: ['大动脉短轴钟点', '常见对应', '教材差异'],
+            rows: [
+              ['9–12 点', '膜周部；9–10 点为三尖瓣隔瓣下', '也有写 9–11 点、10–11 点'],
+              ['12–3 点', '流出道型；12 点嵴内，1–2 点干下', '12 点有的归嵴内、有的归嵴下'],
+              ['7–9 点', '流入道型（三尖瓣隔瓣后）', '与 9 点处膜周部的分界各家不一'],
+              ['不在本切面', '肌部（小梁部）', '需心尖四腔、左室短轴小梁部'],
+            ],
+          },
+          {
+            kind: 'img',
+            id: 'vsd-clock',
+            cap: '图 1 主动脉瓣短轴钟点与分型的对应（示意图，不按解剖比例；钟点读数随显示方位变化）',
+          },
+          { kind: 'text', text: '**指南用的是解剖词，不给钟点。** AHA/ACC 2018 的 VSD 条目通篇只有 perimembranous（膜周部）与 supracristal（嵴上 / 双动脉下）两个定位词，修复指征按「容量负荷、主动脉瓣反流、肺血管阻力」分层，与钟点无对应关系[R32]。所以「哪个更准」没有并列的余地：**解剖分型是分类，钟点只是同一张图上的近似坐标**。' },
+          { kind: 'text', text: '**钟点法的三条边界。** ① **依赖显示方位**——探头角度或左右显示约定一变，同一个缺损的读数可差 1–2 个钟点；② **教材弧段不一致**——膜周部有 9–11、9–12、10–11 三套写法，12 点处有的归嵴内、有的归嵴下，跨教材照搬位置描述会对不上；③ **读不出边缘**——决定术式与传导风险的，是上缘到主动脉瓣环的距离、是否累及三尖瓣隔瓣、边缘为纤维还是肌性，这三件事只能在二维上看。' },
+          { kind: 'note', text: '**报告写法**：类型（膜周部 / 肌部 / 双动脉下 / 流入道）+ 边缘（纤维 / 肌性）+ 缺损径 + 上缘距主动脉瓣环 X mm + 距三尖瓣隔瓣 X mm；钟点作补充（如「大动脉短轴 10 点」）。只写钟点不写类型，术者拿不到选型依据。' },
           { kind: 'text', text: '**先分清「单纯 VSD」和「某个复杂畸形的一部分」。** 室间隔与主动脉前壁对位不良的 VSD（主动脉骑跨、骑跨率 <50%）属于法洛四联症的成分；骑跨 >50% 或主动脉完全起自右室则是右室双出口。这类缺损的血流动力学与处理完全不同，不能按单纯 VSD 写「Qp/Qs 2.1，建议封堵」。' },
-          { kind: 'note', text: '报告里看到「对位不良」「主动脉骑跨」就把笔停一下：先确认是不是 TOF / DORV，再谈 VSD 本身。这一句判断错了，后面所有数值都失去意义。', warn: true },
+          { kind: 'note', text: '「对位不良」不是第五型，是**边缘关系的附加描述**：同一缺损可以既是膜周部、又是对位不良。报告里看到「对位不良」「主动脉骑跨」，先确认是不是 TOF / DORV，再谈 VSD 本身。', warn: true },
 
           { kind: 'h', text: '二、大小与限制性：决定症状，也决定压差' },
           {
@@ -23363,6 +23590,17 @@ const MATERIALS = [];
               esc(g ? g.title : (bf && bf.title ? bf.title : id)) + '</button>';
           });
           h += '</div>';
+        }
+        return;
+      }
+      if (b.kind === 'img') {
+        // ★ 2026-11-11：示意图块。SVG 由 VsdSvg 生成，直接内联进 DOM（矢量、可缩放）
+        const _VSD = window.VsdSvg;
+        const _svg = _VSD && _VSD.svgOf ? _VSD.svgOf(b.id || '') : '';
+        if (_svg) {
+          h += '<figure class="fx-fig">' + _svg +
+            (b.cap ? '<figcaption class="fx-fig__cap">' + mdInline(b.cap) + '</figcaption>' : '') +
+            '</figure>';
         }
         return;
       }

@@ -1577,6 +1577,20 @@ function check(name, ok, detail) {
     /绝对禁忌/.test(vsdTxt) && /流出道型/.test(vsdTxt), '');
   check('VSD：术后溶血与迟发 AVB 两个专属随访点',
     ['血红蛋白尿', '迟发'].every((w) => vsdTxt.indexOf(w) >= 0), '');
+  /* v1.16.3：分型两套语言（解剖口径 vs 短轴钟点）+ 示意图 */
+  check('VSD：分型含解剖口径与短轴钟点两套语言，并写明钟点只作定位',
+    ['膜周部', '肌部（小梁部）', '双动脉下', '9–12 点', '12–3 点', '不在本切面']
+      .every((w) => vsdTxt.indexOf(w) >= 0) && /钟点只是同一张图上的近似坐标/.test(vsdTxt), '');
+  check('VSD：写明教材弧段不一致（9–11 / 9–12 / 10–11）与「对位不良不是第五型」',
+    /9–11/.test(vsdTxt) && /10–11/.test(vsdTxt) && /不是第五型/.test(vsdTxt), '');
+  const vsdFig = await c.evalJs(
+    '(function(){var f=document.querySelector("#calcDetail .fx-fig");' +
+    'if(!f)return "no-fig";var s=f.querySelector("svg");' +
+    'if(!s)return "no-svg";var t=s.textContent;' +
+    'return [t.indexOf("膜周部")>=0, t.indexOf("流出道型")>=0, t.indexOf("流入道型")>=0,' +
+    't.indexOf("肌部")>=0, (f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
+  check('VSD 短轴钟点示意图已渲染（SVG 内联，三段环带标签 + 肌部脚注 + 图注齐全）',
+    vsdFig === 'true,true,true,true,cap', String(vsdFig));
   const vsdOut = await outOf('vsd');
   check('VSD 与 ASD 的 Qp/Qs 输入互不串值（前缀键隔离）',
     vsdOut.indexOf('Qp/Qs') < 0, vsdOut);

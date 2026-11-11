@@ -57,6 +57,13 @@
           </view>
         </view>
 
+        <block wx:elif="{{b.kind === 'img'}}">
+          <view wx:if="{{b.src}}" class="fx-fig">
+            <image class="fx-fig__img" src="{{b.src}}" mode="widthFix" />
+            <view wx:if="{{b.cap}}" class="fx-fig__cap">{{b.cap}}</view>
+          </view>
+        </block>
+
         <block wx:elif="{{b.kind === 'note'}}">
           <view class="fx-note">
             <block wx:if="{{b.paras.length}}">

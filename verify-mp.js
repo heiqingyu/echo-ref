@@ -1219,6 +1219,25 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     fxWxml.indexOf('pagefoot') !== -1 && fxWxml.indexOf('bindtap="onGo"') !== -1 ? 1 : 0, 1, 0);
   check('onGo 区分 switchTab / navigateTo',
     /switchTab/.test(fxJs) && /navigateTo/.test(fxJs) ? 1 : 0, 1, 0);
+  // ── v1.16.3：示意图块（VSD 主动脉瓣短轴钟点图）──
+  const VSDS = require(pathW.join(__dirname, 'miniprogram', 'utils', 'vsd-svg.js'));
+  const vsdSvgStr = VSDS.svgOf('vsd-clock');
+  check('示意图块：wxml 有 img 分支（widthFix 图片 + 图注）',
+    fxWxml.indexOf("b.kind === 'img'") !== -1 &&
+    fxWxml.indexOf('fx-fig__img') !== -1 &&
+    fxWxml.indexOf('fx-fig__cap') !== -1 ? 1 : 0, 1, 0);
+  check('示意图块：formula.js 由 vsd-svg 生成 SVG data URI',
+    fxJs.indexOf("require('../../utils/vsd-svg.js')") !== -1 &&
+    fxJs.indexOf('data:image/svg+xml;base64,') !== -1 ? 1 : 0, 1, 0);
+  check('vsd-clock 图自检（三段环带 + 肌部脚注 + 画布 520×380）',
+    vsdSvgStr.indexOf('<svg') === 0 &&
+    vsdSvgStr.indexOf('膜周部') !== -1 &&
+    vsdSvgStr.indexOf('流出道型') !== -1 &&
+    vsdSvgStr.indexOf('流入道型') !== -1 &&
+    vsdSvgStr.indexOf('肌部（小梁部）缺损不在本切面定位') !== -1 &&
+    vsdSvgStr.indexOf('viewBox="110 0 520 380"') !== -1 ? 1 : 0, 1, 0);
+  check('vsd-svg 的 base64 与标准实现一致（中文 SVG 不丢字节）',
+    VSDS.utf8ToBase64('膜周部') === Buffer.from('膜周部', 'utf8').toString('base64') ? 1 : 0, 1, 0);
   // ── v1.15.4：小节导航改成悬浮目录（用户：「想要一个小点，点开才看分组」）──
   const fxWxss = fsW.readFileSync(
     pathW.join(__dirname, 'miniprogram', 'pages', 'formula', 'formula.wxss'), 'utf8');

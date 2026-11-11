@@ -1333,6 +1333,17 @@
         }
         return;
       }
+      if (b.kind === 'img') {
+        // ★ 2026-11-11：示意图块。SVG 由 VsdSvg 生成，直接内联进 DOM（矢量、可缩放）
+        const _VSD = window.VsdSvg;
+        const _svg = _VSD && _VSD.svgOf ? _VSD.svgOf(b.id || '') : '';
+        if (_svg) {
+          h += '<figure class="fx-fig">' + _svg +
+            (b.cap ? '<figcaption class="fx-fig__cap">' + mdInline(b.cap) + '</figcaption>' : '') +
+            '</figure>';
+        }
+        return;
+      }
       if (b.kind === 'formula') { h += '<div class="fx-formula">' + mdInline(b.text) + '</div>'; return; }
       if (b.kind === 'table') {
         h += '<div class="fx-tbl fx-tbl--' + b.heads.length + '">';

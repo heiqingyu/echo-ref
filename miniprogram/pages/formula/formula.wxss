@@ -284,6 +284,30 @@
   line-height: 1.6;
 }
 
+/* ── 示意图（vsd-svg.js 生成，SVG data URI） ── */
+.fx-fig {
+  margin: 16rpx 0 18rpx;
+  padding: 8rpx 6rpx 10rpx;
+  background: #fff;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 12rpx;
+}
+
+.fx-fig__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fx-fig__cap {
+  margin-top: 6rpx;
+  padding: 0 8rpx;
+  font-size: 21rpx;
+  line-height: 1.55;
+  color: #64748b;
+  text-align: center;
+}
+
 /* ── 表格（与瓣膜页同款） ── */
 .vtbl {
   margin: 14rpx 0;
