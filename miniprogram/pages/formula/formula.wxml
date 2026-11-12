@@ -163,10 +163,6 @@
       </view>
     </block>
 
-    <view wx:if="{{noteSegs.length}}" class="note"><text wx:for="{{noteSegs}}" wx:for-item="sg"
-            wx:for-index="ni" wx:key="ni"
-            class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text></view>
-
     <block wx:if="{{!isReference}}">
       <!-- ★ v1.8.3 合并页：一条卡里多个小节，各自出一行结果 -->
       <block wx:if="{{outs.length}}">
@@ -187,6 +183,11 @@
         </view>
       </block>
     </block>
+
+    <!-- ★ 2026-11-12：说明放到结果之后，长说明不再把结果挤到屏幕下方 -->
+    <view wx:if="{{noteSegs.length}}" class="note"><text wx:for="{{noteSegs}}" wx:for-item="sg"
+            wx:for-index="ni" wx:key="ni"
+            class="{{sg.b ? 'fx-b' : ''}}">{{sg.t}}</text></view>
   </view>
 
   <button wx:if="{{!isReference}}" class="clear-btn" bindtap="onClear">清空本组输入</button>

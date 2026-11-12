@@ -752,6 +752,50 @@ function lvEf(edv, esv, bsa) {
 }
 
 /**
+ * 面积-长度法由描迹面积估左室容积 → EF（R2 2015 的替代法）
+ *
+ * 二维首选心尖四腔 + 两腔双平面圆盘叠加法（改良 Simpson）：
+ *   V = (π/4) × (L/20) × Σ(i=1..20) a_i·b_i，L 取两切面中较长的长径。
+ * 心尖内膜显示不满意、影响轮廓勾画时，可用面积-长度法替代（假设左室为弹头形）：
+ *   双平面 V = 8·A4C·A2C / (3π·L) = 0.849·A4C·A2C/L，L 取两切面中较短的长径；
+ *   单平面令 A2C = A4C → V = 0.849·A4C²/L。
+ * 面积 cm²、长径 cm → 容积 cm³ = mL；舒张末 / 收缩末各算一次，EF = (EDV − ESV)/EDV。
+ *
+ * @param {object} o {a4cd,a2cd,ld,a4cs,a2cs,ls,bsa}；A2C 面积缺省即走单平面
+ */
+function areaLengthEf(o) {
+  const num = function (x) {
+    return (x === null || x === undefined || x === '' || !isFinite(Number(x))) ? null : Number(x);
+  };
+  const a4cd = num(o.a4cd), a2cd = num(o.a2cd), ld = num(o.ld);
+  const a4cs = num(o.a4cs), a2cs = num(o.a2cs), ls = num(o.ls);
+  if (!(a4cd > 0) || !(ld > 0) || !(a4cs > 0) || !(ls > 0)) return {};
+  const K = 8 / (3 * Math.PI);
+  const edv = K * a4cd * (a2cd > 0 ? a2cd : a4cd) / ld;
+  const esv = K * a4cs * (a2cs > 0 ? a2cs : a4cs) / ls;
+  const r = lvEf(edv, esv, num(o.bsa));
+  if (r.error) return r;
+  const biplane = (a2cd > 0 && a2cs > 0);
+  r.method = biplane ? '双平面面积-长度法' : '单平面面积-长度法';
+  r.mode = biplane ? 'biplane' : 'monoplane';
+  return r;
+}
+
+/**
+ * 左房三径线椭球法估容积（R2 2015：线性测量误差较大、应用有限）
+ * LAV = (4/3)π·(D1/2)(D2/2)(D3/2) = 0.523·D1·D2·D3，单位 cm³ = mL；LAVI = LAV / BSA。
+ * D1 前后径（胸骨旁长轴）、D2 左右径、D3 上下径（心尖四腔长径）。
+ */
+function laVolByDiameters(d1, d2, d3, bsa) {
+  const a = Number(d1), b = Number(d2), c = Number(d3), s = Number(bsa);
+  if (!(a > 0) || !(b > 0) || !(c > 0)) return {};
+  const lav = (4 / 3) * Math.PI * (a / 2) * (b / 2) * (c / 2);
+  const r = { lav: lav, method: '椭球法（三径线）' };
+  if (s > 0) r.lavi = lav / s;
+  return r;
+}
+
+/**
  * 左室质量与几何构型（ASE 校正公式）
  *
  * LV Mass = 0.8 × 1.04 × [(LVIDd + IVSd + LVPWd)³ − LVIDd³] + 0.6
@@ -2996,6 +3040,8 @@ module.exports = {
   dukeScore,
   trGrade,
   lvEf,
+  areaLengthEf,
+  laVolByDiameters,
   lvMass,
   mapseIndex,
   teiIndex,

@@ -70,8 +70,11 @@ Page({
     keep: false,
     /* —— 受检者基本信息 —— */
     sex: 'male',
-    height: '170',
-    weight: '65',
+    // ★ 2026-11-12 用户明确：「我是要清空，不是默认是那些值」。
+    //   未勾选「记住本次输入」时，重新加载后身高体重与四个内径一律为空，
+    //   不再预填 170 / 65、50 / 32 / 9 / 9。
+    height: '',
+    weight: '',
     bsaValue: 0,
     bsaText: '—',
     bmiText: '—',
@@ -87,10 +90,10 @@ Page({
     ageBands: [],
     ageNote: '',
     /* —— EF 计算（合并自原「EF 计算」页） —— */
-    lvedd: '50',
-    lvesd: '32',
-    ivsd: '9',
-    lvpwd: '9',
+    lvedd: '',
+    lvesd: '',
+    ivsd: '',
+    lvpwd: '',
     efValid: true,
     efHint: '',
     hasResult: false,
@@ -114,8 +117,8 @@ Page({
 
   onLoad() {
     const p = app.globalData.profile;
-    const m = app.globalData.measurements;
-    // ★ 默认不记：只有点过「记住本次输入」才恢复上次那份
+    // ★ 默认不记：只有点过「记住本次输入」才恢复上次那份；
+    //   未勾选时所有数值输入框一律清空（fallback 为空串，不回落 profile / measurements）。
     const keepOn = keep.on(KEEP_ON);
     const sv = keepOn ? keep.read(KEEP_DATA) : null;
     const pick = function (k, fallback) {
@@ -124,18 +127,18 @@ Page({
     this.setData({
       keep: keepOn,
       sex: pick('sex', p.sex),
-      height: String(pick('height', p.height)),
-      weight: String(pick('weight', p.weight)),
+      height: String(pick('height', '')),
+      weight: String(pick('weight', '')),
       formula: pick('formula', this.data.formula),
       standard: app.globalData.standard,
       ageOn: loadAgeOn(),
       ageBand: loadAgeBand(),
       ageBands: core.AGE_BANDS,
       showReward: rewardReady(),
-      lvedd: pick('lvedd', m && m.lvedd ? String(m.lvedd) : this.data.lvedd),
-      lvesd: pick('lvesd', m && m.lvesd ? String(m.lvesd) : this.data.lvesd),
-      ivsd: pick('ivsd', m && m.ivsd ? String(m.ivsd) : this.data.ivsd),
-      lvpwd: pick('lvpwd', m && m.lvpwd ? String(m.lvpwd) : this.data.lvpwd),
+      lvedd: pick('lvedd', ''),
+      lvesd: pick('lvesd', ''),
+      ivsd: pick('ivsd', ''),
+      lvpwd: pick('lvpwd', ''),
     });
     this.refresh();
     this.doCalc();

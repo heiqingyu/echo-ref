@@ -652,7 +652,14 @@
   function idxRestore() {
     const on = Keep.on('index');
     keepBtnUI('keepIndex', 'keepIndexHint', on);
-    if (!on) return;
+    // ★ 2026-11-12 用户明确：未勾选「记住」就是清空，不是换一组默认值。
+    //   身高体重、四个内径全部置空，不回落到 state 里的 170 / 65。
+    if (!on) {
+      $('inHeight').value = '';
+      $('inWeight').value = '';
+      EF_IDS.forEach(function (id) { $(id).value = ''; });
+      return;
+    }
     const s = Keep.read('index');
     if (!s) return;
     if (s.sex) { state.sex = s.sex; setSeg('sex', s.sex); }
@@ -789,8 +796,12 @@
       fields: [['ld', 'LVOT 直径', 'cm'], ['lvti', 'LVOT VTI', 'cm'], ['hr', '心率', '次/min']],
       note: 'SV = πd²/4 × VTI；CO = SV × HR ÷ 1000。LVOT VTI 本身就是一个可以单读的数：成人静息 18–22 cm（部分文献 17–23），<15 cm 提示每搏量偏低；指南的低流量口径是 SVi ≤35 mL/m²，带体表面积，条件允许时以 SVi 为准。该式在明显 AR（LVOT 每搏量含反流量，高估净心排量）、瓣下梗阻（取样处流速已加速）、房颤或频发早搏（逐搏差可达 20%）时失真' },
     { id: 'ef', title: '左室容积与射血分数',
-      fields: [['edv', '舒张末容积 EDV', 'mL'], ['esv', '收缩末容积 ESV', 'mL']],
-      note: 'EF = (EDV − ESV) / EDV；SV = EDV − ESV。有 BSA 时同出 SVi 与 ESVi（ESVi 决定 ICD 指征）' },
+      fields: [['edv', '舒张末容积 EDV（圆盘法）', 'mL'], ['esv', '收缩末容积 ESV（圆盘法）', 'mL'],
+        ['ef_a4cd', 'A4C 舒张末面积', 'cm²'], ['ef_a2cd', 'A2C 舒张末面积', 'cm²'],
+        ['ef_ld', '舒张末长径 L（仅面积法）', 'cm'],
+        ['ef_a4cs', 'A4C 收缩末面积', 'cm²'], ['ef_a2cs', 'A2C 收缩末面积', 'cm²'],
+        ['ef_ls', '收缩末长径 L（仅面积法）', 'cm']],
+      note: 'EF = (EDV − ESV) / EDV；SV = EDV − ESV。二维首选心尖四腔 + 两腔双平面圆盘叠加法（改良 Simpson）：V = (π/4)·(L/20)·Σ a_i·b_i，L 取两切面中较长的长径，a_i / b_i 为第 i 个圆盘在两切面的正交直径；舒张末与收缩末分别描迹得 EDV / ESV[R2]。圆盘法把描迹轮廓沿长轴等分为 20 层，长径与每层正交直径取自轮廓本身，检查时描记边界即可，不需另行测量长径；机器给出的 EDV / ESV 直接填上方两格。只有面积数值而无轮廓时，用面积-长度法估容积，此时才须补长径 L：双平面 V = 0.85·A4C·A2C/L（L 取两切面中较短的长径），A2C 缺省时按单平面 V = 0.85·A4C²/L；EF 仍由 (EDV − ESV)/EDV 计算。R2：心尖部心内膜显示不满意、影响轮廓勾画时可采用面积-长度法替代，这种方法的基础是假设 LV 为一弹头形。两种方法的结果不可互换。有 BSA 时同出 SVi 与 ESVi（ESVi 决定 ICD 指征）。' },
     { id: 'lvmass', title: '左室质量与几何构型',
       fields: [['lvid', 'LVIDd（舒张末内径）', 'cm'], ['ivs', 'IVSd（室间隔厚度）', 'cm'], ['lvpw', 'LVPWd（后壁厚度）', 'cm']],
       note: 'LV Mass = 0.8 × 1.04 × [(LVIDd+IVSd+LVPWd)³ − LVIDd³] + 0.6；RWT = 2×LVPWd/LVIDd。LVMI 上限男 115 / 女 95 g/m²' },
@@ -817,8 +828,10 @@
       fields: [['v2', '远端峰速 V₂', 'm/s'], ['v1', '近端峰速 V₁（可选）', 'm/s']],
       note: 'ΔP = 4(V₂² − V₁²)；缺省 V₁ 按 0 处理。瓣膜狭窄 / 反流定量见「瓣膜评估」页' },
     { id: 'atrial', title: '心房容积指数',
-      fields: [['lav', '左房容积', 'mL'], ['rav', '右房容积', 'mL']],
-      note: '容积 ÷ BSA；LAVI 正常 ≤34 mL/m²；右房正常值需匹配测量方法' },
+      fields: [['lav', '左房容积（双平面法）', 'mL'], ['rav', '右房容积', 'mL'],
+        ['la_ap', '左房前后径 D1（椭球法）', 'cm'], ['la_ml', '左房左右径 D2（椭球法）', 'cm'],
+        ['la_si', '左房上下径 D3（椭球法）', 'cm']],
+      note: '容积 ÷ BSA；LAVI 正常 ≤34 mL/m²；右房正常值需匹配测量方法。三个径线填齐时另按椭球法给 LAV = 0.523·D1·D2·D3 与 LAVI = LAV/BSA。R2：用椭球模型从 LA 的长宽高三个径值可计算出 LA 容积，但这种线性测量的误差较大、应用有限；LA 容积的测量应采用碟盘叠加模型的方法，双平面也可用面积-长度模型法（LAV = 0.85·A4C·A2C/L，取两切面中较短的长径）。LAVI >34 mL/m² 为 2016 ASE/EACVI 舒张功能四指标之一[R14]' },
     { id: 'vtir', sec: 'hemo', title: 'RVOT / LVOT VTI 比',
       fields: [['vtrvo', 'RVOT VTI', 'cm'], ['vtrlo', 'LVOT VTI', 'cm']],
       note: '正常 0.7–1.05；>1.2 提示左向右分流（可近似当 Qp/Qs），<0.6 提示肺血流减少。优点是不用测两处直径——直径平方的误差会被放大两次' },
@@ -903,7 +916,7 @@
       fields: [['dfe', 'E 峰', 'cm/s'], ['dfa', 'A 峰', 'cm/s'], ['dfes', '间隔 e′', 'cm/s'],
         ['dfel', '侧壁 e′', 'cm/s'], ['dflavi', 'LAVi（可选）', 'mL/m²'], ['dftrv', 'TR Vmax（可选）', 'm/s'],
         ['dfvp', 'Vp 血流传播速度（可选）', 'cm/s']],
-      note: '2016 简化路径与 ASE 2025（R39）结果同屏并列，两套不互相覆盖。2016：E/A ≥2，或 E/A ≤0.8 结合三个升高指标（平均 E/e′ >14、LAVi >34、TR Vmax >2.8），分 Ⅰ/Ⅱ/Ⅲ 级。2025（Figure 3）三条主判据：e′ 减低（间隔 ≤6 / 侧壁 ≤7 / 平均 ≤6.5 cm/s）、E/e′ 升高（间隔 ≥15 / 侧壁 ≥13 / 平均 ≥14）、TR Vmax ≥2.8 m/s；三项同满足为 LAP 升高（E/A <2 Ⅱ 级、≥2 Ⅲ 级），三项全正常为 LAP 正常、舒张功能正常，其余须补 LARS ≤18% / 肺静脉 S/D ≤0.67 / IVRT ≤70 ms / LAVi >34 或做舒张负荷超声。R39 把 LAVi 降为二线且要求排除运动员、贫血、房颤、二尖瓣病。同屏另给平均 E/e′（<8 正常、>14 升高）与 E/Vp（≤1.5 正常、>2.5 约 PCWP >18）；Vp 彩色 M 型四腔切面测（正常 ≥45 cm/s）。报告须写明分级与充盈压，不能定级时至少写 LAP 正常/升高；两套结论不一致时并列写明、不自行取舍，并注明各自版本' },
+      note: '2016 与 ASE 2025（R39）两套结果同屏并列、不互相覆盖。2016：E/A ≥2，或 E/A ≤0.8 结合平均 E/e′ >14、LAVi >34、TR Vmax >2.8 m/s，分 Ⅰ/Ⅱ/Ⅲ 级。2025（Figure 3）：e′ 减低（间隔 ≤6 / 侧壁 ≤7 / 平均 ≤6.5 cm/s）、E/e′ 升高（间隔 ≥15 / 侧壁 ≥13 / 平均 ≥14）、TR Vmax ≥2.8 m/s；三项同满足为 LAP 升高（E/A <2 Ⅱ 级、≥2 Ⅲ 级），三项全正常为 LAP 正常，其余补 LARS ≤18% / 肺静脉 S/D ≤0.67 / IVRT ≤70 ms / LAVi >34 或做舒张负荷超声。R39 中 LAVi 为二线指标。报告写明分级与充盈压；两套结论不一致时并列写明、注明版本。LAVI 测量与三径线椭球式见「心房容积指数」[R2]' },
 
     { id: 'sync', sec: 'recon', title: '心脏同步化（机械不同步）', rel: ['crt'],
       opts: [{ k: 'sy_flash', n: '室间隔闪动', list: [['n', '无'], ['y', '有']] },
@@ -1121,7 +1134,7 @@
     mr: 'PISA EROA · RVol · dP/dt',
     tr: 'EROA · RVol · TR 峰速 · IVC',
     flow: 'SV · CO · SVi · CI',
-    ef: 'Simpson 双平面 · EF · SVi · ESVi',
+    ef: 'Simpson 双平面 · 面积法 · EF · SVi · ESVi',
     lvmass: 'LV Mass · LVMI · RWT · 四分法',
     mapse: '二尖瓣环收缩期位移',
     dvi: 'LVOT VTI ÷ 主动脉瓣 VTI',
@@ -2610,7 +2623,7 @@
         html += segHtml('calccollapse', CALC_COLLAPSE, calcCollapse) +
           segHtml('calcsigns', CALC_SIGNS, calcSigns);
       }
-      html += '<div class="note">' + mdInline(g.note) + '</div>';
+      // ★ 2026-11-12：结果放在说明之前，长说明不再把结果挤到屏幕下方
       // ★ v1.8.3：合并页一个条目出多行结果（outs），普通条目仍是一行「结果」
       const outs = g.outs || [[g.id, '结果']];
       outs.forEach(function (o) {
@@ -2619,6 +2632,7 @@
           '<span class="calc-out__lbl">' + esc(o[1]) + '</span>' +
           '<span class="calc-out__v">等待输入</span></div>';
       });
+      html += '<div class="note">' + mdInline(g.note) + '</div>';
       // ★ v1.13.8：计算条目也挂「本条目引用」（此前只有判读条目有）
       // ★ v1.14.6：计算条目也能挂「相关内容」（g.rel），如肺动脉压 → 下腔静脉 / 右心评估
       html += briefRelHtml(g.rel) + briefRefsHtml(CALC_SRC[g.id]) + '</div>';
@@ -2918,12 +2932,23 @@
 
     // atrial
     const batrial = bsaOf('atrial', v);
-    if (batrial > 0 && (has('lav') || has('rav'))) {
+    {
       const parts = [];
-      if (has('lav')) parts.push('LAVI ' + Calc.fmt(v.lav / batrial) + ' mL/m²');
-      if (has('rav')) parts.push('RAVI ' + Calc.fmt(v.rav / batrial) + ' mL/m²');
+      if (batrial > 0) {
+        if (has('lav')) parts.push('LAVI ' + Calc.fmt(v.lav / batrial) + ' mL/m²');
+        if (has('rav')) parts.push('RAVI ' + Calc.fmt(v.rav / batrial) + ' mL/m²');
+      } else if (has('lav') || has('rav')) {
+        parts.push('请在本条填身高与体重（BSA 为 0 时无法计算指数）');
+      }
+      // 三径线椭球法（R2：线性测量误差较大、应用有限）
+      if (has('la_ap', 'la_ml', 'la_si')) {
+        const lr = Calc.laVolByDiameters(v.la_ap, v.la_ml, v.la_si, batrial);
+        parts.push('椭球法 LAV ' + Calc.fmt(lr.lav, 1) + ' mL' +
+          (lr.lavi !== undefined ? ' / LAVI ' + Calc.fmt(lr.lavi, 1) + ' mL/m²' : '') +
+          '（R2：线性测量误差较大、应用有限）');
+      }
       put('atrial', partsOf(parts));
-    } else put('atrial');
+    }
 
     const female = state.sex === 'female';
 
@@ -2940,6 +2965,26 @@
         if (r.text) parts.push('→ ' + r.text);
         put('ef', partsOf(parts));
       }
+    } else if (has('ef_a4cd', 'ef_ld', 'ef_a4cs', 'ef_ls')) {
+      // 双平面 / 单平面面积-长度法：由描迹面积估容积再算 EF
+      const r = Calc.areaLengthEf({
+        a4cd: v.ef_a4cd, a2cd: v.ef_a2cd, ld: v.ef_ld,
+        a4cs: v.ef_a4cs, a2cs: v.ef_a2cs, ls: v.ef_ls, bsa: bsaOf('ef', v),
+      });
+      if (r.error) put('ef', r.error);
+      else {
+        const parts = [r.method,
+          'EDV ' + Calc.fmt(r.edv, 1) + ' mL', 'ESV ' + Calc.fmt(r.esv, 1) + ' mL',
+          'EF ' + Calc.fmt(r.ef, 1) + '%', 'SV ' + Calc.fmt(r.sv, 1) + ' mL'];
+        if (r.svi !== undefined) {
+          parts.push('SVi ' + Calc.fmt(r.svi, 1) + ' mL/m²');
+          parts.push('ESVi ' + Calc.fmt(r.esvi, 1) + ' mL/m²');
+        }
+        if (r.text) parts.push('→ ' + r.text);
+        put('ef', partsOf(parts));
+      }
+    } else if (has('ef_a4cd', 'ef_a4cs')) {
+      put('ef', '面积-长度法还需填舒张末与收缩末长径 L；若机器已给 EDV / ESV，请填上方两格');
     } else put('ef');
 
     // 左室质量与几何构型
@@ -4935,10 +4980,10 @@
   /* 启动 */
 
   function boot() {
-    // 基本参数默认值
-    $('inHeight').value = state.height;
-    $('inWeight').value = state.weight;
-    idxRestore();          // 点过「记住」的话，用存档覆盖默认值
+    // ★ 默认不预填成人 170 / 65：只有点过「记住本次输入」才由 idxRestore 恢复
+    $('inHeight').value = '';
+    $('inWeight').value = '';
+    idxRestore();          // 点过「记住」的话，用存档覆盖；否则保持全空
     $('appbarTitle').textContent = TAB_TITLE[currentTab];
 
     buildCalcInputs();

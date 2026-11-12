@@ -504,7 +504,21 @@ console.log('\n=== 21. 合并后首页（EF 计算 + 参考值同页）===');
   pg.setData = function (patch) { Object.assign(this.data, patch); };
   pg.onLoad();
 
-  check('首屏默认值即出 EF 结果', pg.data.hasResult ? 1 : 0, 1, 0);
+  // ★ 2026-11-12 用户明确「我是要清空，不是默认是那些值」：
+  //   未勾选「记住」时首屏不预填 170/65 与 50/32/9/9，也不预出 EF 结果。
+  const idxEmpty = ['height', 'weight', 'lvedd', 'lvesd', 'ivsd', 'lvpwd']
+    .every(function (k) { return pg.data[k] === ''; });
+  check('未勾选「记住」时首屏 6 个数值输入全空', idxEmpty ? 1 : 0, 1, 0);
+  check('首屏不预填 EF 结果', pg.data.hasResult ? 0 : 1, 1, 0);
+
+  // 模拟用户录入一组测值后，原有 EF 计算回归照旧
+  pg.data.lvedd = '50'; pg.data.lvesd = '32';
+  pg.data.ivsd = '9';   pg.data.lvpwd = '9';
+  pg.data.height = '170'; pg.data.weight = '65';
+  pg.refresh();
+  pg.doCalc();
+
+  check('录入测值后出 EF 结果', pg.data.hasResult ? 1 : 0, 1, 0);
   check('EF = 65.4%', parseFloat(pg.data.r.EF), 65.4, 0.05);
   check('参考值列表切到实测值对照', pg.data.hasMeasurements ? 1 : 0, 1, 0);
   check('成人 CN 参考值 64 行', pg.data.rows.length, 64, 0);
@@ -2310,6 +2324,37 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   // 用户明确要求静默：更新时不弹窗（版本更新频繁，弹窗是噪音）
   check('更新过程不弹窗（app.js 内无 showModal）',
     appJs9.indexOf('showModal') === -1 ? 1 : 0, 1, 0);
+  // ★ 2026-11-12：EF 页未勾选「记住」时全部数值输入清空，不预填默认值
+  const pgJsIdx10 = fs9.readFileSync(__dirname + '/miniprogram/pages/index/index.js', 'utf8');
+  check('EF 页 data 不再写死 170/65 与 50/32/9/9',
+    pgJsIdx10.indexOf("height: '170'") === -1 && pgJsIdx10.indexOf("lvedd: '50'") === -1 &&
+    pgJsIdx10.indexOf("height: ''") !== -1 && pgJsIdx10.indexOf("lvedd: ''") !== -1 ? 1 : 0, 1, 0);
+  check('EF 页 onLoad 未勾选时 fallback 为空串（不回落 profile / measurements）',
+    pgJsIdx10.indexOf("pick('height', '')") !== -1 &&
+    pgJsIdx10.indexOf("pick('lvedd', '')") !== -1 &&
+    pgJsIdx10.indexOf('pick(\'lvedd\', m &&') === -1 ? 1 : 0, 1, 0);
+  // ★ 2026-11-12：双平面面积法 EF 与左房三径线椭球法，三端同构
+  const cg10 = fs9.readFileSync(__dirname + '/miniprogram/utils/calc-groups.js', 'utf8');
+  const fm10 = fs9.readFileSync(__dirname + '/miniprogram/pages/formula/formula.js', 'utf8');
+  const web10 = fs9.readFileSync(__dirname + '/android-app/app.js', 'utf8');
+  check('ef 条目 6 个面积法输入键 mp / web 两份同改',
+    ['ef_a4cd', 'ef_a2cd', 'ef_ld', 'ef_a4cs', 'ef_a2cs', 'ef_ls']
+      .every(function (k) { return cg10.indexOf(k) !== -1 && web10.indexOf(k) !== -1; }) ? 1 : 0, 1, 0);
+  check('面积法结果装配两份（mp formula.js + web app.js）',
+    fm10.indexOf('calc.areaLengthEf') !== -1 && web10.indexOf('Calc.areaLengthEf') !== -1 ? 1 : 0, 1, 0);
+  check('左房三径线计算装配两份 + mp fields 有 la_ap',
+    fm10.indexOf('calc.laVolByDiameters') !== -1 &&
+    web10.indexOf('Calc.laVolByDiameters') !== -1 &&
+    cg10.indexOf("'la_ap'") !== -1 ? 1 : 0, 1, 0);
+  // ★ 2026-11-12：长说明不再压住结果（mp wxml / web 渲染两处同改）
+  const fw10 = fs9.readFileSync(__dirname + '/miniprogram/pages/formula/formula.wxml', 'utf8');
+  const iOut10 = fw10.indexOf('class="calc-out');
+  const iNote10 = fw10.indexOf('wx:if="{{noteSegs.length}}" class="note"');
+  check('mp 计算卡结果排在说明之前',
+    iOut10 >= 0 && iNote10 > iOut10 ? 1 : 0, 1, 0);
+  check('web 计算卡结果排在说明之前',
+    web10.indexOf("html += '<div class=\"note\">'") >
+    web10.indexOf("html += '<div class=\"calc-out'") ? 1 : 0, 1, 0);
 }
 
 console.log(`\n${'='.repeat(46)}`);

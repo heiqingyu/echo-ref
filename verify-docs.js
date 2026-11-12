@@ -139,6 +139,15 @@ function check(name, ok, detail) {
   check('顶栏标题为 EF·参考值',
     (await c.evalJs('document.getElementById("appbarTitle").textContent')) === 'EF·参考值');
 
+  // ★ 2026-11-12 用户明确「我是要清空，不是默认是那些值」：
+  //   未勾选「记住本次输入」时，重新加载不预填 170/65、50/32/9/9
+  const idxInit = await c.evalJs(
+    'JSON.stringify(["efLvedd","efLvesd","efIvsd","efLvpwd","inHeight","inWeight"]' +
+    '.map(function(id){return document.getElementById(id).value;}))');
+  const idxInitVals = JSON.parse(idxInit);
+  check('未勾选「记住」时 EF 页 6 个数值输入框默认全空',
+    idxInitVals.every(function (v) { return v === ''; }), idxInit);
+
   // 合并的关键：EF 计算卡片必须排在参考值列表之前
   const order = await c.evalJs(
     '(function(){var k=[].slice.call(document.querySelectorAll("#page-index > *"));' +
@@ -150,6 +159,9 @@ function check(name, ok, detail) {
     'EF 序号 ' + ord[0] + ' / 参考值序号 ' + ord[1]);
 
   // ── EF 计算部分 ──
+  // ★ 身高体重现在默认全空（用户 2026-11-12 要求清空），本段需要有效 BSA 才能测
+  //   「改身高后 LVM/BSA 联动」，故显式录入一组成人值；未勾选「记住」不会落盘。
+  await set('inHeight', 170); await set('inWeight', 65);
   await set('efLvedd', 50); await set('efLvesd', 32);
   await set('efIvsd', 9);   await set('efLvpwd', 9);
   await new Promise((r) => setTimeout(r, 600));
@@ -1315,6 +1327,42 @@ function check(name, ok, detail) {
   check('目录出现合并后的计算组',
     ['血流动力学、舒张与心功能', '右心与肺循环', '重构、室壁运动与心肌功能'].every((t) => newGroupTitles.indexOf(t) !== -1),
     newGroupTitles);
+
+  // ★ 2026-11-12：双平面面积-长度法算 EF、左房三径线椭球法算 LAVI（实填）
+  await openCalc('ef');
+  await fillCalc('ef', 'ef_a4cd', 35);
+  await fillCalc('ef', 'ef_a2cd', 32);
+  await fillCalc('ef', 'ef_ld', 8.5);
+  await fillCalc('ef', 'ef_a4cs', 18);
+  await fillCalc('ef', 'ef_a2cs', 16);
+  await fillCalc('ef', 'ef_ls', 7.5);
+  await new Promise((r) => setTimeout(r, 350));
+  const efAreaOut = await outOf('ef');
+  check('双平面面积法实填出 EDV 111.8 mL / EF 70.9%',
+    efAreaOut.indexOf('双平面面积-长度法') !== -1 &&
+    efAreaOut.indexOf('EDV 111.8 mL') !== -1 &&
+    efAreaOut.indexOf('EF 70.9%') !== -1, efAreaOut);
+
+  await openCalc('atrial');
+  await fillCalc('atrial', 'la_ap', 4.0);
+  await fillCalc('atrial', 'la_ml', 4.0);
+  await fillCalc('atrial', 'la_si', 5.0);
+  await new Promise((r) => setTimeout(r, 350));
+  const laOut = await outOf('atrial');
+  check('左房三径线椭球法实填出 LAV 41.9 mL',
+    laOut.indexOf('椭球法 LAV 41.9 mL') !== -1, laOut);
+
+  // ★ 2026-11-12：结果排在长说明之前（说明块精简后仍不能把结果挤下去）
+  await openCalc('dfun');
+  const orderDfun = await c.evalJs(`(function(){
+    var card=document.querySelector('#calcGroups .card[data-g="dfun"]');
+    if(!card) return 'no-card';
+    var out=card.querySelector('.calc-out'), note=card.querySelector('.note');
+    if(!out||!note) return 'missing';
+    return (out.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING) ? 'out-first' : 'note-first';
+  })()`);
+  check('计算卡结果排在说明之前', orderDfun === 'out-first', orderDfun);
+  await backToList();
 
   // v1.10.5：左心补几何构型四分法与肥厚病因四联；右心补四种耦联写法与决策用法
   const briefText = async (gid) => await c.evalJs(

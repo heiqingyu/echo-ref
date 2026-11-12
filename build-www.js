@@ -385,11 +385,11 @@ const html = `<!DOCTYPE html>
       <div class="row">
         <div class="field">
           <label class="field__l">身高 / cm</label>
-          <input class="field__i" type="number" inputmode="decimal" id="inHeight" value="170" step="0.1">
+          <input class="field__i" type="number" inputmode="decimal" id="inHeight" placeholder="如 170" step="0.1">
         </div>
         <div class="field">
           <label class="field__l">体重 / kg</label>
-          <input class="field__i" type="number" inputmode="decimal" id="inWeight" value="65" step="0.1">
+          <input class="field__i" type="number" inputmode="decimal" id="inWeight" placeholder="如 65" step="0.1">
         </div>
       </div>
       <div class="field">

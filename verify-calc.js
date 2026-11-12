@@ -735,5 +735,25 @@ check('AUC QRS 130 + LBBB：AUC 判 A、ESC 指南判 Ⅱa（两套口径分歧�
 check('crtIndication 带出 aucText',
   C.crtIndication({ lvef: 30, qrs: 160, lbbb: true, nyha: 2 }).aucText.indexOf('AUC 2025 适用') === 0 ? 'ok' : 'bad', 'ok');
 
+/* ══ 面积-长度法 EF / 左房三径线椭球法（R2 2015，2026-11-12）══ */
+console.log('\n=== 面积-长度法 EF / 左房三径线椭球法 ===');
+const ae = C.areaLengthEf({ a4cd: 35, a2cd: 32, ld: 8.5, a4cs: 18, a2cs: 16, ls: 7.5 });
+check('双平面 EDV = 0.849×35×32/8.5 = 111.8 mL', C.round(ae.edv, 1), 111.8, 0.05);
+check('双平面 ESV = 0.849×18×16/7.5 = 32.6 mL', C.round(ae.esv, 1), 32.6, 0.05);
+check('双平面 EF = 70.9%', C.round(ae.ef, 1), 70.9, 0.05);
+check('双平面标识为 biplane', ae.mode, 'biplane');
+check('双平面方法名', ae.method, '双平面面积-长度法');
+const ae1 = C.areaLengthEf({ a4cd: 35, ld: 8.5, a4cs: 18, ls: 7.5 });
+check('A2C 缺省走单平面 V = 0.849×A4C²/L', C.round(ae1.edv, 1), 122.3, 0.05);
+check('单平面标识为 monoplane', ae1.mode, 'monoplane');
+const ae2 = C.areaLengthEf({ a4cd: 35, a2cd: 32, ld: 8.5, a4cs: 40, a2cs: 36, ls: 8.5 });
+check('ESV ≥ EDV 时给描迹核对提示',
+  (ae2.error || '').indexOf('ESV') !== -1 ? 'ok' : 'bad', 'ok');
+const lv3 = C.laVolByDiameters(4.0, 4.0, 5.0, 1.75);
+check('三径线 LAV = 0.523×4×4×5 = 41.9 mL', C.round(lv3.lav, 1), 41.9, 0.05);
+check('三径线 LAVI = 41.9/1.75 = 23.9 mL/m²', C.round(lv3.lavi, 1), 23.9, 0.05);
+check('BSA 缺省时只给 LAV、不给 LAVI',
+  typeof C.laVolByDiameters(4, 4, 5, 0).lavi === 'undefined' ? 'ok' : 'bad', 'ok');
+
 console.log('\n结果：' + pass + ' 通过 / ' + fail + ' 失败');
 process.exit(fail ? 1 : 0);

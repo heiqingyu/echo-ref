@@ -567,14 +567,21 @@ Page({
       }
     } else if (gid === 'atrial') {
       // —— atrial ——
+      const parts = [];
       if (bsa > 0) {
-        const parts = [];
         if (valid(v.lav)) parts.push('LAVI ' + calc.fmt(v.lav / bsa) + ' mL/m²');
         if (valid(v.rav)) parts.push('RAVI ' + calc.fmt(v.rav / bsa) + ' mL/m²');
-        out = parts.join('；');
       } else if (valid(v.lav) || valid(v.rav)) {
-        out = '请在本条填身高与体重（BSA 为 0 时无法计算指数）';
+        parts.push('请在本条填身高与体重（BSA 为 0 时无法计算指数）');
       }
+      // 三径线椭球法（R2：线性测量误差较大、应用有限）
+      if (valid(v.la_ap, v.la_ml, v.la_si)) {
+        const lr = calc.laVolByDiameters(v.la_ap, v.la_ml, v.la_si, bsa);
+        parts.push('椭球法 LAV ' + calc.fmt(lr.lav, 1) + ' mL' +
+          (lr.lavi !== undefined ? ' / LAVI ' + calc.fmt(lr.lavi, 1) + ' mL/m²' : '') +
+          '（R2：线性测量误差较大、应用有限）');
+      }
+      out = parts.join('；');
     } else if (gid === 'ef') {
       // —— 左室容积与射血分数 ——
       if (valid(v.edv, v.esv)) {
@@ -589,6 +596,26 @@ Page({
           if (r.text) parts.push('→ ' + r.text);
           out = parts.join('；');
         }
+      } else if (valid(v.ef_a4cd, v.ef_ld, v.ef_a4cs, v.ef_ls)) {
+        // 双平面 / 单平面面积-长度法：由描迹面积估容积再算 EF
+        const r = calc.areaLengthEf({
+          a4cd: v.ef_a4cd, a2cd: v.ef_a2cd, ld: v.ef_ld,
+          a4cs: v.ef_a4cs, a2cs: v.ef_a2cs, ls: v.ef_ls, bsa: bsa,
+        });
+        if (r.error) out = r.error;
+        else {
+          const parts = [r.method,
+            'EDV ' + calc.fmt(r.edv, 1) + ' mL', 'ESV ' + calc.fmt(r.esv, 1) + ' mL',
+            'EF ' + calc.fmt(r.ef, 1) + '%', 'SV ' + calc.fmt(r.sv, 1) + ' mL'];
+          if (r.svi !== undefined) {
+            parts.push('SVi ' + calc.fmt(r.svi, 1) + ' mL/m²');
+            parts.push('ESVi ' + calc.fmt(r.esvi, 1) + ' mL/m²');
+          }
+          if (r.text) parts.push('→ ' + r.text);
+          out = parts.join('；');
+        }
+      } else if (valid(v.ef_a4cd, v.ef_a4cs)) {
+        out = '面积-长度法还需填舒张末与收缩末长径 L；若机器已给 EDV / ESV，请填上方两格';
       }
     } else if (gid === 'lvmass') {
       // —— 左室质量与几何构型 ——
