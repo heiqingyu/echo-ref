@@ -741,8 +741,8 @@ html, body {
   vertical-align: 1px;
 }
 
-/* 结果行上的来源徽章（冠脉主行「深圳 SZ」/ 次行「四川 2025」）——
-   主行不标来源时，只有次行写「四川 2025」，看着像主行没出处（用户 2026-11-06 反馈） */
+/* 结果行上的来源徽章（冠脉主行「PHN · 共识」）——
+   主行不标来源时，只有对照行写来源，看着像主行没出处（用户 2026-11-06 反馈） */
 .zrow__src {
   display: inline-block;
   margin-left: 4px;
@@ -753,6 +753,15 @@ html, body {
   background: #eff4ff;
   border-radius: 4px;
   vertical-align: 1px;
+}
+
+/* 冠脉主行：AHA 2017 风险分级（小字，跟在 Z 值下面） */
+.zrow__aha {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: #1d4ed8;
 }
 
 /* ★ v1.8.1：新生儿体重法 17 行 —— 参数名偏长，收窄实测 / Z 列，把宽度让给名字与区间 */
@@ -2677,7 +2686,7 @@ button.fx-nav__c {
         Teichholz 法假设左室为对称椭球体，在室壁瘤、显著扩大等形态异常时准确性下降，建议改用双平面 Simpson 法。
       </div>
     </div>
-    <div class="verline">心脏超声参考值 · v1.16.2</div>
+    <div class="verline">心脏超声参考值 · v1.16.3</div>
   </section>
 
   <!-- ───── Tab3 其他计算（公式集） ───── -->
@@ -2735,7 +2744,7 @@ button.fx-nav__c {
         <div id="aliasList" hidden></div>
       </div>
 
-      <div class="verline">心脏超声参考值 · v1.16.2</div>
+      <div class="verline">心脏超声参考值 · v1.16.3</div>
       <div class="note note--warn">
         公式与分级阈值以各条目备注的具体出处为准（主要依据 ASE/EACVI、ESC/ERS 等指南及 Hatle、Abbas 等经验公式）。仅供速查与学习，不构成诊断依据。
       </div>
@@ -2990,14 +2999,15 @@ button.fx-nav__c {
     <!-- ⑥ 说明与来源：全页所有解释文字集中在此，正文里不再零散散布 -->
     <div class="card" id="pdInfo">
       <div class="card__t">说明与来源</div>
-      <div class="card__d">五套参照各管一段、Z 值怎么算、冠脉两行什么意思、本页没有哪些参数 —— 都在这一块。</div>
+      <div class="card__d">五套参照各管一段、Z 值怎么算、冠脉三行什么意思、本页没有哪些参数 —— 都在这一块。</div>
       <button class="btn btn--ghost" id="pdInfoBtn">展开说明</button>
       <div id="pdInfoBody" hidden>
         <div class="note">
           <b>一、Z 值怎么算</b><br>
           PHN 项：Z = ( 实测值 ÷ BSA<sup>α</sup> − Mean ) ÷ SD<br>
           中国方程项：Z = ( 实测值 − M ) ÷ SD，M 为 BSA 的三次多项式<br>
-          冠脉项：Z = [ ln(实测值) − ( a + b·ln BSA ) ] ÷ RSE（对数尺度，故 ±2SD 区间不对称）<br>
+          冠脉主行（PHN）：Z = ( 实测 mm ÷ BSA<sup>0.45</sup> − Mean ) ÷ SD，±2SD 区间上下对称<br>
+          冠脉对照行（深圳 / 四川）：Z = [ ln(实测值) − ( a + b·ln BSA ) ] ÷ RSE（对数尺度，±2SD 区间不对称）<br>
           BSA 用 Haycock：0.024265 × 身高(cm)<sup>0.3964</sup> × 体重(kg)<sup>0.5378</sup>。
           |Z| ≤ 2 覆盖约 95% 健康儿童；Z = 0 即人群均值。
         </div>
@@ -3006,19 +3016,18 @@ button.fx-nav__c {
           ① 左室、大血管、瓣环 → PHN（n=3566，多种族）<br>
           ② 左房左右径、右房左右径、右室流入道内径 → 中国汉族儿童（n=545 / 515，2D·心尖四腔）<br>
           ③ 左房前后径、右室前后径、右室前壁 → Kampmann 2000（中欧 n=2036，M 型）<br>
-          ④ 冠状动脉 → 深圳 SZ 法为主（n=842，1 月龄–17 岁），四川 2025 为辅（n=744，0–18 岁，含左回旋支）<br>
+          ④ 冠状动脉 → 主行 PHN（n=3566，R83 共识指定），深圳 SZ（n=842）与四川 2025（n=744）为国内对照<br>
           ⑤ 新生儿 17 项 → 深圳 2014（n=288，0–28 天，<b>体重法</b>，不经 BSA）<br>
           五套的人群、测量方法与建模变量都不同，同一患儿只取实际所用切面对应的一套判读。
         </div>
         <div class="note">
-          <b>三、冠脉两行是什么</b><br>
-          主行＝深圳 SZ 法（6 省 9 中心，对数线性 n=842）；次行＝四川 2025（四川省人民医院 n=744，四段齐全）。
-          同一测值可差 1 个 Z 以上（LAD 2.6 mm、BSA 1.0：深圳 +1.25「正常」/ 四川 +2.43「轻度增大」），
-          临界值时两行都要看，<b>不可跨套比较</b>。<br>
-          ★ 深圳儿童医院自家小程序用的是夏焙团队 2012/2013 方程，与本页两套都不同源；
-          同一测值可再差 0.5–1 个 Z（90 cm / 9 kg、LCA 2.2 mm：该小程序 −0.105、本页深圳法约 +0.54）。
-          这不是算错，是参照人群不同 —— 同一患儿随访请固定用同一套。<br>
-          ★ SZ 队列不含 0–28 天新生儿，BSA &lt; 0.23 时该行标「外推」。
+          <b>三、冠脉三行是什么</b><br>
+          主行＝PHN 北美公式（R83 2025 中国专家共识指定，Lopez 2017，19 中心 n=3566，0–18 岁），
+          配 AHA 2017 川崎病风险分层；对照行＝深圳 SZ（Fan 2021，n=842）与四川 2025（n=744，含左回旋支）。
+          主行按 BSA 幂律、加性 SD；对照行按 ln 尺度、乘性区间。同一测值的 Z 可差 1 个以上
+          （LAD 2.6 mm、BSA 1.0：PHN +2.06「扩张」/ 深圳 +1.25「正常」/ 四川 +2.43「轻度增大」），
+          故对照行不可套用 AHA 阈值，<b>不可跨套比较</b>。<br>
+          ★ PHN 与四川覆盖 0–18 岁；深圳 SZ 不含 0–28 天新生儿，BSA &lt; 0.23 时该行标「外推」。
         </div>
         <div class="note">
           <b>四、冠脉怎么测（2025 中国共识）</b><br>
@@ -3045,7 +3054,7 @@ button.fx-nav__c {
           <b>七、新生儿体重法为什么单独一套</b><br>
           Z = [ ln(实测) − ln(预测均值) ] ÷ s̄x。s̄x 是对数尺度残差（≈变异系数），
           所以 ±2SD 区间乘性：均值 × e^±2s̄x，上下不对称，不能写成「均值 ± 2SD」。
-          本组不含冠脉（原文 39 项里没有），新生儿冠脉目前无中国公开方程。
+          本组不含冠脉（原文 39 项里没有）；新生儿冠脉可用主行 PHN（覆盖 0–18 岁），中国公开方程目前仍缺。
         </div>
         <div class="note note--warn">
           <b>文献</b><br>
@@ -3055,9 +3064,10 @@ button.fx-nav__c {
         <div id="pdRefs"></div>
         <div class="note note--strong">
           <b>冠脉默认口径</b><br>
-          国内无统一标准（2025 中国专家共识）。本页默认显示深圳 SZ（R79，6 省 9 中心 842 例）；
-          点冠脉组「显示另一套」可并列四川 2025（R119），LCX 深圳未测处用四川。
-          两套按 ln 尺度建模，±2SD 上下不对称；同一患儿随访请固定一套，勿跨套比较。
+          2025 中国专家共识（R83）指定 PHN 北美冠脉 Z 值公式与 AHA 2017 风险分层；
+          本页冠脉主行默认显示 PHN（R8，Lopez 2017，19 中心 3566 例）。
+          点「显示国内两套对照」并列深圳 SZ（R79）与四川 2025（R119），两套按 ln 尺度建模，
+          不可套用 AHA 阈值；LCX 无 PHN 常模，该行用四川。同一患儿随访固定同一套，勿跨套比较。
         </div>
       </div>
     </div>
@@ -4121,7 +4131,9 @@ function fmt(n, dec) {
  *  Pediatric Heart Network（PHN）Normal Echocardiogram Database
  *  Lopez L, Colan S, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979.
  *  n = 3566，0–18 岁健康非肥胖儿童，19 个中心，Core Lab 统一测量。
- *  系数表公开于 https://www.pediatricheartnetwork.org/forresearchers/echo-z-scores/
+ *  系数表公开于 https://www.pediatricheartnetwork.org/echo-z-scores/
+ *  ★ 该表含冠脉三行（LMCA / LAD / RCA，单位 mm）。2025 中国专家共识（R83）
+ *    指定 PHN 北美冠脉 Z 值公式 + AHA 2017 风险分层，本模块冠脉主行据此恢复。
  *
  *  LVESD / LVESV 两项系数来自该数据库的后续补充发表：
  *  Cantinotti M, et al. / PHN 方法论扩展（PMC7870534）
@@ -4205,11 +4217,10 @@ const PEDS_Z = {
   ARCHD:  { a: 0.50, mean: 1.36,  sd: 0.19,  unit: 'cm', name: '主动脉弓远端内径' },
   ISTH:   { a: 0.50, mean: 1.25,  sd: 0.18,  unit: 'cm', name: '主动脉峡部内径' },
 
-  // ── 冠状动脉（不走 PHN！见 3b-3：两套中国儿童方程，对数尺度）────
-  //   ★ 2026-11-06 改：原来这三项挂的是 α=0.45 的幂律系数，但 PHN 数据集
-  //     根本没测冠脉（Lopez 2017 的 21 个结构里没有冠脉），那组数没有可核的
-  //     出处，且与深圳儿童医院小程序的差值可达 1 个 Z。现改为
-  //     「深圳 SZ（Fan 2021）」为主、「四川（王永 2025）」为辅，两篇都能逐字核。
+  // ── 冠状动脉（主行 PHN 幂律；深圳 SZ / 四川 2025 为对照，对数尺度）────
+  //   ★ 2026-11-12 更正：PHN 官网系数表确有 LMCA / LAD / RCA 三行（单位 mm），
+  //     R83 [20] 即 Lopez 2017。旧注「PHN 没测冠脉、系数无出处」是误判
+  //     （把 Pettersen 2008 的 21 个结构套到 Lopez 2017 头上），已作废。
   LMCA:   { model: 'cor', unit: 'mm', dec: 1, name: '左冠主干内径' },
   LAD:    { model: 'cor', unit: 'mm', dec: 1, name: '左前降支近段内径' },
   LCX:    { model: 'cor', unit: 'mm', dec: 1, name: '左回旋支近段内径' },
@@ -4489,9 +4500,10 @@ const PEDS_GROUPS = [
     title: '冠状动脉',
     keys: ['LMCA', 'LAD', 'LCX', 'RCA'],
     cor: true,   // ★ 只有本组带「显示另一套」切换按钮（2026-11-08）
-    note: '★ 默认主行＝深圳 SZ（R79，6 省 9 中心 n=842）；点「显示另一套」展开四川 2025（R119，n=744）。' +
-      'LCX 深圳队列未测，该行即四川、无次行。两套均按 ln 尺度建模，±2SD 为乘性区间、上下不对称。' +
-      '★ 两套不可跨套比较：同一患儿随访请始终固定同一套。',
+    note: '★ 默认主行＝PHN 北美公式（R83 2025 中国专家共识指定，Lopez 2017，19 中心 3566 例）；' +
+      'AHA 2017 风险分层：2≤Z<2.5 扩张、2.5≤Z<5 小型瘤、5≤Z<10 且绝对值<8 mm 中型瘤、Z≥10 或 ≥8 mm 巨大瘤。' +
+      '点「显示国内两套对照」并列深圳 SZ（R79）与四川 2025（R119）；两者按 ln 尺度建模，不可套用 AHA 阈值。' +
+      'LCX 无 PHN 常模，该行主行即四川 2025。★ 各套不可跨套比较：同一患儿随访请始终固定同一套。',
   },
   { title: '肺动脉', keys: ['PVSAX', 'PVLAX', 'MPA', 'RPA', 'LPA'] },
   { title: '二尖瓣', keys: ['MVAP', 'MVLAT', 'MVA'] },
@@ -4777,21 +4789,86 @@ function buildCsmcRow(key, def, bsa, measured, hasBsa) {
 }
 
 /**
- * 冠脉行的主/次两套中国方程（对数线性）
+ * 冠脉主行：PHN 北美公式（R83 共识指定）
  *
- * ★ 2026-11-06 重组：原来主行是「PHN 幂律（α=0.45）」、次行是深圳 SZ。
- *   PHN 数据集并没有冠脉，那组系数查不到出处；且与深圳儿童医院小程序的
- *   差值可达 1 个 Z（90 cm/9 kg、LCA 2.2 mm：本页旧值 +0.24，深圳小程序 −0.105）。
- *   现改为两套都能逐字核原文的中国队列：
- *     主行 深圳 SZ（Fan 2021，6 省 9 中心 n=842，1 月龄–17 岁）—— 深圳儿童医院牵头
- *     次行 四川 SC（王永 2025，n=744，0–18 岁，四段齐全）
- *   LCX 只有四川这套，故 LCX 以四川为主行、无次行。
+ * 系数逐字取自 PHN 官网 Echo Z-Scores 表（α / Mean / SD），单位 **mm**：
+ *   Z = ( 实测 mm / BSA^α − Mean ) / SD，α 三段均为 0.45，BSA 用 Haycock。
+ *   LMCA 2.95 / 0.57；LAD（近段）1.90 / 0.34；RCA（近段）2.32 / 0.55。
+ * 出处：Lopez L, Colan S, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979（R8 / R83 [20]）。
+ * ★ 官网表只有三段，**没有 LCX**；LCX 仍用四川 2025 为主行。
+ * ★ 单位陷阱：本表其余内径系数是 cm，唯独冠脉是 mm，不可再 ÷10。
  */
-const COR_PRIMARY = { LMCA: 'sz', LAD: 'sz', LCX: 'sc', RCA: 'sz' };
+const COR_PHN = {
+  LMCA: { a: 0.45, mean: 2.95, sd: 0.57, unit: 'mm' },
+  LAD:  { a: 0.45, mean: 1.90, sd: 0.34, unit: 'mm' },
+  RCA:  { a: 0.45, mean: 2.32, sd: 0.55, unit: 'mm' },
+};
+
+/** 主行归属：三段走 PHN，LCX 无北美常模走四川 2025 */
+const COR_PRIMARY = { LMCA: 'phn', LAD: 'phn', LCX: 'sc', RCA: 'phn' };
 
 /** 模型表取用：'sz' → SZ_Z，'sc' → SC_Z */
 function corModel(model, key) {
   return model === 'sz' ? SZ_Z[key] : SC_Z[key];
+}
+
+/** PHN 冠脉：给 BSA 求均值 / SD 与 ±2 / ±3SD 区间（加性、上下对称） */
+function phnCorAt(d, bsa) {
+  if (!d || !bsa || bsa <= 0) return null;
+  const k = Math.pow(bsa, d.a);
+  const mean = d.mean * k;
+  const sd = d.sd * k;
+  return {
+    mean: mean, sd: sd,
+    lo2: Math.max(0, mean - 2 * sd), hi2: mean + 2 * sd,
+    lo3: Math.max(0, mean - 3 * sd), hi3: mean + 3 * sd,
+  };
+}
+
+/** Z = ( 实测 − Mean×BSA^α ) / ( SD×BSA^α ) */
+function phnCorZ(d, t, value) {
+  if (!d || !t || !(value > 0)) return null;
+  return (value - t.mean) / t.sd;
+}
+
+/** PHN 行渲染字段（与 logView 同形，界面无需分支） */
+function phnCorView(d, bsa, raw, hasValue) {
+  const t = (bsa && bsa > 0) ? phnCorAt(d, bsa) : null;
+  const z = (t && hasValue) ? phnCorZ(d, t, raw) : null;
+  const g = gradeZ(z);
+  const rng = function (k) {
+    if (!t) return '—';
+    return fmt(k === 2 ? t.lo2 : t.lo3, 2) + ' – ' + fmt(k === 2 ? t.hi2 : t.hi3, 2);
+  };
+  return {
+    z: z === null ? null : round(z, 2),
+    zText: z === null ? '—' : (z > 0 ? '+' : '') + fmt(z, 2),
+    status: g.level,
+    statusText: g.text,
+    statusCls: g.cls,
+    meanText: t ? fmt(t.mean, 2) + ' mm' : '—',
+    sdText: t ? 'SD ' + fmt(t.sd, 2) + ' mm' : '—',
+    subText: t ? fmt(t.mean, 2) + ' mm' : '—',
+    rangeText: rng(2),
+    range3Text: rng(3),
+    mulText: '—',
+    r2Text: 'α=' + d.a.toFixed(2),
+    rseText: '加性 SD',
+  };
+}
+
+/**
+ * AHA 2017 川崎病冠脉风险分层（R83 原文，配 PHN Z 值；绝对值单位 mm）
+ * 2≤Z<2.5 扩张 / 2.5≤Z<5 小型瘤 / 5≤Z<10 且 <8 mm 中型瘤 / Z≥10 或 ≥8 mm 巨大瘤
+ */
+function ahaGrade(z, valueMm) {
+  if (z === null || z === undefined || isNaN(z)) return '';
+  const v = Number(valueMm) || 0;
+  if (z >= 10 || v >= 8) return 'AHA：巨大冠状动脉瘤';
+  if (z >= 5) return 'AHA：中型冠状动脉瘤';
+  if (z >= 2.5) return 'AHA：小型冠状动脉瘤';
+  if (z >= 2) return 'AHA：冠状动脉扩张';
+  return 'AHA：未达扩张阈值';
 }
 
 /**
@@ -4853,43 +4930,57 @@ function buildCoronaryRow(key, def, bsa, measured, hasBsa) {
   const v = pickValue(measured, key);
   const raw = v.hasValue ? parseFloat(v.raw) : null;
   const dec = def.dec === undefined ? 1 : def.dec;
+  const pm = COR_PRIMARY[key];
+  const isPhn = pm === 'phn';
 
-  const pm = COR_PRIMARY[key] === 'sc' ? 'sc' : 'sz';
-  const pModel = corModel(pm, key);
-  const pT = (hasBsa && pModel) ? logAt(pModel, bsa) : null;
-  const pView = logView(pModel, pT, raw, v.hasValue);
+  // 主行：PHN 幂律（LMCA / LAD / RCA）；LCX 无 PHN 常模，走四川 2025 对数式
+  const pView = isPhn
+    ? phnCorView(COR_PHN[key], hasBsa ? bsa : null, raw, v.hasValue)
+    : logView(corModel(pm, key),
+        (hasBsa ? logAt(corModel(pm, key), bsa) : null), raw, v.hasValue);
 
-  const am = pm === 'sz' ? 'sc' : null;
-  const aModel = am ? corModel(am, key) : null;
-  const aT = (hasBsa && aModel) ? logAt(aModel, bsa) : null;
-  const aView = aModel ? logView(aModel, aT, raw, v.hasValue) : null;
+  // 对照行：PHN 主行时并列两套中国方程；LCX 主行已是四川，不再重复
+  const alts = [];
+  if (isPhn) {
+    const szM = SZ_Z[key];
+    const scM = SC_Z[key];
+    if (szM) {
+      const t = hasBsa ? logAt(szM, bsa) : null;
+      alts.push(Object.assign({ label: '深圳 SZ', src: 'sz' },
+        logView(szM, t, raw, v.hasValue), {
+          extrap: hasBsa ? !szInRange(bsa) : false,
+          hasValue: v.hasValue,
+        }));
+    }
+    if (scM) {
+      const t = hasBsa ? logAt(scM, bsa) : null;
+      alts.push(Object.assign({ label: '四川 2025', src: 'sc' },
+        logView(scM, t, raw, v.hasValue), {
+          extrap: hasBsa ? !(bsa >= SC_RANGE.bsaMin && bsa <= SC_RANGE.bsaMax) : false,
+          hasValue: v.hasValue,
+        }));
+    }
+  }
 
-  const inRange = function (model, m) {
-    if (!hasBsa) return false;
-    return model === 'sz'
-      ? szInRange(bsa)
-      : (bsa >= SC_RANGE.bsaMin && bsa <= SC_RANGE.bsaMax);
-  };
+  const aha = (isPhn && v.hasValue && pView.z !== null && pView.z !== undefined)
+    ? ahaGrade(pView.z, raw) : '';
 
   return {
     key: key,
     name: def.name,
     unit: def.unit,
     src: pm,
-    srcText: pm === 'sz' ? 'SZ 法 · 深圳' : '四川 2025',
-    // ★ 主行必须自己标明来源：否则只有次行写「四川 2025」，主行看着像没有出处
-    //   （用户 2026-11-06 反馈「下面四川，上面写个深圳吧」）
-    srcLabel: pm === 'sz' ? '深圳 SZ' : '四川 2025',
-    model: 'cor',
-    altLabel: aModel ? '四川 2025' : '',
-    alt: aView ? Object.assign({}, aView, {
-      src: am,
-      srcText: '四川 2025',
-      extrap: !inRange(am, aModel),
-      hasValue: v.hasValue,
-    }) : null,
-    extrap: !inRange(pm, pModel),
-    alphaText: '对数尺度 · ' + pView.rseText,
+    srcText: isPhn ? 'PHN' : '四川 2025',
+    // ★ 主行必须自报来源（用户 2026-11-06 反馈「下面四川，上面写个深圳吧」）
+    srcLabel: isPhn ? 'PHN · 共识' : '四川 2025',
+    model: isPhn ? 'phn' : 'cor',
+    altLabel: alts.length ? alts[0].label : '',
+    alt: alts.length ? alts[0] : null,   // 摘要只比第一套国内对照
+    alts: alts,                          // 模板遍历渲染全部对照行
+    ahaText: aha,
+    extrap: !isPhn && hasBsa
+      ? !(bsa >= SC_RANGE.bsaMin && bsa <= SC_RANGE.bsaMax) : false,
+    alphaText: isPhn ? 'α=0.45 · 加性 SD' : '对数尺度 · ' + pView.rseText,
     meanText: pView.meanText,
     sdText: pView.sdText,
     subText: pView.subText,
@@ -5244,8 +5335,13 @@ function describeZ(z) {
     szInRange: szInRange,
     csmcAt: csmcAt,
     buildCsmcRow: buildCsmcRow,
+    COR_PHN: COR_PHN,
     COR_PRIMARY: COR_PRIMARY,
     corModel: corModel,
+    phnCorAt: phnCorAt,
+    phnCorZ: phnCorZ,
+    phnCorView: phnCorView,
+    ahaGrade: ahaGrade,
     logAt: logAt,
     logZ: logZ,
     logView: logView,
@@ -15775,9 +15871,11 @@ const SECTIONS_B = [
           { kind: 'note', text: '**写「EF」，不要写「LVEF」**：先心的体循环心室形态不一定是左室，ISHLT 2025 明确把 LVEF 改为 EF，并删掉了「EF 改善」这一档[R110]。EF 分类（表 3）：HFrEF ≤ 40%、HFmrEF 41%–49%、HFpEF ≥ 50% 且需有充盈压升高证据。但「按体循环心室 EF 分类」只是 **Ⅱb / C**，原文写明这套分级是否成立仍需进一步研究[R110]。', warn: true },
           { kind: 'text', text: '能直接落地的两条：**心衰严重度与分期的记录是 Ⅰ / C**（不是选填）；**BNP / NT-proBNP 是 Ⅰ / B**，用于已知心衰的综合评估与随访，但原文强调它只是**辅助指标、不能单独诊断**[R110]。因此先心患者报 EF 时应注明测的是哪一侧心室、用什么方法（2D 双平面还是 3D），否则跨随访的趋势没有可比性。' },
 
-          { kind: 'h', text: '七、冠状动脉 Z 值用哪一套（国内外没有统一标准）' },
-          { kind: 'text', text: '**国内外尚无统一标准**：2025 中国专家共识原文写明「目前，超声心动图评估冠状动脉内径，国内外尚无统一标准」，并要求同一机构长期随访固定同一套 Z 值标准[R83]。AHA 2017 与共识给川崎病做风险分层用**北美 PHN** 公式[R83]；日本 Z Score Project 在线计算器（kwsd.info/zsp_form.cgi）默认 **LMS 4 / ZSP version 4**，可切换多套常模，属对照工具而非单一标准。国内常模有深圳 SZ（6 省 9 中心 842 例）[R79] 与四川 2025（744 例）[R119]，本工具儿童 Z 值页**默认显示深圳 SZ**，四川由按钮按需展开。' },
-          { kind: 'note', text: '**别跨套比较**：同一测值在不同口径下可差 0.5–2 个 Z，足以把「扩张」改判成「正常」[R103]。报告写明所用常模与版本，同一患儿随访始终固定一套[R83]。国外两套只提供 Excel / 网页计算器、未公开逐段系数，本工具不自行拟合。', warn: true },
+          { kind: 'h', text: '七、冠状动脉 Z 值用哪一套（2025 中国专家共识指定）' },
+          { kind: 'text', text: '**共识口径**：2025 中国专家共识原文写明「本共识所采用的冠状动脉风险分层标准，是基于 2017 年 AHA 颁布的《川崎病诊治及长期随诊声明》及美国儿童心脏联合网所采用的北美儿童冠状动脉内径 Z 值公式」，并给出应用网址 pediatricheartnetwork.org/z-scores-calculator/［20］；该条引文为 Lopez 2017（PHN 正常值数据库，19 个中心 3566 例 0–18 岁北美儿童）[R83][R8]。公式为 BSA 幂律 Z = ( M / BSA^0.45 − Mean ) / SD，PHN 官网公开的系数表含 LMCA / LAD / RCA 三段、单位为 mm，**无左回旋支（LCX）**。本工具儿童 Z 值页冠脉主行默认显示 PHN，按此式计算。' },
+          { kind: 'text', text: '**风险分层（AHA 2017）**：2≤Z<2.5 冠状动脉扩张，或 Z<2 而随访过程中 Z 值下降 >1；2.5≤Z<5 小型冠状动脉瘤；5≤Z<10 且绝对值 <8 mm 中型冠状动脉瘤；Z≥10 或绝对值 ≥8 mm 大型冠状动脉瘤[R83]。共识表 3 并列 2024 年美国 AHA、2020 年日本 JCS/JSCS（<5 岁用绝对值）、2020 年中国（绝对值 + 内径/邻近段比值 + Z 值综合）三套标准[R83]。' },
+          { kind: 'text', text: '**尚无统一标准**：共识原文写明「目前，超声心动图评估冠状动脉内径，国内外尚无统一标准」，并引 2024 年 AHA 声明指出不同 Z 值系统会改变冠状动脉风险水平分类，要求同一机构长期随访使用同一套 Z 值标准[R83]。国内常模有深圳 SZ（6 省 9 中心 842 例）[R79] 与四川 2025（744 例）[R119]，本工具把两者列为可展开的对照行；日本 Z Score Project 在线计算器（kwsd.info/zsp_form.cgi）默认 **LMS 4 / ZSP version 4**，可切换多套常模，属对照工具而非单一标准。' },
+          { kind: 'note', text: '**别跨套比较**：AHA 2017 的分级阈值配 PHN Z 值，不能直接套用于国内常模的 Z 值；同一测值在不同口径下可差 1 个 Z 以上，足以改变风险分层[R103]。报告写明所用常模与版本，同一患儿随访始终固定一套[R83]。', warn: true },
         ],
       },
       {
@@ -19901,8 +19999,9 @@ const REFS = [
     dl: [
       { t: '文章页（看订阅）', u: 'https://doi.org/10.3760/cma.j.cn131148-20250919-00508' },
       { t: '全文阅读页（不可下载）', u: 'https://rs.yiigle.com/cmaid/1608694' },
+      { t: '官网 · 在线计算器', u: 'https://www.pediatricheartnetwork.org/z-scores-calculator/' },
     ],
-    use: '儿童冠脉 AHA 15 分段法与可显示的 9 段、舒张早期（T 波终点）测量、内膜至内膜、图像放大 2–4 倍、BSA 校正 Z 值、AHA 2017 川崎病冠脉分级口径；用于「儿童 Z 值」页冠脉组说明与判读',
+    use: '共识指定 PHN 北美儿童冠脉内径 Z 值公式（Lopez 2017）与 AHA 2017 川崎病冠脉风险分层；儿童冠脉 AHA 15 分段法与可显示的 9 段、舒张早期（T 波终点）测量、内膜至内膜、图像放大 2–4 倍、BSA 校正 Z 值；用于「儿童 Z 值」页冠脉组说明与判读',
   },
   {
     id: 'R84',
@@ -26596,7 +26695,7 @@ const MATERIALS = [];
           '<div class="pcard__in">' + pdInputRows(g.keys) + '</div>' +
           (g.cor ? '<div class="corbar">' +
             '<button type="button" class="corbar__btn" data-cor-alt="1"></button>' +
-            '<span class="corbar__h">默认深圳 SZ · 选择会记住</span></div>' : '') +
+            '<span class="corbar__h">默认 PHN · 共识口径 · 选择会记住</span></div>' : '') +
           '<div class="pres"></div>' +
         '</div>' +
       '</div>';
@@ -26640,7 +26739,7 @@ const MATERIALS = [];
     if (!box) return;
     box.classList.toggle('pdGroups--noalt', !pdCorAlt);
     box.querySelectorAll('[data-cor-alt]').forEach(function (btn) {
-      btn.textContent = pdCorAlt ? '收起另一套（四川 2025）' : '显示另一套方程（四川 2025）';
+      btn.textContent = pdCorAlt ? '收起国内两套对照' : '显示国内两套对照（深圳 SZ / 四川 2025）';
     });
   }
 
@@ -26701,7 +26800,8 @@ const MATERIALS = [];
     let h = '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '"' + tag + '>' +
       '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
         (r.srcLabel ? '<span class="zrow__src">' + esc(r.srcLabel) + '</span>' : '') +
-        '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span></div>' +
+        '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span>' +
+        (r.ahaText ? '<span class="zrow__aha">' + esc(r.ahaText) + '</span>' : '') + '</div>' +
       '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
       '<div class="zrow__r">' + esc(r.rangeText) +
         '<span class="zrow__r3">±3SD ' + esc(r.range3Text) + '</span></div>' +
@@ -26710,21 +26810,21 @@ const MATERIALS = [];
         : '<span class="tag tag--none">—</span>') +
       '</div></div>';
 
-    // ★ 冠脉并列第二套中国方程：同一测值第二个 Z
-    if (r.alt) {
+    // ★ 冠脉主行 PHN 之外，并列两套国内常模作对照（默认由 corbar 收起）
+    (r.alts || []).forEach(function (a) {
       h += '<div class="zrow zrow--alt' + (r.hasValue ? '' : ' zrow--none') + '" data-cor="1">' +
-        '<div class="zrow__n">' + esc(r.altLabel) +
-          (r.alt.extrap ? '<span class="zrow__ext">外推</span>' : '') +
-          '<span class="zrow__sub">均值 ' + esc(r.alt.subText) + ' · ' +
-            esc(r.alt.r2Text) + '</span></div>' +
+        '<div class="zrow__n">' + esc(a.label) +
+          (a.extrap ? '<span class="zrow__ext">外推</span>' : '') +
+          '<span class="zrow__sub">均值 ' + esc(a.subText) + ' · ' +
+            esc(a.r2Text) + '</span></div>' +
         '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
-        '<div class="zrow__r">' + esc(r.alt.rangeText) +
-          '<span class="zrow__r3">±3SD ' + esc(r.alt.range3Text) + '</span></div>' +
+        '<div class="zrow__r">' + esc(a.rangeText) +
+          '<span class="zrow__r3">±3SD ' + esc(a.range3Text) + '</span></div>' +
         '<div class="zrow__g">' + (r.hasValue
-          ? '<span class="tag ' + r.alt.statusCls + '">' + esc(r.alt.zText) + '</span>'
+          ? '<span class="tag ' + a.statusCls + '">' + esc(a.zText) + '</span>'
           : '<span class="tag tag--none">—</span>') +
         '</div></div>';
-    }
+    });
     return h;
   }
 
@@ -26973,13 +27073,13 @@ const MATERIALS = [];
         g.rows.forEach(function (r) {
           if (!r.alt || !r.hasValue || r.z === null || r.alt.z === null) return;
           if ((Math.abs(r.z) > 2) !== (Math.abs(r.alt.z) > 2)) {
-            disc.push(esc(r.name) + '（深圳 ' + esc(r.zText) + ' ' + esc(r.statusText) +
-              ' / 四川 ' + esc(r.alt.zText) + ' ' + esc(r.alt.statusText) + '）');
+            disc.push(esc(r.name) + '（PHN ' + esc(r.zText) + ' ' + esc(r.statusText) +
+              ' / 深圳 SZ ' + esc(r.alt.zText) + ' ' + esc(r.alt.statusText) + '）');
           }
         });
       });
       $('pdDiscord').innerHTML = disc.length
-        ? '⚠ 冠脉两法结论不一致：' + disc.join('；') + '。以报告所采用的那一套判读。'
+        ? '⚠ 冠脉主行与国内对照结论不一致：' + disc.join('；') + '。以 R83 共识指定的 PHN 判读。'
         : '';
       $('pdDiscord').hidden = disc.length === 0;
     } else {

@@ -544,26 +544,35 @@ check('上偏 / 下偏 = e^0.23（乘性区间的固有性质）',
 
 // 14.6 冠脉主行 = 深圳 SZ，次行 = 四川 2025；LCX 只有四川，无次行
 const szRows = peds.buildPedsList(1.0, { LMCA: 3.4, LAD: 2.6, LCX: 1.5, RCA: 3.0, LVEDD: 38 });
-check('冠脉四项主行都是对数模型',
-  szRows.filter(function (r) { return r.model === 'cor'; }).length, 4);
-check('LMCA/LAD/RCA 三项挂四川次行',
-  szRows.filter(function (r) { return ['LMCA', 'LAD', 'RCA'].indexOf(r.key) !== -1 && r.alt; }).length, 3);
+check('冠脉三段主行走 PHN 幂律（R83 共识口径）',
+  szRows.filter(function (r) { return ['LMCA', 'LAD', 'RCA'].indexOf(r.key) !== -1 && r.model === 'phn'; }).length, 3);
+check('LCX 主行仍为对数模型（PHN 无该段常模）',
+  szRows.filter(function (r) { return r.key === 'LCX'; })[0].model, 'cor');
+check('LMCA/LAD/RCA 三项各挂两套国内对照',
+  szRows.filter(function (r) { return r.alts && r.alts.length === 2; }).length, 3);
+check('第一套国内对照＝深圳 SZ、第二套＝四川 2025',
+  (function () { var r = szRows.filter(function (x) { return x.key === 'LAD'; })[0];
+    return r.alts.map(function (a) { return a.label; }).join('/'); })(), '深圳 SZ/四川 2025');
 check('LCX 没有次行（四川已是主行）',
   szRows.filter(function (r) { return r.key === 'LCX'; })[0].alt, null);
-check('非冠脉项不挂 alt',
-  szRows.filter(function (r) { return r.model !== 'cor' && r.alt; }).length, 0);
+check('非冠脉项不挂对照行',
+  szRows.filter(function (r) { return ['cor', 'phn'].indexOf(r.model) === -1 && r.alt; }).length, 0);
 const ladRow = szRows.filter(function (r) { return r.key === 'LAD'; })[0];
-check('LAD 主行深圳 +1.25 / 次行四川 +2.43', ladRow.zText + ' / ' + ladRow.alt.zText, '+1.25 / +2.43');
-check('两法判读不同（深圳正常 / 四川轻度增大）',
-  ladRow.statusText + ' / ' + ladRow.alt.statusText, '正常 / 轻度增大');
+check('LAD 主行 PHN +2.06 / 深圳对照 +1.25', ladRow.zText + ' / ' + ladRow.alt.zText, '+2.06 / +1.25');
+check('主行与深圳对照判读不同（PHN 轻度增大 / 深圳正常）',
+  ladRow.statusText + ' / ' + ladRow.alt.statusText, '轻度增大 / 正常');
+check('LAD 主行给出 AHA 2017 分级', ladRow.ahaText, 'AHA：冠状动脉扩张');
 
 // 14.7 外推标记：SZ 队列为 1 月龄–17 岁（BSA 0.23–1.85）
 check('BSA 0.22（新生儿段）标外推', peds.szInRange(0.22), false);
 check('BSA 0.50 在范围内', peds.szInRange(0.5), true);
 check('BSA 1.90 超出上界', peds.szInRange(1.9), false);
-check('新生儿段 LAD 主行带 extrap 标记',
+check('新生儿段 LAD 主行 PHN 不标外推（PHN 覆盖 0–18 岁）',
   peds.buildPedsList(0.22, { LAD: 1.2 })
-    .filter(function (r) { return r.key === 'LAD'; })[0].extrap, true);
+    .filter(function (r) { return r.key === 'LAD'; })[0].extrap, false);
+check('新生儿段 LAD 的深圳对照行标外推',
+  peds.buildPedsList(0.22, { LAD: 1.2 })
+    .filter(function (r) { return r.key === 'LAD'; })[0].alts[0].extrap, true);
 
 // 14.8 冠脉组说明必须写清两套不可混用
 const corGroup = peds.PEDS_GROUPS.filter(function (g) { return g.title === '冠状动脉'; })[0];
@@ -571,13 +580,14 @@ check('冠脉组带双法说明', !!(corGroup && corGroup.note && corGroup.note.
 check('冠脉组说明含「不可跨套比较」', corGroup.note.indexOf('不可跨套比较') !== -1, true);
 // ★ 2026-11-08：考证长文（夏焙 2012/2013、Kobayashi、PHN、kwsd.info、数值举例）
 //   只在对话里讨论，工具里只留操作说明，避免儿童页上下重复
-check('冠脉组说明只讲操作、不再塞考证长文',
-  (corGroup.note.indexOf('深圳儿童医院自家小程序') === -1 &&
+check('冠脉组说明写明共识口径与 AHA 阈值、不塞考证长文',
+  (corGroup.note.indexOf('PHN 北美公式') !== -1 &&
+   corGroup.note.indexOf('AHA 2017') !== -1 &&
+   corGroup.note.indexOf('不可套用 AHA 阈值') !== -1 &&
+   corGroup.note.indexOf('深圳儿童医院自家小程序') === -1 &&
    corGroup.note.indexOf('kwsd.info') === -1 &&
    corGroup.note.indexOf('Kobayashi') === -1 &&
-   corGroup.note.indexOf('PHN') === -1 &&
-   corGroup.note.indexOf('国内最通用') === -1 &&
-   corGroup.note.length < 180), true);
+   corGroup.note.length < 400), true);
 
 /* ================================================================== *
  * 14b. 四川 2025 冠脉方程（中国当代儿科杂志，n=744）
@@ -603,27 +613,62 @@ check('SC RCA 3.0 mm @BSA1.0 → Z', peds.logZ(peds.SC_Z.RCA, peds.logAt(peds.SC
 
 // LCX 一律走四川（深圳原文没有 LCX）
 check('LCX 主行来源＝四川', szRows.filter(function (r) { return r.key === 'LCX'; })[0].src, 'sc');
-check('LMCA 主行来源＝深圳', szRows.filter(function (r) { return r.key === 'LMCA'; })[0].src, 'sz');
+check('LMCA 主行来源＝PHN', szRows.filter(function (r) { return r.key === 'LMCA'; })[0].src, 'phn');
 
 // 两套不能互串：同一 BSA、同一测值，深圳与四川的 Z 必须不同（LAD 差 > 1）
 const ladSz = peds.szZ(2.6, 'LAD', 1.0);
 const ladSc = peds.logZ(peds.SC_Z.LAD, peds.logAt(peds.SC_Z.LAD, 1), 2.6);
 check('LAD 两套 Z 相差 > 1', Math.abs(ladSc - ladSz) > 1, true);
 
-// 冠脉行的区间是乘性的：中点必须高于均值
+// PHN 主行区间加性对称；国内对照行区间是乘性的，中点高于均值
 const corRow = szRows.filter(function (r) { return r.key === 'LMCA'; })[0];
-const corB = corRow.rangeText.split('–');
+const phnB = corRow.rangeText.split('–');
+const phnMid = (parseFloat(phnB[0]) + parseFloat(phnB[1])) / 2;
+check('PHN 主行区间中点 = 均值（加性 SD）',
+  Math.abs(phnMid - 2.95) < 0.02, true);
+const szAlt = corRow.alts[0];
+const corB = szAlt.rangeText.split('–');
 const corMid = (parseFloat(corB[0]) + parseFloat(corB[1])) / 2;
-check('冠脉区间中点 > 均值（乘性区间）', corMid > parseFloat(corRow.meanText), true);
+check('国内对照行区间中点 > 均值（乘性区间）', corMid > parseFloat(szAlt.meanText), true);
 
 // 名称里不能再带缩写：模板统一拼「名称（键）」，带后缀会渲染成「（LMCA）（LMCA）」
 check('冠脉行名称不含缩写后缀',
   szRows.every(function (r) { return !/（[A-Za-z]{2,}/.test(r.name); }) ? 1 : 0, 1, 0);
 check('冠脉四行都带来源标签', szRows.filter(function (r) { return !!r.srcLabel; }).length, 4, 0);
-check('LMCA 主行标签＝深圳 SZ',
-  szRows.filter(function (r) { return r.key === 'LMCA'; })[0].srcLabel, '深圳 SZ', 0);
+check('LMCA 主行标签＝PHN · 共识',
+  szRows.filter(function (r) { return r.key === 'LMCA'; })[0].srcLabel, 'PHN · 共识', 0);
 check('LCX 主行标签＝四川 2025',
   szRows.filter(function (r) { return r.key === 'LCX'; })[0].srcLabel, '四川 2025', 0);
+
+/* ================================================================== *
+ * 14c. PHN 冠脉公式（R83 共识指定）与 AHA 2017 风险分层
+ *      系数逐字取自 https://www.pediatricheartnetwork.org/echo-z-scores/
+ * ------------------------------------------------------------------ */
+section('14c. PHN 冠脉公式与 AHA 2017 分级（R83）');
+
+check('COR_PHN 只有三段、无 LCX', Object.keys(peds.COR_PHN).join(','), 'LMCA,LAD,RCA');
+check('COR_PHN 三段 α 均为 0.45',
+  Object.keys(peds.COR_PHN).every(function (k) { return peds.COR_PHN[k].a === 0.45; }), true);
+check('COR_PHN 冠脉系数单位是 mm（不随全表 cm 换算）',
+  Object.keys(peds.COR_PHN).every(function (k) { return peds.COR_PHN[k].unit === 'mm'; }), true);
+check('LMCA 2.95 / 0.57', peds.COR_PHN.LMCA.mean + '/' + peds.COR_PHN.LMCA.sd, '2.95/0.57');
+check('LAD 1.90 / 0.34', peds.COR_PHN.LAD.mean + '/' + peds.COR_PHN.LAD.sd, '1.9/0.34');
+check('RCA 2.32 / 0.55', peds.COR_PHN.RCA.mean + '/' + peds.COR_PHN.RCA.sd, '2.32/0.55');
+const phnT = peds.phnCorAt(peds.COR_PHN.LMCA, 1.0);
+check('PHN LMCA @BSA1.0 均值 2.95 / SD 0.57', phnT.mean + '/' + phnT.sd, '2.95/0.57');
+check('PHN LMCA @BSA1.0 ±2SD 1.81 – 4.09 mm',
+  phnT.lo2.toFixed(2) + ' – ' + phnT.hi2.toFixed(2), '1.81 – 4.09');
+check('PHN LMCA 4.09 mm @BSA1.0 → Z = +2.00',
+  peds.phnCorZ(peds.COR_PHN.LMCA, phnT, 4.09), 2, 1e-6);
+check('PHN BSA 0.5 均值随 BSA^0.45 缩放',
+  peds.phnCorAt(peds.COR_PHN.LMCA, 0.5).mean, 2.95 * Math.pow(0.5, 0.45), 1e-9);
+check('AHA：Z=2.0 → 冠状动脉扩张', peds.ahaGrade(2.0, 4.09), 'AHA：冠状动脉扩张');
+check('AHA：Z=2.5 → 小型冠状动脉瘤', peds.ahaGrade(2.5, 4.0), 'AHA：小型冠状动脉瘤');
+check('AHA：Z=5.0 且 <8 mm → 中型冠状动脉瘤', peds.ahaGrade(5.0, 6.0), 'AHA：中型冠状动脉瘤');
+check('AHA：Z=10 → 巨大冠状动脉瘤', peds.ahaGrade(10.0, 5.0), 'AHA：巨大冠状动脉瘤');
+check('AHA：绝对值 ≥8 mm 直接判巨大瘤', peds.ahaGrade(1.0, 8.2), 'AHA：巨大冠状动脉瘤');
+check('AHA：Z<2 → 未达扩张阈值', peds.ahaGrade(1.9, 3.0), 'AHA：未达扩张阈值');
+check('AHA：无 Z 值不输出分级', peds.ahaGrade(null, 3.0), '');
 
 /* ================================================================== *
  * 15. 新生儿体重法（深圳 2014，0–28 天，n=288）

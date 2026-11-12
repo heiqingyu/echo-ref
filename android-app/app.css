@@ -730,8 +730,8 @@ html, body {
   vertical-align: 1px;
 }
 
-/* 结果行上的来源徽章（冠脉主行「深圳 SZ」/ 次行「四川 2025」）——
-   主行不标来源时，只有次行写「四川 2025」，看着像主行没出处（用户 2026-11-06 反馈） */
+/* 结果行上的来源徽章（冠脉主行「PHN · 共识」）——
+   主行不标来源时，只有对照行写来源，看着像主行没出处（用户 2026-11-06 反馈） */
 .zrow__src {
   display: inline-block;
   margin-left: 4px;
@@ -742,6 +742,15 @@ html, body {
   background: #eff4ff;
   border-radius: 4px;
   vertical-align: 1px;
+}
+
+/* 冠脉主行：AHA 2017 风险分级（小字，跟在 Z 值下面） */
+.zrow__aha {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: #1d4ed8;
 }
 
 /* ★ v1.8.1：新生儿体重法 17 行 —— 参数名偏长，收窄实测 / Z 列，把宽度让给名字与区间 */

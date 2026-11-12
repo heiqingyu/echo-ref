@@ -188,10 +188,10 @@
           </view>
         </view>
 
-        <!-- 冠脉：默认只显示国内最通用的深圳 SZ，另一套点按钮才出现 -->
+        <!-- 冠脉：默认 PHN（R83 共识口径），点按钮并列两套国内常模作对照 -->
         <view wx:if="{{item.cor && hasBsa}}" class="corbar">
-          <view class="corbar__btn" bindtap="onToggleCorAlt">{{corAlt ? '收起另一套（四川 2025）' : '显示另一套方程（四川 2025）'}}</view>
-          <text class="corbar__h">默认深圳 SZ · 选择会记住</text>
+          <view class="corbar__btn" bindtap="onToggleCorAlt">{{corAlt ? '收起国内两套对照' : '显示国内两套对照（深圳 SZ / 四川 2025）'}}</view>
+          <text class="corbar__h">默认 PHN · 共识口径 · 选择会记住</text>
         </view>
 
         <!-- 该组结果 -->
@@ -209,6 +209,7 @@
                 {{row.name}}（{{row.key}}）
                 <text wx:if="{{row.srcLabel}}" class="z-row__src">{{row.srcLabel}}</text>
                 <text class="z-row__name-sub">均值 {{row.subText}}</text>
+                <text wx:if="{{row.ahaText}}" class="z-row__aha">{{row.ahaText}}</text>
               </view>
               <text class="z-row__val">{{row.value}}{{row.hasValue ? row.unit : ''}}</text>
               <text class="z-row__range">{{row.rangeText}}</text>
@@ -220,21 +221,25 @@
               </view>
             </view>
 
-            <!-- 冠脉的第二套中国方程 -->
-            <view wx:if="{{row.alt && corAlt}}" class="z-row z-row--alt {{row.hasValue ? '' : 'z-row--none'}}">
-              <view class="z-row__name">
-                {{row.altLabel}}<text wx:if="{{row.alt.extrap}}" class="z-row__ext">外推</text>
-                <text class="z-row__name-sub">均值 {{row.alt.subText}} · {{row.alt.r2Text}}</text>
+            <!-- 冠脉：两套国内常模对照（默认收起，选择会记住） -->
+            <block wx:if="{{corAlt}}">
+            <block wx:for="{{row.alts}}" wx:for-item="a" wx:key="label">
+              <view class="z-row z-row--alt {{row.hasValue ? '' : 'z-row--none'}}">
+                <view class="z-row__name">
+                  {{a.label}}<text wx:if="{{a.extrap}}" class="z-row__ext">外推</text>
+                  <text class="z-row__name-sub">均值 {{a.subText}} · {{a.r2Text}}</text>
+                </view>
+                <text class="z-row__val">{{row.hasValue ? row.value + row.unit : '—'}}</text>
+                <text class="z-row__range">{{a.rangeText}}</text>
+                <view class="z-row__tag">
+                  <block wx:if="{{row.hasValue}}">
+                    <text class="tag {{a.statusCls}}">{{a.zText}}</text>
+                  </block>
+                  <text wx:else class="tag tag--none">—</text>
+                </view>
               </view>
-              <text class="z-row__val">{{row.hasValue ? row.value + row.unit : '—'}}</text>
-              <text class="z-row__range">{{row.alt.rangeText}}</text>
-              <view class="z-row__tag">
-                <block wx:if="{{row.hasValue}}">
-                  <text class="tag {{row.alt.statusCls}}">{{row.alt.zText}}</text>
-                </block>
-                <text wx:else class="tag tag--none">—</text>
-              </view>
-            </view>
+            </block>
+            </block>
           </block>
         </block>
       </block>
@@ -319,7 +324,7 @@
       <text class="foldicon">{{infoOpen ? '收起' : '展开'}}</text>
     </view>
     <view class="card__desc">
-      五套参照各管一段、Z 值怎么算、冠脉两行是什么意思、本页没有哪些参数 —— 都放在这一块。
+      五套参照各管一段、Z 值怎么算、冠脉三行是什么意思、本页没有哪些参数 —— 都放在这一块。
     </view>
 
     <block wx:if="{{infoOpen}}">
@@ -328,7 +333,8 @@
         <text style="font-weight:600">一、Z 值怎么算</text>{{'\n'}}
         PHN 项：Z = ( 实测值 ÷ BSA<text style="font-size:20rpx">α</text> − Mean ) ÷ SD{{'\n'}}
         中国方程项：Z = ( 实测值 − M ) ÷ SD，M 为 BSA 的三次多项式{{'\n'}}
-        冠脉项：Z = [ ln(实测值) − ( a + b·ln BSA ) ] ÷ RSE（对数尺度，故 ±2SD 区间不对称）{{'\n'}}
+        冠脉主行（PHN）：Z = ( 实测 mm ÷ BSA^0.45 − Mean ) ÷ SD，±2SD 区间上下对称{{'\n'}}
+        冠脉对照行（深圳 / 四川）：Z = [ ln(实测值) − ( a + b·ln BSA ) ] ÷ RSE（对数尺度，±2SD 区间不对称）{{'\n'}}
         BSA 用 Haycock：0.024265 × 身高(cm)<text style="font-size:20rpx">0.3964</text> × 体重(kg)<text style="font-size:20rpx">0.5378</text>。
         |Z| ≤ 2 覆盖约 95% 健康儿童；Z = 0 即人群均值。
       </view>
@@ -339,22 +345,20 @@
         ② 左房左右径、右房左右径、右室流入道内径：中国汉族儿童（上海儿童医学中心多中心，
         n=545 / 515，2D·心尖四腔）{{'\n'}}
         ③ 左房前后径、右室前后径、右室前壁厚度：Kampmann 2000（中欧白人 n=2036，M 型）{{'\n'}}
-        ④ 冠状动脉：深圳 SZ 法（Fan 2021，n=842，1 月龄–17 岁）为主，
-        四川 2025（n=744，0–18 岁）为辅{{'\n'}}
+        ④ 冠状动脉：主行 PHN（Lopez 2017，n=3566，R83 共识指定）；
+        深圳 SZ（Fan 2021，n=842）与四川 2025（n=744）为国内对照{{'\n'}}
         ⑤ 新生儿 17 项：深圳 2014（n=288，0–28 天，体重法，不经 BSA）{{'\n'}}
         五套的人群、测量方法与建模变量都不同，同一患儿只取实际所用切面对应的一套判读。
       </view>
 
       <view class="note note--strong">
-        <text style="font-weight:600">三、冠状动脉两行是什么</text>{{'\n'}}
-        主行＝深圳 SZ 法（6 省 9 中心，ln Y = a + b·ln BSA，n = 842，1 月龄–17 岁）；
-        次行＝四川 2025（四川省人民医院，n = 744，0–18 岁，四段齐全，含左回旋支）。
-        两套模型形式相同、人群不同，同一测值可差 1 个 Z 以上（LAD 2.6 mm、BSA 1.0 时
-        深圳 +1.25「正常」/ 四川 +2.43「轻度增大」），临界值时两行都要看，不要跨套比较。{{'\n'}}
-        ★ 深圳儿童医院自家小程序用的是夏焙团队 2012/2013 方程，与本页两套都不同源；
-        同一测值可再差 0.5–1 个 Z（90 cm / 9 kg、LCA 2.2 mm：该小程序 −0.105、本页深圳法约 +0.54）。
-        这不是算错，是参照人群不同 —— 同一患儿随访请固定用同一套。{{'\n'}}
-        ★ SZ 队列不含 0–28 天新生儿，BSA {{'<'}} 0.23 时该行标「外推」。
+        <text style="font-weight:600">三、冠脉三行是什么</text>{{'\n'}}
+        主行＝PHN 北美公式（R83 2025 中国专家共识指定，Lopez 2017，19 中心 n=3566，0–18 岁），
+        配 AHA 2017 川崎病风险分层；对照行＝深圳 SZ（Fan 2021，n=842）与
+        四川 2025（n=744，含左回旋支）。主行按 BSA 幂律、加性 SD；对照行按 ln 尺度、乘性区间。
+        同一测值的 Z 可差 1 个以上（LAD 2.6 mm、BSA 1.0：PHN +2.06「扩张」/ 深圳 +1.25「正常」/
+        四川 +2.43「轻度增大」），故对照行不可套用 AHA 阈值；同一患儿随访固定一套，勿跨套比较。{{'\n'}}
+        ★ PHN 与四川覆盖 0–18 岁；深圳 SZ 不含 0–28 天新生儿，BSA {{'<'}} 0.23 时该行标「外推」。
       </view>
 
       <view class="note note--strong">
@@ -387,7 +391,7 @@
         <text style="font-weight:600">七、新生儿体重法为什么单独一套</text>{{'\n'}}
         Z = [ ln(实测) − ln(预测均值) ] ÷ s̄x。s̄x 是对数尺度残差（相当于变异系数），
         所以 ±2SD 区间是乘性的（均值 × e^±2s̄x），上下不对称，不能写成「均值 ± 2SD」。
-        本组不含冠脉（原文 39 项里没有），新生儿冠脉目前无中国公开方程。
+        本组不含冠脉（原文 39 项里没有）；新生儿冠脉可用主行 PHN（覆盖 0–18 岁），中国公开方程目前仍缺。
       </view>
 
       <view class="note note--strong">
@@ -408,9 +412,10 @@
 
       <view class="note note--strong">
         <view class="note__t">冠脉默认口径</view>
-        国内无统一标准（2025 中国专家共识）。本页默认显示深圳 SZ（R79，6 省 9 中心 842 例）；
-        点冠脉组「显示另一套」可并列四川 2025（R119），LCX 深圳未测处用四川。
-        两套按 ln 尺度建模，±2SD 上下不对称；同一患儿随访请固定一套，勿跨套比较。
+        2025 中国专家共识（R83）指定 PHN 北美冠脉 Z 值公式与 AHA 2017 风险分层；
+        本页冠脉主行默认显示 PHN（R8，Lopez 2017，19 中心 3566 例）。
+        点「显示国内两套对照」并列深圳 SZ（R79）与四川 2025（R119），两套按 ln 尺度建模，
+        不可套用 AHA 阈值；LCX 无 PHN 常模，该行用四川。同一患儿随访固定同一套，勿跨套比较。
       </view>
     </block>
   </view>

@@ -223,7 +223,7 @@
   line-height: 1.5;
 }
 
-/* 结果行上的来源徽章（冠脉主行「深圳 SZ」/ 次行「四川 2025」） */
+/* 结果行上的来源徽章（冠脉主行「PHN · 共识」） */
 .z-row__src {
   display: inline-block;
   margin-left: 8rpx;
@@ -236,7 +236,16 @@
   vertical-align: 1rpx;
 }
 
-/* ── 冠脉：默认口径 + 「显示另一套」按钮（2026-11-08）── */
+/* 冠脉主行：AHA 2017 风险分级（小字，跟在 Z 值下面） */
+.z-row__aha {
+  display: block;
+  margin-top: 3rpx;
+  font-size: 20rpx;
+  line-height: 1.35;
+  color: #1d4ed8;
+}
+
+/* ── 冠脉：默认口径 + 「显示国内两套对照」按钮（2026-11-08）── */
 .corbar {
   display: flex;
   flex-wrap: wrap;

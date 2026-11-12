@@ -1598,9 +1598,11 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   [
     ['kwsd.info 在线计算器', 'kwsd.info/zsp_form.cgi'],
     ['ZSP version 4 / LMS 4 默认项', 'LMS 4 / ZSP version 4'],
-    ['北美 PHN 风险分层口径', '北美 PHN'],
+    ['R83 指定的北美冠脉 Z 值公式', '北美儿童冠状动脉内径 Z 值公式'],
+    ['PHN 在线计算器网址', 'z-scores-calculator/'],
+    ['AHA 2017 扩张阈值', '2≤Z<2.5'],
     ['国内外尚无统一标准', '国内外尚无统一标准'],
-    ['国内默认显示深圳 SZ', '默认显示深圳 SZ'],
+    ['儿童页冠脉主行默认显示 PHN', '默认显示 PHN'],
     ['四川 2025 题录 R119', 'R119'],
   ].forEach(function (pair) {
     (pedTxt.indexOf(pair[1]) !== -1) ? ok('ped-base 第七节含' + pair[0])

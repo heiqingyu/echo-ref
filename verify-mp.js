@@ -364,18 +364,21 @@ check('冠脉切换状态落本机（echoref:corAlt）+ 四个入口齐全',
   (pedJs.indexOf("'echoref:corAlt'") !== -1 &&
    pedJs.indexOf('loadCorAlt') !== -1 && pedJs.indexOf('saveCorAlt') !== -1 &&
    pedJs.indexOf('onToggleCorAlt') !== -1) ? 1 : 0, 1, 0);
-check('WXML 有切换按钮、四川次行受 corAlt 控制、主行带来源标签',
+check('WXML 有切换按钮、两套国内对照受 corAlt 控制、主行带来源标签',
   (wxmlPeds.indexOf('class="corbar"') !== -1 &&
    wxmlPeds.indexOf('bindtap="onToggleCorAlt"') !== -1 &&
-   wxmlPeds.indexOf('row.alt && corAlt') !== -1 &&
+   wxmlPeds.indexOf('wx:for="{{row.alts}}"') !== -1 &&
+   wxmlPeds.indexOf('wx:if="{{corAlt}}"') !== -1 &&
+   wxmlPeds.indexOf('row.ahaText') !== -1 &&
    wxmlPeds.indexOf('row.srcLabel') !== -1) ? 1 : 0, 1, 0);
 check('WXSS 有 .corbar__btn 按钮样式',
   pedWxss.indexOf('.corbar__btn') !== -1 ? 1 : 0, 1, 0);
 const buildWwwJs = fsW.readFileSync(pathW.join(__dirname, 'build-www.js'), 'utf8');
 const briefBJs = fsW.readFileSync(pathW.join(__dirname, 'miniprogram', 'utils', 'brief-b.js'), 'utf8');
-check('冠脉组打 cor 标记、组说明只讲怎么用',
+check('冠脉组打 cor 标记、组说明写明共识口径与主行来源',
   (pzJs.indexOf('cor: true') !== -1 && pzJs.indexOf('不可跨套比较') !== -1 &&
-   pzJs.indexOf("srcLabel: pm === 'sz'") !== -1) ? 1 : 0, 1, 0);
+   pzJs.indexOf("srcLabel: isPhn ? 'PHN · 共识'") !== -1 &&
+   pzJs.indexOf('const COR_PHN = {') !== -1) ? 1 : 0, 1, 0);
 // ★ 2026-11-08：版本考证只在对话里讨论；公式集 ped-base 保留一条精简口径说明
 check('儿童页三端不再重复「哪个版本最通用 / 国际口径对照」长文',
   (buildWwwJs.indexOf('哪个版本最通用') === -1 &&
@@ -386,10 +389,10 @@ check('儿童页三端不再重复「哪个版本最通用 / 国际口径对照�
    pzJs.indexOf('Kobayashi') === -1 &&
    pzJs.indexOf('深圳儿童医院自家小程序') === -1 &&
    briefBJs.indexOf('LMS 4 / ZSP version 4') !== -1) ? 1 : 0, 1, 0);
-check('儿童页说明区只留一段默认口径（默认哪套 / 怎么切换 / 勿跨套）',
+check('儿童页说明区只留一段默认口径（默认 PHN / 怎么切对照 / 勿跨套）',
   (wxmlPeds.indexOf('冠脉默认口径') !== -1 &&
-   wxmlPeds.indexOf('默认显示深圳 SZ') !== -1 &&
-   wxmlPeds.indexOf('显示另一套') !== -1 &&
+   wxmlPeds.indexOf('默认显示 PHN') !== -1 &&
+   wxmlPeds.indexOf('显示国内两套对照') !== -1 &&
    wxmlPeds.indexOf('勿跨套比较') !== -1) ? 1 : 0, 1, 0);
 
 // ★ 2026-11-08：多条目小节序号统一（渲染层生成，不改 637 处原始 heading）

@@ -4337,7 +4337,7 @@
           '<div class="pcard__in">' + pdInputRows(g.keys) + '</div>' +
           (g.cor ? '<div class="corbar">' +
             '<button type="button" class="corbar__btn" data-cor-alt="1"></button>' +
-            '<span class="corbar__h">默认深圳 SZ · 选择会记住</span></div>' : '') +
+            '<span class="corbar__h">默认 PHN · 共识口径 · 选择会记住</span></div>' : '') +
           '<div class="pres"></div>' +
         '</div>' +
       '</div>';
@@ -4381,7 +4381,7 @@
     if (!box) return;
     box.classList.toggle('pdGroups--noalt', !pdCorAlt);
     box.querySelectorAll('[data-cor-alt]').forEach(function (btn) {
-      btn.textContent = pdCorAlt ? '收起另一套（四川 2025）' : '显示另一套方程（四川 2025）';
+      btn.textContent = pdCorAlt ? '收起国内两套对照' : '显示国内两套对照（深圳 SZ / 四川 2025）';
     });
   }
 
@@ -4442,7 +4442,8 @@
     let h = '<div class="zrow' + (r.hasValue ? '' : ' zrow--none') + '"' + tag + '>' +
       '<div class="zrow__n">' + esc(r.name) + '（' + esc(r.key) + '）' +
         (r.srcLabel ? '<span class="zrow__src">' + esc(r.srcLabel) + '</span>' : '') +
-        '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span></div>' +
+        '<span class="zrow__sub">均值 ' + esc(r.subText) + '</span>' +
+        (r.ahaText ? '<span class="zrow__aha">' + esc(r.ahaText) + '</span>' : '') + '</div>' +
       '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
       '<div class="zrow__r">' + esc(r.rangeText) +
         '<span class="zrow__r3">±3SD ' + esc(r.range3Text) + '</span></div>' +
@@ -4451,21 +4452,21 @@
         : '<span class="tag tag--none">—</span>') +
       '</div></div>';
 
-    // ★ 冠脉并列第二套中国方程：同一测值第二个 Z
-    if (r.alt) {
+    // ★ 冠脉主行 PHN 之外，并列两套国内常模作对照（默认由 corbar 收起）
+    (r.alts || []).forEach(function (a) {
       h += '<div class="zrow zrow--alt' + (r.hasValue ? '' : ' zrow--none') + '" data-cor="1">' +
-        '<div class="zrow__n">' + esc(r.altLabel) +
-          (r.alt.extrap ? '<span class="zrow__ext">外推</span>' : '') +
-          '<span class="zrow__sub">均值 ' + esc(r.alt.subText) + ' · ' +
-            esc(r.alt.r2Text) + '</span></div>' +
+        '<div class="zrow__n">' + esc(a.label) +
+          (a.extrap ? '<span class="zrow__ext">外推</span>' : '') +
+          '<span class="zrow__sub">均值 ' + esc(a.subText) + ' · ' +
+            esc(a.r2Text) + '</span></div>' +
         '<div class="zrow__v">' + (r.hasValue ? esc(r.value) + esc(r.unit) : '—') + '</div>' +
-        '<div class="zrow__r">' + esc(r.alt.rangeText) +
-          '<span class="zrow__r3">±3SD ' + esc(r.alt.range3Text) + '</span></div>' +
+        '<div class="zrow__r">' + esc(a.rangeText) +
+          '<span class="zrow__r3">±3SD ' + esc(a.range3Text) + '</span></div>' +
         '<div class="zrow__g">' + (r.hasValue
-          ? '<span class="tag ' + r.alt.statusCls + '">' + esc(r.alt.zText) + '</span>'
+          ? '<span class="tag ' + a.statusCls + '">' + esc(a.zText) + '</span>'
           : '<span class="tag tag--none">—</span>') +
         '</div></div>';
-    }
+    });
     return h;
   }
 
@@ -4714,13 +4715,13 @@
         g.rows.forEach(function (r) {
           if (!r.alt || !r.hasValue || r.z === null || r.alt.z === null) return;
           if ((Math.abs(r.z) > 2) !== (Math.abs(r.alt.z) > 2)) {
-            disc.push(esc(r.name) + '（深圳 ' + esc(r.zText) + ' ' + esc(r.statusText) +
-              ' / 四川 ' + esc(r.alt.zText) + ' ' + esc(r.alt.statusText) + '）');
+            disc.push(esc(r.name) + '（PHN ' + esc(r.zText) + ' ' + esc(r.statusText) +
+              ' / 深圳 SZ ' + esc(r.alt.zText) + ' ' + esc(r.alt.statusText) + '）');
           }
         });
       });
       $('pdDiscord').innerHTML = disc.length
-        ? '⚠ 冠脉两法结论不一致：' + disc.join('；') + '。以报告所采用的那一套判读。'
+        ? '⚠ 冠脉主行与国内对照结论不一致：' + disc.join('；') + '。以 R83 共识指定的 PHN 判读。'
         : '';
       $('pdDiscord').hidden = disc.length === 0;
     } else {

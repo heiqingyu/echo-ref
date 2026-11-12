@@ -21,7 +21,9 @@
  *  Pediatric Heart Network（PHN）Normal Echocardiogram Database
  *  Lopez L, Colan S, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979.
  *  n = 3566，0–18 岁健康非肥胖儿童，19 个中心，Core Lab 统一测量。
- *  系数表公开于 https://www.pediatricheartnetwork.org/forresearchers/echo-z-scores/
+ *  系数表公开于 https://www.pediatricheartnetwork.org/echo-z-scores/
+ *  ★ 该表含冠脉三行（LMCA / LAD / RCA，单位 mm）。2025 中国专家共识（R83）
+ *    指定 PHN 北美冠脉 Z 值公式 + AHA 2017 风险分层，本模块冠脉主行据此恢复。
  *
  *  LVESD / LVESV 两项系数来自该数据库的后续补充发表：
  *  Cantinotti M, et al. / PHN 方法论扩展（PMC7870534）
@@ -105,11 +107,10 @@ const PEDS_Z = {
   ARCHD:  { a: 0.50, mean: 1.36,  sd: 0.19,  unit: 'cm', name: '主动脉弓远端内径' },
   ISTH:   { a: 0.50, mean: 1.25,  sd: 0.18,  unit: 'cm', name: '主动脉峡部内径' },
 
-  // ── 冠状动脉（不走 PHN！见 3b-3：两套中国儿童方程，对数尺度）────
-  //   ★ 2026-11-06 改：原来这三项挂的是 α=0.45 的幂律系数，但 PHN 数据集
-  //     根本没测冠脉（Lopez 2017 的 21 个结构里没有冠脉），那组数没有可核的
-  //     出处，且与深圳儿童医院小程序的差值可达 1 个 Z。现改为
-  //     「深圳 SZ（Fan 2021）」为主、「四川（王永 2025）」为辅，两篇都能逐字核。
+  // ── 冠状动脉（主行 PHN 幂律；深圳 SZ / 四川 2025 为对照，对数尺度）────
+  //   ★ 2026-11-12 更正：PHN 官网系数表确有 LMCA / LAD / RCA 三行（单位 mm），
+  //     R83 [20] 即 Lopez 2017。旧注「PHN 没测冠脉、系数无出处」是误判
+  //     （把 Pettersen 2008 的 21 个结构套到 Lopez 2017 头上），已作废。
   LMCA:   { model: 'cor', unit: 'mm', dec: 1, name: '左冠主干内径' },
   LAD:    { model: 'cor', unit: 'mm', dec: 1, name: '左前降支近段内径' },
   LCX:    { model: 'cor', unit: 'mm', dec: 1, name: '左回旋支近段内径' },
@@ -389,9 +390,10 @@ const PEDS_GROUPS = [
     title: '冠状动脉',
     keys: ['LMCA', 'LAD', 'LCX', 'RCA'],
     cor: true,   // ★ 只有本组带「显示另一套」切换按钮（2026-11-08）
-    note: '★ 默认主行＝深圳 SZ（R79，6 省 9 中心 n=842）；点「显示另一套」展开四川 2025（R119，n=744）。' +
-      'LCX 深圳队列未测，该行即四川、无次行。两套均按 ln 尺度建模，±2SD 为乘性区间、上下不对称。' +
-      '★ 两套不可跨套比较：同一患儿随访请始终固定同一套。',
+    note: '★ 默认主行＝PHN 北美公式（R83 2025 中国专家共识指定，Lopez 2017，19 中心 3566 例）；' +
+      'AHA 2017 风险分层：2≤Z<2.5 扩张、2.5≤Z<5 小型瘤、5≤Z<10 且绝对值<8 mm 中型瘤、Z≥10 或 ≥8 mm 巨大瘤。' +
+      '点「显示国内两套对照」并列深圳 SZ（R79）与四川 2025（R119）；两者按 ln 尺度建模，不可套用 AHA 阈值。' +
+      'LCX 无 PHN 常模，该行主行即四川 2025。★ 各套不可跨套比较：同一患儿随访请始终固定同一套。',
   },
   { title: '肺动脉', keys: ['PVSAX', 'PVLAX', 'MPA', 'RPA', 'LPA'] },
   { title: '二尖瓣', keys: ['MVAP', 'MVLAT', 'MVA'] },
@@ -677,21 +679,86 @@ function buildCsmcRow(key, def, bsa, measured, hasBsa) {
 }
 
 /**
- * 冠脉行的主/次两套中国方程（对数线性）
+ * 冠脉主行：PHN 北美公式（R83 共识指定）
  *
- * ★ 2026-11-06 重组：原来主行是「PHN 幂律（α=0.45）」、次行是深圳 SZ。
- *   PHN 数据集并没有冠脉，那组系数查不到出处；且与深圳儿童医院小程序的
- *   差值可达 1 个 Z（90 cm/9 kg、LCA 2.2 mm：本页旧值 +0.24，深圳小程序 −0.105）。
- *   现改为两套都能逐字核原文的中国队列：
- *     主行 深圳 SZ（Fan 2021，6 省 9 中心 n=842，1 月龄–17 岁）—— 深圳儿童医院牵头
- *     次行 四川 SC（王永 2025，n=744，0–18 岁，四段齐全）
- *   LCX 只有四川这套，故 LCX 以四川为主行、无次行。
+ * 系数逐字取自 PHN 官网 Echo Z-Scores 表（α / Mean / SD），单位 **mm**：
+ *   Z = ( 实测 mm / BSA^α − Mean ) / SD，α 三段均为 0.45，BSA 用 Haycock。
+ *   LMCA 2.95 / 0.57；LAD（近段）1.90 / 0.34；RCA（近段）2.32 / 0.55。
+ * 出处：Lopez L, Colan S, et al. Circ Cardiovasc Imaging. 2017;10(11):e006979（R8 / R83 [20]）。
+ * ★ 官网表只有三段，**没有 LCX**；LCX 仍用四川 2025 为主行。
+ * ★ 单位陷阱：本表其余内径系数是 cm，唯独冠脉是 mm，不可再 ÷10。
  */
-const COR_PRIMARY = { LMCA: 'sz', LAD: 'sz', LCX: 'sc', RCA: 'sz' };
+const COR_PHN = {
+  LMCA: { a: 0.45, mean: 2.95, sd: 0.57, unit: 'mm' },
+  LAD:  { a: 0.45, mean: 1.90, sd: 0.34, unit: 'mm' },
+  RCA:  { a: 0.45, mean: 2.32, sd: 0.55, unit: 'mm' },
+};
+
+/** 主行归属：三段走 PHN，LCX 无北美常模走四川 2025 */
+const COR_PRIMARY = { LMCA: 'phn', LAD: 'phn', LCX: 'sc', RCA: 'phn' };
 
 /** 模型表取用：'sz' → SZ_Z，'sc' → SC_Z */
 function corModel(model, key) {
   return model === 'sz' ? SZ_Z[key] : SC_Z[key];
+}
+
+/** PHN 冠脉：给 BSA 求均值 / SD 与 ±2 / ±3SD 区间（加性、上下对称） */
+function phnCorAt(d, bsa) {
+  if (!d || !bsa || bsa <= 0) return null;
+  const k = Math.pow(bsa, d.a);
+  const mean = d.mean * k;
+  const sd = d.sd * k;
+  return {
+    mean: mean, sd: sd,
+    lo2: Math.max(0, mean - 2 * sd), hi2: mean + 2 * sd,
+    lo3: Math.max(0, mean - 3 * sd), hi3: mean + 3 * sd,
+  };
+}
+
+/** Z = ( 实测 − Mean×BSA^α ) / ( SD×BSA^α ) */
+function phnCorZ(d, t, value) {
+  if (!d || !t || !(value > 0)) return null;
+  return (value - t.mean) / t.sd;
+}
+
+/** PHN 行渲染字段（与 logView 同形，界面无需分支） */
+function phnCorView(d, bsa, raw, hasValue) {
+  const t = (bsa && bsa > 0) ? phnCorAt(d, bsa) : null;
+  const z = (t && hasValue) ? phnCorZ(d, t, raw) : null;
+  const g = gradeZ(z);
+  const rng = function (k) {
+    if (!t) return '—';
+    return fmt(k === 2 ? t.lo2 : t.lo3, 2) + ' – ' + fmt(k === 2 ? t.hi2 : t.hi3, 2);
+  };
+  return {
+    z: z === null ? null : round(z, 2),
+    zText: z === null ? '—' : (z > 0 ? '+' : '') + fmt(z, 2),
+    status: g.level,
+    statusText: g.text,
+    statusCls: g.cls,
+    meanText: t ? fmt(t.mean, 2) + ' mm' : '—',
+    sdText: t ? 'SD ' + fmt(t.sd, 2) + ' mm' : '—',
+    subText: t ? fmt(t.mean, 2) + ' mm' : '—',
+    rangeText: rng(2),
+    range3Text: rng(3),
+    mulText: '—',
+    r2Text: 'α=' + d.a.toFixed(2),
+    rseText: '加性 SD',
+  };
+}
+
+/**
+ * AHA 2017 川崎病冠脉风险分层（R83 原文，配 PHN Z 值；绝对值单位 mm）
+ * 2≤Z<2.5 扩张 / 2.5≤Z<5 小型瘤 / 5≤Z<10 且 <8 mm 中型瘤 / Z≥10 或 ≥8 mm 巨大瘤
+ */
+function ahaGrade(z, valueMm) {
+  if (z === null || z === undefined || isNaN(z)) return '';
+  const v = Number(valueMm) || 0;
+  if (z >= 10 || v >= 8) return 'AHA：巨大冠状动脉瘤';
+  if (z >= 5) return 'AHA：中型冠状动脉瘤';
+  if (z >= 2.5) return 'AHA：小型冠状动脉瘤';
+  if (z >= 2) return 'AHA：冠状动脉扩张';
+  return 'AHA：未达扩张阈值';
 }
 
 /**
@@ -753,43 +820,57 @@ function buildCoronaryRow(key, def, bsa, measured, hasBsa) {
   const v = pickValue(measured, key);
   const raw = v.hasValue ? parseFloat(v.raw) : null;
   const dec = def.dec === undefined ? 1 : def.dec;
+  const pm = COR_PRIMARY[key];
+  const isPhn = pm === 'phn';
 
-  const pm = COR_PRIMARY[key] === 'sc' ? 'sc' : 'sz';
-  const pModel = corModel(pm, key);
-  const pT = (hasBsa && pModel) ? logAt(pModel, bsa) : null;
-  const pView = logView(pModel, pT, raw, v.hasValue);
+  // 主行：PHN 幂律（LMCA / LAD / RCA）；LCX 无 PHN 常模，走四川 2025 对数式
+  const pView = isPhn
+    ? phnCorView(COR_PHN[key], hasBsa ? bsa : null, raw, v.hasValue)
+    : logView(corModel(pm, key),
+        (hasBsa ? logAt(corModel(pm, key), bsa) : null), raw, v.hasValue);
 
-  const am = pm === 'sz' ? 'sc' : null;
-  const aModel = am ? corModel(am, key) : null;
-  const aT = (hasBsa && aModel) ? logAt(aModel, bsa) : null;
-  const aView = aModel ? logView(aModel, aT, raw, v.hasValue) : null;
+  // 对照行：PHN 主行时并列两套中国方程；LCX 主行已是四川，不再重复
+  const alts = [];
+  if (isPhn) {
+    const szM = SZ_Z[key];
+    const scM = SC_Z[key];
+    if (szM) {
+      const t = hasBsa ? logAt(szM, bsa) : null;
+      alts.push(Object.assign({ label: '深圳 SZ', src: 'sz' },
+        logView(szM, t, raw, v.hasValue), {
+          extrap: hasBsa ? !szInRange(bsa) : false,
+          hasValue: v.hasValue,
+        }));
+    }
+    if (scM) {
+      const t = hasBsa ? logAt(scM, bsa) : null;
+      alts.push(Object.assign({ label: '四川 2025', src: 'sc' },
+        logView(scM, t, raw, v.hasValue), {
+          extrap: hasBsa ? !(bsa >= SC_RANGE.bsaMin && bsa <= SC_RANGE.bsaMax) : false,
+          hasValue: v.hasValue,
+        }));
+    }
+  }
 
-  const inRange = function (model, m) {
-    if (!hasBsa) return false;
-    return model === 'sz'
-      ? szInRange(bsa)
-      : (bsa >= SC_RANGE.bsaMin && bsa <= SC_RANGE.bsaMax);
-  };
+  const aha = (isPhn && v.hasValue && pView.z !== null && pView.z !== undefined)
+    ? ahaGrade(pView.z, raw) : '';
 
   return {
     key: key,
     name: def.name,
     unit: def.unit,
     src: pm,
-    srcText: pm === 'sz' ? 'SZ 法 · 深圳' : '四川 2025',
-    // ★ 主行必须自己标明来源：否则只有次行写「四川 2025」，主行看着像没有出处
-    //   （用户 2026-11-06 反馈「下面四川，上面写个深圳吧」）
-    srcLabel: pm === 'sz' ? '深圳 SZ' : '四川 2025',
-    model: 'cor',
-    altLabel: aModel ? '四川 2025' : '',
-    alt: aView ? Object.assign({}, aView, {
-      src: am,
-      srcText: '四川 2025',
-      extrap: !inRange(am, aModel),
-      hasValue: v.hasValue,
-    }) : null,
-    extrap: !inRange(pm, pModel),
-    alphaText: '对数尺度 · ' + pView.rseText,
+    srcText: isPhn ? 'PHN' : '四川 2025',
+    // ★ 主行必须自报来源（用户 2026-11-06 反馈「下面四川，上面写个深圳吧」）
+    srcLabel: isPhn ? 'PHN · 共识' : '四川 2025',
+    model: isPhn ? 'phn' : 'cor',
+    altLabel: alts.length ? alts[0].label : '',
+    alt: alts.length ? alts[0] : null,   // 摘要只比第一套国内对照
+    alts: alts,                          // 模板遍历渲染全部对照行
+    ahaText: aha,
+    extrap: !isPhn && hasBsa
+      ? !(bsa >= SC_RANGE.bsaMin && bsa <= SC_RANGE.bsaMax) : false,
+    alphaText: isPhn ? 'α=0.45 · 加性 SD' : '对数尺度 · ' + pView.rseText,
     meanText: pView.meanText,
     sdText: pView.sdText,
     subText: pView.subText,
@@ -1128,6 +1209,7 @@ module.exports = {
   SC_Z,
   SC_RANGE,
   COR_PRIMARY,
+  COR_PHN,
   NEO_Z,
   NEO_RANGE,
   NEO_GROUPS,
@@ -1145,6 +1227,10 @@ module.exports = {
   szInRange,
   logAt,
   logZ,
+  phnCorAt,
+  phnCorZ,
+  phnCorView,
+  ahaGrade,
   buildCoronaryRow,
   neoMean,
   neoAt,

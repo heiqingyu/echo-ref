@@ -404,18 +404,18 @@ function check(name, ok, detail) {
 
   const zRows = await c.evalJs(
     'document.querySelectorAll("#pdGroups .pres .zrow:not(.zrow--head)").length');
-  // 41 项 + 冠脉 3 条四川次行（LCX 无次行）= 44
-  check('Z 值结果行已渲染', zRows === 44, zRows + ' 行');
+  // 41 项主行 + 冠脉 3 段各 2 条国内对照（LCX 无对照）= 47
+  check('Z 值结果行已渲染', zRows === 47, zRows + ' 行');
   const zHead = await c.evalJs('document.querySelectorAll("#pdGroups .pres .zrow--head").length');
   check('10 张组卡各出一张表头', zHead === 10, zHead + ' 张');
   // 儿童 Z 值行同样须带英文缩写
   const zAbbr = await c.evalJs(
     '[...document.querySelectorAll("#pdGroups .pres .zrow:not(.zrow--alt) .zrow__n")]' +
     '.filter(function(e){return /\uff08[A-Za-z]/.test(e.textContent);}).length');
-  // 41 个主行（冠脉的「四川 2025」次行没有缩写，不计入）
+  // 41 个主行（冠脉对照行没有缩写，不计入）
   check('Z 值行均带英文缩写', zAbbr === 41, zAbbr + ' / 41 行');
 
-  // 2026-11-08：冠脉两套方程 —— 默认只出深圳 SZ，点按钮才展开四川 2025，偏好落本机
+  // 冠脉：默认只出 PHN 主行，点按钮才展开两套国内对照，偏好落本机
   const corToggle = JSON.parse(await c.evalJs(`(function(){
     var box = document.getElementById('pdGroups');
     var btn = box && box.querySelector('.corbar__btn');
@@ -431,10 +431,10 @@ function check(name, ok, detail) {
     var back = {shown: vis(alt)};
     return JSON.stringify({before: before, after: after, back: back});
   })()`));
-  check('冠脉默认只显示深圳 SZ，四川 2025 次行默认隐藏',
+  check('冠脉默认只显示 PHN 主行，两套国内对照默认隐藏',
     corToggle.before.noalt === true && corToggle.before.shown === false,
     JSON.stringify(corToggle.before));
-  check('点「显示另一套」展开四川 2025 且记住偏好、再点收起',
+  check('点「显示国内两套对照」展开对照行且记住偏好、再点收起',
     corToggle.after.shown === true && corToggle.after.saved === '1' && corToggle.back.shown === false,
     JSON.stringify(corToggle.after));
   // ★ 2026-11-08：考证长文只在对话里讨论，工具里只留「默认哪套 + 怎么切换」
@@ -443,7 +443,8 @@ function check(name, ok, detail) {
     var s = e ? e.textContent : '';
     return JSON.stringify({
       short: s.indexOf('冠脉默认口径') >= 0 &&
-             s.indexOf('默认显示深圳 SZ') >= 0 &&
+             s.indexOf('默认显示 PHN') >= 0 &&
+             s.indexOf('AHA 2017') >= 0 &&
              s.indexOf('勿跨套比较') >= 0,
       noEssay: s.indexOf('哪个版本最通用') < 0 &&
                s.indexOf('国际口径对照') < 0 &&
@@ -570,7 +571,7 @@ function check(name, ok, detail) {
   // ±3SD 并入参考值列（旧版另有独立折叠表，同组数被拆两处）
   const r3n = await c.evalJs(
     'document.querySelectorAll("#pdGroups .pres .zrow__r3").length');
-  check('±3SD 并入参考值列（41 项 + 3 条四川次行）', r3n === 44, r3n + ' 条');
+  check('±3SD 并入参考值列（41 项 + 6 条国内对照）', r3n === 47, r3n + ' 条');
   // 冠脉主行必须自报来源，否则只有次行写「四川」，主行看着没出处
   const corSrc = await c.evalJs(`(function(){
     var n = [...document.querySelectorAll('#pdGroups .zrow__src')].map(function(e){
@@ -580,8 +581,8 @@ function check(name, ok, detail) {
     return JSON.stringify({n: n.join(','), dup: dup});
   })()`);
   const cs = JSON.parse(corSrc);
-  // 顺序＝LMCA / LAD / LCX / RCA；LCX 只有四川一套，没有次行
-  check('冠脉四行都标了来源', cs.n === '深圳 SZ,深圳 SZ,四川 2025,深圳 SZ', corSrc);
+  // 顺序＝LMCA / LAD / LCX / RCA；LCX 无 PHN 常模，主行用四川
+  check('冠脉四行都标了来源', cs.n === 'PHN · 共识,PHN · 共识,四川 2025,PHN · 共识', corSrc);
   check('名称不再重复缩写（不出现（LMCA）（LMCA））', cs.dup === 0, corSrc);
   check('不再有独立的 ±3SD 折叠表',
     (await c.evalJs('document.getElementById("pdRanges") === null')) === true);

@@ -151,10 +151,10 @@ if (block.length) {
   warn.forEach(w => console.log('   · ' + w));
   console.log('\n ⚠ 上传后务必做两件事：');
   console.log('   1. 看上传结束的「已跳过处理」列表——出现文件就是有东西被跳过');
-  console.log('   2. 重新「预览」扫码，用真机逐页点一遍再提审');
+  console.log('   2. 上传即自动刷新体验版，用手机打开体验版逐页点一遍再提审');
   process.exit(1);
 } else {
   console.log(' 结论：通过 ✓  可以上传');
-  console.log('\n 上传后仍须：① 看「已跳过处理」列表为空 ② 重新预览扫码真机验证');
+  console.log('\n 上传后仍须：① 看「已跳过处理」列表为空 ② 打开体验版真机验证（无需重新预览）');
   process.exit(0);
 }

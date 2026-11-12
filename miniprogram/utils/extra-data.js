@@ -1750,8 +1750,9 @@ const REFS = [
     dl: [
       { t: '文章页（看订阅）', u: 'https://doi.org/10.3760/cma.j.cn131148-20250919-00508' },
       { t: '全文阅读页（不可下载）', u: 'https://rs.yiigle.com/cmaid/1608694' },
+      { t: '官网 · 在线计算器', u: 'https://www.pediatricheartnetwork.org/z-scores-calculator/' },
     ],
-    use: '儿童冠脉 AHA 15 分段法与可显示的 9 段、舒张早期（T 波终点）测量、内膜至内膜、图像放大 2–4 倍、BSA 校正 Z 值、AHA 2017 川崎病冠脉分级口径；用于「儿童 Z 值」页冠脉组说明与判读',
+    use: '共识指定 PHN 北美儿童冠脉内径 Z 值公式（Lopez 2017）与 AHA 2017 川崎病冠脉风险分层；儿童冠脉 AHA 15 分段法与可显示的 9 段、舒张早期（T 波终点）测量、内膜至内膜、图像放大 2–4 倍、BSA 校正 Z 值；用于「儿童 Z 值」页冠脉组说明与判读',
   },
   {
     id: 'R84',

@@ -529,14 +529,14 @@ Page({
       });
     });
 
-    // 冠脉两法（深圳 SZ / 四川 2025）若一法异常、一法正常，必须点明
+    // 冠脉主行 PHN 与第一套国内对照（深圳 SZ）若结论不一致，必须点明
     const discord = [];
     grouped.forEach(function (g) {
       g.rows.forEach(function (r) {
         if (!r.alt || !r.hasValue || r.z === null || r.alt.z === null) return;
         if ((Math.abs(r.z) > 2) !== (Math.abs(r.alt.z) > 2)) {
-          discord.push(r.name + '（深圳 ' + r.zText + ' ' + r.statusText +
-            ' / 四川 ' + r.alt.zText + ' ' + r.alt.statusText + '）');
+          discord.push(r.name + '（PHN ' + r.zText + ' ' + r.statusText +
+            ' / 深圳 SZ ' + r.alt.zText + ' ' + r.alt.statusText + '）');
         }
       });
     });
@@ -552,7 +552,7 @@ Page({
       worstStatusText: worst ? worst.statusText : '',
       worstCls: worst ? worst.statusCls : 'tag--none',
       discordText: discord.length
-        ? '⚠ 冠脉两法结论不一致：' + discord.join('；') + '。以报告所采用的那一套判读。'
+        ? '⚠ 冠脉主行与国内对照结论不一致：' + discord.join('；') + '。以 R83 共识指定的 PHN 判读。'
         : '',
     };
   },
