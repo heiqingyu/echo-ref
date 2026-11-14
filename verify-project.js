@@ -281,7 +281,7 @@ EX.BRIEF_SECTIONS.forEach(sec => sec.items.forEach(it => {
 }));
 if (!missCite.length) ok('正文提到的文献编号均已挂进 source');
 else bad('正文提到但未挂引用: ' + missCite.join(' | '));
-if (EX.REFS.length === 119) ok('参考文献 119 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声）');
+if (EX.REFS.length === 122) ok('参考文献 122 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声、R120 中国应变共识 2023、R121 高血压心血管重构指南 2024、R122 中国心肌病综合管理指南 2025）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 // v1.15.7：公众号 / 第三方转载 / 机构仓储这类易失效链接，不能是文献的唯一入口
@@ -1544,9 +1544,9 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
 /* ── v1.15.1：R109–R112 入库 + ped-base 两节（EACVI 报告要素 / ISHLT 心衰分级）── */
 {
   const ids = EX.REFS.slice(-6).map(function (r) { return r.id; }).join(',');
-  (ids === 'R114,R115,R116,R117,R118,R119')
-    ? ok('R114–R119 六条按序排在文献表末尾')
-    : bad('文献表末尾不是 R114–R119：' + ids);
+  (ids === 'R117,R118,R119,R120,R121,R122')
+    ? ok('R117–R122 六条按序排在文献表末尾')
+    : bad('文献表末尾不是 R117–R122：' + ids);
 
   const byId = {};
   EX.REFS.forEach(function (r) { byId[r.id] = r; });
@@ -1829,6 +1829,62 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     (miss.length === 0 && stale.length === 0)
       ? ok(rid + ' 题录已补全正式卷期页与 DOI（无「在线先发/页码待定」残留）')
       : bad(rid + ' 题录不完整：缺 ' + miss.join(' / ') + '，残留 ' + stale.join(' / ') + '；实际 ' + w);
+  });
+}
+
+/* ── 2026-11-14：v1.16.4 近三年国内三篇指南 / 共识入库（R120–R122）── */
+{
+  const byId = {};
+  EX.REFS.forEach(function (r) { byId[r.id] = r; });
+  const wantWhere = {
+    R120: ['32(4): 277–287', '10.3760/cma.j.cn131148-20221027-00726'],
+    R121: ['33(7): 553–572', '10.3760/cma.j.cn131148-20240214-00097'],
+    R122: ['40(5): 420–462', '10.3969/j.issn.1000-3614.2025.05.002'],
+  };
+  Object.keys(wantWhere).forEach(function (rid) {
+    const r = byId[rid] || { where: '', use: '', dl: [] };
+    const miss = wantWhere[rid].filter(function (k) { return (r.where || '').indexOf(k) === -1; });
+    (miss.length === 0) ? ok(rid + ' 正式卷期页与 DOI 完整')
+      : bad(rid + ' 题录缺：' + miss.join(' / '));
+    ((r.use || '').length >= 40) ? ok(rid + ' use 写明用途') : bad(rid + ' use 过短');
+    const dl = r.dl || [];
+    (dl.length >= 2 && dl.every(function (d) { return (d.u || '').indexOf('https://') === 0; }))
+      ? ok(rid + ' 并列 ' + dl.length + ' 条 https 链接')
+      : bad(rid + ' 链接不足或格式异常');
+  });
+
+  const allItems = EX.BRIEF_SECTIONS.reduce(function (a, s2) { return a.concat(s2.items || []); }, []);
+  const getIt = function (id) { return allItems.filter(function (i) { return i.id === id; })[0] || { source: [], blocks: [] }; };
+  const srcOf = function (id) { return (getIt(id).source || []).join(','); };
+  const txtOf = function (id) { return JSON.stringify(getIt(id).blocks || []); };
+  [
+    ['strain', 'R120'], ['strain', 'R121'], ['zh-normal', 'R121'],
+    ['hcm', 'R122'], ['dcm', 'R122'],
+  ].forEach(function (p) {
+    (srcOf(p[0]).indexOf(p[1]) !== -1) ? ok(p[0] + ' source 挂 ' + p[1])
+      : bad(p[0] + ' source 缺 ' + p[1] + '：' + srcOf(p[0]));
+  });
+  [
+    ['strain', '中国专家共识（2023）的采集规范'],
+    ['strain', '40~80 帧/s'],
+    ['strain', 'PSD 正常值 ≤34 ms'],
+    ['strain', 'GLS ≤ −20%'],
+    ['zh-normal', '五、2024 版高血压指南采用的中国上限'],
+    ['zh-normal', 'LVMI（g/m²）'],
+    ['zh-normal', '两套口径并列、不互相替换'],
+    ['hcm', '十五、国内综合管理指南 2025 的 TTE / TEE 推荐'],
+    ['dcm', '六、国内综合管理指南 2025 的定义与影像定位'],
+    ['dcm', '不足以解释其病因的心肌疾病'],
+  ].forEach(function (p) {
+    (txtOf(p[0]).indexOf(p[1]) !== -1) ? ok(p[0] + ' 含「' + p[1] + '」')
+      : bad(p[0] + ' 缺「' + p[1] + '」');
+  });
+  (txtOf('strain').indexOf('＜ −18%') !== -1 && txtOf('strain').indexOf('≤ −20%') !== -1)
+    ? ok('GLS −18% 三区制与 −20% 界值并列保留，不互相替换')
+    : bad('GLS 两套口径未并列');
+  ['strain', 'zh-normal', 'hcm', 'dcm'].forEach(function (id) {
+    (EX.SEARCH_KW[id] && EX.SEARCH_KW[id].length > 10) ? ok(id + ' 搜索别名已补')
+      : bad(id + ' 搜索别名缺失');
   });
 }
 
