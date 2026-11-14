@@ -281,7 +281,7 @@ EX.BRIEF_SECTIONS.forEach(sec => sec.items.forEach(it => {
 }));
 if (!missCite.length) ok('正文提到的文献编号均已挂进 source');
 else bad('正文提到但未挂引用: ' + missCite.join(' | '));
-if (EX.REFS.length === 122) ok('参考文献 122 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声、R120 中国应变共识 2023、R121 高血压心血管重构指南 2024、R122 中国心肌病综合管理指南 2025）');
+if (EX.REFS.length === 123) ok('参考文献 123 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声、R120 中国应变共识 2023、R121 高血压心血管重构指南 2024、R122 中国心肌病综合管理指南 2025、R123 EACVI/EHRA 左房与左心耳共识 2025）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 // v1.15.7：公众号 / 第三方转载 / 机构仓储这类易失效链接，不能是文献的唯一入口
@@ -302,6 +302,13 @@ else bad('文献直链过少: ' + dlAll.length);
 if (dlAll.every(d => String(d.u).indexOf('https://') === 0 && /PDF|全文|需订阅|官网|免费页面|检索|DOI|万方|文章页|指南页|详情页/.test(d.t)))
   ok('每条直链含 https 地址与类型标注');
 else bad('存在不合规的文献直链: ' + dlAll.filter(d => !/PDF|全文|需订阅|官网|免费页面|检索|DOI|万方|文章页|指南页|详情页/.test(d.t)).map(d => d.t).join(' '));
+// ★ 2026-11-14：用户明确要求「指南页（发布信息）」不得挂药企站 / 商业医学媒体。
+// R122 曾把《中国心肌病综合管理指南 2025》的发布页挂到辉瑞药品站，已改 DOI + 万方题录页。
+// 这里锁死全表，避免以后查不到官方文章页时又拿商业站凑数。
+const COMMERCIAL_RE = /pfizer|medicalinformation|drvoice|medlive|medsci|dxy\.cn|haodf|cn-healthcare|astrazeneca|novartis|sanofi|boehringer|lilly\.com|abbvie|amgen|医脉通|丁香园|梅斯|严道医声/i;
+const commercialDl = dlAll.filter(d => COMMERCIAL_RE.test(String(d.u) + ' ' + String(d.t)));
+if (!commercialDl.length) ok('文献链接无药企站 / 商业医学媒体发布页');
+else bad('文献链接混入药企站 / 商业医学媒体：' + commercialDl.map(d => d.u).join(' '));
 // v1.13.2：中文文献从「万方搜索页」改为「万方文章详情页」——用户要求点一下直接到文章
 const wfRe = /^https:\/\/d\.wanfangdata\.com\.cn\/periodical\/[a-z]+\d{9}$/;
 const wfDl = dlAll.filter(d => /^万方/.test(d.t));
@@ -313,7 +320,8 @@ else bad('万方详情页不合规: ' + wfDl.filter(d => !wfRe.test(d.u)).map(d 
 const WF_OK = ['zhcsyx201608001', 'zgjrxzbxzz202512002', 'xdxzz202401002', 'xdxzz202402001',
   'zhcsyx202401001', 'zhcsyx202408001', 'zhyx202101002', 'zhxxgb201910005', 'zhxxgb201709004',
   'zhqkyszz202401001', 'zhxxxgwk201912001', 'zgxhzz202102002', 'zhyxcszz201402012',
-  'zhcsyx202501001', 'zhcsyx202006001', 'zhcsyx202311001', 'zgxhzz202512002'];
+  'zhcsyx202501001', 'zhcsyx202006001', 'zhcsyx202311001', 'zgxhzz202512002',
+  'zgxhzz202505002'];
 const wfBad = wfDl.filter(d => WF_OK.indexOf(String(d.u).split('/').pop()) === -1);
 if (wfBad.length === 0)
   ok('万方文章 ID 全部在已核对白名单内（' + WF_OK.length + ' 个）');
@@ -1544,9 +1552,9 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
 /* ── v1.15.1：R109–R112 入库 + ped-base 两节（EACVI 报告要素 / ISHLT 心衰分级）── */
 {
   const ids = EX.REFS.slice(-6).map(function (r) { return r.id; }).join(',');
-  (ids === 'R117,R118,R119,R120,R121,R122')
-    ? ok('R117–R122 六条按序排在文献表末尾')
-    : bad('文献表末尾不是 R117–R122：' + ids);
+  (ids === 'R118,R119,R120,R121,R122,R123')
+    ? ok('R118–R123 六条按序排在文献表末尾')
+    : bad('文献表末尾不是 R118–R123：' + ids);
 
   const byId = {};
   EX.REFS.forEach(function (r) { byId[r.id] = r; });
@@ -1886,6 +1894,60 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     (EX.SEARCH_KW[id] && EX.SEARCH_KW[id].length > 10) ? ok(id + ' 搜索别名已补')
       : bad(id + ' 搜索别名缺失');
   });
+}
+
+/* ── 2026-11-14：v1.16.5 R123 EACVI/EHRA 左房与左心耳共识入库 ── */
+{
+  const byId = {};
+  EX.REFS.forEach(function (r) { byId[r.id] = r; });
+  const r123 = byId.R123 || {};
+  const w = r123.where || '';
+  (w.indexOf('26(3): 385–413') !== -1 && w.indexOf('10.1093/ehjci/jeaf014') !== -1 &&
+   w.indexOf('PMID: 39812172') !== -1)
+    ? ok('R123 题录含正式卷期页、DOI 与 PMID') : bad('R123 题录不完整：' + w);
+  const u = r123.use || '';
+  (u.length >= 40 && u.length <= 90) ? ok('R123 use 长度合规（' + u.length + ' 字）')
+    : bad('R123 use 长度异常：' + u.length);
+  const dl = r123.dl || [];
+  (dl.length === 3 && dl.every(function (d) { return (d.u || '').indexOf('https://') === 0; }))
+    ? ok('R123 并列 3 条 https 官方链接') : bad('R123 链接数量或格式异常');
+  (dl.some(function (d) { return d.u === 'https://doi.org/10.1093/ehjci/jeaf014'; }))
+    ? ok('R123 挂 doi.org 官方入口') : bad('R123 缺 DOI 入口');
+  (EX.CALC_SRC && (EX.CALC_SRC.lastiff || []).indexOf('R123') !== -1)
+    ? ok('左房僵硬度计算器 CALC_SRC.lastiff 挂 R123')
+    : bad('CALC_SRC.lastiff 缺 R123');
+
+  const allItems = EX.BRIEF_SECTIONS.reduce(function (a, s2) { return a.concat(s2.items || []); }, []);
+  const getIt = function (id) { return allItems.filter(function (i) { return i.id === id; })[0] || { source: [], blocks: [] }; };
+  const srcOf = function (id) { return (getIt(id).source || []).join(','); };
+  const txtOf = function (id) { return JSON.stringify(getIt(id).blocks || []); };
+  ['la', 'la-strain', 'tee-safety', 'thrombus'].forEach(function (id) {
+    (srcOf(id).indexOf('R123') !== -1) ? ok(id + ' source 挂 R123')
+      : bad(id + ' source 缺 R123：' + srcOf(id));
+  });
+  [
+    ['la', 'EACVI/EHRA 2025 的左房采集规范'],
+    ['la', 'EACVI/EHRA 2025 的左房时相容积与射血分数参考值'],
+    ['la', '31 (27–45)'],
+    ['la', 'LAVImax 24 (21–28)'],
+    ['la', '并列、不互相替换'],
+    ['la-strain', '五、左房应变的采集与零应变参考'],
+    ['la-strain', 'HUNT 研究 1329 名'],
+    ['la-strain', '33.2'],
+    ['la-strain', '两套口径并列写明、不互相替换'],
+    ['tee-safety', '七、EACVI/EHRA 2025 关于左房 / 左心耳的操作建议'],
+    ['tee-safety', '45°～90°'],
+    ['thrombus', '八、左心耳形态与血流的血栓风险'],
+    ['thrombus', '鸡翅 chicken wing'],
+    ['thrombus', '≤55 cm/s'],
+    ['thrombus', '< 20 cm/s'],
+    ['thrombus', 'LVEF/LAVI < 1.5'],
+  ].forEach(function (p) {
+    (txtOf(p[0]).indexOf(p[1]) !== -1) ? ok(p[0] + ' 含「' + p[1] + '」')
+      : bad(p[0] + ' 缺「' + p[1] + '」');
+  });
+  (txtOf('la-strain').indexOf('LASr ≥29%') !== -1 || txtOf('la-strain').indexOf('≥29%') !== -1)
+    ? ok('LASr 判读阈值与 HUNT 参考区间并列保留') : bad('LASr 两套口径未并列');
 }
 
 console.log('\n' + '='.repeat(50));

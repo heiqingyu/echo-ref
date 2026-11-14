@@ -2193,8 +2193,23 @@ const REFS = [
     use: '国内首部综合性心肌病指南：心肌病定义与分类，以及 TTE / 应变 / 三维 / 造影 / 负荷 / TEE 的影像定位与推荐级别；用于 hcm、dcm。',
     dl: [
       { t: 'DOI', u: 'https://doi.org/10.3969/j.issn.1000-3614.2025.05.002' },
-      { t: '指南页（发布信息）', u: 'https://www.pfizermedicalinformation.cn/clinical-guidelines/4321' },
-      { t: '文章页（指南解读）', u: 'https://www.drvoice.cn/article/18156' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zgxhzz202505002' },
+    ],
+  },
+
+  /* ★ 2026-11-14：EACVI/EHRA 左房与左心耳多模态影像评估临床共识声明。
+     用户把原文 PDF 放进 refs/ 后按 R123_ 归档；题录经 Crossref + 首页核对，
+     PMID 39812172 由 Europe PMC 核实。全文在 OUP 订阅墙后，只挂 DOI / 官网文章页 / PubMed。 */
+  {
+    id: 'R123',
+    zh: '左房与左心耳多模态影像评估临床共识声明（EACVI/EHRA 2025）',
+    en: 'Sade LE, Faletra FF, Pontone G, et al. The role of multi-modality imaging for the assessment of left atrium and left atrial appendage: a clinical consensus statement of the European Association of Cardiovascular Imaging (EACVI), European Heart Rhythm Association (EHRA) of the European Society of Cardiology (ESC).',
+    where: 'European Heart Journal - Cardiovascular Imaging, 2025, 26(3): 385–413. DOI: 10.1093/ehjci/jeaf014; PMID: 39812172',
+    use: 'EACVI/EHRA 左房 / 左心耳共识：LAA 四型与血流阈值、时相容积与 LAEF、LA 应变采集；用于 la、la-strain、tee-safety、thrombus。',
+    dl: [
+      { t: 'DOI', u: 'https://doi.org/10.1093/ehjci/jeaf014' },
+      { t: '文章页', u: 'https://academic.oup.com/ehjcimaging/article/26/3/385/7954288' },
+      { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/39812172/' },
     ],
   },
 
@@ -2994,7 +3009,7 @@ const CALC_SRC = {
   ea: ['R2'],                      // 有效动脉弹性
   coa: ['R32', 'R27'],             // 主动脉缩窄（先心指南 + 胸主动脉影像）
   aortaz: ['R27', 'R1'],           // 主动脉分节段内径参考区间
-  lastiff: ['R4', 'R24'],          // 左房僵硬度（LASr 相关）
+  lastiff: ['R4', 'R24', 'R123'],  // 左房僵硬度（LASr 相关）
   vtir: ['R32', 'R33'],            // RVOT/LVOT VTI 比替代分流
   ppm: ['R15'],                    // EOAi 与 PPM（人工瓣 2024）
   dfun: ['R14', 'R39', 'R71'],     // 舒张功能四步法 + 2025 更新 + 心衰 A/B 阶段筛查指标

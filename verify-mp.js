@@ -679,7 +679,7 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     calcWxml.indexOf('wx:if="{{refsOpen}}"') !== -1 ? 1 : 0, 1, 0);
   check('参考文献列表绑定 refs', calcWxml.indexOf('wx:for="{{refs}}"') !== -1 ? 1 : 0, 1, 0);
   const EXD = require(pathW.join(__dirname, 'miniprogram', 'utils', 'extra-data.js'));
-  check('参考文献 122 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 儿童心衰、R111 BSE 先心 TTE、R112 巴西负荷超声、R120 中国应变共识 2023、R121 高血压心血管重构指南 2024、R122 中国心肌病综合管理指南 2025）', EXD.REFS.length, 122, 0);
+  check('参考文献 123 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 儿童心衰、R111 BSE 先心 TTE、R112 巴西负荷超声、R120 中国应变共识 2023、R121 高血压心血管重构指南 2024、R122 中国心肌病综合管理指南 2025、R123 EACVI/EHRA 左房与左心耳共识 2025）', EXD.REFS.length, 123, 0);
   const refIds = EXD.REFS.map(r => r.id).join(',');
   // 期望序列程序化生成：新增文献时只要编号连续即可，不必再手改这行
   const expRefIds = Array.from({ length: EXD.REFS.length }, (_, i) => 'R' + (i + 1)).join(',');
