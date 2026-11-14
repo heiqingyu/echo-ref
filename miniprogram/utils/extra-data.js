@@ -1525,12 +1525,12 @@ const REFS = [
     id: 'R63',
     zh: '经导管二尖瓣介入修复技术临床实践指南',
     en: '国家结构性心脏病质量管理与控制中心专业委员会, 国家心血管病专家委员会结构性心脏病专业委员会. 经导管二尖瓣介入修复技术临床实践指南.',
-    where: '中国循环杂志, 2025, 40(12): 1148–1163',
+    where: '中国循环杂志, 2025, 40(12): 1148–1163. DOI: 10.3969/j.issn.1000-3614.2025.12.002',
     use: 'TEER 适应证与禁忌、TEE 引导流程、术后反流与压差评估',
     dl: [
-      
       { t: '中文 PDF', u: 'https://heiqingyu.github.io/echo-ref/materials/%E7%BB%8F%E5%AF%BC%E7%AE%A1%E4%BA%8C%E5%B0%96%E7%93%A3%E4%BB%8B%E5%85%A5%E4%BF%AE%E5%A4%8D%E6%8A%80%E6%9C%AF%E4%B8%B4%E5%BA%8A%E5%AE%9E%E8%B7%B5%E6%8C%87%E5%8D%97.pdf' },
-          { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zgxhzz202512002' },
+      { t: 'DOI', u: 'https://doi.org/10.3969/j.issn.1000-3614.2025.12.002' },
+      { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zgxhzz202512002' },
     ],
   },
   {
