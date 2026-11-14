@@ -1809,6 +1809,29 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     : bad('仍有主观评断残留：' + hits.slice(0, 15).join(' / '));
 }
 
+/* ── 2026-11-14：B 组三条题录补全（R81 / R82 / R118 正式卷期页 + DOI）── */
+{
+  const byId = {};
+  EX.REFS.forEach(function (r) { byId[r.id] = r; });
+  const wantWhere = {
+    R81: ['46(44): 4635–4736', '10.1093/eurheartj/ehaf194'],
+    R82: ['34(1): 1–16', '10.3760/cma.j.cn131148-20240819-00446'],
+    R118: ['152(10): e96–e109', '10.1161/CIR.0000000000001354'],
+  };
+  Object.keys(wantWhere).forEach(function (rid) {
+    const r = byId[rid];
+    if (!r) { bad(rid + ' 缺失'); return; }
+    const w = r.where || '';
+    const miss = wantWhere[rid].filter(function (k) { return w.indexOf(k) === -1; });
+    const stale = ['在线先发', '在线优先', '页码待定', 'e00–e00'].filter(function (k) {
+      return w.indexOf(k) !== -1;
+    });
+    (miss.length === 0 && stale.length === 0)
+      ? ok(rid + ' 题录已补全正式卷期页与 DOI（无「在线先发/页码待定」残留）')
+      : bad(rid + ' 题录不完整：缺 ' + miss.join(' / ') + '，残留 ' + stale.join(' / ') + '；实际 ' + w);
+  });
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {

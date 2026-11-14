@@ -1725,7 +1725,7 @@ const REFS = [
     id: 'R81',
     zh: '瓣膜性心脏病管理指南（2025 ESC/EACTS）',
     en: '2025 ESC/EACTS Guidelines for the Management of Valvular Heart Disease.',
-    where: 'Eur Heart J, 2025（在线先发）',
+    where: 'Eur Heart J, 2025, 46(44): 4635–4736. DOI: 10.1093/eurheartj/ehaf194; PMID: 40878295',
     dl: [
       { t: '文章页（中文解读）', u: 'https://zhxzyxldzzz.cma-cmc.com.cn/CN/10.3877/cma.j.issn.2095-6568.2025.03.001' },
       { t: '免费页面', u: 'https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines/Valvular-Heart-Disease' },
@@ -1736,7 +1736,7 @@ const REFS = [
     id: 'R82',
     zh: '左心室辅助装置治疗终末期心力衰竭围术期超声心动图评价指南',
     en: 'Guideline for Perioperative Echocardiographic Evaluation of Left Ventricular Assist Device Therapy in End-Stage Heart Failure.',
-    where: '中华超声影像学杂志, 2025',
+    where: '中华超声影像学杂志, 2025, 34(1): 1–16. DOI: 10.3760/cma.j.cn131148-20240819-00446',
     dl: [
       { t: '万方（需登录）', u: 'https://d.wanfangdata.com.cn/periodical/zhcsyx202501001' },
     ],
@@ -2133,7 +2133,7 @@ const REFS = [
     id: 'R118',
     zh: '斑点追踪应变评估左室结构与功能（AHA 2025 科学声明）',
     en: 'Mihos CG, Liu JE, Anderson KM, et al. Speckle-Tracking Strain Echocardiography for the Assessment of Left Ventricular Structure and Function: A Scientific Statement From the American Heart Association.',
-    where: 'Circulation, 2025, 152(10)（在线优先 2025-08-06；手头 PDF 为校样，页码 e00–e00，最终页码待定）. DOI: 10.1161/CIR.0000000000001354; PMID: 40765507',
+    where: 'Circulation, 2025, 152(10): e96–e109. DOI: 10.1161/CIR.0000000000001354; PMID: 40765507',
     use: '患者水平 meta 把 GLS > −16% 定为不分厂商、不受临床协变量影响的心肌功能异常绝对阈值，−16%~−18% 为灰区（borderline / low normal）；年龄、性别、负荷状态、肥胖是最常见的临床修饰因素；分层纵向应变证据不足、不推荐常规使用，全层 midwall GLS 为首选；厂商/软件标准化尚未完成，须结合人口学、厂商差异与纵向趋势。2022 AHA/ACC 指南在 LVEF >50% 时以 GLS > −16% 诊断 stage B 心衰（最多重分期 14% 患者）；ESC 把 GLS > −16% 列为 HFpEF 次要诊断标准。帧率 40–90 帧/s，与 R3/R40 的 ≥60（推荐 80–100）并列',
     dl: [
       { t: 'DOI', u: 'https://doi.org/10.1161/CIR.0000000000001354' },
