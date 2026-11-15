@@ -5799,22 +5799,26 @@ function lvFilling(o) {
  * 三条同满足 → LAP 升高，E/A <2 为 Ⅱ 级、E/A ≥2 为 Ⅲ 级；
  * 三条全正常 → LAP 正常、舒张功能正常；
  * e′ 减低且余两项正常、E/A ≤0.8 → Ⅰ 级；
- * 其余 → 不确定，须补 LARS / 肺静脉 S/D / IVRT / LAVi 或做舒张负荷超声。
+ * 三项不一致或数据不全 → 第二步：LARS ≤18% / 肺静脉 S/D ≤0.67 / IVRT ≤70 ms /
+ *   LAVi >34 mL/m² 任一阳性即支持 LAP 升高；均无则报告不确定。
  * 原文算法图用 ≤ / ≥，正文 Key Points 用 < / >，边界值按算法图并结合临床。
  * LAVi 在 R39 里降为二线补充变量，且须排除运动员、贫血、房颤/flutter、二尖瓣病。
  *
  * @param {object} o {e,a,es,el,trv,lavi} 缺省传 null 或 undefined
  */
 function lvFilling2025(o) {
-  const r = { missing: [] };
+  const r = { missing: [], secondary: [] };
   const n = (x) => (x === null || x === undefined || !isFinite(Number(x)) ? null : Number(x));
-  const e = n(o.e), a = n(o.a), es = n(o.es), el = n(o.el), trv = n(o.trv), lavi = n(o.lavi);
+  const e = n(o.e), a = n(o.a), es = n(o.es), el = n(o.el);
+  const trv = n(o.trv), lavi = n(o.lavi);
+  const lars = n(o.lars), pvsd = n(o.pvsd), ivrt = n(o.ivrt);
   if (e !== null && a !== null && a > 0) r.ea = e / a;
   const eAvg = (es !== null && el !== null) ? (es + el) / 2 : null;
   const eeSep = (e !== null && es > 0) ? e / es : null;
   const eeLat = (e !== null && el > 0) ? e / el : null;
   const eeAvg = (e !== null && eAvg !== null && eAvg > 0) ? e / eAvg : null;
   r.eAvg = eAvg; r.eeSep = eeSep; r.eeLat = eeLat; r.eeAvg = eeAvg; r.trv = trv;
+  r.lars = lars; r.pvsd = pvsd; r.ivrt = ivrt; r.lavi = lavi;
   r.eLow = (es !== null && es <= 6) || (el !== null && el <= 7) || (eAvg !== null && eAvg <= 6.5);
   r.eeHigh = (eeSep !== null && eeSep >= 15) || (eeLat !== null && eeLat >= 13) || (eeAvg !== null && eeAvg >= 14);
   r.trHigh = trv !== null && trv >= 2.8;
@@ -5824,22 +5828,37 @@ function lvFilling2025(o) {
   r.complete = hasRelax && hasTr;
   if (!hasRelax) r.missing.push('E 峰与 e′');
   if (!hasTr) r.missing.push('TR Vmax');
-  if (!r.complete) {
-    r.lap = 'unknown';
-    r.text = '数据不足（缺 ' + r.missing.join('、') + '），2025 路径须三条主判据齐全';
-  } else if (r.nHigh === 3) {
+
+  // 第二步补充指标：三项主判据不一致或数据不全时用于裁决（ASE 2025 · R39 Figure 3）
+  if (lars !== null && lars <= 18) r.secondary.push('LARS ≤18%');
+  if (pvsd !== null && pvsd <= 0.67) r.secondary.push('肺静脉 S/D ≤0.67');
+  if (ivrt !== null && ivrt <= 70) r.secondary.push('IVRT ≤70 ms');
+  if (lavi !== null && lavi > 34) r.secondary.push('LAVi >34 mL/m²（二线）');
+  r.supplied = [lars, pvsd, ivrt, lavi].filter(function (x) { return x !== null; }).length;
+
+  const gradeOf = function (ea) { return (ea !== undefined && ea >= 2) ? 3 : 2; };
+  if (r.complete && r.nHigh === 3) {
     r.lap = 'elevated';
-    r.grade = (r.ea !== undefined && r.ea >= 2) ? 3 : 2;
+    r.grade = gradeOf(r.ea);
     r.text = '三项同满足 → LAP 升高，' + (r.grade === 3 ? 'Ⅲ 级（E/A ≥2）' : 'Ⅱ 级（E/A <2）');
-  } else if (r.nHigh === 0) {
+  } else if (r.complete && r.nHigh === 0) {
     r.lap = 'normal'; r.grade = 0;
     r.text = '三项全正常 → LAP 正常、舒张功能正常';
-  } else if (r.eLow && !r.eeHigh && !r.trHigh && r.ea !== undefined && r.ea <= 0.8) {
+  } else if (r.complete && r.eLow && !r.eeHigh && !r.trHigh && r.ea !== undefined && r.ea <= 0.8) {
     r.lap = 'normal'; r.grade = 1;
     r.text = 'Ⅰ 级（e′ 减低、E/A ≤0.8、LAP 正常）';
+  } else if (r.secondary.length) {
+    r.lap = 'elevated';
+    r.grade = gradeOf(r.ea);
+    r.text = '三项不一致' + (r.complete ? '' : '且数据不全（缺 ' + r.missing.join('、') + '）') +
+      ' → 第二步 ' + r.secondary.join('、') + ' 支持 LAP 升高，' +
+      (r.grade === 3 ? 'Ⅲ 级' : 'Ⅱ 级');
+  } else if (!r.complete) {
+    r.lap = 'unknown';
+    r.text = '数据不足（缺 ' + r.missing.join('、') + '），2025 路径须三条主判据齐全，或补第二步指标';
   } else {
     r.lap = 'indeterminate';
-    r.text = '三项未全满足 → 不确定；须补 LARS ≤18%、肺静脉 S/D ≤0.67、IVRT ≤70 ms、LAVi >34 mL/m²';
+    r.text = '三项未全满足 → LAP 不确定；须补 LARS ≤18%、肺静脉 S/D ≤0.67、IVRT ≤70 ms、LAVi >34 mL/m²';
     if (lavi !== null && lavi > 34) {
       r.text += '（本例 LAVi 已 >34，但 R39 把 LAVi 列为二线，单凭此项不能定级）';
     } else {
@@ -7871,6 +7890,8 @@ function asLoadSummary(o) {
  *   正常 E/Vp ≤1.5；>1.5 提示 PCWP >15 mmHg；>2.5 提示 >18 mmHg
  *   Vp 本身 <45 cm/s 即提示左室松弛受损
  *   Vp 正常而 E/Vp 升高时，E 峰是被容量负荷或 MR 抬起来的，不是松弛问题
+ * ★ Vp / E/Vp 属 2009 ASE/EAE 参数，2016 与 2025 算法均不再纳入；
+ *   保留函数仅供引擎层调用，界面不设输入（2026-11-15）。
  */
 function evpRatio(eCm, vpCm) {
   if (!(eCm > 0) || !(vpCm > 0)) return { error: '需填写 E 峰速度与 Vp（都用 cm/s）' };
@@ -10274,6 +10295,68 @@ function utf8ToBase64(str) {
   };
 })();
 
+/* ── 引擎：coronary-svg.js（由小程序源码自动抽取，勿手改）── */
+(function () {
+/* 冠状动脉超声示意图（小程序 / 网页 / APK 同源）
+ * img 块 id: 'ca-clock'
+ * 只画钟点坐标与可显示节段编号，不画瓣叶解剖轮廓：
+ * 探头角度一变钟点读数就变，把三个窦的方位画死会误导。
+ */
+function coronaryClockSvg() {
+  const B = '#F7F9FC', INK = '#2C2C2A', MUTED = '#5F5E5A';
+  const BLUE = '#185FA5', LIGHT = '#E6F1FB', RED = '#A32D2D';
+  const p = [];
+  p.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="110 0 520 380" width="100%" role="img">');
+  p.push('<title>冠状动脉开口钟点与经胸超声可显示节段</title>');
+  p.push('<rect x="110" y="0" width="520" height="380" rx="12" fill="' + B + '"/>');
+  p.push('<text x="130" y="34" font-size="15" font-weight="500" fill="' + INK + '">胸骨左缘大动脉短轴 · 冠脉开口钟点</text>');
+  p.push('<circle cx="250" cy="180" r="92" fill="' + LIGHT + '" stroke="' + BLUE + '" stroke-width="1.5"/>');
+  for (let i = 0; i < 12; i++) {
+    const a = i * Math.PI / 6;
+    const x1 = (250 + 82 * Math.sin(a)).toFixed(1), y1 = (180 - 82 * Math.cos(a)).toFixed(1);
+    const x2 = (250 + 92 * Math.sin(a)).toFixed(1), y2 = (180 - 92 * Math.cos(a)).toFixed(1);
+    p.push('<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + BLUE + '" stroke-width="1"/>');
+  }
+  p.push('<text x="250" y="72" font-size="13" text-anchor="middle" fill="' + MUTED + '">12</text>');
+  p.push('<text x="352" y="184" font-size="13" text-anchor="middle" fill="' + MUTED + '">3</text>');
+  p.push('<text x="250" y="298" font-size="13" text-anchor="middle" fill="' + MUTED + '">6</text>');
+  p.push('<text x="140" y="184" font-size="13" text-anchor="middle" fill="' + MUTED + '">9</text>');
+  p.push('<text x="250" y="177" font-size="14" font-weight="500" text-anchor="middle" fill="' + INK + '">主动脉根部短轴</text>');
+  p.push('<text x="250" y="202" font-size="13" text-anchor="middle" fill="' + MUTED + '">AO</text>');
+  p.push('<circle cx="185" cy="110" r="7" fill="' + BLUE + '"/>');
+  p.push('<path d="M185 110 L190 90" fill="none" stroke="' + BLUE + '" stroke-width="1"/>');
+  p.push('<text x="125" y="82" font-size="13" fill="' + INK + '">右冠开口 10–11 点</text>');
+  p.push('<circle cx="339" cy="205" r="7" fill="' + RED + '"/>');
+  p.push('<path d="M339 205 L345 288" fill="none" stroke="' + RED + '" stroke-width="1"/>');
+  p.push('<text x="298" y="310" font-size="13" fill="' + INK + '">左冠开口 3–4 点</text>');
+  p.push('<rect x="390" y="70" width="215" height="215" rx="10" fill="' + LIGHT + '" stroke="' + BLUE + '" stroke-width="0.5"/>');
+  p.push('<text x="402" y="98" font-size="14" font-weight="500" fill="' + INK + '">理想条件下可显示 9 段</text>');
+  p.push('<text x="402" y="132" font-size="13" fill="' + INK + '">#1–#4　右冠近 / 中 / 远段、后降支</text>');
+  p.push('<text x="402" y="160" font-size="13" fill="' + INK + '">#5　左主干</text>');
+  p.push('<text x="402" y="188" font-size="13" fill="' + INK + '">#6 #7　前降支近 / 中段</text>');
+  p.push('<text x="402" y="216" font-size="13" fill="' + INK + '">#9　第一对角支</text>');
+  p.push('<text x="402" y="244" font-size="13" fill="' + INK + '">#11　回旋支近段</text>');
+  p.push('<text x="402" y="272" font-size="12" fill="' + MUTED + '">AHA 15 段中其余 6 段难以显示</text>');
+  p.push('<text x="130" y="336" font-size="12" fill="' + MUTED + '">钟点为相对方位，随探头旋转变化；本图不画瓣叶解剖轮廓</text>');
+  p.push('<text x="130" y="358" font-size="12" fill="' + MUTED + '">定位标记：三尖瓣环 / 前室间沟 / 左侧房室沟</text>');
+  p.push('</svg>');
+  return p.join('');
+}
+
+const FIGS = { 'ca-clock': coronaryClockSvg };
+
+function svgOf(id) {
+  const fn = FIGS[id];
+  return fn ? fn() : '';
+}
+
+  window.CoronarySvg = {
+    coronaryClockSvg: coronaryClockSvg,
+    FIGS: FIGS,
+    svgOf: svgOf,
+  };
+})();
+
 /* ── 引擎：valve-calc.js（由小程序源码自动抽取，勿手改）── */
 (function () {
 /**
@@ -11825,6 +11908,43 @@ const SECTIONS_A = [
         ],
         note: '这一张表的作用是**扫查时对账**：扫完一个切面就核对中间那一列有没有看清、右边那一列有没有测。最容易漏的三项是**右室基底径、IVC 内径与吸气塌陷、胸骨上窝的主动脉弓**——它们分别藏在三个最少用的声窗里。',
       },
+      {
+        id: 'ca-views',
+        segOnly: true,   // 只在「切面学习」页签列出，不进公式集目录
+        title: '冠状动脉超声切面速查',
+        sub: '9 个可显示节段 · 开口钟点定位 · 扫查动作 · 测量要点',
+        source: ['R83', 'R86'],
+        rel: ['tte-measure', 'tee-20'],
+        fields: [],
+        blocks: [
+          { kind: 'h', text: '一、能显示哪些节段' },
+          { kind: 'text', text: '冠状动脉解剖按 **AHA 15 分段法** 编号；受经胸超声成像限制，理想条件下可清晰显示 **9 个节段**：右冠状动脉近段 #1、中段 #2、远段 #3、后降支 #4，左冠状动脉主干 #5、前降支近段 #6、中段 #7、第一对角支 #9、回旋支近段 #11[R83]。常规显示并测量的是 #1–#7 与 #11。' },
+          { kind: 'img', id: 'ca-clock', cap: '图 1 大动脉短轴切面的冠脉开口钟点方位与可显示节段（示意图：只标相对方位与分段编号，不画瓣叶解剖轮廓；读数随探头旋转变化）[R83]' },
+          { kind: 'h', text: '二、开口定位与基础切面' },
+          { kind: 'text', text: '基础切面是 **胸骨左缘大动脉根部短轴**，以时钟方式定位：顺时针微调探头，左冠状动脉开口通常在 **3–4 点钟方位**；逆时针微调，右冠状动脉开口通常在 **10–11 点钟方位**[R83]。补充切面为胸骨左缘左室长轴与五腔心，前后微调亦可显示开口。' },
+          { kind: 'text', text: '扫查以毗邻结构为标记：右冠状动脉自右冠窦发出后沿右侧房室沟、围绕**三尖瓣环**走行；左主干位于肺动脉根部与左心耳之间，分为走行于**前室间沟**的前降支与走行于**左侧房室沟**的回旋支[R83]。' },
+          { kind: 'h', text: '三、各节段的探头动作' },
+          {
+            kind: 'table',
+            heads: ['节段', '探头动作', '定位标记'],
+            rows: [
+              ['右冠近段 #1', '逆时针转约 10°，向右侧上翘', '主动脉右冠窦'],
+              ['右冠中段 #2', '再逆时针转 15°–45°，稍向右移', '三尖瓣环前、右、后'],
+              ['右冠远段 #3', '四腔心切面将探头指向后方', '三尖瓣环后外侧'],
+              ['后降支 #4', '继续向后下方扫查', '后室间沟'],
+              ['左主干 #5', '顺时针转约 5°，向左侧平移', '左冠窦与左心耳之间'],
+              ['前降支 #6 #7、对角支 #9', '继续向左前下方微调', '前室间沟'],
+              ['回旋支近段 #11', '向左后下方扫查', '左房室交界侧后方'],
+            ],
+          },
+          { kind: 'h', text: '四、仪器设置与内径测量' },
+          { kind: 'text', text: '减小探查深度、缩小扇区以提高帧频；聚焦移至冠脉所在区域并局部放大 2–4 倍，可用谐波成像提高分辨力；彩色多普勒速度标尺约 **30 cm/s**，频谱取样线尽量平行冠脉血流[R83]。' },
+          { kind: 'text', text: '内径测量：选管腔走行平直、声束与管壁垂直处，**内膜至内膜**；时相取**舒张早期（心电图 T 波终点）**；同一节段至少测 2 次取平均[R83]。儿童内径用经体表面积校正的 **Z 值**，同一患儿随访固定同一套公式；成人 LAD 远段血流与冠脉血流储备见公式集「冠脉血流储备 CFR」[R86]。' },
+          { kind: 'h', text: '五、局限性' },
+          { kind: 'note', text: '超声主要显示心外膜冠脉近段，受胸壁条件、心包横窦与左心耳伪像干扰；判断管腔狭窄程度、腔内血栓与复杂畸形不能单独依靠超声，需结合病史、实验室检查与冠脉 CTA 或造影[R83]。', warn: true },
+        ],
+        note: '本节切面、分段与测量规范依据《儿童冠状动脉经胸超声心动图规范化检查中国专家共识（2025 版）》[R83]，其目标人群为 0–18 岁；成人冠脉血流储备见「冠脉血流储备 CFR」[R86]。本条只作**少用时的速查**：记住「短轴找开口（左 3–4 点 / 右 10–11 点）→ 沿房室沟、室间沟追节段」这条主线即可，不必强求每次显示 9 段。',
+      },
     ],
   },
   {
@@ -11928,7 +12048,7 @@ const SECTIONS_A = [
           { kind: 'text', text: '判读顺序：① **先量准**（切面、时相、有无调节束）；② **定构型**（LVMI × RWT 四格）；③ **看三对矛盾**——「壁厚 vs 心腔」（厚壁小腔偏压力负荷、厚壁大腔偏容量或运动）、「壁厚 vs 心电图电压」（壁厚高、电压低 → 淀粉样变）、「肥厚 vs 应变分布」（心尖保留 → 淀粉样变；应变减低区与肥厚区重合 → HCM）；④ 仍定不了，交给 CMR 与实验室（游离轻链、肌钙蛋白、NT-proBNP、基因检测）。' },
           { kind: 'note', text: '四条里最容易被写成「心肌病」的是运动心脏，最容易被漏掉的是淀粉样变：壁厚 14 mm、电压不高、心尖保留三条凑齐时，先查游离轻链与核素显像，别按「高血压性心脏病」随访——两者的用药禁忌完全不同。', warn: true },
           { kind: 'h', text: '舒张功能与左房压：请用专条，不在这里重复' },
-          { kind: 'text', text: '**舒张功能分级、左房压与充盈压是独立的评估链条**，统一放在公式集的「左室舒张功能（E/A · E/e′ · E/Vp · 分级）」条目：那里同时给出 2016 ASE/EACVI 四步法、ASE 2025 三条主判据、E/Vp 与平均 E/e′，并给出「两套结论不一致时并列写明」的报告口径。' },
+          { kind: 'text', text: '**舒张功能分级、左房压与充盈压是独立的评估链条**，统一放在公式集的「左室舒张功能（E/A · E/e′ · 分级）」条目：那里同时给出 2016 ASE/EACVI 四步法与 ASE 2025 两步法（三条主判据 + LARS / 肺静脉 S/D / IVRT / LAVi 补充裁决），并给出「两套结论不一致时并列写明」的报告口径。' },
           { kind: 'note', text: '以前本条把 E/A、E/e′、LAVi、TR Vmax 又收了一遍、还带一套 2016 分级，与专条同源同算法却各填一遍数，改阈值时两处容易不同步。现在本条只保留左室结构与收缩功能（LVMI / RWT / 几何构型 / 壁厚鉴别 / EF 版本差异），舒张功能请点下方「相关计算」里的「左室舒张功能」。', links: ['dfun'] },
           { kind: 'h', text: '附：EF 的上下限与版本差异' },
           { kind: 'text', text: 'ASE/EACVI 2015 定量指南按性别给出 EF 正常范围：**男性 52–72%、女性 54–74%**，两端都要看。下限低于旧习惯的「≥55% 不分性别」—— 按旧标准，女性 EF 54% 会被误判为「减低」、男性 53% 反而算正常。报告引用 EF 正常范围时写成区间并注明性别与依据版本（如 ASE 2015）。' },
@@ -20613,6 +20733,7 @@ const REFS = [
    Fontan 术后）故意不挂，避免指错路。
    ══════════════════════════════════════════════════════════════ */
 var CALC_HINTS = {
+  'ca-views': '重构与心肌功能 · 冠脉血流储备 CFR',
   'ped-base': '介入尺寸与先心 · 主动脉分节段 Z 值；McGoon 比值与 Nakata 指数',
   /* 大血管与急症 */
   aorta: '介入尺寸与先心 · 主动脉分节段 Z 值；重构与心肌功能 · 升主动脉直径指数',
@@ -20667,7 +20788,7 @@ var CALC_HINTS = {
   critical: '右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP）；血流动力学与心功能 · 左室容积与射血分数',
   'doppler-basics': '血流动力学与心功能 · 简化伯努利压差；无量纲指数 DVI；瓣膜评估 · 缩流颈宽度 VCW 分级',
   peri: '右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP，RAP 由 IVC 取值）；TAPSE/PASP 耦联比',
-  'cp-rm': '舒张功能定量 · 左室舒张功能（E/A · E/e′ · E/Vp · 分级）；重构与心肌功能 · 左房僵硬度',
+  'cp-rm': '舒张功能定量 · 左室舒张功能（E/A · E/e′ · 分级）；重构与心肌功能 · 左房僵硬度',
   ctrcd: '血流动力学与心功能 · 左室容积与射血分数；重构与心肌功能 · 应变离散度 MDS；左房应变三值',
   'zh-normal': '血流动力学与心功能 · 心房容积指数；重构与心肌功能 · 左室重构四联',
   mass: '血流动力学与心功能 · 左室容积与射血分数；右心与肺循环 · 肺动脉压（sPAP·dPAP·mPAP，RAP 由 IVC 取值）',
@@ -20717,6 +20838,7 @@ var CALC_HINTS = {
    CALC_LINKS 给小程序出可点胶囊。改一处必须同改另一处（校验会查）。
    ══════════════════════════════════════════════════════════════ */
 var CALC_LINKS = {
+  'ca-views': ['cfr'],
   'ped-base': ['aortaz', 'paidx'],
   /* 心腔与应变 */
   lv: ['ef', 'flow', 'mtype', 'dfun'],
@@ -21187,7 +21309,8 @@ var SEARCH_KW = {
   mitral: '二尖瓣狭窄 二尖瓣反流 瓣口面积 平均压差 反流定量 缩流颈',
   ef: '辛普森 Simpson 面积法 面积长度法 圆盘法 双平面 描迹面积 左室容积 射血分数 EF',
   atrial: '左房容积 LAVI 三径线 椭球法 前后径 左右径 上下径 左房大小',
-  dfun: '舒张功能 e/a 舒张性心衰 LAVI 左房容积指数 左房容积',
+  dfun: '舒张功能 e/a 舒张性心衰 LAVI 左房容积指数 左房容积 LARS 肺静脉 IVRT 左房压',
+  'ca-views': '冠状动脉 冠脉 左主干 前降支 回旋支 右冠 开口 AHA 分段 CFR',
   laasz: '左房僵硬 左房应变',
   /* ── 判读条目：疾病/术式别名 ── */
   rv: '右心 右室 右心功能 肺高压 肺动脉压',
@@ -21870,9 +21993,9 @@ const CALC_NOTES = {
     tip: '判读前提：瓣膜结构与活动正常、实测 EOA 落在参考 EOA 的 1 SD 内。BMI 高者阈值下调，不可套用标准体型阈值。',
   },
   dfun: {
-    use: '舒张功能一站式定量：E/A 看充盈模式、平均 E/e′ 与 E/Vp 估左房压、LAVi 与 TR Vmax 作旁证，最后按 ASE 2016 简化路径给出 I / II / III 级。心衰分型（尤其 HFpEF）与呼吸困难鉴别都从这里出发。',
-    std: 'E/A ≥2 或 ≤0.8 时，每多一个升高指标（平均 E/e′ >14、LAVi >34、TR Vmax >2.8）升一级（0 个 → I 级松弛受损、1 个 → II 级假性正常化、2 个以上 → III 级限制性）；E/e′ <8 左房压正常、8–14 灰区、>14 升高；E/Vp ≤1.5 正常、>2.5 约 PCWP >18 mmHg。',
-    tip: '灰区（E/A 0.8–2 且升高指标不足）不能定级，应结合结构病、BNP 与负荷超声。E/e′ 会被容量负荷与重度 MR 压低，此时看 E/Vp（Vp 正常而 E/Vp 高 → E 峰被抬高，不是松弛受损）。房颤时 E/A 失效，靠 LAVI、TR Vmax 与左房大小。',
+    use: '舒张功能一站式定量：E/A 看充盈模式、平均 E/e′ 估左房压、LAVi 与 TR Vmax 作旁证，同屏给出 ASE 2016 简化路径与 ASE 2025 两步法结论。心衰分型（尤其 HFpEF）与呼吸困难鉴别都从这里出发。',
+    std: '2016：E/A ≥2 或 ≤0.8 时，每多一个升高指标（平均 E/e′ >14、LAVi >34、TR Vmax >2.8）升一级（0 个 → Ⅰ 级松弛受损、1 个 → Ⅱ 级假性正常化、2 个以上 → Ⅲ 级限制性）；E/e′ <8 左房压正常、8–14 灰区、>14 升高。2025：三条主判据为 e′ 减低（间隔 ≤6 / 侧壁 ≤7 / 平均 ≤6.5 cm/s）、E/e′ 升高（间隔 ≥15 / 侧壁 ≥13 / 平均 ≥14）、TR Vmax ≥2.8 m/s；三项一致即定左房压，不一致时第二步用 LARS ≤18% / 肺静脉 S/D ≤0.67 / IVRT ≤70 ms / LAVi >34 mL/m² 任一阳性裁决。',
+    tip: '灰区（E/A 0.8–2 且升高指标不足）不能定级，应结合结构病、BNP 与负荷超声。2025 第二步的补充指标只在三项主判据一致以外时用于裁决；LAVi >34 为二线，须排除运动员、贫血、房颤与二尖瓣病。房颤时 E/A 失效，靠 LAVi、TR Vmax 与左房大小。Vp（彩色 M 型血流传播速度）与 E/Vp 属 2009 版参数，2016 与 2025 算法均不再纳入，本条目不设该输入。',
     blocks: [
       { kind: 'h', text: '第一步：六个基本量' },
       {
@@ -21902,6 +22025,21 @@ const CALC_NOTES = {
       { kind: 'note', text: '**E/A 0.8–2.0 且只有 1 项异常 = 灰区，不能定级**。此时看 LARS、TR 速度，或做负荷超声（运动后 E/e′ 仍 >14 支持 HFpEF）。写「舒张功能不能定级」是合法且更诚实的结论。', warn: true },
       { kind: 'h', text: '2022 ASE 更新了什么' },
       { kind: 'text', text: '① Ⅱ/Ⅲ 级合并为「左房压升高」——因为两者处理相同，靠 E/A ≥2.0 再分出限制型；② LARS 成为第 5 个指标，且**最早出现异常**（常先于 E/e′ 升高）；③ 强调「不能定级」是允许的结论，不必硬凑。' },
+      { kind: 'h', text: 'ASE 2025 两步法与补充指标' },
+      {
+        kind: 'table',
+        heads: ['步骤', '指标', '异常阈值'],
+        rows: [
+          ['第一步', 'e′ 减低', '间隔 ≤6 / 侧壁 ≤7 / 平均 ≤6.5 cm/s'],
+          ['第一步', 'E/e′ 升高', '间隔 ≥15 / 侧壁 ≥13 / 平均 ≥14'],
+          ['第一步', 'TR Vmax', '≥2.8 m/s'],
+          ['第二步', 'LARS', '≤18%'],
+          ['第二步', '肺静脉 S/D', '≤0.67'],
+          ['第二步', 'IVRT', '≤70 ms'],
+          ['第二步（二线）', 'LAVi', '>34 mL/m²'],
+        ],
+      },
+      { kind: 'note', text: '**第一步三项一致才直接定左房压**：三项同满足为升高（E/A ≥2 归 Ⅲ 级、<2 归 Ⅱ 级），三项全正常为正常。三项不一致或数据不全时进入**第二步**，任一补充指标阳性即支持左房压升高；均未获得或均阴性时报告「左房压不确定」，症状明显者做舒张负荷超声。LAVi 为二线指标，须排除运动员、贫血、房颤与二尖瓣病。', warn: true },
       { kind: 'h', text: '特殊情形怎么判' },
       {
         kind: 'table',
@@ -23465,11 +23603,13 @@ const MATERIALS = [];
       fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', ''],
         ['pbmi', 'BMI（可选；≥30 用肥胖切点）', 'kg/m²']],
       note: 'EOAi = EOA/BSA。R15（ASE 2024）：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65；二尖瓣位 正常 >1.2、中度 1.2–0.91、重度 ≤0.90（cm²/m²）。BMI ≥30 时整体下调：主动脉位 0.70 / 0.70–0.56 / ≤0.55，二尖瓣位 1.0 / 1.0–0.76 / ≤0.75' },
-    { id: 'dfun', sec: 'hemo', title: '左室舒张功能（E/A · E/e′ · E/Vp · 分级）',
+    { id: 'dfun', sec: 'hemo', title: '左室舒张功能（E/A · E/e′ · 分级）',
       fields: [['dfe', 'E 峰', 'cm/s'], ['dfa', 'A 峰', 'cm/s'], ['dfes', '间隔 e′', 'cm/s'],
         ['dfel', '侧壁 e′', 'cm/s'], ['dflavi', 'LAVi（可选）', 'mL/m²'], ['dftrv', 'TR Vmax（可选）', 'm/s'],
-        ['dfvp', 'Vp 血流传播速度（可选）', 'cm/s']],
-      note: '2016 与 ASE 2025（R39）两套结果同屏并列、不互相覆盖。2016：E/A ≥2，或 E/A ≤0.8 结合平均 E/e′ >14、LAVi >34、TR Vmax >2.8 m/s，分 Ⅰ/Ⅱ/Ⅲ 级。2025（Figure 3）：e′ 减低（间隔 ≤6 / 侧壁 ≤7 / 平均 ≤6.5 cm/s）、E/e′ 升高（间隔 ≥15 / 侧壁 ≥13 / 平均 ≥14）、TR Vmax ≥2.8 m/s；三项同满足为 LAP 升高（E/A <2 Ⅱ 级、≥2 Ⅲ 级），三项全正常为 LAP 正常，其余补 LARS ≤18% / 肺静脉 S/D ≤0.67 / IVRT ≤70 ms / LAVi >34 或做舒张负荷超声。R39 中 LAVi 为二线指标。报告写明分级与充盈压；两套结论不一致时并列写明、注明版本。LAVI 测量与三径线椭球式见「心房容积指数」[R2]' },
+        ['dflars', 'LARS 左房储备应变（可选）', '%'],
+        ['dfpvsd', '肺静脉 S/D（可选）', ''],
+        ['dfivrt', 'IVRT（可选）', 'ms']],
+      note: '2016 与 ASE 2025（R39）两套结果同屏并列、不互相覆盖。2016：E/A ≥2，或 E/A ≤0.8 结合平均 E/e′ >14、LAVi >34、TR Vmax >2.8 m/s，分 Ⅰ/Ⅱ/Ⅲ 级。2025（Figure 3）：e′ 减低（间隔 ≤6 / 侧壁 ≤7 / 平均 ≤6.5 cm/s）、E/e′ 升高（间隔 ≥15 / 侧壁 ≥13 / 平均 ≥14）、TR Vmax ≥2.8 m/s；三项同满足为 LAP 升高（E/A <2 Ⅱ 级、≥2 Ⅲ 级），三项全正常为 LAP 正常；三项不一致或数据不全时，第二步用 LARS ≤18% / 肺静脉 S/D ≤0.67 / IVRT ≤70 ms / LAVi >34 mL/m² 任一阳性裁决 LAP 升高。R39 中 LAVi 为二线指标，须排除运动员、贫血、房颤与二尖瓣病。报告写明分级与充盈压；两套结论不一致时并列写明、注明版本。LAVI 测量与三径线椭球式见「心房容积指数」[R2]' },
 
     { id: 'sync', sec: 'recon', title: '心脏同步化（机械不同步）', rel: ['crt'],
       opts: [{ k: 'sy_flash', n: '室间隔闪动', list: [['n', '无'], ['y', '有']] },
@@ -23729,7 +23869,6 @@ const MATERIALS = [];
     vcw: 'MR / TR：<3 轻 · 3–6.9 中 · ≥7 重',
     rf: 'RVol ÷ SV · 轻 <30 中 30–49 重 ≥50',
     mva: 'MVA = 220÷PHT 与 SV÷VTI_MV 同屏对照',
-    evp: 'E 峰 ÷ 血流传播速度 Vp',
     lastiff: 'E/e′ ÷ LARS',
     vtir: '不测直径的分流替代量',
     lvnc: '非致密层 ÷ 致密层',
@@ -23902,7 +24041,9 @@ const MATERIALS = [];
       if (b.kind === 'img') {
         // ★ 2026-11-11：示意图块。SVG 由 VsdSvg 生成，直接内联进 DOM（矢量、可缩放）
         const _VSD = window.VsdSvg;
-        const _svg = _VSD && _VSD.svgOf ? _VSD.svgOf(b.id || '') : '';
+        const _CORO = window.CoronarySvg;
+        const _svg = (_VSD && _VSD.svgOf ? _VSD.svgOf(b.id || '') : '') ||
+          (_CORO && _CORO.svgOf ? _CORO.svgOf(b.id || '') : '');
         if (_svg) {
           h += '<figure class="fx-fig">' + _svg +
             (b.cap ? '<figcaption class="fx-fig__cap">' + mdInline(b.cap) + '</figcaption>' : '') +
@@ -25778,10 +25919,6 @@ const MATERIALS = [];
       if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + Calc.fmt(f.avgEe));
       if (f.count > 0) parts.push('升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
       else parts.push('升高指标 0 项');
-      if (has('dfvp') && has('dfe')) {
-        const ev = Calc.evpRatio(v.dfe, v.dfvp);
-        if (!ev.error) parts.push('E/Vp ' + Calc.fmt(ev.ratio, 2) + '（' + ev.text + '）');
-      }
       if (f.text) parts.push('→ ' + f.text);
       const g = Calc.lvFilling2025({
         e: v.dfe === undefined ? null : v.dfe,
@@ -25790,11 +25927,15 @@ const MATERIALS = [];
         el: v.dfel === undefined ? null : v.dfel,
         trv: v.dftrv === undefined ? null : v.dftrv,
         lavi: v.dflavi === undefined ? null : v.dflavi,
+        lars: v.dflars === undefined ? null : v.dflars,
+        pvsd: v.dfpvsd === undefined ? null : v.dfpvsd,
+        ivrt: v.dfivrt === undefined ? null : v.dfivrt,
       });
       const gLine = [
         'e′ ' + (g.eAvg !== null ? Calc.fmt(g.eAvg, 1) : '—') + '（' + (g.eLow ? '减低' : '未减低') + '）',
         '平均 E/e′ ' + (g.eeAvg !== null ? Calc.fmt(g.eeAvg) : '—') + '（' + (g.eeHigh ? '升高' : '未升高') + '）',
         'TR Vmax ' + (g.trv !== null ? Calc.fmt(g.trv, 1) : '—') + '（' + (g.trHigh ? '≥2.8' : '<2.8') + '）',
+        '补充 ' + (g.secondary.length ? g.secondary.join('、') : '未获得或均阴性'),
         '→ ' + g.text,
       ].join('；');
       put('dfun', '【2016 ASE/EACVI 简化路径】' + partsOf(parts) +
@@ -26089,14 +26230,6 @@ const MATERIALS = [];
       const r = Calc.regurgFraction(v.rfvol, v.rfsv);
       put('rf', r.error ? r.error : 'RF = ' + Calc.fmt(r.rf, 1) + '% · ' + r.text);
     } else put('rf');
-
-    // E/Vp 左房压估测
-    if (has('evpe', 'evpvp')) {
-      const r = Calc.evpRatio(v.evpe, v.evpvp);
-      const parts = r.error ? [r.error] : ['E/Vp ' + Calc.fmt(r.ratio, 2), r.vpText, r.text];
-      if (!r.error && r.note) parts.push(r.note);
-      put('evp', partsOf(parts));
-    } else put('evp');
 
     // 左房僵硬度
     if (has('lsee', 'lslars')) {

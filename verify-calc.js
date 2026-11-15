@@ -109,6 +109,23 @@ const d25d = C.lvFilling2025({ e: 50, a: 90, es: 8, el: 9 });
 check('缺 TR Vmax → 数据不足，不误判正常', d25d.lap, 'unknown');
 const d25e = C.lvFilling2025({ e: 70, a: 90, es: 6, el: 7, trv: 3.0, lavi: 30 });
 check('三条里满足 2 条 → 不确定', d25e.lap, 'indeterminate');
+const s2a = C.lvFilling2025({ e: 70, a: 90, es: 6, el: 7, trv: 3.0, lars: 16 });
+check('第二步 LARS ≤18% 裁决 LAP 升高', s2a.lap, 'elevated');
+check('第二步裁决写明所依据的补充指标', s2a.text.indexOf('LARS ≤18%') !== -1 ? 'ok' : 'bad', 'ok');
+check('第二步 肺静脉 S/D ≤0.67 裁决 LAP 升高',
+  C.lvFilling2025({ e: 70, a: 90, es: 6, el: 7, trv: 3.0, pvsd: 0.6 }).lap, 'elevated');
+check('第二步 IVRT ≤70 ms 裁决 LAP 升高',
+  C.lvFilling2025({ e: 70, a: 90, es: 6, el: 7, trv: 3.0, ivrt: 65 }).lap, 'elevated');
+check('第二步 LAVi >34 为二线也能裁决',
+  C.lvFilling2025({ e: 70, a: 90, es: 6, el: 7, trv: 3.0, lavi: 40 }).lap, 'elevated');
+check('补充指标均未获得且数据齐全 → 仍不确定',
+  C.lvFilling2025({ e: 70, a: 90, es: 6, el: 7, trv: 3.0, lavi: 30 }).lap, 'indeterminate');
+check('补充指标均阴性 → 仍不确定',
+  C.lvFilling2025({ e: 70, a: 90, es: 6, el: 7, trv: 3.0, lars: 30, ivrt: 100 }).lap, 'indeterminate');
+check('三项全正常时不因 LAVi 单独翻盘',
+  C.lvFilling2025({ e: 50, a: 90, es: 8, el: 9, trv: 2.7, lavi: 40 }).lap, 'normal');
+check('缺 TR 但 LARS 阳性 → 第二步可裁决不完整病例',
+  C.lvFilling2025({ e: 70, a: 90, es: 6, el: 7, lars: 16 }).lap, 'elevated');
 
 console.log('=== 12. PASP / RAP 分级 ===');
 check('PASP 4×3²+8 = 44', C.pasp(3.0, 8), 44, 1e-9);

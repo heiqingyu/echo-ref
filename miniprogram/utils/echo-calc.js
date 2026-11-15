@@ -433,22 +433,26 @@ function lvFilling(o) {
  * 三条同满足 → LAP 升高，E/A <2 为 Ⅱ 级、E/A ≥2 为 Ⅲ 级；
  * 三条全正常 → LAP 正常、舒张功能正常；
  * e′ 减低且余两项正常、E/A ≤0.8 → Ⅰ 级；
- * 其余 → 不确定，须补 LARS / 肺静脉 S/D / IVRT / LAVi 或做舒张负荷超声。
+ * 三项不一致或数据不全 → 第二步：LARS ≤18% / 肺静脉 S/D ≤0.67 / IVRT ≤70 ms /
+ *   LAVi >34 mL/m² 任一阳性即支持 LAP 升高；均无则报告不确定。
  * 原文算法图用 ≤ / ≥，正文 Key Points 用 < / >，边界值按算法图并结合临床。
  * LAVi 在 R39 里降为二线补充变量，且须排除运动员、贫血、房颤/flutter、二尖瓣病。
  *
  * @param {object} o {e,a,es,el,trv,lavi} 缺省传 null 或 undefined
  */
 function lvFilling2025(o) {
-  const r = { missing: [] };
+  const r = { missing: [], secondary: [] };
   const n = (x) => (x === null || x === undefined || !isFinite(Number(x)) ? null : Number(x));
-  const e = n(o.e), a = n(o.a), es = n(o.es), el = n(o.el), trv = n(o.trv), lavi = n(o.lavi);
+  const e = n(o.e), a = n(o.a), es = n(o.es), el = n(o.el);
+  const trv = n(o.trv), lavi = n(o.lavi);
+  const lars = n(o.lars), pvsd = n(o.pvsd), ivrt = n(o.ivrt);
   if (e !== null && a !== null && a > 0) r.ea = e / a;
   const eAvg = (es !== null && el !== null) ? (es + el) / 2 : null;
   const eeSep = (e !== null && es > 0) ? e / es : null;
   const eeLat = (e !== null && el > 0) ? e / el : null;
   const eeAvg = (e !== null && eAvg !== null && eAvg > 0) ? e / eAvg : null;
   r.eAvg = eAvg; r.eeSep = eeSep; r.eeLat = eeLat; r.eeAvg = eeAvg; r.trv = trv;
+  r.lars = lars; r.pvsd = pvsd; r.ivrt = ivrt; r.lavi = lavi;
   r.eLow = (es !== null && es <= 6) || (el !== null && el <= 7) || (eAvg !== null && eAvg <= 6.5);
   r.eeHigh = (eeSep !== null && eeSep >= 15) || (eeLat !== null && eeLat >= 13) || (eeAvg !== null && eeAvg >= 14);
   r.trHigh = trv !== null && trv >= 2.8;
@@ -458,22 +462,37 @@ function lvFilling2025(o) {
   r.complete = hasRelax && hasTr;
   if (!hasRelax) r.missing.push('E 峰与 e′');
   if (!hasTr) r.missing.push('TR Vmax');
-  if (!r.complete) {
-    r.lap = 'unknown';
-    r.text = '数据不足（缺 ' + r.missing.join('、') + '），2025 路径须三条主判据齐全';
-  } else if (r.nHigh === 3) {
+
+  // 第二步补充指标：三项主判据不一致或数据不全时用于裁决（ASE 2025 · R39 Figure 3）
+  if (lars !== null && lars <= 18) r.secondary.push('LARS ≤18%');
+  if (pvsd !== null && pvsd <= 0.67) r.secondary.push('肺静脉 S/D ≤0.67');
+  if (ivrt !== null && ivrt <= 70) r.secondary.push('IVRT ≤70 ms');
+  if (lavi !== null && lavi > 34) r.secondary.push('LAVi >34 mL/m²（二线）');
+  r.supplied = [lars, pvsd, ivrt, lavi].filter(function (x) { return x !== null; }).length;
+
+  const gradeOf = function (ea) { return (ea !== undefined && ea >= 2) ? 3 : 2; };
+  if (r.complete && r.nHigh === 3) {
     r.lap = 'elevated';
-    r.grade = (r.ea !== undefined && r.ea >= 2) ? 3 : 2;
+    r.grade = gradeOf(r.ea);
     r.text = '三项同满足 → LAP 升高，' + (r.grade === 3 ? 'Ⅲ 级（E/A ≥2）' : 'Ⅱ 级（E/A <2）');
-  } else if (r.nHigh === 0) {
+  } else if (r.complete && r.nHigh === 0) {
     r.lap = 'normal'; r.grade = 0;
     r.text = '三项全正常 → LAP 正常、舒张功能正常';
-  } else if (r.eLow && !r.eeHigh && !r.trHigh && r.ea !== undefined && r.ea <= 0.8) {
+  } else if (r.complete && r.eLow && !r.eeHigh && !r.trHigh && r.ea !== undefined && r.ea <= 0.8) {
     r.lap = 'normal'; r.grade = 1;
     r.text = 'Ⅰ 级（e′ 减低、E/A ≤0.8、LAP 正常）';
+  } else if (r.secondary.length) {
+    r.lap = 'elevated';
+    r.grade = gradeOf(r.ea);
+    r.text = '三项不一致' + (r.complete ? '' : '且数据不全（缺 ' + r.missing.join('、') + '）') +
+      ' → 第二步 ' + r.secondary.join('、') + ' 支持 LAP 升高，' +
+      (r.grade === 3 ? 'Ⅲ 级' : 'Ⅱ 级');
+  } else if (!r.complete) {
+    r.lap = 'unknown';
+    r.text = '数据不足（缺 ' + r.missing.join('、') + '），2025 路径须三条主判据齐全，或补第二步指标';
   } else {
     r.lap = 'indeterminate';
-    r.text = '三项未全满足 → 不确定；须补 LARS ≤18%、肺静脉 S/D ≤0.67、IVRT ≤70 ms、LAVi >34 mL/m²';
+    r.text = '三项未全满足 → LAP 不确定；须补 LARS ≤18%、肺静脉 S/D ≤0.67、IVRT ≤70 ms、LAVi >34 mL/m²';
     if (lavi !== null && lavi > 34) {
       r.text += '（本例 LAVi 已 >34，但 R39 把 LAVi 列为二线，单凭此项不能定级）';
     } else {
@@ -2505,6 +2524,8 @@ function asLoadSummary(o) {
  *   正常 E/Vp ≤1.5；>1.5 提示 PCWP >15 mmHg；>2.5 提示 >18 mmHg
  *   Vp 本身 <45 cm/s 即提示左室松弛受损
  *   Vp 正常而 E/Vp 升高时，E 峰是被容量负荷或 MR 抬起来的，不是松弛问题
+ * ★ Vp / E/Vp 属 2009 ASE/EAE 参数，2016 与 2025 算法均不再纳入；
+ *   保留函数仅供引擎层调用，界面不设输入（2026-11-15）。
  */
 function evpRatio(eCm, vpCm) {
   if (!(eCm > 0) || !(vpCm > 0)) return { error: '需填写 E 峰速度与 Vp（都用 cm/s）' };

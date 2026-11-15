@@ -16,6 +16,7 @@ const MD = require('../../utils/inline-md.js');
 const CN = require('../../utils/calc-notes.js');
 // 示意图（室间隔缺损短轴钟点图等单位图）——纯函数生成，与网页同源
 const VSDSVG = require('../../utils/vsd-svg.js');
+const COROSVG = require('../../utils/coronary-svg.js');
 const app = getApp();
 
 /**
@@ -87,7 +88,7 @@ function toBlocks(blocks) {
     // ★ 2026-11-11：示意图块（vsd-svg.js 生成的 SVG）→ data URI 交给 <image>
     //   viewBox 比例由 mode="widthFix" 自适应，不需要另存图片资源。
     if (b.kind === 'img') {
-      const svg = VSDSVG.svgOf(b.id || '');
+      const svg = VSDSVG.svgOf(b.id || '') || COROSVG.svgOf(b.id || '');
       return {
         kind: 'img',
         src: svg ? 'data:image/svg+xml;base64,' + VSDSVG.utf8ToBase64(svg) : '',
@@ -1131,10 +1132,6 @@ Page({
       if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + calc.fmt(f.avgEe));
       if (f.count > 0) parts.push('升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
       else parts.push('升高指标 0 项');
-      if (valid(v.dfvp) && valid(v.dfe)) {
-        const ev = calc.evpRatio(v.dfe, v.dfvp);
-        if (!ev.error) parts.push('E/Vp ' + calc.fmt(ev.ratio, 2) + '（' + ev.text + '）');
-      }
       if (f.text) parts.push('→ ' + f.text);
       const g = calc.lvFilling2025({
         e: v.dfe === undefined ? null : v.dfe,
@@ -1143,11 +1140,15 @@ Page({
         el: v.dfel === undefined ? null : v.dfel,
         trv: v.dftrv === undefined ? null : v.dftrv,
         lavi: v.dflavi === undefined ? null : v.dflavi,
+        lars: v.dflars === undefined ? null : v.dflars,
+        pvsd: v.dfpvsd === undefined ? null : v.dfpvsd,
+        ivrt: v.dfivrt === undefined ? null : v.dfivrt,
       });
       const gLine = [
         'e′ ' + (g.eAvg !== null ? calc.fmt(g.eAvg, 1) : '—') + '（' + (g.eLow ? '减低' : '未减低') + '）',
         '平均 E/e′ ' + (g.eeAvg !== null ? calc.fmt(g.eeAvg) : '—') + '（' + (g.eeHigh ? '升高' : '未升高') + '）',
         'TR Vmax ' + (g.trv !== null ? calc.fmt(g.trv, 1) : '—') + '（' + (g.trHigh ? '≥2.8' : '<2.8') + '）',
+        '补充 ' + (g.secondary.length ? g.secondary.join('、') : '未获得或均阴性'),
         '→ ' + g.text,
       ].join('；');
       out = '【2016 ASE/EACVI 简化路径】' + parts.join('；') +

@@ -196,7 +196,7 @@ const EX = require(exPath);
 if (EX.BRIEF_SECTIONS.length === 5) ok('评估内容 5 个分组（图像质控与规范 / 心腔心肌与应变 / 瓣膜 / 先心含术后 / 急症与特殊场景）');
 else bad('评估内容分组数异常: ' + EX.BRIEF_SECTIONS.length);
 const briefIds = EX.BRIEF_SECTIONS.reduce((a, s2) => a.concat(s2.items.map(i => i.id)), []);
-if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,lv,rv,ivc,rvfun,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,dse,hcm,infiltr,dcm,nc-lv,athlete,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,asd,vsd,pda,ped-base,caf,aca,alt,pht-rev,tof-pr,ebstein,dorv,dbv,pvai,iaa,pa-origin,cor-tri,bubble,coa-echo,tga,mustard,fontan,as-switch,truncus,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lvad') ok('评估条目 = 83 条（5 个分组；新增 ped-base 儿童超声基础、ivc 下腔静脉；2026-11-08 删除肺超声 lung-us）');
+if (briefIds.join(',') === 'tee-20,tte-std,tee-safety,artifact-guide,mimic,contrast-echo,3d-tee,report-std,critical,doppler-basics,echo-interv,tte-measure,ca-views,lv,rv,ivc,rvfun,strain,la-strain,peri,cp-rm,ctrcd,zh-normal,mass,stress-echo,dse,hcm,infiltr,dcm,nc-lv,athlete,arvc,myocarditis,sarcoid,crt,la,mitral,aortic,asload,bav,ie,aortic-root,rheumatic,tr-interv,mv-interv,tavr,prosthetic,asd,vsd,pda,ped-base,caf,aca,alt,pht-rev,tof-pr,ebstein,dorv,dbv,pvai,iaa,pa-origin,cor-tri,bubble,coa-echo,tga,mustard,fontan,as-switch,truncus,aorta,pe,thrombus,zh-ph,ami-comp,takotsubo,osa,myowork,ecmo,pregnancy-echo,ppcm,sepsis,postop-icu,lvad') ok('评估条目 = 84 条（5 个分组；新增 ped-base 儿童超声基础、ivc 下腔静脉；2026-11-08 删除肺超声 lung-us）');
 
 else bad('评估条目异常: ' + briefIds.join(','));
 
@@ -563,7 +563,7 @@ const segOnlyIds = [];
 EX.BRIEF_SECTIONS.forEach(function (s3) {
   (s3.items || []).forEach(function (it) { if (it.segOnly) segOnlyIds.push(it.id); });
 });
-if (segOnlyIds.join(',') === 'tee-20,tte-std,tte-measure') ok('切面速查 3 条打上 segOnly 标记（tee-20 / tte-std / tte-measure）');
+if (segOnlyIds.join(',') === 'tee-20,tte-std,tte-measure,ca-views') ok('切面速查 4 条打上 segOnly 标记（含 ca-views 冠状动脉超声）');
 else bad('segOnly 标记异常: ' + (segOnlyIds.join(',') || '无'));
 if (segSrc3.indexOf('segOnly') !== -1) ok('切面学习页按 segOnly 装配速查列表（标题只维护一份）');
 else bad('切面学习页未按 segOnly 装配速查列表');
@@ -921,8 +921,8 @@ const pRoot0 = pHostile2.find(r => r.key === 'ROOT');
       }
     });
   });
-  (bridged.length === 83) ? ok('83 个判读条目全部挂上「相关计算」桥接（含 v1.14.5 新增 ivc；2026-11-08 删除肺超声）')
-    : bad('桥接条目数 ' + bridged.length + '（期望 83）');
+  (bridged.length === 84) ? ok('84 个判读条目全部挂上「相关计算」桥接（含 v1.14.5 新增 ivc；2026-11-08 删除肺超声）')
+    : bad('桥接条目数 ' + bridged.length + '（期望 84）');
   bridged.every(function (b) { return b.text.indexOf('公式集 → ') !== -1; })
     ? ok('桥接文案统一指向「公式集 → 组 · 计算器」')
     : bad('桥接文案格式不一致');
@@ -1244,18 +1244,25 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     if (h && h.indexOf('pagefoot') === -1) ok(d + ' 版本已移除页尾「继续看其他页面」（下方页签已够）');
     else bad(d + ' 版本仍残留页尾（先跑 node build-www.js）');
   });
+  const build160 = fs.readFileSync(path.join(ROOT, 'build-www.js'), 'utf8');
+  if (build160.indexOf("wrapEngine(path.join(MP, 'utils', 'coronary-svg.js'), 'CoronarySvg')") !== -1 &&
+      build160.indexOf('${coroSvgSrc}') !== -1) ok('冠脉示意图生成器已注入网页 / APK 构建链');
+  else bad('冠脉示意图生成器未注入 build-www.js');
+  const app160 = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
+  if (app160.indexOf('window.CoronarySvg') !== -1) ok('网页端 img 块支持冠脉图 fallback');
+  else bad('网页端 img 块缺冠脉图 fallback');
   const css160 = fs.readFileSync(path.join(ROOT, 'android-app', 'app.css'), 'utf8');
   if (css160.indexOf('pagefoot') === -1) ok('app.css 已清掉页尾样式');
   else bad('app.css 仍残留 pagefoot 样式');
   if (css160.indexOf('.chip--rel') !== -1) ok('「相关内容」胶囊专用配色已定义');
   else bad('缺少 .chip--rel 配色');
 
-  // 「相关计算」桥接：81 条判读全有，且目标计算器真实存在（brief 评估页也算合法目标）
+  // 「相关计算」桥接：84 条判读全有，且目标计算器真实存在（brief 评估页也算合法目标）
   const CG160 = require(path.join(ROOT, 'miniprogram', 'utils', 'calc-groups.js'));
   const calcIds160 = CG160.GROUPS.map(g => g.id).concat(briefs160.map(b => b.id));
   const links160 = EX160.CALC_LINKS || {};
   const missingLinks = briefs160.filter(b => !(links160[b.id] || []).length).map(b => b.id);
-  if (!missingLinks.length) ok('83 条判读全部带「相关计算」跳转目标');
+  if (!missingLinks.length) ok('84 条判读全部带「相关计算」跳转目标');
   else bad('缺相关计算的条目：' + missingLinks.join(','));
   const badTarget = [];
   Object.keys(links160).forEach(function (k) {

@@ -847,10 +847,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
   const segOnlyInDir = dirs.reduce(function (n, d) {
     return n + d.items.filter(function (i) {
-      return ['tee-20', 'tte-std', 'tte-measure'].indexOf(i.id) !== -1;
+      return ['tee-20', 'tte-std', 'tte-measure', 'ca-views'].indexOf(i.id) !== -1;
     }).length;
   }, 0);
-  check('目录不含 segOnly 条目（tee-20 / tte-std / tte-measure）', segOnlyInDir, 0, 0);
+  check('目录不含 segOnly 条目（tee-20 / tte-std / tte-measure / ca-views）', segOnlyInDir, 0, 0);
 
   // ★ v1.6.5：公式集搜索给出「切面学习」的跨页签入口；从那边跳来时接手关键词
   pgA.applySearch('房间隔');
@@ -905,11 +905,11 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const segLook = pgS.data.lookList;
   check('切面学习页签：教学视频列表 8 条（3 专辑 + 5 外链）', segViews.length, 8, 0);
   check('切面学习页签：TEE 演示列表 3 条', segSim.length, 3, 0);
-  check('切面学习页签：切面速查与图谱 4 条（TEE 20 切面 / TTE 规范切面 / TTE 标准切面测量 / 瓣膜解剖）',
-    segLook.length, 4, 0);
+  check('切面学习页签：切面速查与图谱 5 条（含冠状动脉超声）',
+    segLook.length, 5, 0);
   check('切面速查条目 id 与顺序',
     segLook.map(function (i) { return i.id; }).join(',') ===
-      'valveana,tee-20,tte-std,tte-measure' ? 1 : 0, 1, 0);
+      'valveana,tee-20,tte-std,tte-measure,ca-views' ? 1 : 0, 1, 0);
   check('页内导航 4 块且顺序为 节段/速查/视频/演示',
     pgS.data.segNav.map(function (n) { return n.t; }).join('|') ===
       '节段划分|切面速查|教学视频|TEE 演示' ? 1 : 0, 1, 0);
@@ -917,7 +917,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ v1.6.5：本页签自带搜索 + 与公式集互给的跨页签提示
   pgS.applySegKw('TEE');
   check('切面学习搜「TEE」后速查只剩命中条目',
-    pgS.data.lookList.length > 0 && pgS.data.lookList.length < 4 ? 1 : 0, 1, 0);
+    pgS.data.lookList.length > 0 && pgS.data.lookList.length < 5 ? 1 : 0, 1, 0);
   check('切面学习搜索时 segSearching 打开（节段划分与页内导航让位）',
     pgS.data.segSearching === true ? 1 : 0, 1, 0);
   check('切面学习搜「TEE」时提示公式集里也有命中', pgS.data.segCrossN > 0 ? 1 : 0, 1, 0);
@@ -930,8 +930,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('切面学习搜不到时给空态文案', /没有匹配/.test(pgS.data.segEmpty) ? 1 : 0, 1, 0);
   check('两边都搜不到时不给跨页签提示', pgS.data.segCrossN, 0, 0);
   pgS.applySegKw('');
-  check('清空搜索后切面学习恢复完整列表（4 / 8 / 3）',
-    pgS.data.lookList.length === 4 && pgS.data.viewsList.length === 8 &&
+  check('清空搜索后切面学习恢复完整列表（5 / 8 / 3）',
+    pgS.data.lookList.length === 5 && pgS.data.viewsList.length === 8 &&
       pgS.data.simList.length === 3 ? 1 : 0, 1, 0);
   global.__lastSwitchTab = '';
   pgS.applySegKw('TAPSE');
@@ -1101,7 +1101,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       .every(id => dirById('right').items.some(i => i.id === id && i.kind === 'calc')) &&
       !['pvrv', 'svrv', 'residx', 'rvfacv', 'rvfws', 'rvdvdt']
         .some(id => dirById('right').items.some(i => i.id === id)) ? 1 : 0, 1, 0);
-  check('舒张功能合并为 1 条（dfun 收 E/A · E/e′ · E/Vp · 分级）',
+  check('舒张功能合并为 1 条（dfun 收 E/A · E/e′ · 分级）',
     dirById('hemo').items.some(i => i.id === 'dfun' && i.kind === 'calc') &&
       !dirById('hemo').items.some(i => i.id === 'dias' || i.id === 'evp') ? 1 : 0, 1, 0);
   check('心脏同步化条目在重构组',
@@ -1251,6 +1251,17 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('示意图块：formula.js 由 vsd-svg 生成 SVG data URI',
     fxJs.indexOf("require('../../utils/vsd-svg.js')") !== -1 &&
     fxJs.indexOf('data:image/svg+xml;base64,') !== -1 ? 1 : 0, 1, 0);
+  const COROSVG = require(pathW.join(__dirname, 'miniprogram', 'utils', 'coronary-svg.js'));
+  const caSvgStr = COROSVG.svgOf('ca-clock');
+  check('冠脉开口钟点图自检（9 段 + 两个开口方位 + 画布 520×380）',
+    caSvgStr.indexOf('<svg') === 0 &&
+    caSvgStr.indexOf('右冠开口 10–11 点') !== -1 &&
+    caSvgStr.indexOf('左冠开口 3–4 点') !== -1 &&
+    caSvgStr.indexOf('可显示 9 段') !== -1 &&
+    caSvgStr.indexOf('viewBox="110 0 520 380"') !== -1 ? 1 : 0, 1, 0);
+  check('示意图块：formula.js 与网页端都支持冠脉图 fallback',
+    fxJs.indexOf("require('../../utils/coronary-svg.js')") !== -1 &&
+    fxJs.indexOf('COROSVG.svgOf') !== -1 ? 1 : 0, 1, 0);
   check('vsd-clock 图自检（三段环带 + 肌部脚注 + 画布 520×380）',
     vsdSvgStr.indexOf('<svg') === 0 &&
     vsdSvgStr.indexOf('膜周部') !== -1 &&

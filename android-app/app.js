@@ -912,11 +912,13 @@
       fields: [['peoa', '有效开口面积 EOA', 'cm²'], ['ppos', '位置（1 主动脉 / 2 二尖瓣）', ''],
         ['pbmi', 'BMI（可选；≥30 用肥胖切点）', 'kg/m²']],
       note: 'EOAi = EOA/BSA。R15（ASE 2024）：主动脉位 正常 >0.85、中度 0.85–0.66、重度 ≤0.65；二尖瓣位 正常 >1.2、中度 1.2–0.91、重度 ≤0.90（cm²/m²）。BMI ≥30 时整体下调：主动脉位 0.70 / 0.70–0.56 / ≤0.55，二尖瓣位 1.0 / 1.0–0.76 / ≤0.75' },
-    { id: 'dfun', sec: 'hemo', title: '左室舒张功能（E/A · E/e′ · E/Vp · 分级）',
+    { id: 'dfun', sec: 'hemo', title: '左室舒张功能（E/A · E/e′ · 分级）',
       fields: [['dfe', 'E 峰', 'cm/s'], ['dfa', 'A 峰', 'cm/s'], ['dfes', '间隔 e′', 'cm/s'],
         ['dfel', '侧壁 e′', 'cm/s'], ['dflavi', 'LAVi（可选）', 'mL/m²'], ['dftrv', 'TR Vmax（可选）', 'm/s'],
-        ['dfvp', 'Vp 血流传播速度（可选）', 'cm/s']],
-      note: '2016 与 ASE 2025（R39）两套结果同屏并列、不互相覆盖。2016：E/A ≥2，或 E/A ≤0.8 结合平均 E/e′ >14、LAVi >34、TR Vmax >2.8 m/s，分 Ⅰ/Ⅱ/Ⅲ 级。2025（Figure 3）：e′ 减低（间隔 ≤6 / 侧壁 ≤7 / 平均 ≤6.5 cm/s）、E/e′ 升高（间隔 ≥15 / 侧壁 ≥13 / 平均 ≥14）、TR Vmax ≥2.8 m/s；三项同满足为 LAP 升高（E/A <2 Ⅱ 级、≥2 Ⅲ 级），三项全正常为 LAP 正常，其余补 LARS ≤18% / 肺静脉 S/D ≤0.67 / IVRT ≤70 ms / LAVi >34 或做舒张负荷超声。R39 中 LAVi 为二线指标。报告写明分级与充盈压；两套结论不一致时并列写明、注明版本。LAVI 测量与三径线椭球式见「心房容积指数」[R2]' },
+        ['dflars', 'LARS 左房储备应变（可选）', '%'],
+        ['dfpvsd', '肺静脉 S/D（可选）', ''],
+        ['dfivrt', 'IVRT（可选）', 'ms']],
+      note: '2016 与 ASE 2025（R39）两套结果同屏并列、不互相覆盖。2016：E/A ≥2，或 E/A ≤0.8 结合平均 E/e′ >14、LAVi >34、TR Vmax >2.8 m/s，分 Ⅰ/Ⅱ/Ⅲ 级。2025（Figure 3）：e′ 减低（间隔 ≤6 / 侧壁 ≤7 / 平均 ≤6.5 cm/s）、E/e′ 升高（间隔 ≥15 / 侧壁 ≥13 / 平均 ≥14）、TR Vmax ≥2.8 m/s；三项同满足为 LAP 升高（E/A <2 Ⅱ 级、≥2 Ⅲ 级），三项全正常为 LAP 正常；三项不一致或数据不全时，第二步用 LARS ≤18% / 肺静脉 S/D ≤0.67 / IVRT ≤70 ms / LAVi >34 mL/m² 任一阳性裁决 LAP 升高。R39 中 LAVi 为二线指标，须排除运动员、贫血、房颤与二尖瓣病。报告写明分级与充盈压；两套结论不一致时并列写明、注明版本。LAVI 测量与三径线椭球式见「心房容积指数」[R2]' },
 
     { id: 'sync', sec: 'recon', title: '心脏同步化（机械不同步）', rel: ['crt'],
       opts: [{ k: 'sy_flash', n: '室间隔闪动', list: [['n', '无'], ['y', '有']] },
@@ -1176,7 +1178,6 @@
     vcw: 'MR / TR：<3 轻 · 3–6.9 中 · ≥7 重',
     rf: 'RVol ÷ SV · 轻 <30 中 30–49 重 ≥50',
     mva: 'MVA = 220÷PHT 与 SV÷VTI_MV 同屏对照',
-    evp: 'E 峰 ÷ 血流传播速度 Vp',
     lastiff: 'E/e′ ÷ LARS',
     vtir: '不测直径的分流替代量',
     lvnc: '非致密层 ÷ 致密层',
@@ -1349,7 +1350,9 @@
       if (b.kind === 'img') {
         // ★ 2026-11-11：示意图块。SVG 由 VsdSvg 生成，直接内联进 DOM（矢量、可缩放）
         const _VSD = window.VsdSvg;
-        const _svg = _VSD && _VSD.svgOf ? _VSD.svgOf(b.id || '') : '';
+        const _CORO = window.CoronarySvg;
+        const _svg = (_VSD && _VSD.svgOf ? _VSD.svgOf(b.id || '') : '') ||
+          (_CORO && _CORO.svgOf ? _CORO.svgOf(b.id || '') : '');
         if (_svg) {
           h += '<figure class="fx-fig">' + _svg +
             (b.cap ? '<figcaption class="fx-fig__cap">' + mdInline(b.cap) + '</figcaption>' : '') +
@@ -3225,10 +3228,6 @@
       if (f.avgEe !== undefined) parts.push('平均 E/e′ ' + Calc.fmt(f.avgEe));
       if (f.count > 0) parts.push('升高指标 ' + f.count + ' 项（' + f.crit.join('、') + '）');
       else parts.push('升高指标 0 项');
-      if (has('dfvp') && has('dfe')) {
-        const ev = Calc.evpRatio(v.dfe, v.dfvp);
-        if (!ev.error) parts.push('E/Vp ' + Calc.fmt(ev.ratio, 2) + '（' + ev.text + '）');
-      }
       if (f.text) parts.push('→ ' + f.text);
       const g = Calc.lvFilling2025({
         e: v.dfe === undefined ? null : v.dfe,
@@ -3237,11 +3236,15 @@
         el: v.dfel === undefined ? null : v.dfel,
         trv: v.dftrv === undefined ? null : v.dftrv,
         lavi: v.dflavi === undefined ? null : v.dflavi,
+        lars: v.dflars === undefined ? null : v.dflars,
+        pvsd: v.dfpvsd === undefined ? null : v.dfpvsd,
+        ivrt: v.dfivrt === undefined ? null : v.dfivrt,
       });
       const gLine = [
         'e′ ' + (g.eAvg !== null ? Calc.fmt(g.eAvg, 1) : '—') + '（' + (g.eLow ? '减低' : '未减低') + '）',
         '平均 E/e′ ' + (g.eeAvg !== null ? Calc.fmt(g.eeAvg) : '—') + '（' + (g.eeHigh ? '升高' : '未升高') + '）',
         'TR Vmax ' + (g.trv !== null ? Calc.fmt(g.trv, 1) : '—') + '（' + (g.trHigh ? '≥2.8' : '<2.8') + '）',
+        '补充 ' + (g.secondary.length ? g.secondary.join('、') : '未获得或均阴性'),
         '→ ' + g.text,
       ].join('；');
       put('dfun', '【2016 ASE/EACVI 简化路径】' + partsOf(parts) +
@@ -3536,14 +3539,6 @@
       const r = Calc.regurgFraction(v.rfvol, v.rfsv);
       put('rf', r.error ? r.error : 'RF = ' + Calc.fmt(r.rf, 1) + '% · ' + r.text);
     } else put('rf');
-
-    // E/Vp 左房压估测
-    if (has('evpe', 'evpvp')) {
-      const r = Calc.evpRatio(v.evpe, v.evpvp);
-      const parts = r.error ? [r.error] : ['E/Vp ' + Calc.fmt(r.ratio, 2), r.vpText, r.text];
-      if (!r.error && r.note) parts.push(r.note);
-      put('evp', partsOf(parts));
-    } else put('evp');
 
     // 左房僵硬度
     if (has('lsee', 'lslars')) {

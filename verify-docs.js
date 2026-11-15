@@ -852,7 +852,7 @@ function check(name, ok, detail) {
     se.navTxt === '节段划分|切面速查|教学视频|TEE 演示', se.navTxt);
   check('切面学习页教学视频列表 8 条', se.views === 8, segExtras);
   check('切面学习页 TEE 演示列表 3 条', se.sim === 3, segExtras);
-  check('切面学习页切面速查与图谱 4 条', se.look === 4, segExtras);
+  check('切面学习页切面速查与图谱 5 条（含冠状动脉超声）', se.look === 5, segExtras);
   check('教学视频含 3 个专辑入口（操作规范 / 心课堂 / 飞利浦云课堂）', se.albumInViews === 3, se.albumInViews);
   check('飞利浦专辑入口显示 150 段（组标题不计入）', /150/.test(se.philipsTxt), se.philipsTxt.replace(/\s+/g, ' ').slice(0, 80));
 
@@ -1030,7 +1030,7 @@ function check(name, ok, detail) {
   })()`);
   await new Promise((r) => setTimeout(r, 300));
   const srst = await segState();
-  check('清空搜索后切面学习恢复完整列表', srst.segpart === false && srst.look === 4 && srst.views === 8 && srst.sim === 3,
+  check('清空搜索后切面学习恢复完整列表', srst.segpart === false && srst.look === 5 && srst.views === 8 && srst.sim === 3,
     JSON.stringify(srst));
 
   // v1.6.4 回归：从切面学习点条目 → 进公式集详情 → 返回，页签必须回到「切面学习」
@@ -1118,7 +1118,7 @@ function check(name, ok, detail) {
       })(),
       album: idx.querySelectorAll('.fx-item[data-kind="album"]').length,
       albumTxt: (idx.querySelector('.fx-item[data-kind="album"]') || {}).textContent || '',
-      segOnlyLeak: ['tee-20','tte-std','tte-measure'].filter(function(id){
+      segOnlyLeak: ['tee-20','tte-std','tte-measure','ca-views'].filter(function(id){
         return !!idx.querySelector('.fx-item[data-id="'+id+'"]');
       }).length,
       lungUs: idx.querySelectorAll('.fx-item[data-id="lung-us"]').length,
@@ -1147,13 +1147,13 @@ function check(name, ok, detail) {
     check('瓣膜疾病与定量组 TR 排第三（2026-11-08）',
       d.valveOrder === 'mitral,aortic,tr,bav,rheumatic,ie,aortic-root,asload', d.valveOrder);
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
-    // v1.6.4：切面速查 3 条（tee-20 / tte-std / tte-measure）也移入该页签 → 130 → 127
+    // v1.6.4：切面速查 4 条（含 ca-views 冠状动脉超声）也移入该页签
     check('条目 120 条（计算 40 + 评估判读 80；2026-11-08 删除「肺超声」判读条目）', d.items === 120, d.items);
     check('发布版目录已无肺超声 lung-us 条目', d.lungUs === 0, d.lungUs);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
       d.resistOuts + ' / ' + d.lvgeomOuts);
-    check('目录不再含切面速查条目（tee-20 / tte-std / tte-measure）', d.segOnlyLeak === 0, d.segOnlyLeak);
+    check('目录不再含切面速查条目（tee-20 / tte-std / tte-measure / ca-views）', d.segOnlyLeak === 0, d.segOnlyLeak);
     check('外链 <a> 条目 0 条（切面学习/TEE 演示已移出公式集目录）', d.links === 0, d.links);
     check('目录不再含操作规范专辑入口（已移入切面学习页签）', d.album === 0, d.album + ' / ' + d.albumTxt);
     check('公式集目录带搜索框', d.search, true);
@@ -1633,13 +1633,23 @@ function check(name, ok, detail) {
   check('VSD：写明教材弧段不一致（9–11 / 9–12 / 10–11）与「对位不良不是第五型」',
     /9–11/.test(vsdTxt) && /10–11/.test(vsdTxt) && /不是第五型/.test(vsdTxt), '');
   const vsdFig = await c.evalJs(
-    '(function(){var f=document.querySelector("#calcDetail .fx-fig");' +
+    '(function(){var f=null,fs=document.querySelectorAll(".fx-fig");' +
+    'for(var i=0;i<fs.length;i++){if((fs[i].textContent||"").indexOf("膜周部")>=0){f=fs[i];break;}}' +
     'if(!f)return "no-fig";var s=f.querySelector("svg");' +
     'if(!s)return "no-svg";var t=s.textContent;' +
     'return [t.indexOf("膜周部")>=0, t.indexOf("流出道型")>=0, t.indexOf("流入道型")>=0,' +
     't.indexOf("肌部")>=0, (f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
   check('VSD 短轴钟点示意图已渲染（SVG 内联，三段环带标签 + 肌部脚注 + 图注齐全）',
     vsdFig === 'true,true,true,true,cap', String(vsdFig));
+  const caFig = await c.evalJs(
+    '(function(){var f=null,fs=document.querySelectorAll(".fx-fig");' +
+    'for(var i=0;i<fs.length;i++){if((fs[i].textContent||"").indexOf("左冠开口")>=0){f=fs[i];break;}}' +
+    'if(!f)return "no-fig";var s=f.querySelector("svg");' +
+    'if(!s)return "no-svg";var t=s.textContent||"";' +
+    'return [t.indexOf("右冠开口 10–11 点")>=0, t.indexOf("可显示 9 段")>=0,' +
+    't.indexOf("#11")>=0, (f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
+  check('冠状动脉开口钟点示意图已渲染（两个开口方位 + 9 段编号 + 图注）',
+    caFig === 'true,true,true,cap', String(caFig));
   const vsdOut = await outOf('vsd');
   check('VSD 与 ASD 的 Qp/Qs 输入互不串值（前缀键隔离）',
     vsdOut.indexOf('Qp/Qs') < 0, vsdOut);
