@@ -341,11 +341,11 @@ if (subDl.length >= 5 && subDl.length <= 12 &&
     subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\/|^https:\/\/www\.sciencedirect\.com\//.test(d.u)))
   ok('需订阅地址 ' + subDl.length + ' 条均为 DOI 解析页或中华医学期刊网页面（无死链、无自造地址）');
 else bad('需订阅地址不合规: ' + subDl.map(d => d.u).join(' '));
-// v1.6.6：R75 原来挂中国循环杂志官网首页，点进去站内搜不到这篇文章 → 改挂公开 PDF 全文
+// 2026-11-15：9 条 GitHub Pages 自托管中文指南 PDF 全部撤下，改挂官方入口
 const r79 = EX.REFS.filter(r => r.id === 'R75')[0];
-if (r79 && (r79.dl || []).some(d => d.t === '中文 PDF' && /^https:\/\/.+\.pdf$/.test(d.u)) &&
-    !(r79.dl || []).some(d => /chinacirculation\.org/.test(d.u)))
-  ok('R75 挂公开 PDF 全文直链（不再挂官网首页）');
+if (r79 && (r79.dl || []).some(d => d.u === 'https://doi.org/10.3969/j.issn.1000-3614.2021.02.002') &&
+    !(r79.dl || []).some(d => /github\.io|chinacirculation\.org/.test(d.u)))
+  ok('R75 改挂官方 DOI + 万方题录（不再挂自托管 PDF / 官网首页）');
 else bad('R75 直链不合规: ' + JSON.stringify(r79 && r79.dl));
 if (!dlAll.some(d => /chinacirculation\.org/.test(d.u)))
   ok('已无指向期刊官网首页的无效直链');
@@ -383,15 +383,23 @@ if (r11 && (r11.dl || []).some(d => d.u === 'https://publications.ersnet.org/con
     /61\(1\)/.test(r11.where))
   ok('R11 指向 ERS 正式全文页 61(1):2200879，卷期与链接一致');
 else bad('R11 链接或卷期不合规: ' + JSON.stringify(r11 && { where: r11.where, dl: r11.dl }));
-// ④ R75 / R86 原第三方 PDF 失效后改为本站自托管，文件必须在 docs/materials 里真实存在
-const selfHost = [['R75', 'valve-echo-consensus-2021.pdf'], ['R86', 'ccs-stress-echo-2023.pdf']];
-const selfBad = selfHost.filter(([id, f]) => {
+// ④ 2026-11-15：撤下 docs/materials 里的 9 个中文指南 PDF，REFS 一律改挂官方入口
+const SELFHOST_RE = /heiqingyu\.github\.io\/echo-ref\/materials\//;
+const selfDl = dlAll.filter(d => SELFHOST_RE.test(String(d.u)));
+if (!selfDl.length) ok('文献链接已无 GitHub Pages 自托管 PDF 镜像');
+else bad('仍挂着自托管 PDF 镜像: ' + selfDl.map(d => d.u).join(' '));
+const selfIds = ['R59', 'R60', 'R61', 'R62', 'R63', 'R64', 'R65', 'R75', 'R86'];
+const officialBad = selfIds.filter(id => {
   const r = EX.REFS.filter(x => x.id === id)[0];
-  if (!r || !(r.dl || []).some(d => d.u.indexOf('/materials/' + f) !== -1)) return true;
-  return !fs.existsSync(path.join(__dirname, 'docs', 'materials', f));
+  const ds = (r && r.dl) || [];
+  return ds.length < 2 || !ds.some(d => /doi\.org|d\.wanfangdata|cnki\.net|medjournals\.cn|hbusqcc\.com|yiigle\.com/.test(d.u));
 });
-if (!selfBad.length) ok('R75 / R86 改挂本站自托管 PDF，且 docs/materials 内文件存在');
-else bad('自托管 PDF 缺失: ' + selfBad.map(x => x[0] + '/' + x[1]).join(' '));
+if (!officialBad.length) ok('9 条国内指南均改挂官方 / 权威入口（DOI、期刊官网、万方题录、质控中心全文）');
+else bad('仍缺官方入口: ' + officialBad.join(' '));
+const matDir = path.join(__dirname, 'docs', 'materials');
+const matPdf = fs.existsSync(matDir) ? fs.readdirSync(matDir).filter(f => /\.pdf$/i.test(f)) : [];
+if (!matPdf.length) ok('docs/materials 内已无托管 PDF（仅保留 README 与 .gitkeep）');
+else bad('docs/materials 仍有 PDF: ' + matPdf.join(' '));
 // ⑤ R83 的 DOI 曾经写错（-20250716-00416 在 doi.org 上 404），锁死正确值
 const r83 = EX.REFS.filter(r => r.id === 'R83')[0];
 if (r83 && (r83.dl || []).some(d => /10\.3760\/cma\.j\.cn131148-20250919-00508/.test(d.u)))

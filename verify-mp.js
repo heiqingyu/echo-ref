@@ -708,11 +708,11 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
     subDl.length >= 5 && subDl.length <= 12 &&
     subDl.every(d => /^https:\/\/doi\.org\/10\.|^https:\/\/rs\.yiigle\.com\/cmaid\/|^https:\/\/www\.sciencedirect\.com\//.test(d.u)) ? 1 : 0, 1, 0);
   check('免费可获取链接 ≥ 70 条', allDl.filter(d => !/需订阅|万方|看订阅/.test(d.t)).length >= 70 ? 1 : 0, 1, 0);
-  // v1.6.6：R75 原挂中国循环杂志官网首页（站内搜不到这篇文章）→ 改挂公开 PDF 全文直链
+  // 2026-11-15：9 条自托管 PDF 撤下，R75 改挂官方 DOI + 万方题录
   const r79 = EXD.REFS.filter(r => r.id === 'R75')[0];
-  check('R75 挂公开 PDF 全文直链（不再挂官网首页）',
-    r79 && r79.dl && r79.dl.some(d => d.t === '中文 PDF' && /^https:\/\/.+\.pdf$/.test(d.u)) &&
-      !r79.dl.some(d => /chinacirculation\.org/.test(d.u)) ? 1 : 0, 1, 0);
+  check('R75 改挂官方 DOI + 万方题录（不再挂自托管 PDF / 官网首页）',
+    r79 && r79.dl && r79.dl.some(d => d.u === 'https://doi.org/10.3969/j.issn.1000-3614.2021.02.002') &&
+      !r79.dl.some(d => /github\.io|chinacirculation\.org/.test(d.u)) ? 1 : 0, 1, 0);
   check('已无指向期刊官网首页的无效直链',
     allDl.some(d => /chinacirculation\.org/.test(d.u)) ? 0 : 1, 1, 0);
   check('「免费页面」类型已启用',
@@ -733,10 +733,15 @@ console.log('\n=== 22. 延展阅读已删除 + 参考文献（公式集页底部
   check('R11 指向 ERS 正式全文页 61(1):2200879',
     r11m && (r11m.dl || []).some(d => d.u === 'https://publications.ersnet.org/content/erj/61/1/2200879') &&
     /61\(1\)/.test(r11m.where) ? 1 : 0, 1, 0);
-  check('R75 / R86 的中文 PDF 走本站 materials 自托管',
-    ['R75', 'R86'].every(function (id) {
+  check('全表文献链接已无 GitHub Pages 自托管 PDF 镜像',
+    allDl.some(d => /heiqingyu\.github\.io\/echo-ref\/materials\//.test(d.u)) ? 0 : 1, 1, 0);
+  check('9 条国内指南均改挂官方 / 权威入口',
+    ['R59', 'R60', 'R61', 'R62', 'R63', 'R64', 'R65', 'R75', 'R86'].every(function (id) {
       const r = EXD.REFS.filter(x => x.id === id)[0];
-      return r && (r.dl || []).some(d => d.t === '中文 PDF' && /\/materials\/[a-z0-9-]+\.pdf$/.test(d.u));
+      const ds = (r && r.dl) || [];
+      return ds.length >= 2 && ds.some(function (d) {
+        return /doi\.org|d\.wanfangdata|cnki\.net|medjournals\.cn|hbusqcc\.com|yiigle\.com/.test(d.u);
+      });
     }) ? 1 : 0, 1, 0);
   check('R83 DOI 指向真实文章（cn131148-20250919-00508）',
     (EXD.REFS.filter(r => r.id === 'R83')[0].dl || [])
@@ -1307,9 +1312,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const teeSvUrl = EXD23.LINK_SECTIONS[0].items.filter(i => i.id === 'tee-sv')[0].url;
   pgA.onOpen({ currentTarget: { dataset: { kind: 'link', id: 'tee-sv', url: teeSvUrl } } });
   check('点击切面条目 → 复制链接到剪贴板', clip === teeSvUrl ? 1 : 0, 1, 0);
-  const pdfUrl = 'https://heiqingyu.github.io/echo-ref/materials/x.pdf';
+  const pdfUrl = 'https://doi.org/10.3760/cma.j.cn131148-20231117-00232';
   pgA.onCopyLink({ currentTarget: { dataset: { url: pdfUrl } } });
-  check('文献 PDF 胶囊点击 → 复制直链', clip === pdfUrl ? 1 : 0, 1, 0);
+  check('文献链接胶囊点击 → 复制直链', clip === pdfUrl ? 1 : 0, 1, 0);
 
   // —— 计算公式详情：flow ——
   pgF.onLoad({ id: 'flow' });
