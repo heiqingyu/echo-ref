@@ -309,6 +309,26 @@ const COMMERCIAL_RE = /pfizer|medicalinformation|drvoice|medlive|medsci|dxy\.cn|
 const commercialDl = dlAll.filter(d => COMMERCIAL_RE.test(String(d.u) + ' ' + String(d.t)));
 if (!commercialDl.length) ok('文献链接无药企站 / 商业医学媒体发布页');
 else bad('文献链接混入药企站 / 商业医学媒体：' + commercialDl.map(d => d.u).join(' '));
+// ★ 2026-11-15 用户口径（清理边界，别扩大化）：
+//   ①「打开就看到 PDF 全文」的第三方机构免费全文（R60/R61 hbusqcc）可以保留；
+//   ②「其他的有权威页的简介也行，不要删了那些」——期刊官网目次 / 摘要页、万方题录、
+//     PubMed、PMC、DOI 落地页、学会官网指南页，即使不直接显示全文也算合格。
+//   唯一要清的是「点开看不到正文、只有介绍 + 一堆广告」的商业落地页（上面 COMMERCIAL_RE）。
+//   ★ 判定按「点开能否看到正文」，不按「是不是官方域名」，也不按「是不是 PDF 直链」。
+//   下面锁住代表性权威入口形态，防止以后以「非 PDF 直链」为由误删这些简介 / 题录页。
+const AUTHORITY_KEEP = [
+  'www.hbusqcc.com/attachment/',      // 打开即见 PDF 全文（第三方机构免费全文）
+  'd.wanfangdata.com.cn/periodical/', // 万方权威题录
+  'zjxb.cbpt.cnki.net',               // 知网期刊官网目次
+  'cs.medjournals.cn',                // 中华医学期刊网官网目次
+  'rs.yiigle.com/cmaid/',             // 中华医学会全文阅读页
+  'pmc.ncbi.nlm.nih.gov/articles/',   // PMC 全文
+  'pubmed.ncbi.nlm.nih.gov',          // PubMed 题录
+  'doi.org/10.',                      // DOI 官方落地页
+];
+const lostAuthority = AUTHORITY_KEEP.filter(f => !dlAll.some(d => String(d.u).indexOf(f) >= 0));
+if (!lostAuthority.length) ok('权威入口形态保留 ' + AUTHORITY_KEEP.length + ' 类（全文 PDF / 题录 / 官网简介均不误删）');
+else bad('权威入口被误删：' + lostAuthority.join(' '));
 // v1.13.2：中文文献从「万方搜索页」改为「万方文章详情页」——用户要求点一下直接到文章
 const wfRe = /^https:\/\/d\.wanfangdata\.com\.cn\/periodical\/[a-z]+\d{9}$/;
 const wfDl = dlAll.filter(d => /^万方/.test(d.t));
