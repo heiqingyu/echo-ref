@@ -1650,6 +1650,15 @@ function check(name, ok, detail) {
     't.indexOf("#11")>=0, (f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
   check('冠状动脉开口钟点示意图已渲染（两个开口方位 + 9 段编号 + 图注）',
     caFig === 'true,true,true,cap', String(caFig));
+  const caSegFig = await c.evalJs(
+    '(function(){var f=null,fs=document.querySelectorAll(".fx-fig");' +
+    'for(var i=0;i<fs.length;i++){if((fs[i].textContent||"").indexOf("虚线为分段边界")>=0){f=fs[i];break;}}' +
+    'if(!f)return "no-fig";var s=f.querySelector("svg");' +
+    'if(!s)return "no-svg";var t=s.textContent||"";' +
+    'return [t.indexOf("#1")>=0, t.indexOf("#11")>=0,' +
+    't.indexOf("右冠 #1-#4 绕三尖瓣环")>=0,(f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
+  check('冠状动脉分段示意图已渲染（9 段编号 + 分段边界 + 图注）',
+    caSegFig === 'true,true,true,cap', String(caSegFig));
   const vsdOut = await outOf('vsd');
   check('VSD 与 ASD 的 Qp/Qs 输入互不串值（前缀键隔离）',
     vsdOut.indexOf('Qp/Qs') < 0, vsdOut);

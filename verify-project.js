@@ -1985,6 +1985,24 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     ? ok('LASr 判读阈值与 HUNT 参考区间并列保留') : bad('LASr 两套口径未并列');
 }
 
+// ★ 2026-11-15：冠脉速查收录 R83 图 2（自绘分段示意）与表 1（九段解剖定义）
+{
+  let ca = null;
+  EX.BRIEF_SECTIONS.forEach(function (s2) {
+    (s2.items || []).forEach(function (it) { if (it.id === 'ca-views') ca = it; });
+  });
+  const caTxt = ca ? JSON.stringify(ca.blocks || []) : '';
+  const must = ['ca-segments', '右冠开口至第一转折处', '右冠第一转折处至第二转折处',
+    '第二转折处至后降支开口', '右冠远段发出后降支',
+    '左冠开口至前降支与回旋支分叉处', '前降支开口至第一对角支',
+    '前降支近段末端至第二对角支', '回旋支开口至第一钝缘支开口'];
+  const miss = must.filter(function (k) { return caTxt.indexOf(k) === -1; });
+  const imgN = ca ? ca.blocks.filter(function (b) { return b.kind === 'img'; }).length : 0;
+  (ca && imgN === 2 && miss.length === 0)
+    ? ok('冠脉速查含 R83 图 2 分段示意与表 1 九段解剖定义（两张图 + 9 行定义）')
+    : bad('冠脉速查分段定义或示意图缺失：' + miss.join('、') + ' img=' + imgN);
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {

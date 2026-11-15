@@ -1259,6 +1259,13 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     caSvgStr.indexOf('左冠开口 3–4 点') !== -1 &&
     caSvgStr.indexOf('可显示 9 段') !== -1 &&
     caSvgStr.indexOf('viewBox="110 0 520 380"') !== -1 ? 1 : 0, 1, 0);
+  const caSegSvgStr = COROSVG.svgOf('ca-segments');
+  check('冠脉分段示意图自检（9 段编号 + 分段边界说明 + 画布 520×380）',
+    caSegSvgStr.indexOf('<svg') === 0 &&
+    caSegSvgStr.indexOf('虚线为分段边界') !== -1 &&
+    caSegSvgStr.indexOf('右冠 #1-#4 绕三尖瓣环') !== -1 &&
+    caSegSvgStr.indexOf('#11') !== -1 &&
+    caSegSvgStr.indexOf('viewBox="110 0 520 380"') !== -1 ? 1 : 0, 1, 0);
   check('示意图块：formula.js 与网页端都支持冠脉图 fallback',
     fxJs.indexOf("require('../../utils/coronary-svg.js')") !== -1 &&
     fxJs.indexOf('COROSVG.svgOf') !== -1 ? 1 : 0, 1, 0);
