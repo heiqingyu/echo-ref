@@ -1271,6 +1271,11 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   const app160 = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
   if (app160.indexOf('window.CoronarySvg') !== -1) ok('网页端 img 块支持冠脉图 fallback');
   else bad('网页端 img 块缺冠脉图 fallback');
+  if (build160.indexOf("wrapEngine(path.join(MP, 'utils', 'aorta-svg.js'), 'AortaSvg')") !== -1 &&
+      build160.indexOf('${aortaSvgSrc}') !== -1 &&
+      app160.indexOf('window.AortaSvg') !== -1)
+    ok('主动脉四段测线图已注入网页 / APK 构建链（含网页端 fallback）');
+  else bad('主动脉四段测线图未注入构建链或网页端缺 fallback');
   const css160 = fs.readFileSync(path.join(ROOT, 'android-app', 'app.css'), 'utf8');
   if (css160.indexOf('pagefoot') === -1) ok('app.css 已清掉页尾样式');
   else bad('app.css 仍残留 pagefoot 样式');
@@ -2029,6 +2034,23 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   (ca && imgN === 2 && miss.length === 0)
     ? ok('冠脉速查含 R83 图 2 分段示意与表 1 九段解剖定义（两张图 + 9 行定义）')
     : bad('冠脉速查分段定义或示意图缺失：' + miss.join('、') + ' img=' + imgN);
+}
+// ★ 2026-11-17：主动脉根部四段测线横向示意图（只做 A，不做 IVC / 五声窗）
+{
+  let ar = null;
+  EX.BRIEF_SECTIONS.forEach(function (s2) {
+    (s2.items || []).forEach(function (it) { if (it.id === 'aortic-root') ar = it; });
+  });
+  const arHasImg = ar ? (ar.blocks || []).some(function (b) {
+    return b.kind === 'img' && b.id === 'aorta-measure';
+  }) : false;
+  const aortaSrc = fs.readFileSync(path.join(ROOT, 'miniprogram', 'utils', 'aorta-svg.js'), 'utf8');
+  const arMust = ['主动脉根部四段 · 测量径线', '收缩中期', '26 / 23', '40 / 36',
+    '35 / 32', '37 / 33', '不画瓣叶解剖轮廓'];
+  const arMiss = arMust.filter(function (k) { return aortaSrc.indexOf(k) === -1; });
+  (arHasImg && arMiss.length === 0)
+    ? ok('主动脉根部条目含四段测线图，四组时相 / 上限数值贴 R2 / R27 / R111 原文')
+    : bad('主动脉四段测线图或数值缺失：' + arMiss.join('、') + ' img=' + arHasImg);
 }
 
 // ★ 2026-11-17：冠脉两表合并为一张 4 列速查表 + 舒张功能正常 / 筛查说明

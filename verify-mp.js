@@ -1273,6 +1273,16 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('示意图块：formula.js 与网页端都支持冠脉图 fallback',
     fxJs.indexOf("require('../../utils/coronary-svg.js')") !== -1 &&
     fxJs.indexOf('COROSVG.svgOf') !== -1 ? 1 : 0, 1, 0);
+  const AORTASVG = require(pathW.join(__dirname, 'miniprogram', 'utils', 'aorta-svg.js'));
+  const aoSvgStr = AORTASVG.svgOf('aorta-measure');
+  check('主动脉四段测线图自检（横向四段 + 四组上限 + 画布 520×380）',
+    aoSvgStr.indexOf('<svg') === 0 &&
+    aoSvgStr.indexOf('窦管交界') !== -1 &&
+    aoSvgStr.indexOf('40 / 36') !== -1 &&
+    aoSvgStr.indexOf('viewBox="110 0 520 380"') !== -1 ? 1 : 0, 1, 0);
+  check('示意图块：formula.js 支持主动脉图 fallback',
+    fxJs.indexOf("require('../../utils/aorta-svg.js')") !== -1 &&
+    fxJs.indexOf('AORTASVG.svgOf') !== -1 ? 1 : 0, 1, 0);
   check('vsd-clock 图自检（三段环带 + 肌部脚注 + 画布 520×380）',
     vsdSvgStr.indexOf('<svg') === 0 &&
     vsdSvgStr.indexOf('膜周部') !== -1 &&

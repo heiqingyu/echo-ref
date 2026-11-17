@@ -1665,6 +1665,15 @@ function check(name, ok, detail) {
     'return [s.indexOf("解剖定义")>=0,s.indexOf("探头动作")>=0,s.indexOf("定位标记")>=0].join(",");})()');
   check('冠脉速查合并表已渲染（4 列表头：解剖定义 / 探头动作 / 定位标记）',
     caMerged === 'true,true,true', String(caMerged));
+  const aoFig = await c.evalJs(
+    '(function(){var f=null,fs=document.querySelectorAll(".fx-fig");' +
+    'for(var i=0;i<fs.length;i++){if((fs[i].textContent||"").indexOf("主动脉根部四段")>=0){f=fs[i];break;}}' +
+    'if(!f)return "no-fig";var s=f.querySelector("svg");' +
+    'if(!s)return "no-svg";var t=s.textContent||"";' +
+    'return [t.indexOf("窦管交界")>=0, t.indexOf("40 / 36")>=0, t.indexOf("收缩中期")>=0,' +
+    '(f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
+  check('主动脉根部四段测线示意图已渲染（四段 + 上限 + 时相 + 图注）',
+    aoFig === 'true,true,true,cap', String(aoFig));
   const dfNorm = await c.evalJs(
     '(function(){var b=document.body.textContent||"";' +
     'return [b.indexOf("正常怎么判")>=0,b.indexOf("E/A ≥2 不单独定级")>=0,' +

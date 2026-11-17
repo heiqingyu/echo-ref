@@ -1351,8 +1351,10 @@
         // ★ 2026-11-11：示意图块。SVG 由 VsdSvg 生成，直接内联进 DOM（矢量、可缩放）
         const _VSD = window.VsdSvg;
         const _CORO = window.CoronarySvg;
+        const _AORTA = window.AortaSvg;
         const _svg = (_VSD && _VSD.svgOf ? _VSD.svgOf(b.id || '') : '') ||
-          (_CORO && _CORO.svgOf ? _CORO.svgOf(b.id || '') : '');
+          (_CORO && _CORO.svgOf ? _CORO.svgOf(b.id || '') : '') ||
+          (_AORTA && _AORTA.svgOf ? _AORTA.svgOf(b.id || '') : '');
         if (_svg) {
           h += '<figure class="fx-fig">' + _svg +
             (b.cap ? '<figcaption class="fx-fig__cap">' + mdInline(b.cap) + '</figcaption>' : '') +

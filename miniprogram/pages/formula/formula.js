@@ -17,6 +17,7 @@ const CN = require('../../utils/calc-notes.js');
 // 示意图（室间隔缺损短轴钟点图等单位图）——纯函数生成，与网页同源
 const VSDSVG = require('../../utils/vsd-svg.js');
 const COROSVG = require('../../utils/coronary-svg.js');
+const AORTASVG = require('../../utils/aorta-svg.js');
 const app = getApp();
 
 /**
@@ -88,7 +89,7 @@ function toBlocks(blocks) {
     // ★ 2026-11-11：示意图块（vsd-svg.js 生成的 SVG）→ data URI 交给 <image>
     //   viewBox 比例由 mode="widthFix" 自适应，不需要另存图片资源。
     if (b.kind === 'img') {
-      const svg = VSDSVG.svgOf(b.id || '') || COROSVG.svgOf(b.id || '');
+      const svg = VSDSVG.svgOf(b.id || '') || COROSVG.svgOf(b.id || '') || AORTASVG.svgOf(b.id || '');
       return {
         kind: 'img',
         src: svg ? 'data:image/svg+xml;base64,' + VSDSVG.utf8ToBase64(svg) : '',
