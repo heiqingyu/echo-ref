@@ -1659,6 +1659,18 @@ function check(name, ok, detail) {
     't.indexOf("右冠 #1-#4 绕三尖瓣环")>=0,(f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
   check('冠状动脉分段示意图已渲染（9 段编号 + 分段边界 + 图注）',
     caSegFig === 'true,true,true,cap', String(caSegFig));
+  const caMerged = await c.evalJs(
+    '(function(){var hs=document.querySelectorAll(".fx-tbl__r--h .fx-tbl__c");' +
+    'var s=Array.prototype.map.call(hs,function(x){return x.textContent||"";}).join("|");' +
+    'return [s.indexOf("解剖定义")>=0,s.indexOf("探头动作")>=0,s.indexOf("定位标记")>=0].join(",");})()');
+  check('冠脉速查合并表已渲染（4 列表头：解剖定义 / 探头动作 / 定位标记）',
+    caMerged === 'true,true,true', String(caMerged));
+  const dfNorm = await c.evalJs(
+    '(function(){var b=document.body.textContent||"";' +
+    'return [b.indexOf("正常怎么判")>=0,b.indexOf("E/A ≥2 不单独定级")>=0,' +
+    'b.indexOf("儿童舒张功能分型尚未清楚定义")>=0].join(",");})()');
+  check('舒张功能正常 / 筛查说明已渲染（正常判据 + 孤立 E/A≥2 + 儿童成人标准不适用）',
+    dfNorm === 'true,true,true', String(dfNorm));
   const vsdOut = await outOf('vsd');
   check('VSD 与 ASD 的 Qp/Qs 输入互不串值（前缀键隔离）',
     vsdOut.indexOf('Qp/Qs') < 0, vsdOut);

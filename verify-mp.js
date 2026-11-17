@@ -1260,6 +1260,10 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     caSvgStr.indexOf('可显示 9 段') !== -1 &&
     caSvgStr.indexOf('viewBox="110 0 520 380"') !== -1 ? 1 : 0, 1, 0);
   const caSegSvgStr = COROSVG.svgOf('ca-segments');
+  check('冠脉速查两表合并后的表头仍在小程序数据源（4 列：节段 / 解剖定义 / 探头动作 / 定位标记）',
+    /heads:\s*\['节段', '解剖定义', '探头动作', '定位标记'\]/.test(
+      require('fs').readFileSync(pathW.join(__dirname, 'miniprogram', 'utils', 'brief-a.js'), 'utf8')) ? 1 : 0, 1, 0);
+
   check('冠脉分段示意图自检（9 段编号 + 分段边界说明 + 画布 520×380）',
     caSegSvgStr.indexOf('<svg') === 0 &&
     caSegSvgStr.indexOf('虚线为分段边界') !== -1 &&

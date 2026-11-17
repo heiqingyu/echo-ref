@@ -2003,6 +2003,35 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     : bad('冠脉速查分段定义或示意图缺失：' + miss.join('、') + ' img=' + imgN);
 }
 
+// ★ 2026-11-17：冠脉两表合并为一张 4 列速查表 + 舒张功能正常 / 筛查说明
+{
+  let caM = null;
+  EX.BRIEF_SECTIONS.forEach(function (s2) {
+    (s2.items || []).forEach(function (it) { if (it.id === 'ca-views') caM = it; });
+  });
+  const mTxt = caM ? JSON.stringify(caM.blocks || []) : '';
+  const mergedHeads = mTxt.indexOf('解剖定义') !== -1 && mTxt.indexOf('定位标记') !== -1;
+  const noDup = mTxt.indexOf('各节段的探头动作') === -1;
+  const nineRows = ['主动脉右冠窦', '三尖瓣环前、右、后', '后室间沟', '左冠窦与左心耳之间',
+    '前室间沟', '左房室交界侧后方'].every(function (k) { return mTxt.indexOf(k) !== -1; });
+  (caM && mergedHeads && noDup && nineRows)
+    ? ok('冠脉速查两表合并为一张 4 列速查表（定义 + 探头动作 + 定位标记，无重复节段列）')
+    : bad('冠脉速查合并表异常：heads=' + mergedHeads + ' noDup=' + noDup + ' rows=' + nineRows);
+
+  const fsN = require('fs');
+  const pathN = require('path');
+  const cn = fsN.readFileSync(pathN.join(__dirname, 'miniprogram', 'utils', 'calc-notes.js'), 'utf8');
+  const i0 = cn.indexOf('  dfun: {');
+  const i1 = cn.indexOf('  sync: {', i0);
+  const dfTxt = cn.slice(i0, i1 > i0 ? i1 : cn.length);
+  const norm = ['正常怎么判、什么时候不套分级', '孤立性 E/A ≥2', '儿童舒张功能分型尚未清楚定义',
+    'E/A 可生理性倒置'].every(function (k) { return dfTxt.indexOf(k) !== -1; });
+  const srcOK = EX.CALC_SRC && (EX.CALC_SRC.dfun || []).indexOf('R109') !== -1;
+  (norm && srcOK)
+    ? ok('舒张功能补充正常 / 筛查口径（孤立 E/A≥2 不单独定级 + 儿童成人标准不适用 R109）')
+    : bad('舒张功能正常 / 筛查说明缺失：norm=' + norm + ' src=' + srcOK);
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {
