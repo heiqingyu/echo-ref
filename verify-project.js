@@ -281,7 +281,7 @@ EX.BRIEF_SECTIONS.forEach(sec => sec.items.forEach(it => {
 }));
 if (!missCite.length) ok('正文提到的文献编号均已挂进 source');
 else bad('正文提到但未挂引用: ' + missCite.join(' | '));
-if (EX.REFS.length === 123) ok('参考文献 123 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声、R120 中国应变共识 2023、R121 高血压心血管重构指南 2024、R122 中国心肌病综合管理指南 2025、R123 EACVI/EHRA 左房与左心耳共识 2025）');
+if (EX.REFS.length === 124) ok('参考文献 124 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声、R120 中国应变共识 2023、R121 高血压心血管重构指南 2024、R122 中国心肌病综合管理指南 2025、R123 EACVI/EHRA 左房与左心耳共识 2025、R124 健康儿童 E/A 正常值 2022）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 // v1.15.7：公众号 / 第三方转载 / 机构仓储这类易失效链接，不能是文献的唯一入口
@@ -1587,9 +1587,9 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
 /* ── v1.15.1：R109–R112 入库 + ped-base 两节（EACVI 报告要素 / ISHLT 心衰分级）── */
 {
   const ids = EX.REFS.slice(-6).map(function (r) { return r.id; }).join(',');
-  (ids === 'R118,R119,R120,R121,R122,R123')
-    ? ok('R118–R123 六条按序排在文献表末尾')
-    : bad('文献表末尾不是 R118–R123：' + ids);
+  (ids === 'R119,R120,R121,R122,R123,R124')
+    ? ok('R119–R124 六条按序排在文献表末尾')
+    : bad('文献表末尾不是 R119–R124：' + ids);
 
   const byId = {};
   EX.REFS.forEach(function (r) { byId[r.id] = r; });
@@ -1929,6 +1929,34 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     (EX.SEARCH_KW[id] && EX.SEARCH_KW[id].length > 10) ? ok(id + ' 搜索别名已补')
       : bad(id + ' 搜索别名缺失');
   });
+}
+
+/* ── 2026-11-17：R124 健康儿童 E/A 正常值文献入库与 dfun 回归锁 ── */
+{
+  const r124 = EX.REFS.filter(function (r) { return r.id === 'R124'; })[0];
+  if (r124) {
+    const w = r124.where || '';
+    (w.indexOf('10(2): 355') !== -1 && w.indexOf('10.3390/healthcare10020355') !== -1 &&
+     w.indexOf('PMID: 35206969') !== -1)
+      ? ok('R124 题录含卷期页、DOI 与 PMID') : bad('R124 题录不完整：' + w);
+    const u = r124.use || '';
+    (u.length >= 40 && u.length <= 90) ? ok('R124 use 长度合规（' + u.length + ' 字）')
+      : bad('R124 use 长度异常：' + u.length);
+    const dl = r124.dl || [];
+    (dl.length === 3 && dl.every(function (d) {
+      return (d.u || '').indexOf('https://') === 0;
+    }) && dl.some(function (d) {
+      return d.u === 'https://doi.org/10.3390/healthcare10020355';
+    })) ? ok('R124 挂 doi.org / PMC / 检索三条官方入口')
+      : bad('R124 链接异常：' + JSON.stringify(dl));
+  } else bad('REFS 缺 R124');
+  (EX.CALC_SRC && (EX.CALC_SRC.dfun || []).indexOf('R124') !== -1)
+    ? ok('CALC_SRC.dfun 挂 R124') : bad('CALC_SRC.dfun 缺 R124');
+  const nt = fs.readFileSync(path.join(MP, 'utils', 'calc-notes.js'), 'utf8');
+  (nt.indexOf('[R124]') !== -1 && nt.indexOf('51.9%') !== -1 &&
+   nt.indexOf('18.3%') !== -1 && nt.indexOf('17.68') !== -1)
+    ? ok('dfun 正常/筛查说明引用 R124 原始数据（51.9% / 18.3% / 17.68 岁）')
+    : bad('dfun 正常/筛查说明未引用 R124 原始数据');
 }
 
 /* ── 2026-11-14：v1.16.5 R123 EACVI/EHRA 左房与左心耳共识入库 ── */

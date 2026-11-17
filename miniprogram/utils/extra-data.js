@@ -2210,6 +2210,18 @@ const REFS = [
       { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/39812172/' },
     ],
   },
+  {
+    id: 'R124',
+    zh: '健康儿童二尖瓣与三尖瓣流入脉冲多普勒正常值（544 例）',
+    en: 'Cantinotti M, Marchese P, Scalese M, Franchi E, Assanta N, Koestenberger M, Van den Eynde J, Kutty S, Giordano R. Normal Values and Patterns of Normality and Physiological Variability of Mitral and Tricuspid Inflow Pulsed Doppler in Healthy Children. Healthcare (Switzerland), 2022, 10(2): 355.',
+    where: 'Healthcare (Switzerland), 2022, 10(2): 355. DOI: 10.3390/healthcare10020355; PMID: 35206969; PMC8871925',
+    use: '544 例健康儿童流入多普勒正常值：E/A 随年龄升高，新生儿二尖瓣 E/A 倒置 51.9%、婴儿 18.3%，2 岁以上罕见；用于 dfun 儿童不套成人分级。',
+    dl: [
+      { t: 'DOI', u: 'https://doi.org/10.3390/healthcare10020355' },
+      { t: 'PMC 全文', u: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8871925/' },
+      { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/35206969/' },
+    ],
+  },
 
 ];
 
@@ -3013,7 +3025,7 @@ const CALC_SRC = {
   lastiff: ['R4', 'R24', 'R123'],  // 左房僵硬度（LASr 相关）
   vtir: ['R32', 'R33'],            // RVOT/LVOT VTI 比替代分流
   ppm: ['R15'],                    // EOAi 与 PPM（人工瓣 2024）
-  dfun: ['R14', 'R39', 'R71', 'R109'],  // 舒张功能四步法 + 2025 更新 + 心衰 A/B 阶段筛查 + 儿童分型未定义[R109]
+  dfun: ['R14', 'R39', 'R71', 'R109', 'R124'],  // 舒张功能四步法 + 2025 更新 + 心衰 A/B 阶段筛查 + 儿童分型未定义[R109] + 健康儿童 E/A 正常值[R124]
   sync: ['R6', 'R2', 'R108'],              // CRT 与机械不同步
   lastrain: ['R4', 'R24', 'R40'],  // 左房应变三时相
   aortaidx: ['R27', 'R1'],         // 升主动脉直径指数
