@@ -2223,6 +2223,37 @@ const REFS = [
     ],
   },
 
+  /* ★ 2026-11-18：先天性二叶式主动脉瓣命名与分型国际共识原文。
+     多学会联合声明，题录经 PubMed E-utilities + Crossref 双重核对（PMID 34293102）。
+     与 R126 为「原始共识 / 后续解读」关系，不重复计为同一篇。 */
+  {
+    id: 'R125',
+    zh: '先天性二叶式主动脉瓣及其主动脉病变命名与分型国际共识（2021）',
+    en: 'Michelena HI, Della Corte A, Evangelista A, et al. International consensus statement on nomenclature and classification of the congenital bicuspid aortic valve and its aortopathy, for clinical, surgical, interventional and research purposes.',
+    where: 'Eur J Cardiothorac Surg, 2021, 60(3): 448–476. DOI: 10.1093/ejcts/ezab038; PMID: 34293102',
+    use: 'BAV 三分型（融合型 / 双窦型 / 部分融合型）与主动脉病变三表型；融合型按右-左、右-无、左-无冠瓣融合命名。',
+    dl: [
+      { t: 'DOI', u: 'https://doi.org/10.1093/ejcts/ezab038' },
+      { t: '官网文章页', u: 'https://academic.oup.com/ejcts/article/60/3/448/6325245' },
+      { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/34293102/' },
+    ],
+  },
+  /* ★ 2026-11-18：用户提供的原文 PDF（已按 R126_ 归档）。
+     Figure 4 给出三种融合表型示意，Table 1 说明 Sievers 分类的局限；
+     DOI 与官网 PDF 直链实测可解析，题录与 PDF 首页 / 文末引用格式一致。 */
+  {
+    id: 'R126',
+    zh: '二叶式主动脉瓣命名与分型国际共识解读（2022）',
+    en: 'Michelena HI. Speaking a common language: the international consensus on bicuspid aortic valve nomenclature and classification.',
+    where: 'Ann Cardiothorac Surg, 2022, 11(4): 402–417. DOI: 10.21037/acs-2022-bav-24',
+    use: '融合型占 BAV 90–95%，右-左 70–80%、右-无 20–30%、左-无 3–6%；Figure 4 三型短轴示意与 Sievers 分类局限。',
+    dl: [
+      { t: 'DOI', u: 'https://doi.org/10.21037/acs-2022-bav-24' },
+      { t: '免费全文 PDF', u: 'https://www.annalscts.com/article/view/16952/pdf' },
+      { t: '官网文章页', u: 'https://www.annalscts.com/article/view/16952/html' },
+    ],
+  },
+
 ];
 
 /* ══════════════════════════════════════════════════════════════

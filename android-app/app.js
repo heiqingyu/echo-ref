@@ -1352,9 +1352,11 @@
         const _VSD = window.VsdSvg;
         const _CORO = window.CoronarySvg;
         const _AORTA = window.AortaSvg;
+        const _BAV = window.BavSvg;
         const _svg = (_VSD && _VSD.svgOf ? _VSD.svgOf(b.id || '') : '') ||
           (_CORO && _CORO.svgOf ? _CORO.svgOf(b.id || '') : '') ||
-          (_AORTA && _AORTA.svgOf ? _AORTA.svgOf(b.id || '') : '');
+          (_AORTA && _AORTA.svgOf ? _AORTA.svgOf(b.id || '') : '') ||
+          (_BAV && _BAV.svgOf ? _BAV.svgOf(b.id || '') : '');
         if (_svg) {
           h += '<figure class="fx-fig">' + _svg +
             (b.cap ? '<figcaption class="fx-fig__cap">' + mdInline(b.cap) + '</figcaption>' : '') +

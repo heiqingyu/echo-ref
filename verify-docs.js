@@ -1163,7 +1163,7 @@ function check(name, ok, detail) {
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜疾病组只含 1 条计算（TR 定量）', d.valveCalc === 1, d.valveCalc);
     check('发布版瓣膜介入组含 3 条计算（PPM / TAVR 瓣环 / 人工瓣术后）', d.valveIntervCalc === 3, d.valveIntervCalc);
-    check('参考文献 124 条', d.refs === 124, d.refs);
+    check('参考文献 126 条', d.refs === 126, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
 
@@ -1674,6 +1674,21 @@ function check(name, ok, detail) {
     '(f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
   check('主动脉根部四段测线示意图已渲染（四段 + 上限 + 时相 + 图注）',
     aoFig === 'true,true,true,cap', String(aoFig));
+  await openBrief('bav');
+  const bavTxt = await briefText('bav');
+  check('BAV：国际共识三分型与 Sievers 2 型边界并列写明',
+    ['融合型', '双窦型', '部分融合型', '90–95%', '单叶式主动脉瓣']
+      .every((w) => bavTxt.indexOf(w) >= 0), '');
+  const bavFig = await c.evalJs(
+    '(function(){var f=null,fs=document.querySelectorAll(".fx-fig");' +
+    'for(var i=0;i<fs.length;i++){if((fs[i].textContent||"").indexOf("融合型 BAV")>=0){f=fs[i];break;}}' +
+    'if(!f)return "no-fig";var s=f.querySelector("svg");' +
+    'if(!s)return "no-svg";var t=s.textContent||"";' +
+    'return [t.indexOf("右-左冠瓣融合")>=0, t.indexOf("右-无冠瓣融合")>=0,' +
+    't.indexOf("左-无冠瓣融合")>=0, t.indexOf("70–80%")>=0,' +
+    '(f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
+  check('BAV 融合分型示意图已渲染（三种融合表型 + 比例 + 图注）',
+    bavFig === 'true,true,true,true,cap', String(bavFig));
   const dfNorm = await c.evalJs(
     '(function(){var b=document.body.textContent||"";' +
     'return [b.indexOf("正常怎么判")>=0,b.indexOf("E/A ≥2 不单独定级")>=0,' +
@@ -2358,7 +2373,7 @@ function check(name, ok, detail) {
   })()`);
   const ri = JSON.parse(refsInit);
   check('参考文献默认折叠（列表隐藏、高度 0）', ri.hidden === true && ri.h === 0, refsInit);
-  check('折叠头显示 124 条', /124/.test(ri.cnt), refsInit);
+  check('折叠头显示 126 条', /126/.test(ri.cnt), refsInit);
   check('折叠头 aria-expanded=false、无 open 类',
     ri.aria === 'false' && ri.open === false, refsInit);
 
@@ -2377,7 +2392,7 @@ function check(name, ok, detail) {
     });
   })()`);
   const ro = JSON.parse(refsOpen);
-  check('点击后展开全部 124 条', ro.hidden === false && ro.n === 124 && ro.h > 0, refsOpen);
+  check('点击后展开全部 126 条', ro.hidden === false && ro.n === 126 && ro.h > 0, refsOpen);
   check('展开后箭头状态与 aria 同步', ro.aria === 'true' && ro.open === true, refsOpen);
   check('展开后首条为 R1 中文标题', /指南|超声/.test(ro.first), refsOpen);
 

@@ -110,6 +110,8 @@ const valveSvgSrc = wrapEngine(path.join(MP, 'utils', 'valve-svg.js'), 'ValveSvg
 const vsdSvgSrc = wrapEngine(path.join(MP, 'utils', 'vsd-svg.js'), 'VsdSvg');
 const coroSvgSrc = wrapEngine(path.join(MP, 'utils', 'coronary-svg.js'), 'CoronarySvg');
 const aortaSvgSrc = wrapEngine(path.join(MP, 'utils', 'aorta-svg.js'), 'AortaSvg');
+// 融合型二叶式主动脉瓣三种融合表型示意图（与小程序同源）
+const bavSvgSrc = wrapEngine(path.join(MP, 'utils', 'bav-svg.js'), 'BavSvg');
 const valveSrc = wrapEngine(path.join(MP, 'utils', 'valve-calc.js'), 'ValveCalc');
 // 行内标记解析（**加粗**）—— 小程序与网页共用同一份，避免两端表现不一致
 const mdSrc = wrapEngine(path.join(MP, 'utils', 'inline-md.js'), 'InlineMd');
@@ -834,6 +836,8 @@ ${vsdSvgSrc}
 ${coroSvgSrc}
 
 ${aortaSvgSrc}
+
+${bavSvgSrc}
 
 ${valveSrc}
 

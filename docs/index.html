@@ -10458,6 +10458,86 @@ function svgOf(id) {
   };
 })();
 
+/* ── 引擎：bav-svg.js（由小程序源码自动抽取，勿手改）── */
+(function () {
+/* 融合型二叶式主动脉瓣三种融合表型示意图（小程序 / 网页 / APK 同源）
+ * img 块 id: 'bav-fusion'
+ * 依据 2021 多学会国际共识与 2022 解读（R125 / R126）的文字及 Figure 4 框架自绘：
+ * 只画胸骨旁短轴的三个主动脉窦、功能瓣口与融合嵴位置，不复制期刊原图，
+ * 也不把示意轮廓当成实际超声切面。融合型仍保留三个可辨认的主动脉窦。
+ */
+function bavFusionSvg() {
+  const B = '#F7F9FC', INK = '#2C2C2A', MUTED = '#5F5E5A';
+  const BLUE = '#185FA5', LIGHT = '#E6F1FB', PINK = '#FBECEC', GREY = '#EEF1F4';
+  const RED = '#A32D2D';
+  const p = [];
+  const cx0 = [207, 371, 535];
+  const names = ['右-左冠瓣融合', '右-无冠瓣融合', '左-无冠瓣融合'];
+  const rates = ['70–80%', '20–30%', '3–6%'];
+  const raphes = [
+    [[cx0[0] - 29, 141], [cx0[0] + 29, 141], [cx0[0], 126]],
+    [[cx0[1] - 36, 148], [cx0[1] - 8, 196], [cx0[1] - 42, 174]],
+    [[cx0[2] + 36, 148], [cx0[2] + 8, 196], [cx0[2] + 42, 174]],
+  ];
+
+  function polar(cx, r, deg) {
+    const a = deg * Math.PI / 180;
+    return [(cx + r * Math.cos(a)).toFixed(1), (169 + r * Math.sin(a)).toFixed(1)];
+  }
+  function wedge(cx, r, a1, a2) {
+    const s = polar(cx, r, a1), e = polar(cx, r, a2);
+    return 'M' + cx + ' 169 L' + s[0] + ' ' + s[1] + ' A' + r + ' ' + r + ' 0 0 1 ' + e[0] + ' ' + e[1] + ' Z';
+  }
+
+  p.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="110 0 520 380" width="100%" role="img">');
+  p.push('<title>融合型二叶式主动脉瓣的三种融合表型</title>');
+  p.push('<rect x="110" y="0" width="520" height="380" rx="12" fill="' + B + '"/>');
+  p.push('<text x="130" y="30" font-size="15" font-weight="500" fill="' + INK + '">融合型 BAV · 三种融合表型</text>');
+  p.push('<text x="130" y="52" font-size="12" fill="' + MUTED + '">胸骨旁短轴收缩期示意 · 三个主动脉窦仍可辨认 · 紫红连线为融合嵴</text>');
+
+  for (let i = 0; i < 3; i++) {
+    const cx = cx0[i], x = cx - 75;
+    p.push('<rect x="' + x + '" y="68" width="150" height="212" rx="9" fill="#FFFFFF" stroke="' + BLUE + '" stroke-width="0.6"/>');
+    p.push('<text x="' + cx + '" y="88" font-size="13" font-weight="500" text-anchor="middle" fill="' + INK + '">' + (i + 1) + ' ' + names[i] + '</text>');
+    p.push('<text x="' + cx + '" y="106" font-size="12" text-anchor="middle" fill="' + RED + '">' + rates[i] + '</text>');
+    // 三个窦：右冠（左上）、左冠（右上）、无冠（下）
+    p.push('<path d="' + wedge(cx, 43, -210, -90) + '" fill="' + LIGHT + '" stroke="' + BLUE + '" stroke-width="0.6"/>');
+    p.push('<path d="' + wedge(cx, 43, -90, 30) + '" fill="' + PINK + '" stroke="' + BLUE + '" stroke-width="0.6"/>');
+    p.push('<path d="' + wedge(cx, 43, 30, 150) + '" fill="' + GREY + '" stroke="' + BLUE + '" stroke-width="0.6"/>');
+    p.push('<circle cx="' + cx + '" cy="169" r="43" fill="none" stroke="' + BLUE + '" stroke-width="1.2"/>');
+    // 收缩期功能瓣口：椭圆，仅表达「开放形态」，不作为真实轮廓
+    p.push('<ellipse cx="' + cx + '" cy="169" rx="15" ry="22" fill="#FFFFFF" stroke="' + BLUE + '" stroke-width="1.4"/>');
+    // 融合嵴：位于两融合窦之间；不是筛出的超声轨迹
+    const r = raphes[i];
+    p.push('<line x1="' + r[0][0] + '" y1="' + r[0][1] + '" x2="' + r[1][0] + '" y2="' + r[1][1] + '" stroke="' + RED + '" stroke-width="3" stroke-linecap="round"/>');
+    p.push('<text x="' + r[2][0] + '" y="' + r[2][1] + '" font-size="12" text-anchor="middle" fill="' + RED + '">嵴</text>');
+    p.push('<text x="' + (cx - 40) + '" y="132" font-size="11" text-anchor="middle" fill="' + MUTED + '">右冠</text>');
+    p.push('<text x="' + (cx + 40) + '" y="132" font-size="11" text-anchor="middle" fill="' + MUTED + '">左冠</text>');
+    p.push('<text x="' + cx + '" y="229" font-size="11" text-anchor="middle" fill="' + MUTED + '">无冠</text>');
+    p.push('<text x="' + cx + '" y="264" font-size="11" text-anchor="middle" fill="' + MUTED + '">三窦 · 两功能瓣叶</text>');
+  }
+
+  p.push('<text x="130" y="302" font-size="12" fill="' + MUTED + '">融合型占 BAV 90–95%；右-左最常见，左-无最少见</text>');
+  p.push('<text x="130" y="324" font-size="12" fill="' + MUTED + '">国际共识按融合瓣叶命名，并要求描述有无嵴与对称性；融合嵴不明显时写「未见明确嵴」</text>');
+  p.push('<text x="130" y="346" font-size="12" fill="' + MUTED + '">示意依据 R125 / R126 · 不复制期刊原图，不作为实际超声切面轮廓</text>');
+  p.push('</svg>');
+  return p.join('');
+}
+
+const FIGS = { 'bav-fusion': bavFusionSvg };
+
+function svgOf(id) {
+  const fn = FIGS[id];
+  return fn ? fn() : '';
+}
+
+  window.BavSvg = {
+    bavFusionSvg: bavFusionSvg,
+    FIGS: FIGS,
+    svgOf: svgOf,
+  };
+})();
+
 /* ── 引擎：valve-calc.js（由小程序源码自动抽取，勿手改）── */
 (function () {
 /**
@@ -14882,7 +14962,7 @@ const SECTIONS_B = [
         ab: 'BAV',
         title: '主动脉瓣二叶式畸形（BAV）',
         sub: 'Sievers 分型 · 主动脉扩张随访 · 身高指数',
-        source: ['R23', 'R27', 'R43', 'R111'],
+        source: ['R23', 'R27', 'R43', 'R111', 'R125', 'R126'],
         rel: ['aortic-root', 'tavr'],
         fields: [],
         blocks: [
@@ -14893,10 +14973,13 @@ const SECTIONS_B = [
             rows: [
               ['0 型', '0', '约 7%', '两个瓣叶、两个窦，无嵴'],
               ['1 型', '1', '约 88%', '最常见，再按融合部位命名'],
-              ['2 型', '2', '约 5%', '三个瓣叶被两个嵴连成功能二叶'],
+              ['2 型（传统）', '2', '约 5%', '两个嵴连成功能二叶'],
             ],
           },
           { kind: 'text', text: '1 型按融合部位称：**右-左冠瓣融合**（最常见，约 70–80%）、右-无冠瓣融合、左-无冠瓣融合。融合类型决定钙化分布与主动脉扩张的模式。' },
+          { kind: 'text', text: '国际共识另用三型语言：**融合型**（约 90–95%）、**双窦型**、**部分融合型（forme fruste）**；融合型再按右-左、右-无、左-无冠瓣融合命名。两套名称并列写，报告写明融合部位、有无嵴与对称性[R125,R126]。' },
+          { kind: 'img', id: 'bav-fusion', cap: '图 1 融合型 BAV 三种融合表型（按 R125 / R126 文字与 Figure 4 框架自绘，非期刊原图）' },
+          { kind: 'note', text: '★ 传统 Sievers 2 型（两个嵴连成功能二叶）在 2021 国际共识中归入单叶式主动脉瓣，不再列为 BAV。旧报告若写「BAV 2 型」，复核时应写明所用分类体系，避免把单叶式当二叶式随访[R126]。', warn: true },
           { kind: 'h', text: '二、诊断要点：短轴收缩期才作数' },
           { kind: 'text', text: '确定依据是**收缩期短轴上的瓣叶数目**（2 个瓣叶 + 1 或 2 条交界线），不是长轴的「穹隆样」开放，也不是舒张期关闭线的数目。辅助征象：收缩期「橄榄球」样开放、关闭线偏心、钙化偏心、瓣叶不等大。' },
           { kind: 'note', text: '**长轴看到两条关闭线 ≠ BAV**。正常三叶瓣在某些时相或声束角度下也会出现类似图像。必须短轴收缩期逐帧确认，必要时 TEE。把三叶瓣误判成 BAV 会直接改变手术决策。', warn: true },
@@ -20839,6 +20922,37 @@ const REFS = [
     ],
   },
 
+  /* ★ 2026-11-18：先天性二叶式主动脉瓣命名与分型国际共识原文。
+     多学会联合声明，题录经 PubMed E-utilities + Crossref 双重核对（PMID 34293102）。
+     与 R126 为「原始共识 / 后续解读」关系，不重复计为同一篇。 */
+  {
+    id: 'R125',
+    zh: '先天性二叶式主动脉瓣及其主动脉病变命名与分型国际共识（2021）',
+    en: 'Michelena HI, Della Corte A, Evangelista A, et al. International consensus statement on nomenclature and classification of the congenital bicuspid aortic valve and its aortopathy, for clinical, surgical, interventional and research purposes.',
+    where: 'Eur J Cardiothorac Surg, 2021, 60(3): 448–476. DOI: 10.1093/ejcts/ezab038; PMID: 34293102',
+    use: 'BAV 三分型（融合型 / 双窦型 / 部分融合型）与主动脉病变三表型；融合型按右-左、右-无、左-无冠瓣融合命名。',
+    dl: [
+      { t: 'DOI', u: 'https://doi.org/10.1093/ejcts/ezab038' },
+      { t: '官网文章页', u: 'https://academic.oup.com/ejcts/article/60/3/448/6325245' },
+      { t: '检索', u: 'https://pubmed.ncbi.nlm.nih.gov/34293102/' },
+    ],
+  },
+  /* ★ 2026-11-18：用户提供的原文 PDF（已按 R126_ 归档）。
+     Figure 4 给出三种融合表型示意，Table 1 说明 Sievers 分类的局限；
+     DOI 与官网 PDF 直链实测可解析，题录与 PDF 首页 / 文末引用格式一致。 */
+  {
+    id: 'R126',
+    zh: '二叶式主动脉瓣命名与分型国际共识解读（2022）',
+    en: 'Michelena HI. Speaking a common language: the international consensus on bicuspid aortic valve nomenclature and classification.',
+    where: 'Ann Cardiothorac Surg, 2022, 11(4): 402–417. DOI: 10.21037/acs-2022-bav-24',
+    use: '融合型占 BAV 90–95%，右-左 70–80%、右-无 20–30%、左-无 3–6%；Figure 4 三型短轴示意与 Sievers 分类局限。',
+    dl: [
+      { t: 'DOI', u: 'https://doi.org/10.21037/acs-2022-bav-24' },
+      { t: '免费全文 PDF', u: 'https://www.annalscts.com/article/view/16952/pdf' },
+      { t: '官网文章页', u: 'https://www.annalscts.com/article/view/16952/html' },
+    ],
+  },
+
 ];
 
 /* ══════════════════════════════════════════════════════════════
@@ -24166,9 +24280,11 @@ const MATERIALS = [];
         const _VSD = window.VsdSvg;
         const _CORO = window.CoronarySvg;
         const _AORTA = window.AortaSvg;
+        const _BAV = window.BavSvg;
         const _svg = (_VSD && _VSD.svgOf ? _VSD.svgOf(b.id || '') : '') ||
           (_CORO && _CORO.svgOf ? _CORO.svgOf(b.id || '') : '') ||
-          (_AORTA && _AORTA.svgOf ? _AORTA.svgOf(b.id || '') : '');
+          (_AORTA && _AORTA.svgOf ? _AORTA.svgOf(b.id || '') : '') ||
+          (_BAV && _BAV.svgOf ? _BAV.svgOf(b.id || '') : '');
         if (_svg) {
           h += '<figure class="fx-fig">' + _svg +
             (b.cap ? '<figcaption class="fx-fig__cap">' + mdInline(b.cap) + '</figcaption>' : '') +

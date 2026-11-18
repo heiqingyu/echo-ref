@@ -281,7 +281,7 @@ EX.BRIEF_SECTIONS.forEach(sec => sec.items.forEach(it => {
 }));
 if (!missCite.length) ok('正文提到的文献编号均已挂进 source');
 else bad('正文提到但未挂引用: ' + missCite.join(' | '));
-if (EX.REFS.length === 124) ok('参考文献 124 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声、R120 中国应变共识 2023、R121 高血压心血管重构指南 2024、R122 中国心肌病综合管理指南 2025、R123 EACVI/EHRA 左房与左心耳共识 2025、R124 健康儿童 E/A 正常值 2022）');
+if (EX.REFS.length === 126) ok('参考文献 126 条（R113–R117 心肌病与造影 5 篇、R118 AHA 2025 应变声明、R119 四川 2025 冠脉 Z 值；R91 专著、R92 2–6 kg 婴儿 PDA 队列、R93–R103 指南补录、R104 JCS 2017 肺高压、R105 上海轻度 PASP 队列、R106 IVC 扩张指数预测容量反应性、R107 2026 呼吸床旁超声共识、R108 2025 ICD-CRT-起搏适用标准、R109 EACVI 儿童报告共识、R110 ISHLT 2025 儿童心衰、R111 BSE 2022 先心 TTE、R112 巴西 2026 负荷超声、R120 中国应变共识 2023、R121 高血压心血管重构指南 2024、R122 中国心肌病综合管理指南 2025、R123 EACVI/EHRA 左房与左心耳共识 2025、R124 健康儿童 E/A 正常值 2022、R125 二叶瓣命名与分型国际共识 2021、R126 二叶瓣国际共识解读 2022）');
 else bad('参考文献条数异常: ' + EX.REFS.length);
 // 文献直链：优先挂官方/免费可直连的 PDF；没有免费版的挂官方需订阅地址（DOI / 期刊页）并标注
 // v1.15.7：公众号 / 第三方转载 / 机构仓储这类易失效链接，不能是文献的唯一入口
@@ -441,8 +441,11 @@ if (officialPdf.length >= 15 && officialPdf.every(d => OFF_OK.test(d.u)))
 else bad('官网 PDF 域名不合规: ' + officialPdf.filter(d => !OFF_OK.test(d.u)).map(d => d.u).join(' '));
 // ③ 标「免费全文 PDF」的必须真能点开即下载
 const freePdf = dlAll.filter(d => d.t === '免费全文 PDF');
-if (freePdf.length >= 3 && freePdf.every(d => /\.pdf$/.test(d.u)))
-  ok('免费全文 PDF ' + freePdf.length + ' 条均为 .pdf 直链');
+// 少数期刊用 /pdf 路由直出 application/pdf（实测 curl 200 + application/pdf），
+// 不能只看扩展名；逐条列入白名单，别把规则放宽到任意 /pdf 路径。
+const FREE_PDF_OK = ['https://www.annalscts.com/article/view/16952/pdf'];
+if (freePdf.length >= 3 && freePdf.every(d => /\.pdf$/.test(d.u) || FREE_PDF_OK.indexOf(d.u) !== -1))
+  ok('免费全文 PDF ' + freePdf.length + ' 条均为实测直链（含 1 条 /pdf 路由）');
 else bad('免费全文 PDF 仍含非直链: ' + freePdf.map(d => d.u).join(' '));
 // ④ R21 / R23 补挂 PMC 全文（Europe PMC 核实 inPMC=Y、hasPDF=Y）
 [['R21', 'PMC7539677'], ['R23', 'PMC9725093']].forEach(function (pair) {
@@ -1592,9 +1595,9 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
 /* ── v1.15.1：R109–R112 入库 + ped-base 两节（EACVI 报告要素 / ISHLT 心衰分级）── */
 {
   const ids = EX.REFS.slice(-6).map(function (r) { return r.id; }).join(',');
-  (ids === 'R119,R120,R121,R122,R123,R124')
-    ? ok('R119–R124 六条按序排在文献表末尾')
-    : bad('文献表末尾不是 R119–R124：' + ids);
+  (ids === 'R121,R122,R123,R124,R125,R126')
+    ? ok('R121–R126 六条按序排在文献表末尾')
+    : bad('文献表末尾不是 R121–R126：' + ids);
 
   const byId = {};
   EX.REFS.forEach(function (r) { byId[r.id] = r; });
@@ -2080,6 +2083,70 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   (norm && srcOK)
     ? ok('舒张功能补充正常 / 筛查口径（孤立 E/A≥2 不单独定级 + 儿童成人标准不适用 R109）')
     : bad('舒张功能正常 / 筛查说明缺失：norm=' + norm + ' src=' + srcOK);
+}
+
+/* ── 2026-11-18：二叶瓣融合分型图 + 国际共识 R125 / R126 ── */
+{
+  const by = {};
+  EX.REFS.forEach(function (r) { by[r.id] = r; });
+  const r125 = by.R125 || {}, r126 = by.R126 || {};
+  const w125 = r125.where || '', w126 = r126.where || '';
+  (w125.indexOf('60(3): 448–476') !== -1 &&
+   w125.indexOf('10.1093/ejcts/ezab038') !== -1 &&
+   w125.indexOf('PMID: 34293102') !== -1)
+    ? ok('R125 多学会国际共识题录含正式卷期页 / DOI / PMID')
+    : bad('R125 题录不完整：' + w125);
+  (w126.indexOf('11(4): 402–417') !== -1 &&
+   w126.indexOf('10.21037/acs-2022-bav-24') !== -1)
+    ? ok('R126 用户提供解读文献题录含卷期页与 DOI')
+    : bad('R126 题录不完整：' + w126);
+  const u125 = r125.use || '', u126 = r126.use || '';
+  (u125.length >= 40 && u125.length <= 90 && u126.length >= 40 && u126.length <= 90)
+    ? ok('R125 / R126 use 长度合规（' + u125.length + ' / ' + u126.length + ' 字）')
+    : bad('R125 / R126 use 长度异常：' + u125.length + ' / ' + u126.length);
+  const d125 = r125.dl || [], d126 = r126.dl || [];
+  (d125.length === 3 && d126.length === 3 &&
+   d125.concat(d126).every(function (d) { return (d.u || '').indexOf('https://') === 0; }) &&
+   d125.some(function (d) { return d.u === 'https://doi.org/10.1093/ejcts/ezab038'; }) &&
+   d126.some(function (d) { return d.u === 'https://doi.org/10.21037/acs-2022-bav-24'; }))
+    ? ok('R125 / R126 各挂三条 https 权威入口（含 DOI）')
+    : bad('R125 / R126 链接异常：' + JSON.stringify([d125, d126]));
+
+  const bav = EX.BRIEF_SECTIONS.reduce(function (a, sec) {
+    return a || (sec.items || []).filter(function (it) { return it.id === 'bav'; })[0];
+  }, null);
+  if (!bav) bad('判读条目缺 bav');
+  else {
+    const src = bav.source || [];
+    (src.indexOf('R125') !== -1 && src.indexOf('R126') !== -1)
+      ? ok('bav source 同挂 R125 / R126') : bad('bav source 缺 R125 / R126');
+    const blocks = JSON.stringify(bav.blocks || []);
+    (blocks.indexOf('"id":"bav-fusion"') !== -1 &&
+     blocks.indexOf('融合型') !== -1 && blocks.indexOf('90–95%') !== -1 &&
+     blocks.indexOf('不分融合部位') === -1)
+      ? ok('bav 条目挂融合分型图与 90–95% 国际共识口径')
+      : bad('bav 融合分型图或口径缺失');
+    (blocks.indexOf('单叶式主动脉瓣') !== -1 && blocks.indexOf('传统 Sievers 2 型') !== -1)
+      ? ok('bav 写明 Sievers 2 型旧口径与国际共识的边界')
+      : bad('bav 缺 Sievers 2 型边界说明');
+  }
+
+  const svgSrc = fs.readFileSync(path.join(MP, 'utils', 'bav-svg.js'), 'utf8');
+  (['bav-fusion', '右-左冠瓣融合', '右-无冠瓣融合', '左-无冠瓣融合',
+    '70–80%', '20–30%', '3–6%'].every(function (k) { return svgSrc.indexOf(k) !== -1; }))
+    ? ok('bav-fusion SVG 含三种融合表型、比例与窦 / 嵴标注')
+    : bad('bav-fusion SVG 关键标注缺失');
+  const bSrc = fs.readFileSync(path.join(MP, 'pages', 'formula', 'formula.js'), 'utf8');
+  (bSrc.indexOf("require('../../utils/bav-svg.js')") !== -1 &&
+   bSrc.indexOf('BAVSVG.svgOf(b.id') !== -1)
+    ? ok('小程序端 img 块已接入 BAVSVG fallback') : bad('小程序端缺 BAVSVG fallback');
+  const aSrc = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
+  (aSrc.indexOf('window.BavSvg') !== -1 && aSrc.indexOf('_BAV.svgOf(b.id') !== -1)
+    ? ok('网页 / APK 端 img 块已接入 BavSvg fallback') : bad('网页 / APK 缺 BavSvg fallback');
+  const buildSrc = fs.readFileSync(path.join(ROOT, 'build-www.js'), 'utf8');
+  (buildSrc.indexOf("wrapEngine(path.join(MP, 'utils', 'bav-svg.js'), 'BavSvg')") !== -1 &&
+   buildSrc.indexOf('${bavSvgSrc}') !== -1)
+    ? ok('构建链注入 bav-svg.js（BavSvg）') : bad('构建链缺 bav-svg.js 注入');
 }
 
 console.log('\n' + '='.repeat(50));
