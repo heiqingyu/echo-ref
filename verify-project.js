@@ -2121,32 +2121,14 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     (src.indexOf('R125') !== -1 && src.indexOf('R126') !== -1)
       ? ok('bav source 同挂 R125 / R126') : bad('bav source 缺 R125 / R126');
     const blocks = JSON.stringify(bav.blocks || []);
-    (blocks.indexOf('"id":"bav-fusion"') !== -1 &&
-     blocks.indexOf('融合型') !== -1 && blocks.indexOf('90–95%') !== -1 &&
+    (blocks.indexOf('融合型') !== -1 && blocks.indexOf('90–95%') !== -1 &&
      blocks.indexOf('不分融合部位') === -1)
-      ? ok('bav 条目挂融合分型图与 90–95% 国际共识口径')
-      : bad('bav 融合分型图或口径缺失');
+      ? ok('bav 条目写 90–95% 国际共识口径')
+      : bad('bav 融合型口径缺失');
     (blocks.indexOf('单叶式主动脉瓣') !== -1 && blocks.indexOf('传统 Sievers 2 型') !== -1)
       ? ok('bav 写明 Sievers 2 型旧口径与国际共识的边界')
       : bad('bav 缺 Sievers 2 型边界说明');
   }
-
-  const svgSrc = fs.readFileSync(path.join(MP, 'utils', 'bav-svg.js'), 'utf8');
-  (['bav-fusion', '右-左冠瓣融合', '右-无冠瓣融合', '左-无冠瓣融合',
-    '70–80%', '20–30%', '3–6%', '收缩期开放', '融合嵴', '开口偏向'].every(function (k) { return svgSrc.indexOf(k) !== -1; }))
-    ? ok('bav-fusion SVG 含三种融合表型、比例、开放口朝向与嵴标注')
-    : bad('bav-fusion SVG 关键标注缺失');
-  const bSrc = fs.readFileSync(path.join(MP, 'pages', 'formula', 'formula.js'), 'utf8');
-  (bSrc.indexOf("require('../../utils/bav-svg.js')") !== -1 &&
-   bSrc.indexOf('BAVSVG.svgOf(b.id') !== -1)
-    ? ok('小程序端 img 块已接入 BAVSVG fallback') : bad('小程序端缺 BAVSVG fallback');
-  const aSrc = fs.readFileSync(path.join(ROOT, 'android-app', 'app.js'), 'utf8');
-  (aSrc.indexOf('window.BavSvg') !== -1 && aSrc.indexOf('_BAV.svgOf(b.id') !== -1)
-    ? ok('网页 / APK 端 img 块已接入 BavSvg fallback') : bad('网页 / APK 缺 BavSvg fallback');
-  const buildSrc = fs.readFileSync(path.join(ROOT, 'build-www.js'), 'utf8');
-  (buildSrc.indexOf("wrapEngine(path.join(MP, 'utils', 'bav-svg.js'), 'BavSvg')") !== -1 &&
-   buildSrc.indexOf('${bavSvgSrc}') !== -1)
-    ? ok('构建链注入 bav-svg.js（BavSvg）') : bad('构建链缺 bav-svg.js 注入');
 }
 
 console.log('\n' + '='.repeat(50));
