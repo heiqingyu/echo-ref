@@ -2133,8 +2133,8 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
 
   const svgSrc = fs.readFileSync(path.join(MP, 'utils', 'bav-svg.js'), 'utf8');
   (['bav-fusion', '右-左冠瓣融合', '右-无冠瓣融合', '左-无冠瓣融合',
-    '70–80%', '20–30%', '3–6%'].every(function (k) { return svgSrc.indexOf(k) !== -1; }))
-    ? ok('bav-fusion SVG 含三种融合表型、比例与窦 / 嵴标注')
+    '70–80%', '20–30%', '3–6%', '收缩期开放', '融合嵴', '开口偏向'].every(function (k) { return svgSrc.indexOf(k) !== -1; }))
+    ? ok('bav-fusion SVG 含三种融合表型、比例、开放口朝向与嵴标注')
     : bad('bav-fusion SVG 关键标注缺失');
   const bSrc = fs.readFileSync(path.join(MP, 'pages', 'formula', 'formula.js'), 'utf8');
   (bSrc.indexOf("require('../../utils/bav-svg.js')") !== -1 &&

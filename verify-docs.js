@@ -1686,9 +1686,10 @@ function check(name, ok, detail) {
     'if(!s)return "no-svg";var t=s.textContent||"";' +
     'return [t.indexOf("右-左冠瓣融合")>=0, t.indexOf("右-无冠瓣融合")>=0,' +
     't.indexOf("左-无冠瓣融合")>=0, t.indexOf("70–80%")>=0,' +
+    't.indexOf("开口偏向")>=0, t.indexOf("收缩期开放")>=0,' +
     '(f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
-  check('BAV 融合分型示意图已渲染（三种融合表型 + 比例 + 图注）',
-    bavFig === 'true,true,true,true,cap', String(bavFig));
+  check('BAV 融合分型示意图已渲染（三种表型 + 比例 + 开放口朝向 + 图注）',
+    bavFig === 'true,true,true,true,true,true,cap', String(bavFig));
   const dfNorm = await c.evalJs(
     '(function(){var b=document.body.textContent||"";' +
     'return [b.indexOf("正常怎么判")>=0,b.indexOf("E/A ≥2 不单独定级")>=0,' +

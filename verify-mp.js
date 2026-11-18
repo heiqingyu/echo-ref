@@ -1285,13 +1285,15 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     fxJs.indexOf('AORTASVG.svgOf') !== -1 ? 1 : 0, 1, 0);
   const BAVSVG = require(pathW.join(__dirname, 'miniprogram', 'utils', 'bav-svg.js'));
   const bavSvgStr = BAVSVG.svgOf('bav-fusion');
-  check('二叶瓣融合分型图自检（三种融合表型 + 比例 + 画布 520×380）',
+  check('二叶瓣融合分型图自检（三种表型 + 比例 + 开放口朝向 + 画布 520×380）',
     bavSvgStr.indexOf('<svg') === 0 &&
     bavSvgStr.indexOf('右-左冠瓣融合') !== -1 &&
     bavSvgStr.indexOf('右-无冠瓣融合') !== -1 &&
     bavSvgStr.indexOf('左-无冠瓣融合') !== -1 &&
     bavSvgStr.indexOf('70–80%') !== -1 &&
     bavSvgStr.indexOf('3–6%') !== -1 &&
+    bavSvgStr.indexOf('收缩期开放') !== -1 &&
+    bavSvgStr.indexOf('开口偏向') !== -1 &&
     bavSvgStr.indexOf('viewBox="110 0 520 380"') !== -1 ? 1 : 0, 1, 0);
   check('示意图块：formula.js 支持二叶瓣融合图 fallback',
     fxJs.indexOf("require('../../utils/bav-svg.js')") !== -1 &&
