@@ -17,10 +17,10 @@ function bavFusionSvg() {
   const cx0 = [200, 370, 540];
   const names = ['右-左冠瓣融合', '右-无冠瓣融合', '左-无冠瓣融合'];
   const rates = ['70–80%', '20–30%', '3–6%'];
-  const rap = [-150, -30, 90];
+  const rap = [-30, -150, 90];
   const openTo = ['无冠窦侧', '左冠窦侧', '右冠窦侧（前）'];
   const rapAt = ['右、左冠窦之间', '右、无冠窦之间', '左、无冠窦之间'];
-  const sinus = [[-90, '右冠'], [30, '无冠'], [150, '左冠']];
+  const sinus = [[-90, '右冠'], [30, '左冠'], [150, '无冠']];
 
   function pt(cx, r, deg) {
     const a = deg * Math.PI / 180;
