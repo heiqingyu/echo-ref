@@ -1283,6 +1283,21 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('示意图块：formula.js 支持主动脉图 fallback',
     fxJs.indexOf("require('../../utils/aorta-svg.js')") !== -1 &&
     fxJs.indexOf('AORTASVG.svgOf') !== -1 ? 1 : 0, 1, 0);
+  const BAVSVG = require(pathW.join(__dirname, 'miniprogram', 'utils', 'bav-svg.js'));
+  const bavSvgStr = BAVSVG.svgOf('bav-fusion');
+  check('二叶瓣融合分型图自检（三型双态 + 冠脉开口 + 逐型箭头方向）',
+    bavSvgStr.indexOf('<svg') === 0 &&
+    bavSvgStr.indexOf('右-左冠瓣融合') !== -1 &&
+    bavSvgStr.indexOf('右-无冠瓣融合') !== -1 &&
+    bavSvgStr.indexOf('左-无冠瓣融合') !== -1 &&
+    bavSvgStr.indexOf('70–80%') !== -1 &&
+    bavSvgStr.indexOf('右冠开口') !== -1 &&
+    bavSvgStr.indexOf('左冠开口') !== -1 &&
+    bavSvgStr.indexOf('左上↘右下') !== -1 &&
+    bavSvgStr.indexOf('viewBox="0 0 1080 700"') !== -1 ? 1 : 0, 1, 0);
+  check('示意图块：formula.js 支持二叶瓣融合分型图 fallback',
+    fxJs.indexOf("require('../../utils/bav-svg.js')") !== -1 &&
+    fxJs.indexOf('BAVSVG.svgOf') !== -1 ? 1 : 0, 1, 0);
   check('vsd-clock 图自检（三段环带 + 肌部脚注 + 画布 520×380）',
     vsdSvgStr.indexOf('<svg') === 0 &&
     vsdSvgStr.indexOf('膜周部') !== -1 &&

@@ -1679,6 +1679,16 @@ function check(name, ok, detail) {
   check('BAV：国际共识三分型与 Sievers 2 型边界并列写明',
     ['融合型', '双窦型', '部分融合型', '90–95%', '单叶式主动脉瓣']
       .every((w) => bavTxt.indexOf(w) >= 0), '');
+  const bavFig = await c.evalJs(
+    '(function(){var f=null,fs=document.querySelectorAll(".fx-fig");' +
+    'for(var i=0;i<fs.length;i++){if((fs[i].textContent||"").indexOf("右-左冠瓣融合")>=0){f=fs[i];break;}}' +
+    'if(!f)return "no-fig";var s=f.querySelector("svg");' +
+    'if(!s)return "no-svg";var t=s.textContent||"";' +
+    'return [t.indexOf("右-无冠瓣融合")>=0, t.indexOf("左-无冠瓣融合")>=0, t.indexOf("70–80%")>=0,' +
+    't.indexOf("右冠开口")>=0, t.indexOf("左冠开口")>=0,' +
+    '(f.querySelector(".fx-fig__cap")||{}).textContent?"cap":"no-cap"].join(",");})()');
+  check('BAV 融合分型双态示意图已渲染（三型 + 比例 + 冠脉开口 + 图注）',
+    bavFig === 'true,true,true,true,true,cap', String(bavFig));
   const dfNorm = await c.evalJs(
     '(function(){var b=document.body.textContent||"";' +
     'return [b.indexOf("正常怎么判")>=0,b.indexOf("E/A ≥2 不单独定级")>=0,' +

@@ -2055,6 +2055,24 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
     ? ok('主动脉根部条目含四段测线图，四组时相 / 上限数值贴 R2 / R27 / R111 原文')
     : bad('主动脉四段测线图或数值缺失：' + arMiss.join('、') + ' img=' + arHasImg);
 }
+// ★ 2026-11-19：BAV 融合分型示意图（按 R125 / R126 Figure 4 自绘，逐型照原图核对后落地）
+{
+  let bv = null;
+  EX.BRIEF_SECTIONS.forEach(function (s2) {
+    (s2.items || []).forEach(function (it) { if (it.id === 'bav') bv = it; });
+  });
+  const bvHasImg = bv ? (bv.blocks || []).some(function (b) {
+    return b.kind === 'img' && b.id === 'bav-fusion';
+  }) : false;
+  const bavSrc = fs.readFileSync(path.join(ROOT, 'miniprogram', 'utils', 'bav-svg.js'), 'utf8');
+  const bvMust = ['右-左冠瓣融合', '右-无冠瓣融合', '左-无冠瓣融合',
+    '70–80%', '20–30%', '3–6%', '关闭（舒张期）', '开放（收缩期）',
+    '右冠开口', '左冠开口', '融合嵴', '左上↘右下', '左下↗右上', '近水平↗'];
+  const bvMiss = bvMust.filter(function (k) { return bavSrc.indexOf(k) === -1; });
+  (bvHasImg && bvMiss.length === 0)
+    ? ok('BAV 条目含融合分型双态示意图（三型 + 比例 + 冠脉开口 + 逐型箭头方向）')
+    : bad('BAV 融合分型图或标注缺失：' + bvMiss.join('、') + ' img=' + bvHasImg);
+}
 
 // ★ 2026-11-17：冠脉两表合并为一张 4 列速查表 + 舒张功能正常 / 筛查说明
 {

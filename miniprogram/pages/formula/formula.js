@@ -18,6 +18,7 @@ const CN = require('../../utils/calc-notes.js');
 const VSDSVG = require('../../utils/vsd-svg.js');
 const COROSVG = require('../../utils/coronary-svg.js');
 const AORTASVG = require('../../utils/aorta-svg.js');
+const BAVSVG = require('../../utils/bav-svg.js');
 const app = getApp();
 
 /**
@@ -90,7 +91,7 @@ function toBlocks(blocks) {
     //   viewBox 比例由 mode="widthFix" 自适应，不需要另存图片资源。
     if (b.kind === 'img') {
       const svg = VSDSVG.svgOf(b.id || '') || COROSVG.svgOf(b.id || '') ||
-        AORTASVG.svgOf(b.id || '');
+        AORTASVG.svgOf(b.id || '') || BAVSVG.svgOf(b.id || '');
       return {
         kind: 'img',
         src: svg ? 'data:image/svg+xml;base64,' + VSDSVG.utf8ToBase64(svg) : '',
