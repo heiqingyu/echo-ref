@@ -1468,8 +1468,8 @@ function check(name, ok, detail) {
     ['有效高度 eH', '对合高度', '几何高度 gH'].every((w) => aoTxt.indexOf(w) >= 0), '');
   check('主动脉瓣修复术后：eH 不足 8 mm 与再干预相关',
     /eH 不足 8 mm/.test(aoTxt) && /至少 4–5 mm/.test(aoTxt), '');
-  check('主动脉瓣修复术后：别用术后第一天的反流下结论（血压低洗白）',
-    /别用术后第一天的反流程度下结论/.test(aoTxt) && /洗白/.test(aoTxt), '');
+  check('主动脉瓣修复术后：写明术后早期反流可低估、须稳定后复查定基线',
+    /术后第一天的反流程度不宜用于定论/.test(aoTxt) && /血压、心率稳定后复查/.test(aoTxt), '');
   check('主动脉瓣修复术后：轻度压差升高别写成 AS 进展',
     /别写成「AS 进展」/.test(aoTxt), '');
   check('主动脉瓣修复术后：不替外科写「无需抗凝」',
@@ -1834,7 +1834,7 @@ function check(name, ok, detail) {
   check('冠状动脉瘘：新增术后一节（残余分流 / 冠脉回退 / 溶血）',
     ['七、术后：残余分流、冠脉回退与溶血', '残余分流', '冠脉回退'].every((w) => cafTxt2.indexOf(w) >= 0), '');
   check('冠状动脉瘘：区分「装置内部血流」与真残余分流',
-    /装置内部的血流/.test(cafTxt2) && /装置与管壁的交界/.test(cafTxt2), '');
+    /装置内部血流不等于残余分流/.test(cafTxt2) && /装置与管壁的交界/.test(cafTxt2), '');
   check('冠状动脉瘘：写清「少量但高速」的残余分流更易溶血',
     /少量但高速/.test(cafTxt2) && /结合珠蛋白/.test(cafTxt2), '');
   check('冠状动脉瘘：术后时间点（即刻 / 24–48 小时 / 1 个月 / 3–6 个月）',
@@ -1864,7 +1864,7 @@ function check(name, ok, detail) {
   check('肥厚型心肌病：药物口径已纠正（多巴酚丁胺不再推荐）',
     /多巴酚丁胺/.test(hcmTxt) && /不再推荐/.test(hcmTxt), '');
   check('肥厚型心肌病：写清两套阈值（30 诊断 / 50 运动阳性）',
-    /两套阈值别混/.test(hcmTxt) && /≥50 mmHg/.test(hcmTxt), '');
+    /两套阈值须区分/.test(hcmTxt) && /≥50 mmHg/.test(hcmTxt), '');
   check('肥厚型心肌病：目标导向 Valsalva 独立成节（软管 >40 mmHg + 检出率对比）',
     ['五、目标导向 Valsalva', '>40 mmHg', '16.6%', '38%'].every((w) => hcmTxt.indexOf(w) >= 0), '');
   check('肥厚型心肌病：Valsalva 四期，且写明只在 II 期测压差',
