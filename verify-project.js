@@ -2162,6 +2162,44 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
   }
 }
 
+/* ── 2026-11-20：瓣膜/介入边界与应变操作流程回归锁 ── */
+{
+  const CN_TRI = require('./miniprogram/utils/calc-notes.js');
+  const allB = EX.BRIEF_SECTIONS.reduce(function (a, s2) { return a.concat(s2.items || []); }, []);
+  const getB = function (id) { return allB.filter(function (i) { return i.id === id; })[0] || { source: [], blocks: [] }; };
+  const trCalc = JSON.stringify((CN_TRI.CALC_NOTES && CN_TRI.CALC_NOTES.tr) || {});
+  const trInt = getB('tr-interv');
+  const trIntTxt = JSON.stringify(trInt.blocks || []);
+  const tavr = getB('tavr');
+  const tavrTxt = JSON.stringify(tavr.blocks || []);
+  const mitralTxt = JSON.stringify(getB('mitral').blocks || []);
+  const strainTxt = JSON.stringify(getB('strain').blocks || []);
+  (trCalc.indexOf('定量路径：四条路线并列') !== -1 &&
+   trCalc.indexOf('操作流程（关键步骤）') !== -1 &&
+   trCalc.indexOf('三尖瓣狭窄 TS') !== -1)
+    ? ok('TR 定量条目含四路径、操作流程与 TS 附节')
+    : bad('TR 定量条目边界内容缺失');
+  (trIntTxt.indexOf('测量口径见 TR 定量') !== -1 &&
+   trIntTxt.indexOf('三尖瓣狭窄的定量口径已移入') !== -1 &&
+   trIntTxt.indexOf('严重度五级（比') === -1)
+    ? ok('TTVI 只保留介入口径，定量与 TS 回指 TR 条目')
+    : bad('TTVI 仍有重复定量描述或缺少回指');
+  (tavrTxt.indexOf('本节只写 TAVR 相关差异') !== -1 &&
+   tavrTxt.indexOf('分型依据与主动脉随访口径回到 BAV 条目') !== -1 &&
+   (tavr.source || []).indexOf('R125') !== -1 &&
+   (tavr.source || []).indexOf('R126') !== -1)
+    ? ok('TAVR 不重复 BAV 分型表，且引用 R125 / R126')
+    : bad('TAVR 与 BAV 边界或文献挂接异常');
+  (mitralTxt.indexOf('本条只保留转诊前判断') !== -1 &&
+   mitralTxt.indexOf('逐项门槛、术前测量清单') !== -1)
+    ? ok('二尖瓣条目只留 TEER 转诊判断，细节回指介入条目')
+    : bad('二尖瓣与 TEER 边界不清');
+  (strainTxt.indexOf('操作流程：从采集到报告') !== -1 &&
+   strainTxt.indexOf('停止条件：图像质量不足以勾画 ROI') !== -1)
+    ? ok('应变条目含完整操作流程与停止条件')
+    : bad('应变操作流程或停止条件缺失');
+}
+
 console.log('\n' + '='.repeat(50));
 console.log(`结果： ${pass} 通过 / ${fail} 失败`);
 if (problems.length) {
