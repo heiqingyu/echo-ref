@@ -353,6 +353,9 @@ const GROUPS = [
   },
   {
     id: 'ras',
+    // ★ 2026-11-20：已并入「浸润性心肌病」判读条目（RAR 段给出简式阈值），
+    //   目录不再单列；本条仍留在 GROUPS 里，供公式集直达与旧链接回跳。
+    dirHide: true,
     ab: 'RAS',
     sec: 'recon',
     title: '心尖保留比值 RAS',

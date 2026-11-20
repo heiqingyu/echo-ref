@@ -1148,7 +1148,7 @@ function check(name, ok, detail) {
       d.valveOrder === 'mitral,aortic,tr,bav,rheumatic,ie,aortic-root,asload', d.valveOrder);
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 4 条（含 ca-views 冠状动脉超声）也移入该页签
-    check('条目 119 条（计算 39 + 评估判读 80；2026-11-20 TAVR 瓣环尺寸并入 TAVR 判读条目）', d.items === 119, d.items);
+    check('条目 118 条（计算 38 + 评估判读 80；2026-11-20 TAVR 瓣环尺寸、RAS 心尖保留比值并入判读条目）', d.items === 118, d.items);
     check('发布版目录已无肺超声 lung-us 条目', d.lungUs === 0, d.lungUs);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,

@@ -892,7 +892,7 @@
       fields: [['prpa', '右肺动脉 RPA', 'mm'], ['plpa', '左肺动脉 LPA', 'mm'],
         ['pdao', '膈肌水平降主动脉（可选）', 'mm']],
       note: 'McGoon = (RPA + LPA) ÷ 降主动脉，≥1.8 可考虑根治；Nakata = 左右肺动脉截面积之和 ÷ BSA（需身高体重），≥150 mm²/m² 可考虑根治。随访必须用同一口径' },
-    { id: 'ras', sec: 'recon', title: '心尖保留比值 RAS',
+    { id: 'ras', dirHide: true, sec: 'recon', title: '心尖保留比值 RAS',
       fields: [['rasap', '心尖段平均应变', '%'], ['rasba', '基底段平均应变', '%']],
       note: 'RAS = |心尖段均值| ÷ |基底段均值|。≥1 提示相对心尖保留，是心肌淀粉样变的典型表现；典型淀粉样变多在 2.0 以上' },
     { id: 'ea', sec: 'hemo', title: '有效动脉弹性 Ea / Ees-Ea 耦联',

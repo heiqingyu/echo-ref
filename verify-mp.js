@@ -841,7 +841,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 119 条（计算 39 + 判读 80；2026-11-20 TAVR 瓣环尺寸并入 TAVR 判读条目，目录不再单列）', nItems, 119, 0);
+  check('目录共 118 条（计算 38 + 判读 80；2026-11-20 TAVR 瓣环尺寸、RAS 心尖保留比值并入判读条目，目录不再单列）', nItems, 118, 0);
   check('肺超声 lung-us 已从所有分组移除（2026-11-08）',
     dirs.every(g => !g.items.some(i => i.id === 'lung-us')) ? 1 : 0, 1, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
@@ -1108,15 +1108,15 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
     dirById('recon').items.some(i => i.id === 'sync' && i.kind === 'calc') ? 1 : 0, 1, 0);
   check('血流动力学、舒张与心功能 13 条（合并 dias / evp 之后；v1.15.4 左心评估移入）',
     dirById('hemo').items.length, 13, 0);
-  check('重构、室壁运动与心肌功能 12 条（v1.11.2 起 lvnc 内嵌进 LVNC 判读条目、目录不再单列）',
-    dirById('recon').items.length, 12, 0);
+  check('重构、室壁运动与心肌功能 11 条（lvnc 内嵌判读条目、RAS 并入浸润性心肌病，目录均不再单列）',
+    dirById('recon').items.length, 11, 0);
   check('重构组条目齐全（四联已并为 lvgeom，旧的 lvmih / rwsv / spher / volidx 不再单列）',
     ['lvgeom', 'lastrain', 'aortaidx', 'mdsv', 'swv']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) &&
       !['lvmih', 'rwsv', 'spher', 'volidx'].some(id => dirById('recon').items.some(i => i.id === id))
       ? 1 : 0, 1, 0);
-  check('计算类条目 3 个计算组合计 33 条（2026-11-08 IVC 移入右心组 +1；另并入瓣膜病 1 / 瓣膜介入 3 / 先心 4 / 心腔 2，合计 42）',
-    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 33, 0);
+  check('计算类条目 3 个计算组合计 32 条（2026-11-08 IVC 移入右心组 +1；RAS 并入判读 −1；并入瓣膜病 1 / 瓣膜介入 3 / 先心 4 / 心腔 2，合计 41）',
+    ['hemo', 'right', 'recon'].reduce(function (n, id) { return n + dirById(id).items.length; }, 0), 32, 0);
   check('评分 3 条已并入重构组（WMSI / H2FPEF / HFA-PEFF）',
     ['wmsi', 'h2fpef', 'hfapeff']
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -1131,8 +1131,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('左心耳封堵 / CFR → 心腔组',
     ['laasz', 'cfr'].every(id => dirById('chamber').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   check('第三四批条目齐全',
-    ['laef', 'quickratio', 'lvgeom', 'paidx', 'ras', 'ea', 'coa']
-      .every(id => ['hemo', 'right', 'recon', 'valve', 'chd', 'chamber'].some(g => dirById(g).items.some(i => i.id === id)))
+    ['laef', 'quickratio', 'lvgeom', 'paidx', 'ea', 'coa']
+      .every(id => ['hemo', 'right', 'recon', 'valve', 'chd', 'chamber'].some(g => dirById(g).items.some(i => i.id === id))) &&
+    require('./miniprogram/utils/calc-groups.js').GROUPS.some(function (g) { return g.id === 'ras' && g.dirHide; })
       ? 1 : 0, 1, 0);
   check('器械与介入组已拆散：CRT / LAD 进心腔组、LVAD 进急症组',
     ['crt', 'la'].every(id => dirById('chamber').items.some(i => i.id === id)) &&
@@ -2310,6 +2311,8 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
     AL.every(function (a) { return a.length === 5 && typeof a[4] === 'string' && a[4].charAt(0) === '/'; }) ? 1 : 0, 1, 0);
   check('Qp/Qs 计算器已 dirHide（并入先心病分流判读，目录不再单列）',
     (CGA.GROUPS.filter(function (g) { return g.id === 'shunt'; })[0] || {}).dirHide === true ? 1 : 0, 1, 0);
+  check('RAS 心尖保留比值已 dirHide（并入浸润性心肌病判读，目录不再单列）',
+    (CGA.GROUPS.filter(function (g) { return g.id === 'ras'; })[0] || {}).dirHide === true ? 1 : 0, 1, 0);
   const pgWxml8 = require('fs').readFileSync(__dirname + '/miniprogram/pages/calculators/calculators.wxml', 'utf8');
   check('calculators 页有中英对照折叠卡（g-enalias + aliasOpen）',
     pgWxml8.indexOf('g-enalias') !== -1 && pgWxml8.indexOf('aliasOpen') !== -1 ? 1 : 0, 1, 0);

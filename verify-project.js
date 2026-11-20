@@ -2198,6 +2198,16 @@ console.log('\n=== 160. 相关内容交叉引用 + 页尾跳转其他页面 ==='
    strainTxt.indexOf('停止条件：图像质量不足以勾画 ROI') !== -1)
     ? ok('应变条目含完整操作流程与停止条件')
     : bad('应变操作流程或停止条件缺失');
+  const infB = getB('infiltr').blocks || [];
+  const infTxt = JSON.stringify(infB);
+  const infH = infB.filter(function (b) { return b.kind === 'h'; }).length;
+  (infTxt.indexOf('淀粉样变的两种类型：AL 与 ATTR') !== -1 &&
+   infTxt.indexOf('>1.5 才真正指向淀粉样变') !== -1 &&
+   infTxt.indexOf('测量流程：从采集到 RAS（六步）') !== -1 &&
+   infTxt.indexOf('其他浸润性与贮积性心肌病') !== -1 &&
+   infH === 15)
+    ? ok('浸润性心肌病条目：AL/ATTR 分型 + RAS 简式阈值 + 六步测量流程 + 贮积病速查（15 节）')
+    : bad('浸润性心肌病条目扩充内容缺失（小节 ' + infH + ' 个）');
 }
 
 console.log('\n' + '='.repeat(50));

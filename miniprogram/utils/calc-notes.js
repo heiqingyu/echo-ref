@@ -898,6 +898,7 @@ laef: [
 
   ras: [
     { kind: 'h', text: 'RAS 怎么算、怎么读' },
+    { kind: 'text', text: '本页只给算法与阈值。AL / ATTR 分型、与 HCM 的鉴别、采集与测量流程见判读条目「浸润性心肌病：淀粉样变 · 法布雷 · 与 HCM 鉴别」第四节与第五节。' },
     { kind: 'table', heads: ['RAS（心尖 ÷ 基底）', '提示'], rows: [
       ['≈ 1.0', '正常（心尖与基底应变相近）'],
       ['> 1.0', '心尖保留（apical sparing）'],
