@@ -1292,7 +1292,8 @@ Page({
         out = 'HFA-PEFF ' + r.score + ' 分（形态 ' + r.structural +
           ' + 功能 ' + r.functional + ' + 标志物 ' + r.biomarker + '）· ' + r.text;
       }
-    } else if (gid === 'tavrsz') {
+    } else if (gid === 'tavrsz' || gid === 'tavr') {
+      // ★ 2026-11-20：TAVR 判读条目内嵌同一组输入（tcirc / tarea / tnom），共用本分支
       // —— TAVR 瓣环与 oversizing ——
       const r = calc.tavrSizing(v.tcirc, v.tarea, v.tnom);
       if (r.error) out = r.error;

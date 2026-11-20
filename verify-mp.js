@@ -841,7 +841,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 120 条（计算 40 + 判读 80；2026-11-08 删除「肺超声」判读条目，计算器内嵌其中）', nItems, 120, 0);
+  check('目录共 119 条（计算 39 + 判读 80；2026-11-20 TAVR 瓣环尺寸并入 TAVR 判读条目，目录不再单列）', nItems, 119, 0);
   check('肺超声 lung-us 已从所有分组移除（2026-11-08）',
     dirs.every(g => !g.items.some(i => i.id === 'lung-us')) ? 1 : 0, 1, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
@@ -1122,8 +1122,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       .every(id => dirById('recon').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
   // v1.5.3：原「介入尺寸、先心与随访」组已拆散，8 个计算器分别并入瓣膜 / 先心 / 心腔组
   check('原「介入尺寸」组已不存在', dirById('ivs') ? 0 : 1, 1, 0);
-  check('TAVR 瓣环 / 人工瓣术后 / PPM → 瓣膜介入与人工瓣组',
-    ['tavrsz', 'pvfu', 'ppm'].every(id => dirById('valve-interv').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
+  check('人工瓣术后 / PPM → 瓣膜介入与人工瓣组；TAVR 瓣环已并入 TAVR 条目、目录不再单列',
+    ['pvfu', 'ppm'].every(id => dirById('valve-interv').items.some(i => i.id === id && i.kind === 'calc')) &&
+    !dirById('valve-interv').items.some(i => i.id === 'tavrsz') ? 1 : 0, 1, 0);
   check('McGoon / CoA / 主动脉 Z 值 / 主动脉增长率 → 先心组',
     ['paidx', 'coa', 'aortaz', 'aortagrow']
       .every(id => dirById('chd').items.some(i => i.id === id && i.kind === 'calc')) ? 1 : 0, 1, 0);
@@ -1148,9 +1149,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('瓣膜疾病与定量组顺序（二尖瓣 → 主动脉瓣 → TR 第三 → BAV → 风湿性 → IE → 根部 → AS 负荷）',
     dirById('valve').items.map(i => i.id).join(',') ===
       'mitral,aortic,tr,bav,rheumatic,ie,aortic-root,asload' ? 1 : 0, 1, 0);
-  check('瓣膜介入与人工瓣 7 条（TEER → TTVI → TAVR → 瓣环尺寸 → 人工瓣 → PPM → 术后跨瓣）',
+  check('瓣膜介入与人工瓣 6 条（TEER → TTVI → TAVR → 人工瓣 → PPM → 术后跨瓣）',
     dirById('valve-interv').items.map(i => i.id).join(',') ===
-      'mv-interv,tr-interv,tavr,tavrsz,prosthetic,ppm,pvfu' ? 1 : 0, 1, 0);
+      'mv-interv,tr-interv,tavr,prosthetic,ppm,pvfu' ? 1 : 0, 1, 0);
   check('瓣膜疾病组只剩 1 条计算（TR）',
     dirById('valve').items.filter(i => i.kind === 'calc').length, 1, 0);
   check('与评估页重复的通用计算已并入、不再单列（wilkins / mva / pisav / avav）',

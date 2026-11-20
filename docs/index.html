@@ -12013,9 +12013,7 @@ const SECTIONS_A = [
             ],
           },
           { kind: 'text', text: '**心率不稳时不要硬算流量**：房颤患者的 LVOT VTI 逐搏差异可达 20%，此时应取 5–10 个周期的平均，并在报告里注明心律。用单搏 VTI 算出的 SV，误差可能超过 15%。' },
-          { kind: 'text', text: '**LVOT VTI 自己就是一个可以单读的指标**。成人静息 **18–22 cm**（部分文献写 17–23）；**<15 cm 提示每搏量偏低**。指南里「低流量」的正式口径是 **SVi ≤35 mL/m²**[R43]，两者互相换算会随 LVOT 直径摆动——取 BSA 1.73 m²、直径 2.0–2.2 cm（面积 3.1–3.8 cm²），SVi 35 mL/m² 大约落在 VTI 16–19 cm。所以别把两个数当同一个门槛：VTI 是「不测直径也能看」的粗筛，SVi 是带体表面积的正式口径，能算 SVi 时以 SVi 为准。' },
-          { kind: 'text', text: '**随访时只比 VTI 往往更稳**：VTI 是描一条包络，误差与测值同量级（线性）；LVOT 直径差 2 mm 就是约 10% 的径差，面积按平方放大成约 20% 的 SV 误差——而同一患者两次检查的直径常常就差这么多。所以同一患者、同一操作者的纵向趋势，用 VTI 比用算出来的 SV 更可靠；前提是**取样位置与角度两次一致**（都在瓣环、都 ≤20°）。' },
-          { kind: 'note', text: '**这个式子在哪几种情况下不能用**：① **明显 AR**——LVOT 每搏量里含反流量，会高估净心排量；② **瓣下梗阻**（HOCM、主动脉瓣下隔膜）——瓣环取样处流速已被加速，VTI 升高不等于每搏量升高；③ **房颤 / 频发早搏**——单搏误差可达 15–20%，必须多周期平均。另外在主动脉瓣狭窄里，LVOT 直径的误差会原样传进连续性方程算出的 AVA，而 AVA 里直径是平方项，**同一处错在两处放大**。', warn: true },
+          { kind: 'text', text: '**LVOT VTI 的单读阈值、与 SVi 的换算，以及随访为何只比 VTI，见「LVOT · 每搏量与心排量」**（血流动力学组）；本节只讲测量环节的误差。' },
         ],
         note: '多普勒定量的常见误差：角度误差、混叠、平均压差与最大压差混用、直径测量位置错误、增益设置不当。前三项可导致分级偏差。',
       },
@@ -15537,7 +15535,12 @@ const SECTIONS_B = [
         moveTo: 'valve-interv',
         source: ['R62', 'R30', 'R20', 'R38', 'R81', 'R125', 'R126'],
         rel: ['aortic-root', 'prosthetic'],
-        fields: [],
+        fields: [
+          { k: 'tcirc', n: '瓣环周长', u: 'mm' },
+          { k: 'tarea', n: '瓣环面积', u: 'mm²' },
+          { k: 'tnom', n: '拟用标称直径', u: 'mm' },
+        ],
+        calc: 'tavrsz',
         blocks: [
           { kind: 'h', text: '一、超声在 TAVR 里负责什么（CT 负责什么）' },
           { kind: 'text', text: '**CT 是 TAVR 术前的主力**：瓣环面积 / 周长、钙化分布、冠脉高度、入路血管，都靠 CT 定量。超声的任务是补 CT 看不全的部分：**功能状态（EF、右心、肺高压）、合并瓣膜病（尤其 MR 与 TR）、心包、心腔内血栓（房颤患者左心耳）、以及床旁实时引导**。' },
@@ -15560,7 +15563,23 @@ const SECTIONS_B = [
           },
           { kind: 'note', text: '**EF <20%、无收缩储备、或合并重度右心功能不全**的患者，即使瓣膜解剖合适，获益也很有限。这类判断要在术前写进报告，而不是术后再说。', warn: true },
 
-          { kind: 'h', text: '三、TAVR 还是 SAVR：术前就要写清的一句话' },
+          { kind: 'h', text: '三、瓣环尺寸与 oversizing：算在哪、目标多少' },
+          { kind: 'text', text: '尺寸选择的基础是**CT 的瓣环测量**（收缩期、垂直于长轴、内缘到内缘）；超声用于交叉核对与术中确认。下面三格沿用公式集的同一算式。' },
+          {
+            kind: 'table',
+            heads: ['参数', '算式 / 目标'],
+            rows: [
+              ['周长导出直径', 'D = C ÷ π'],
+              ['面积导出直径', 'D = 2√(A/π)，自膨胀瓣常用'],
+              ['面积 oversizing', '(标称面积 ÷ 实测面积 − 1) × 100%'],
+              ['自膨胀瓣', '常见目标 10–20%'],
+              ['球囊扩张瓣', '−10% ~ +5%'],
+            ],
+          },
+          { kind: 'text', text: '**三个径要成比例**：瓣环、LVOT、升主动脉任一环节偏小，都会让瓣膜移位或瓣周漏。超声测瓣环容易低估（钙化、声影），3D TEE 比 2D 更接近 CT。' },
+          { kind: 'note', text: 'oversizing 过度 → 瓣环破裂、传导阻滞；不足 → 瓣周漏、移位。具体型号按厂商说明书与术者经验核定[R62][R30]。', warn: true },
+
+          { kind: 'h', text: '四、TAVR 还是 SAVR：术前就要写清的一句话' },
           { kind: 'text', text: '超声不替外科做决定，但要提供三件影响决定的事：**瓣膜解剖适不适合经导管**、**有没有让 TAVR 变危险的结构**、**心功能能不能耐受**。把这三条写进报告，团队讨论才有依据；只写「主动脉瓣重度狭窄，建议 TAVR」等于没写。' },
           {
             kind: 'table',
@@ -15577,27 +15596,27 @@ const SECTIONS_B = [
           { kind: 'note', text: '**二叶瓣不是 TAVR 的绝对禁忌，但它把「尺寸」这件事的容错度压到很低**：瓣环椭圆、钙化不对称，超声与 CT 差 ≥2 mm 时必须回到 CT 重测，不能取平均。0 型无脊、钙化团块大者，瓣环破裂与瓣周漏风险明显升高。', warn: true },
           { kind: 'text', text: '**2025 ESC/EACTS 把「年龄」这条线挪了**：TAVI 的年龄下限由 ≥75 岁下调到 **≥70 岁**，同时保留「低危、年轻、可长期抗凝/耐久性要求高者优先 SAVR」的口径。这意味着 70–74 岁这一段不再默认开胸，而要按解剖、风险评分、预期寿命与患者意愿综合判断——超声报告里除了解剖描述，最好也带上 **STS-PROM / EuroSCORE Ⅱ 与虚弱评估**的结果，让团队有据可依。' },
 
-          { kind: 'h', text: '四、术中超声引导的关键节点' },
+          { kind: 'h', text: '五、术中超声引导的关键节点' },
           { kind: 'text', text: '① 建立入路后确认导丝位置；② 球囊预扩时监测有无瓣叶撕裂、冠脉堵塞（新发区域性室壁运动异常或 ST 改变）；③ 瓣膜释放过程中观察位置（瓣环平面以下 2–6 mm 为理想）；④ 释放后立即测**跨瓣平均压差与反流**；⑤ 撤除器械前排除心包积液与瓣环破裂。' },
 
-          { kind: 'h', text: '五、术后判读' },
+          { kind: 'h', text: '六、术后判读' },
           { kind: 'text', text: '正常 TAVR 瓣术后**平均压差通常 8–12 mmHg**（自膨胀瓣略高），峰值流速 1.8–2.5 m/s。压差 >20 mmHg 需区分：瓣膜过小（PPM）、瓣叶增厚 / 血栓、还是高流量状态（贫血、甲亢、AR）。' },
           { kind: 'text', text: '**瓣周漏（PVL）是 TAVR 最常见的并发症**，用彩色多普勒 circumferential extent 半定量（<10% 轻、10–29% 中、≥30% 重），但更推荐多普勒超声敏感度评估。中重度 PVL 与远期死亡率相关，需要介入封堵。' },
           { kind: 'note', text: '术后 30 天、1 年必须复查并留基线。TAVR 瓣的**亚临床血栓**（HALT）在 CT 上发现率不低，超声表现为压差进行性升高 + 瓣叶增厚，此时不要直接判为「结构衰败」——先抗凝 3 个月复查。', warn: true },
 
-          { kind: 'h', text: '六、二叶式主动脉瓣：介入层面的风险点' },
+          { kind: 'h', text: '七、二叶式主动脉瓣：介入层面的风险点' },
           { kind: 'text', text: '分型、融合部位、主动脉扩张随访见《主动脉瓣二叶式畸形（BAV）》；本节只写 TAVR 相关差异，不重复 Sievers 表。' },
           { kind: 'text', text: '① 尺寸：瓣环常呈椭圆，2D 与 3D 面积可能系统性偏小；以 CT 周长衍生直径为准，超声仅交叉核对，差 ≥2 mm 时回 CT 重测。' },
           { kind: 'text', text: '② 风险：瓣周漏、瓣环破裂、冠脉堵塞三项分别写结论；钙化不对称、oversizing 过多、瓣叶过长或窦部狭小对应不同风险。' },
           { kind: 'note', text: '二叶瓣不是 TAVR 禁忌，但尺寸容错度低；术前报告不能只写「二叶瓣，可考虑 TAVR」。分型依据与主动脉随访口径回到 BAV 条目[R125][R126]。', warn: true },
 
-          { kind: 'h', text: '七、PPM 预测：术前规划用，阈值见人工瓣条目' },
+          { kind: 'h', text: '八、PPM 预测：术前规划用，阈值见人工瓣条目' },
           { kind: 'text', text: '人工瓣 - 患者不匹配（PPM）指植入瓣膜的有效开口面积相对患者体型过小。用拟植入瓣膜的标称 EOA 除以 BSA 可术前预测；EOAi 切点、BMI ≥30 的调整与判读前提见《人工瓣膜评估》及「人工瓣 EOAi 与 PPM」计算器，本条不重复阈值表。' },
           { kind: 'text', text: '① 预期寿命较长者需提前规划，避免重度 PPM 在 5–10 年后显现。' },
           { kind: 'text', text: '② 体表面积较大者按标称 EOA ÷ BSA 反推所需尺寸；型号不足时先确认瓣环是否允许更大号。' },
           { kind: 'note', text: 'PPM 预测用于提前规划，不要求所有患者一律避免；高龄、活动量小者的临床影响有限。术前结论写入报告，术后压差升高仍须先排高流量、瓣周漏与瓣叶增厚。', warn: true },
 
-          { kind: 'h', text: '八、术后随访节点：什么时候看什么' },
+          { kind: 'h', text: '九、术后随访节点：什么时候看什么' },
           {
             kind: 'table',
             heads: ['时间点', '重点看', '判读要点'],
@@ -21905,8 +21924,8 @@ const CALC_NOTES = {
   /* ── 血流动力学与心功能 ───────────────────────────── */
   flow: {
     use: '每搏量与心排量是所有定量超声的起点：瓣膜狭窄 / 反流的严重度分级、低流量状态的识别、心衰的预后分层都从这里出发。CO 还能配合 SVR 算出后负荷，判断「泵弱」还是「血管阻力高」导致的低输出。',
-    std: '静息成人 SV 约 60–100 mL，SVi 35–65 mL/m²，CI 2.5–4.0 L/min/m²（>3.5 提示高输出状态，如贫血、甲亢、动静脉瘘）。儿童按体表面积与年龄另查参考表。',
-    tip: 'LVOT 直径被平方放大：直径多测 2 mm，SV 偏倚约 10%，这是本条最大的误差源。房颤要取 3–5 个心动周期平均；低流量时用 3D 或围手术期超声复测。',
+    std: '静息成人 SV 约 60–100 mL，SVi 35–65 mL/m²，CI 2.5–4.0 L/min/m²（>3.5 提示高输出状态，如贫血、甲亢、动静脉瘘）；LVOT VTI 成人静息 18–22 cm（部分文献 17–23），<15 cm 提示每搏量偏低。儿童按体表面积与年龄另查参考表。',
+    tip: 'LVOT 直径被平方放大：直径多测 2 mm，SV 偏倚约 10%，这是本条最大的误差源。房颤要取 5–10 个心动周期平均；低流量时用 3D 或围手术期超声复测。',
   },
   ef: {
     use: '收缩功能的 cornerstone 指标，决定心衰的分类（HFmrEF / HFrEF）、器械指征（ICD、CRT）与药物治疗路径，也是随访疗效最常引用的数字。',
@@ -22585,8 +22604,15 @@ flow: [
       ['2.2–4.0', '正常', '—'],
       ['> 4.0', '高输出', '贫血、甲亢、脓毒症、动静脉瘘、左向右分流'],
     ] },
-    { kind: 'text', text: '**测量要点**：LVOT 直径在舒张末、内缘到内缘、垂直于长轴测量，放大后再测；VTI 用脉冲多普勒，取样容积放在瓣环下约 5 mm，连续 3 个周期取平均。' },
-    { kind: 'text', text: 'LVOT 直径被平方放大，直径多测 2 mm 就能让 SV 偏 10% —— 这是本条最大的误差源。房颤取 5 个周期；LVOT 钙化、隔膜或术后成形环会使 CSA 失真，改用 3D 或直接测 SV。', warn: true },
+    { kind: 'text', text: '**测量要点**：LVOT 直径在**收缩中期**、**瓣环处**（瓣叶附着点）、内缘到内缘、垂直于长轴测量，放大后再测；VTI 用脉冲多普勒，取样容积放在**瓣环处**、角度 ≤20°，窦性取 3–5 个周期、房颤取 5–10 个周期平均。' },
+    { kind: 'h', text: 'LVOT VTI 可以单读' },
+    { kind: 'text', text: '成人静息 **18–22 cm**（部分文献 17–23）；**<15 cm 提示每搏量偏低**。它只描一条包络，误差与被测值同量级。' },
+    { kind: 'h', text: 'VTI 与 SVi 不是同一个门槛' },
+    { kind: 'text', text: '指南「低流量」的正式口径是 **SVi ≤35 mL/m²**[R43]。两者换算会随 LVOT 直径摆动：BSA 1.73 m²、直径 2.0–2.2 cm（面积 3.1–3.8 cm²）时，SVi 35 mL/m² 大约落在 VTI 16–19 cm。能算 SVi 时以 SVi 为准；VTI 是不测直径也能看的粗筛。' },
+    { kind: 'h', text: '随访为什么常常只比 VTI' },
+    { kind: 'text', text: 'VTI 是描一条包络，误差与测值同量级（线性）；LVOT 直径差 2 mm 就是约 10% 的径差，面积按平方放大成约 20% 的 SV 误差。同一患者、同一操作者的纵向趋势用 VTI 更稳，前提是取样位置与角度两次一致（都在瓣环、都 ≤20°）。' },
+    { kind: 'text', text: '**这个式子在哪几种情况下不能用**：① 明显 AR——LVOT 每搏量里含反流量，会高估净心排量；② 瓣下梗阻（HOCM、主动脉瓣下隔膜）——取样处流速已被加速，VTI 升高不等于每搏量升高；③ 房颤 / 频发早搏——单搏误差可达 15–20%，必须多周期平均。主动脉瓣狭窄中 LVOT 直径误差会原样传进连续性方程，AVA 里直径是平方项，**同一处错在两处放大**。', warn: true },
+    { kind: 'text', text: 'LVOT 钙化、隔膜或术后成形环会使 CSA 失真，此时改用 3D 测 LVOT 面积或直接测 SV。' },
   ],
 
   ef: [
@@ -24027,7 +24053,7 @@ const MATERIALS = [];
         ['hel', '侧壁 e′', 'cm/s'], ['htrv', 'TR Vmax', 'm/s'], ['hgls', 'GLS（绝对值）', '%'],
         ['hbnp', 'NT-proBNP', 'pg/mL']],
       note: '三类各取最高分后相加（0–6）。形态学：LAVi ≥34 计 1、≥40 计 2；LVMI 男 >115/149、女 >95/122 计 1/2；RWT >0.42 计 1；PASP >35 计 1。功能学：E/e′ 9–14 计 1、≥15 计 2；e′ 减低计 1；TR Vmax >2.8 计 1；GLS <16% 计 1。标志物按窦律/房颤分档。≥5 分支持 HFpEF' },
-    { id: 'tavrsz', sec: 'valve-interv', title: 'TAVR 瓣环尺寸与 oversizing',
+    { id: 'tavrsz', dirHide: true, sec: 'valve-interv', title: 'TAVR 瓣环尺寸与 oversizing',
       fields: [['tcirc', '瓣环周长', 'mm'], ['tarea', '瓣环面积', 'mm²'], ['tnom', '拟用标称直径', 'mm']],
       note: '周长导出直径 = C/π；面积导出直径 = 2√(A/π)；面积 oversizing = (标称面积/实测面积 − 1)×100%。自膨胀瓣常见目标 10–20%，球囊扩张瓣 −10% ~ +5%。具体型号按厂商说明书与术者经验核定' },
     { id: 'laasz', sec: 'chamber', title: '左心耳封堵尺寸推荐',
@@ -25009,7 +25035,7 @@ const MATERIALS = [];
       secs.splice(v0 + 1, 0, vi);
     }
     headItems('valve', ['mitral', 'aortic', 'tr', 'bav', 'rheumatic', 'ie', 'aortic-root', 'asload']);
-    headItems('valve-interv', ['mv-interv', 'tr-interv', 'tavr', 'tavrsz', 'prosthetic', 'ppm', 'pvfu']);
+    headItems('valve-interv', ['mv-interv', 'tr-interv', 'tavr', 'prosthetic', 'ppm', 'pvfu']);
 
     // ★ v1.13.10：先心病整组紧跟瓣膜（v1.15.4 起跟在「瓣膜介入与人工瓣」后面）
     const chdIdx = secs.map(function (s) { return s.id; }).indexOf('chd');
@@ -26445,7 +26471,7 @@ const MATERIALS = [];
     // TAVR 瓣环与 oversizing
     if (has('tcirc') || has('tarea')) {
       const r = Calc.tavrSizing(v.tcirc, v.tarea, v.tnom);
-      if (r.error) put('tavrsz', r.error);
+      if (r.error) { put('tavrsz', r.error); put('tavr', r.error); }
       else {
         const parts = [];
         if (r.dc !== undefined) parts.push('周长导出直径 ' + Calc.fmt(r.dc, 1) + ' mm');
@@ -26455,9 +26481,9 @@ const MATERIALS = [];
           if (r.circOver !== undefined) parts.push('周长 oversizing ' + Calc.fmt(r.circOver, 1) + '%');
           parts.push(r.text);
         } else if (r.hint) parts.push(r.hint);
-        put('tavrsz', partsOf(parts));
+        put('tavrsz', partsOf(parts)); put('tavr', partsOf(parts));
       }
-    } else put('tavrsz');
+    } else { put('tavrsz'); put('tavr'); }
 
     // 左心耳封堵尺寸
     if (has('lzmax')) {

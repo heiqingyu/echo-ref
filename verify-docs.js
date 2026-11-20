@@ -1148,7 +1148,7 @@ function check(name, ok, detail) {
       d.valveOrder === 'mitral,aortic,tr,bav,rheumatic,ie,aortic-root,asload', d.valveOrder);
     // v1.6.3：「切面学习（视频）」与「TEE 切面在线演示」两外链组从目录移出、收进「切面学习」页签
     // v1.6.4：切面速查 4 条（含 ca-views 冠状动脉超声）也移入该页签
-    check('条目 120 条（计算 40 + 评估判读 80；2026-11-08 删除「肺超声」判读条目）', d.items === 120, d.items);
+    check('条目 119 条（计算 39 + 评估判读 80；2026-11-20 TAVR 瓣环尺寸并入 TAVR 判读条目）', d.items === 119, d.items);
     check('发布版目录已无肺超声 lung-us 条目', d.lungUs === 0, d.lungUs);
     check('合并页一条出多行结果（resist 3 槽 / lvgeom 4 槽）',
       d.resistOuts === 3 && d.lvgeomOuts === 4,
@@ -1162,7 +1162,7 @@ function check(name, ok, detail) {
     check('切面条目不加载图片/iframe/视频（省内存）', d.media === 0, d.media);
     check('发布版不列瓣膜计算器（无瓣膜页）', d.valve === 0, d.valve);
     check('发布版瓣膜疾病组只含 1 条计算（TR 定量）', d.valveCalc === 1, d.valveCalc);
-    check('发布版瓣膜介入组含 3 条计算（PPM / TAVR 瓣环 / 人工瓣术后）', d.valveIntervCalc === 3, d.valveIntervCalc);
+    check('发布版瓣膜介入组含 2 条计算（PPM / 人工瓣术后；TAVR 瓣环已并入 TAVR 条目）', d.valveIntervCalc === 2, d.valveIntervCalc);
     check('参考文献 126 条', d.refs === 126, d.refs);
     check('已删除延展阅读卡片（三端一致）', d.ext === false, d.ext);
   }
@@ -2165,12 +2165,13 @@ function check(name, ok, detail) {
   o = await outOf('hfapeff');
   check('HFA-PEFF 三类相加 6 分', /6 分/.test(o) && /形态 2/.test(o), o);
 
-  await openCalc('tavrsz');
-  await fillCalc('tavrsz', 'tcirc', '75');
-  await fillCalc('tavrsz', 'tarea', '420');
-  await fillCalc('tavrsz', 'tnom', '26');
+  // ★ 2026-11-20：瓣环尺寸已并入 TAVR 判读条目，改从条目内联输入框验证
+  await openCalc('tavr');
+  await fillCalc('tavr', 'tcirc', '75');
+  await fillCalc('tavr', 'tarea', '420');
+  await fillCalc('tavr', 'tnom', '26');
   await new Promise((r) => setTimeout(r, 300));
-  o = await outOf('tavrsz');
+  o = await outOf('tavr');
   check('TAVR 周长 75 → 导出 23.9mm、oversizing 26.4%',
     /23\.9/.test(o) && /26\.4%/.test(o), o);
 
@@ -2612,7 +2613,7 @@ function check(name, ok, detail) {
   })()`);
   const navN = await c.evalJs(
     'document.querySelectorAll(\'#calcGroups .card[data-g="tavr"] .ftoc .ftoc__i\').length');
-  check('TAVR 条目渲染出 8 个小节目录项', navN === 8, navN);
+  check('TAVR 条目渲染出 9 个小节目录项（瓣环尺寸并入后 +1）', navN === 9, navN);
   // v1.15.4：悬浮目录 = 圆点固定定位 + 面板默认收起（不占正文高度）
   const navLayout = await c.evalJs(`(function(){
     var d = document.querySelector('#calcGroups .card[data-g="tavr"] .ftoc__dot');

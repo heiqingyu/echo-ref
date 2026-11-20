@@ -983,7 +983,7 @@
         ['hel', '侧壁 e′', 'cm/s'], ['htrv', 'TR Vmax', 'm/s'], ['hgls', 'GLS（绝对值）', '%'],
         ['hbnp', 'NT-proBNP', 'pg/mL']],
       note: '三类各取最高分后相加（0–6）。形态学：LAVi ≥34 计 1、≥40 计 2；LVMI 男 >115/149、女 >95/122 计 1/2；RWT >0.42 计 1；PASP >35 计 1。功能学：E/e′ 9–14 计 1、≥15 计 2；e′ 减低计 1；TR Vmax >2.8 计 1；GLS <16% 计 1。标志物按窦律/房颤分档。≥5 分支持 HFpEF' },
-    { id: 'tavrsz', sec: 'valve-interv', title: 'TAVR 瓣环尺寸与 oversizing',
+    { id: 'tavrsz', dirHide: true, sec: 'valve-interv', title: 'TAVR 瓣环尺寸与 oversizing',
       fields: [['tcirc', '瓣环周长', 'mm'], ['tarea', '瓣环面积', 'mm²'], ['tnom', '拟用标称直径', 'mm']],
       note: '周长导出直径 = C/π；面积导出直径 = 2√(A/π)；面积 oversizing = (标称面积/实测面积 − 1)×100%。自膨胀瓣常见目标 10–20%，球囊扩张瓣 −10% ~ +5%。具体型号按厂商说明书与术者经验核定' },
     { id: 'laasz', sec: 'chamber', title: '左心耳封堵尺寸推荐',
@@ -1965,7 +1965,7 @@
       secs.splice(v0 + 1, 0, vi);
     }
     headItems('valve', ['mitral', 'aortic', 'tr', 'bav', 'rheumatic', 'ie', 'aortic-root', 'asload']);
-    headItems('valve-interv', ['mv-interv', 'tr-interv', 'tavr', 'tavrsz', 'prosthetic', 'ppm', 'pvfu']);
+    headItems('valve-interv', ['mv-interv', 'tr-interv', 'tavr', 'prosthetic', 'ppm', 'pvfu']);
 
     // ★ v1.13.10：先心病整组紧跟瓣膜（v1.15.4 起跟在「瓣膜介入与人工瓣」后面）
     const chdIdx = secs.map(function (s) { return s.id; }).indexOf('chd');
@@ -3401,7 +3401,7 @@
     // TAVR 瓣环与 oversizing
     if (has('tcirc') || has('tarea')) {
       const r = Calc.tavrSizing(v.tcirc, v.tarea, v.tnom);
-      if (r.error) put('tavrsz', r.error);
+      if (r.error) { put('tavrsz', r.error); put('tavr', r.error); }
       else {
         const parts = [];
         if (r.dc !== undefined) parts.push('周长导出直径 ' + Calc.fmt(r.dc, 1) + ' mm');
@@ -3411,9 +3411,9 @@
           if (r.circOver !== undefined) parts.push('周长 oversizing ' + Calc.fmt(r.circOver, 1) + '%');
           parts.push(r.text);
         } else if (r.hint) parts.push(r.hint);
-        put('tavrsz', partsOf(parts));
+        put('tavrsz', partsOf(parts)); put('tavr', partsOf(parts));
       }
-    } else put('tavrsz');
+    } else { put('tavrsz'); put('tavr'); }
 
     // 左心耳封堵尺寸
     if (has('lzmax')) {

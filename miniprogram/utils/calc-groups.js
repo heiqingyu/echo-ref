@@ -676,6 +676,9 @@ const GROUPS = [
   },
   {
     id: 'tavrsz',
+    // ★ 2026-11-20：已并入「主动脉瓣介入（TAVR）」判读条目（fields + calc 同键），
+    //   目录不再单列；本条仍留在 GROUPS 里，供公式集直达与旧链接回跳。
+    dirHide: true,
     ab: '瓣环',
     sec: 'valve-interv',
     title: 'TAVR 瓣环尺寸与 oversizing',
