@@ -3,16 +3,16 @@
   <view class="card">
     <view class="card__title">TTE 标准切面总览</view>
     <view class="card__desc">
-      四个常用切面并列：胸骨旁左室长轴、主动脉瓣短轴、心尖四腔、心尖两腔。图中只标关键结构与必测项，为教学示意，不替代真实超声图像。
+      六个常用切面逐张排开：胸骨旁左室长轴、主动脉瓣短轴、心尖四腔、心尖两腔、心尖五腔、二尖瓣水平短轴。图中只标关键结构与必测项，为教学示意，不替代真实超声图像。
     </view>
     <view class="note note--warn">
-      方位：扇形顶点在上＝近场（探头侧），下方是远场。心尖四腔 / 两腔：心尖在上、心房在下，屏幕左＝患者右；胸骨旁长轴：右室在前（上）、左室在后（下），主动脉根部与左房在右侧、心尖朝左。TEE 的近场是心房侧，所以 TEE 与 TTE 的上下相反、左右相同。TEE 图谱见上一节「瓣膜解剖 · TEE 标准切面」。
+      方位：扇形顶点在上＝近场（探头侧），下方是远场。心尖四腔 / 两腔 / 五腔：心尖在上、心房在下，屏幕左＝患者右；胸骨旁长轴：右室在前（上）、左室在后（下），主动脉根部与左房在右侧、心尖朝左。TEE 的近场是心房侧，所以 TEE 与 TTE 的上下相反、左右相同。TEE 图谱见上一节「瓣膜解剖 · TEE 标准切面」。
     </view>
     <image wx:for="{{srcs}}" wx:key="index" class="atlas-img" src="{{item}}" mode="widthFix" />
   </view>
 
   <view class="card">
-    <view class="card__title">四个切面各看什么</view>
+    <view class="card__title">六个切面各看什么</view>
     <view class="wall-card">
       <view class="wall-card__t">① 胸骨旁左室长轴（PLAX）</view>
       <view class="wall-card__s">声束垂直于室间隔，是左室径线与主动脉根部测量的主切面。必测：LVEDD / LVESD、室间隔与后壁厚度、主动脉根部与升主动脉径、左房前后径。腱索水平测内径；斜切会高估室壁厚度、低估左室内径。</view>
@@ -28,6 +28,14 @@
     <view class="wall-card">
       <view class="wall-card__t">④ 心尖两腔（A2C）</view>
       <view class="wall-card__s">显示左室前壁与下壁，与四腔心正交，用于双平面 Simpson 容积和前壁 / 下壁节段运动。结合四腔心才能覆盖 16 节段。</view>
+    </view>
+    <view class="wall-card">
+      <view class="wall-card__t">⑤ 心尖五腔（A5C）</view>
+      <view class="wall-card__s">在四腔心位置把声束略向前倾，把主动脉根部与 LVOT 打开，两心室之间出现主动脉瓣。测 LVOT 直径（收缩中期、瓣环下 0.5–1.0 cm）与 LVOT VTI，是每搏量与主动脉瓣狭窄血流计算取频谱的位置；也可用彩色多普勒看主动脉瓣反流。</view>
+    </view>
+    <view class="wall-card">
+      <view class="wall-card__t">⑥ 胸骨旁二尖瓣水平短轴</view>
+      <view class="wall-card__s">短轴切在二尖瓣水平，左室呈圆形，二尖瓣像「鱼嘴」：前叶贴主动脉瓣侧（近场）、后叶贴后壁侧（远场），两端是前外侧与后内侧交界。用于看交界病变与瓣口形态；瓣口面积以压差法 / PHT 与 3D 平面法为准。</view>
     </view>
   </view>
 

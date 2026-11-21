@@ -2547,15 +2547,19 @@ function check(name, ok, detail) {
   const tteSvg = await c.evalJs(
     '(function(){var card=document.querySelector(\'#calcGroups .card[data-g="tte-atlas"]\');' +
     'var idx=document.getElementById("calcIndex");' +
-    'var e=card&&card.querySelector(\'.va-atlas-box svg\');' +
+    'var boxes=card?card.querySelectorAll(".va-atlas-box svg"):[];' +
+    'var e=boxes[0];' +
     'return {shown: !!(card&&!card.hidden), idxHidden: !!(idx&&idx.hidden),' +
-    ' vb:e?e.getAttribute("viewBox"):null, txt:e?e.textContent:""};})()');
+    ' n:boxes.length, vb:e?e.getAttribute("viewBox"):null,' +
+    ' txt:card?card.textContent:""};})()');
   check('点「TTE 标准切面总览」进条目卡，不打回公式集目录',
     tteSvg.shown === true && tteSvg.idxHidden === true,
     'card.hidden=' + !tteSvg.shown + ' calcIndex.hidden=' + tteSvg.idxHidden);
-  check('TTE 总览卡渲染出 960×590 四联图',
-    tteSvg.vb === '0 0 960 590' &&
-      ['PLAX', '主动脉瓣短轴', 'A4C', 'A2C'].every(function (t) { return tteSvg.txt.indexOf(t) !== -1; }));
+  check('TTE 总览卡渲染出 6 张 480×290 单切面图（不再是一张四联图）',
+    tteSvg.n === 6 && tteSvg.vb === '0 0 480 290' &&
+      ['PLAX', '主动脉瓣短轴', 'A4C', 'A2C', 'A5C', '二尖瓣水平短轴']
+        .every(function (t) { return tteSvg.txt.indexOf(t) !== -1; }),
+    'n=' + tteSvg.n + ' vb=' + tteSvg.vb);
   // 回到 TEE 卡继续原有断言
   await c.evalJs('document.querySelector(\'.tab[data-tab="segments"]\').click()');
   await new Promise((r) => setTimeout(r, 300));

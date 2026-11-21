@@ -1,5 +1,5 @@
 /**
- * tte-atlas-svg.js — TTE 标准切面总览图（2×2 四个常用切面）
+ * tte-atlas-svg.js — TTE 标准切面总览图（6 个常用切面，逐张单图）
  *
  * 纯函数，三端共用：小程序转 data URI 给 <image>，网页 / APK 直接内联 SVG。
  * 画法对齐指南里的示意图（R9 ASE 2019 成人 TTE 指南的标准切面图）：
@@ -113,45 +113,57 @@ function panel(x, y, idx, title, body, tip) {
 function plaxBody(cx, cy) {
   let c = '', o = '';
 
-  // 左房（主动脉根部下方、左室后壁右后方）
-  c += ell(cx + 44, cy + 120, 26, 20, '#ffffff');
-  // 右室：近场一条宽带，向左侧收窄
-  c += pool('M' + f1(cx - 112) + ' ' + f1(cy + 4) + ' L' + f1(cx + 92) + ' ' + f1(cy + 4) +
-    ' L' + f1(cx + 14) + ' ' + f1(cy + 44) + ' Q' + f1(cx - 30) + ' ' + f1(cy + 64) + ' ' +
-    f1(cx - 92) + ' ' + f1(cy + 104) + ' Z', '#eef3fa');
-  // 室间隔
-  c += stroke('M' + f1(cx + 14) + ' ' + f1(cy + 44) + ' Q' + f1(cx - 30) + ' ' + f1(cy + 64) + ' ' +
-    f1(cx - 90) + ' ' + f1(cy + 102), '#a9b7c9', 9);
-  // 左室：心尖朝左，中部最厚，基底在右侧
-  c += pool('M' + f1(cx + 14) + ' ' + f1(cy + 50) +
-    ' Q' + f1(cx - 30) + ' ' + f1(cy + 70) + ' ' + f1(cx - 86) + ' ' + f1(cy + 108) +
-    ' Q' + f1(cx - 16) + ' ' + f1(cy + 150) + ' ' + f1(cx + 14) + ' ' + f1(cy + 98) + ' Z', '#ffffff');
-  // 左室后壁
-  c += stroke('M' + f1(cx - 86) + ' ' + f1(cy + 108) + ' Q' + f1(cx - 16) + ' ' + f1(cy + 150) + ' ' +
-    f1(cx + 14) + ' ' + f1(cy + 98), '#a9b7c9', 7);
-  // 主动脉根部（管状，位于左室基底右侧）
-  c += pool('M' + f1(cx + 20) + ' ' + f1(cy + 52) + ' L' + f1(cx + 50) + ' ' + f1(cy + 54) +
-    ' L' + f1(cx + 54) + ' ' + f1(cy + 98) + ' L' + f1(cx + 24) + ' ' + f1(cy + 100) + ' Z', '#f7fafd');
-  c += stroke('M' + f1(cx + 20) + ' ' + f1(cy + 52) + ' L' + f1(cx + 24) + ' ' + f1(cy + 100), '#a9b7c9', 3);
-  c += stroke('M' + f1(cx + 50) + ' ' + f1(cy + 54) + ' L' + f1(cx + 54) + ' ' + f1(cy + 98), '#a9b7c9', 3);
-  // 主动脉瓣（蓝）
-  c += '<path d="M' + f1(cx + 23) + ' ' + f1(cy + 68) + ' L' + f1(cx + 38) + ' ' + f1(cy + 78) +
-    ' L' + f1(cx + 26) + ' ' + f1(cy + 82) + ' Z" fill="#2563eb"/>';
-  c += '<path d="M' + f1(cx + 52) + ' ' + f1(cy + 70) + ' L' + f1(cx + 38) + ' ' + f1(cy + 78) +
-    ' L' + f1(cx + 51) + ' ' + f1(cy + 84) + ' Z" fill="#2563eb" opacity="0.72"/>';
-  // 二尖瓣（橙）：左房室交界
-  c += '<path d="M' + f1(cx + 12) + ' ' + f1(cy + 100) + ' L' + f1(cx + 22) + ' ' + f1(cy + 114) +
-    ' L' + f1(cx + 10) + ' ' + f1(cy + 112) + ' Z" fill="#d97706"/>';
-  c += '<path d="M' + f1(cx + 34) + ' ' + f1(cy + 102) + ' L' + f1(cx + 30) + ' ' + f1(cy + 116) +
-    ' L' + f1(cx + 40) + ' ' + f1(cy + 114) + ' Z" fill="#d97706" opacity="0.72"/>';
+  // ① 主动脉根部：竖直管状，位于左室基底右上方（向上延伸出扇面）
+  c += pool('M' + f1(cx + 40) + ' ' + f1(cy + 28) + ' L' + f1(cx + 74) + ' ' + f1(cy + 32) +
+    ' L' + f1(cx + 76) + ' ' + f1(cy + 92) + ' L' + f1(cx + 42) + ' ' + f1(cy + 92) + ' Z',
+    '#f7fafd');
+  c += stroke('M' + f1(cx + 40) + ' ' + f1(cy + 28) + ' L' + f1(cx + 42) + ' ' + f1(cy + 92),
+    '#9aa9bd', 3);
+  c += stroke('M' + f1(cx + 74) + ' ' + f1(cy + 32) + ' L' + f1(cx + 76) + ' ' + f1(cy + 92),
+    '#9aa9bd', 3);
+  // 主动脉瓣（关闭态，两叶）
+  c += '<path d="M' + f1(cx + 44) + ' ' + f1(cy + 50) + ' L' + f1(cx + 57) + ' ' + f1(cy + 62) +
+    ' L' + f1(cx + 44) + ' ' + f1(cy + 66) + ' Z" fill="#2563eb"/>';
+  c += '<path d="M' + f1(cx + 75) + ' ' + f1(cy + 52) + ' L' + f1(cx + 57) + ' ' + f1(cy + 62) +
+    ' L' + f1(cx + 75) + ' ' + f1(cy + 68) + ' Z" fill="#2563eb" opacity="0.72"/>';
 
-  o += lab(cx - 20, cy + 26, 'RV', 12, '#475569', 700);
-  o += lab(cx - 26, cy + 90, 'LV', 13, '#334155', 700);
-  o += lab(cx + 44, cy + 124, 'LA', 12, '#475569', 700);
-  o += tag(cx - 150, cy + 132, '心尖', cx - 88, cy + 104, 11, '#64748b');
-  o += tag(cx + 150, cy + 30, '升主动脉', cx + 36, cy + 46, 11, '#64748b', 'start');
-  o += tag(cx - 150, cy + 58, 'IVS', cx - 62, cy + 70, 10, '#8494a8');
-  o += tag(cx + 150, cy + 142, 'LVPW', cx - 6, cy + 132, 10, '#8494a8', 'start');
+  // ② 右室：近场宽带，下界就是室间隔
+  c += pool('M' + f1(cx - 118) + ' ' + f1(cy + 4) + ' L' + f1(cx + 76) + ' ' + f1(cy + 4) +
+    ' L' + f1(cx + 76) + ' ' + f1(cy + 30) +
+    ' L' + f1(cx + 40) + ' ' + f1(cy + 38) +
+    ' Q' + f1(cx - 16) + ' ' + f1(cy + 48) + ' ' + f1(cx - 100) + ' ' + f1(cy + 92) + ' Z',
+    '#eef3fa');
+
+  // ③ 左室腔：心尖朝左、基底在右，腔宽约 50（原来只有一条缝）
+  c += pool('M' + f1(cx + 42) + ' ' + f1(cy + 38) +
+    ' L' + f1(cx + 44) + ' ' + f1(cy + 92) +
+    ' C' + f1(cx + 8) + ' ' + f1(cy + 118) + ' ' + f1(cx - 48) + ' ' + f1(cy + 136) + ' ' +
+    f1(cx - 106) + ' ' + f1(cy + 116) +
+    ' C' + f1(cx - 44) + ' ' + f1(cy + 96) + ' ' + f1(cx + 2) + ' ' + f1(cy + 68) + ' ' +
+    f1(cx + 42) + ' ' + f1(cy + 38) + ' Z', '#ffffff');
+  // 左室后壁
+  c += stroke('M' + f1(cx - 106) + ' ' + f1(cy + 116) +
+    ' C' + f1(cx - 48) + ' ' + f1(cy + 136) + ' ' + f1(cx + 8) + ' ' + f1(cy + 118) + ' ' +
+    f1(cx + 44) + ' ' + f1(cy + 92), '#9aa9bd', 7);
+  // 室间隔（画在右室之上，成为两个腔的共用壁）
+  c += stroke('M' + f1(cx + 40) + ' ' + f1(cy + 38) +
+    ' Q' + f1(cx - 16) + ' ' + f1(cy + 48) + ' ' + f1(cx - 100) + ' ' + f1(cy + 92),
+    '#9aa9bd', 9);
+
+  // ④ 左房（主动脉根部下方）＋二尖瓣（左房室交界）
+  c += ell(cx + 64, cy + 116, 26, 21, '#ffffff');
+  c += '<path d="M' + f1(cx + 40) + ' ' + f1(cy + 96) + ' L' + f1(cx + 34) + ' ' + f1(cy + 112) +
+    ' L' + f1(cx + 46) + ' ' + f1(cy + 108) + ' Z" fill="#d97706"/>';
+  c += '<path d="M' + f1(cx + 58) + ' ' + f1(cy + 98) + ' L' + f1(cx + 54) + ' ' + f1(cy + 114) +
+    ' L' + f1(cx + 64) + ' ' + f1(cy + 110) + ' Z" fill="#d97706" opacity="0.72"/>';
+
+  o += lab(cx - 44, cy + 26, 'RV', 12, '#475569', 700);
+  o += lab(cx - 34, cy + 84, 'LV', 13, '#334155', 700);
+  o += lab(cx + 64, cy + 120, 'LA', 12, '#475569', 700);
+  o += tag(cx - 150, cy + 124, '心尖', cx - 100, cy + 112, 11, '#64748b');
+  o += tag(cx + 150, cy + 26, '升主动脉', cx + 56, cy + 34, 11, '#64748b', 'start');
+  o += tag(cx - 150, cy + 56, 'IVS', cx - 62, cy + 60, 10, '#8494a8');
+  o += tag(cx + 148, cy + 140, 'LVPW', cx + 6, cy + 126, 10, '#8494a8', 'start');
   return { c: c, o: o };
 }
 
@@ -277,6 +289,106 @@ function a2cBody(cx, cy) {
   return { c: c, o: o };
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   ⑤ 心尖五腔（A5C）
+   与四腔心同一探头位置，声束略向前倾，把主动脉根部与 LVOT 打开：
+   心尖在近场（上），主动脉根部在远场（下、两心室之间）
+   ══════════════════════════════════════════════════════════ */
+function a5cBody(cx, cy) {
+  let c = '', o = '';
+
+  // 左房 / 右房（远场两侧）
+  c += ell(cx + 66, cy + 120, 26, 20, '#ffffff');
+  c += ell(cx - 70, cy + 118, 25, 19, '#eef3fa');
+  // 右室（屏幕左）
+  c += pool('M' + f1(cx) + ' ' + f1(cy + 12) +
+    ' C' + f1(cx - 34) + ' ' + f1(cy + 42) + ' ' + f1(cx - 74) + ' ' + f1(cy + 72) + ' ' +
+    f1(cx - 72) + ' ' + f1(cy + 96) +
+    ' L' + f1(cx - 22) + ' ' + f1(cy + 96) +
+    ' C' + f1(cx - 22) + ' ' + f1(cy + 68) + ' ' + f1(cx - 4) + ' ' + f1(cy + 40) + ' ' +
+    f1(cx) + ' ' + f1(cy + 12) + ' Z', '#eef3fa');
+  // 左室（屏幕右）
+  c += pool('M' + f1(cx) + ' ' + f1(cy + 12) +
+    ' C' + f1(cx + 34) + ' ' + f1(cy + 42) + ' ' + f1(cx + 76) + ' ' + f1(cy + 72) + ' ' +
+    f1(cx + 74) + ' ' + f1(cy + 98) +
+    ' L' + f1(cx + 24) + ' ' + f1(cy + 98) +
+    ' C' + f1(cx + 22) + ' ' + f1(cy + 68) + ' ' + f1(cx + 4) + ' ' + f1(cy + 40) + ' ' +
+    f1(cx) + ' ' + f1(cy + 12) + ' Z', '#ffffff');
+
+  // 主动脉根部（两心室之间、向远场延伸的管腔）
+  c += pool('M' + f1(cx - 20) + ' ' + f1(cy + 86) + ' L' + f1(cx + 20) + ' ' + f1(cy + 86) +
+    ' L' + f1(cx + 17) + ' ' + f1(cy + 142) + ' L' + f1(cx - 17) + ' ' + f1(cy + 142) + ' Z',
+    '#f7fafd');
+  c += stroke('M' + f1(cx - 20) + ' ' + f1(cy + 86) + ' L' + f1(cx - 17) + ' ' + f1(cy + 142),
+    '#a9b7c9', 2.6);
+  c += stroke('M' + f1(cx + 20) + ' ' + f1(cy + 86) + ' L' + f1(cx + 17) + ' ' + f1(cy + 142),
+    '#a9b7c9', 2.6);
+  // 室间隔：在主动脉根部两侧各一支（根部把间隔推开）
+  c += stroke('M' + f1(cx) + ' ' + f1(cy + 14) + ' L' + f1(cx - 8) + ' ' + f1(cy + 60) +
+    ' L' + f1(cx - 21) + ' ' + f1(cy + 88), '#c3cedd', 2.4);
+  c += stroke('M' + f1(cx) + ' ' + f1(cy + 14) + ' L' + f1(cx + 8) + ' ' + f1(cy + 60) +
+    ' L' + f1(cx + 21) + ' ' + f1(cy + 88), '#c3cedd', 2.4);
+
+  // 主动脉瓣（关闭态，两叶呈「八」字）
+  c += '<path d="M' + f1(cx - 18) + ' ' + f1(cy + 92) + ' L' + f1(cx) + ' ' + f1(cy + 102) +
+    ' L' + f1(cx - 16) + ' ' + f1(cy + 106) + ' Z" fill="#2563eb"/>';
+  c += '<path d="M' + f1(cx + 18) + ' ' + f1(cy + 92) + ' L' + f1(cx) + ' ' + f1(cy + 102) +
+    ' L' + f1(cx + 16) + ' ' + f1(cy + 106) + ' Z" fill="#2563eb" opacity="0.72"/>';
+
+  o += lab(cx - 40, cy + 74, 'RV', 12, '#475569', 700);
+  o += lab(cx + 44, cy + 76, 'LV', 13, '#334155', 700);
+  o += lab(cx - 70, cy + 124, 'RA', 11, '#64748b', 700);
+  o += lab(cx + 66, cy + 126, 'LA', 11, '#475569', 700);
+  o += tag(cx + 146, cy + 122, '主动脉根部', cx + 18, cy + 114, 10, '#2563eb', 'start');
+  o += tag(cx - 150, cy + 34, '心尖（近场）', cx - 6, cy + 22, 11, '#64748b');
+  return { c: c, o: o };
+}
+
+/* ══════════════════════════════════════════════════════════
+   ⑥ 胸骨旁二尖瓣水平短轴（MV SAX）
+   短轴切在二尖瓣水平：左室呈圆形，二尖瓣像「鱼嘴」——
+   前叶贴主动脉瓣侧（近场 / 上方），后叶贴后壁侧（远场 / 下方）
+   ══════════════════════════════════════════════════════════ */
+function mvSaxBody(cx, cy) {
+  let c = '', o = '';
+  const ox = cx, oy = cy + 82;
+
+  // 右室（近场，上方一条新月）
+  c += pool('M' + f1(cx - 74) + ' ' + f1(cy + 46) + ' Q' + f1(cx) + ' ' + f1(cy + 14) + ' ' +
+    f1(cx + 74) + ' ' + f1(cy + 46) +
+    ' L' + f1(cx + 62) + ' ' + f1(cy + 60) + ' Q' + f1(cx) + ' ' + f1(cy + 32) + ' ' +
+    f1(cx - 62) + ' ' + f1(cy + 60) + ' Z', '#eef3fa');
+  // 左室壁（心肌）＋ 血池
+  c += '<circle cx="' + f1(ox) + '" cy="' + f1(oy) + '" r="62" fill="#eef3fa" ' +
+    'stroke="#8fa0b5" stroke-width="1.8"/>';
+  c += '<circle cx="' + f1(ox) + '" cy="' + f1(oy) + '" r="46" fill="#ffffff" ' +
+    'stroke="#c3cedd" stroke-width="1.4"/>';
+  // 乳头肌（前后两组，此处并为一个切面所见的两个）
+  c += '<circle cx="' + f1(ox - 26) + '" cy="' + f1(oy + 24) + '" r="8" fill="#dfe7f2" ' +
+    'stroke="#8fa0b5" stroke-width="1.2"/>';
+  c += '<circle cx="' + f1(ox + 26) + '" cy="' + f1(oy + 24) + '" r="8" fill="#dfe7f2" ' +
+    'stroke="#8fa0b5" stroke-width="1.2"/>';
+
+  // 二尖瓣「鱼嘴」：前叶（上，蓝）后叶（下，橙），中间留瓣口
+  c += '<path d="M' + f1(ox - 34) + ' ' + f1(oy - 2) + ' Q' + f1(ox) + ' ' + f1(oy - 30) + ' ' +
+    f1(ox + 34) + ' ' + f1(oy - 2) + ' Q' + f1(ox) + ' ' + f1(oy - 10) + ' ' +
+    f1(ox - 34) + ' ' + f1(oy - 2) + ' Z" fill="#2563eb"/>';
+  c += '<path d="M' + f1(ox - 34) + ' ' + f1(oy + 2) + ' Q' + f1(ox) + ' ' + f1(oy + 30) + ' ' +
+    f1(ox + 34) + ' ' + f1(oy + 2) + ' Q' + f1(ox) + ' ' + f1(oy + 10) + ' ' +
+    f1(ox - 34) + ' ' + f1(oy + 2) + ' Z" fill="#d97706"/>';
+  // 交界（两端的连合点）
+  c += '<circle cx="' + f1(ox - 34) + '" cy="' + f1(oy) + '" r="3" fill="#fff" stroke="#64748b" stroke-width="1.2"/>';
+  c += '<circle cx="' + f1(ox + 34) + '" cy="' + f1(oy) + '" r="3" fill="#fff" stroke="#64748b" stroke-width="1.2"/>';
+
+  o += lab(cx, cy + 40, 'RV（近场）', 11, '#64748b', 600);
+  o += lab(ox - 26, oy + 27, '', 9, '#64748b');
+  o += tag(cx + 146, cy + 52, '前叶 A2', ox + 44, oy - 20, 11, '#2563eb', 'start');
+  o += tag(cx - 146, cy + 118, '后叶 P2', ox - 44, oy + 20, 11, '#d97706');
+  o += tag(cx + 146, cy + 126, '左室', ox + 58, oy + 32, 10, '#64748b', 'start');
+  return { c: c, o: o };
+}
+
 /** 四个切面的定义：总览图与单切面图共用同一份，避免两处画得不一样 */
 function panelDefs() {
   return [
@@ -296,6 +408,14 @@ function panelDefs() {
       title: '④ 心尖两腔 A2C', body: a2cBody,
       tip: '测：双平面容积、前壁 / 下壁节段；与 A4C 正交',
     },
+    {
+      title: '⑤ 心尖五腔 A5C', body: a5cBody,
+      tip: '四腔心基础上前倾声束：测 LVOT 直径与 VTI、主动脉瓣血流',
+    },
+    {
+      title: '⑥ 胸骨旁二尖瓣水平短轴', body: mvSaxBody,
+      tip: '二尖瓣「鱼嘴」：前叶贴主动脉瓣侧、后叶贴后壁侧；看交界与瓣口面积',
+    },
   ];
 }
 
@@ -303,19 +423,6 @@ function panelDefs() {
 function gradDefs() {
   return '<defs><radialGradient id="tteFanGrad" cx="50%" cy="0%" r="115%">' +
     '<stop offset="0" stop-color="#f8fbfe"/><stop offset="1" stop-color="#dee8f5"/></radialGradient></defs>';
-}
-
-/** 生成整张 TTE 总览 SVG（4 个切面 2×2，扇面 + 屏幕方位） */
-function tteOverviewSvg() {
-  const D = panelDefs();
-  let n = gradDefs();
-  n += '<rect x="0" y="0" width="960" height="590" rx="12" fill="#fafbfc"/>';
-  n += panel(10, 10, 1, D[0].title, D[0].body(10 + 235, 10 + 52), D[0].tip);
-  n += panel(480, 10, 2, D[1].title, D[1].body(480 + 235, 10 + 52), D[1].tip);
-  n += panel(10, 300, 3, D[2].title, D[2].body(10 + 235, 300 + 52), D[2].tip);
-  n += panel(480, 300, 4, D[3].title, D[3].body(480 + 235, 300 + 52), D[3].tip);
-  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 590" width="100%" ' +
-    'preserveAspectRatio="xMidYMid meet" role="img" aria-label="TTE 标准切面总览示意图">' + n + '</svg>';
 }
 
 /**
@@ -356,7 +463,6 @@ function utf8ToBase64(str) {
 }
 
 module.exports = {
-  tteOverviewSvg,
   ttePanelSvg,
   utf8ToBase64,
 };

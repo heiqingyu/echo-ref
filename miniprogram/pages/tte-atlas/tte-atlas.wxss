@@ -1,9 +1,9 @@
 /* TTE 标准切面总览页 */
 
 .atlas-img {
-  width: 100%;
-  height: auto;          /* mode=widthFix：按 480×290 viewBox 自适应，不拉伸 */
-  margin-top: 16rpx;
+  width: calc(100% + 64rpx);   /* 出血到卡片边框：卡片左右各 32rpx，图能再大一圈 */
+  height: auto;                /* mode=widthFix：按 480×290 viewBox 自适应，不拉伸 */
+  margin: 16rpx -32rpx 4rpx;
   border-radius: 12rpx;
   background: #fff;
 }

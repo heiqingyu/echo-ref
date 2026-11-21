@@ -109,9 +109,9 @@
 }
 
 .wall-img {
-  width: 100%;
-  height: auto;          /* mode=widthFix：按 SVG 的 viewBox 比例自适应，不拉伸 */
-  margin-top: 12rpx;
+  width: calc(100% + 36rpx);   /* 出血到 wall-card 边框（左右 padding 各 18rpx） */
+  height: auto;                /* mode=widthFix：按 SVG 的 viewBox 比例自适应，不拉伸 */
+  margin: 12rpx -18rpx 0;
 }
 
 .wall-img--probe {

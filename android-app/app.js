@@ -275,18 +275,21 @@
   });
 
   /**
-   * 切面总览图放大（v1.16.9）
-   * 网页正文栏窄（约 470px），960 宽的四联图按比例缩到一半，字只有 5–6px。
+   * 切面图放大（v1.16.9）
+   * 网页正文栏窄（约 470px），TTE 的 480 宽切面图、TEE 的 480 宽解剖图在栏里都偏小。
    * 点图铺满视口再看，不另开页面、不改图片资源。
+   * ★ TEE 图里的色块点击是「高亮同一解剖结构」，不能当放大处理。
    */
   document.addEventListener('click', function (ev) {
-    const box = ev.target.closest ? ev.target.closest('.va-atlas-box') : null;
+    const t = ev.target;
+    const box = t.closest ? t.closest('.va-atlas-box, .wallsvg-box') : null;
     if (!box) return;
+    if (t.closest('[data-seg]')) return;
     box.classList.toggle('is-zoom');
   });
   document.addEventListener('keydown', function (ev) {
     if (ev.key !== 'Escape') return;
-    const z = document.querySelector('.va-atlas-box.is-zoom');
+    const z = document.querySelector('.va-atlas-box.is-zoom, .wallsvg-box.is-zoom');
     if (z) z.classList.remove('is-zoom');
   });
 
@@ -2588,23 +2591,30 @@
    * 每张图配一张「探头在哪、平面怎么切」的小图（ValveSvg.probeOf）。
    * 点任意色块或分区按钮 → 所有图同步高亮同一解剖结构。
    */
-  /** TTE 标准切面总览卡：一张 2×2 图 + 四个切面要点（R9 / R64） */
+  /**
+   * TTE 标准切面总览卡：6 张单切面图逐张铺满正文栏 + 每个切面一段要点（R9 / R64）
+   * ★ 2026-11-21：原来是一张 2×2 四联图，正文栏只有 ~470px，每格缩到 235px，
+   *   图里的字只剩 5–6px。改成一张图一个卡片块、铺满栏宽，点任意一张可放大。
+   */
   function tteAtlasCardHtml() {
     const A = window.TteAtlasSvg;
     if (!A) return '';
-    const src = A.tteOverviewSvg();
+    let figs = '';
+    for (let i = 0; i < 6; i += 1) {
+      figs += '<div class="va-atlas-box">' + A.ttePanelSvg(i) + '</div>';
+    }
     return '<div class="card" data-g="tte-atlas" hidden>' +
       '<div class="card__t">TTE 标准切面总览</div>' +
-      '<div class="card__d">四个常用切面并列：胸骨旁左室长轴、主动脉瓣短轴、心尖四腔、心尖两腔。' +
-      '图中只标关键结构与必测项，为教学示意，不替代真实超声图像。</div>' +
+      '<div class="card__d">六个常用切面逐张排开：胸骨旁左室长轴、主动脉瓣短轴、心尖四腔、心尖两腔、' +
+      '心尖五腔、二尖瓣水平短轴。图中只标关键结构与必测项，为教学示意，不替代真实超声图像。</div>' +
       '<div class="note note--warn">方位：扇形顶点在上＝近场（探头侧），下方是远场。' +
-      '心尖四腔 / 两腔：<b>心尖在上、心房在下</b>，屏幕左＝患者右；' +
+      '心尖四腔 / 两腔 / 五腔：<b>心尖在上、心房在下</b>，屏幕左＝患者右；' +
       '胸骨旁长轴：右室在前（上）、左室在后（下），主动脉根部与左房在右侧、心尖朝左。' +
       'TEE 的近场是心房侧，所以 TEE 与 TTE 的<b>上下相反、左右相同</b>。' +
       'TEE 图谱见「瓣膜解剖 · TEE 标准切面」。</div>' +
-      '<div class="va-atlas-box">' + src + '</div>' +
-      '<div class="va-atlas-hint">图在窄屏上会缩小：<b>点图片可放大</b>，再点一次或按 Esc 退出</div>' +
-      '<div class="fx-fgrp">四个切面各看什么</div>' +
+      '<div class="va-atlas-hint">点任意一张图可铺满放大，再点一次或按 Esc 退出</div>' +
+      figs +
+      '<div class="fx-fgrp">六个切面各看什么</div>' +
       '<div class="wall-card"><div class="wall-card__t">① 胸骨旁左室长轴（PLAX）</div>' +
       '<div class="wall-card__s">声束垂直于室间隔，是左室径线与主动脉根部测量的主切面。' +
       '必测：LVEDD / LVESD、室间隔与后壁厚度、主动脉根部与升主动脉径、左房前后径。' +
@@ -2619,6 +2629,14 @@
       '<div class="wall-card"><div class="wall-card__t">④ 心尖两腔（A2C）</div>' +
       '<div class="wall-card__s">显示左室前壁与下壁，与四腔心正交，用于双平面 Simpson 容积和' +
       '前壁 / 下壁节段运动。结合四腔心才能覆盖 16 节段。</div></div>' +
+      '<div class="wall-card"><div class="wall-card__t">⑤ 心尖五腔（A5C）</div>' +
+      '<div class="wall-card__s">在四腔心位置把声束略向前倾，把主动脉根部与 LVOT 打开，' +
+      '两心室之间出现主动脉瓣。测 LVOT 直径（收缩中期、主动脉瓣环下 0.5–1.0 cm）与 LVOT VTI，' +
+      '是每搏量与主动脉瓣狭窄血流计算取血流频谱的位置；也可用彩色多普勒看主动脉瓣反流。</div></div>' +
+      '<div class="wall-card"><div class="wall-card__t">⑥ 胸骨旁二尖瓣水平短轴</div>' +
+      '<div class="wall-card__s">短轴切在二尖瓣水平，左室呈圆形，二尖瓣像「鱼嘴」：' +
+      '前叶贴主动脉瓣侧（近场）、后叶贴后壁侧（远场），两端是前外侧与后内侧交界。' +
+      '用于看交界病变与瓣口面积（3D 平面法更准）；短轴切面只做定性，瓣口面积以压差法 / PHT 与 3D 为准。</div></div>' +
       '<div class="fx-fgrp">切面与测量的关系</div>' +
       '<div class="note">背测量清单时，每个数值都要能回答「在哪个切面、什么时相测的」。' +
       '同一个患者前后两次 EF 差 5%，很可能只是切面与时相不同，不是病情变化。</div>' +

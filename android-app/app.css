@@ -1749,33 +1749,35 @@ html, body {
   margin-top: 2px;
 }
 
+/* TEE 切面图：铺满卡片内宽（原来卡在 400px，卡片 732px，两侧各空 160px 显小） */
 .wallsvg-box {
   margin-top: 8px;
+  cursor: zoom-in;
 }
 
 .wallsvg-box svg {
   display: block;
-  max-width: 400px;
+  width: 100%;
   margin: 0 auto;
 }
 
-/* TTE 标准切面总览：2×2 四联图（与瓣膜解剖同配色风格） */
+/* TTE 标准切面：一张图一个块，逐张铺满栏宽 */
 .va-atlas-box {
-  margin: 10px 0 4px;
+  margin: 10px 0 12px;
   cursor: zoom-in;
 }
 
 .va-atlas-box svg {
   display: block;
   width: 100%;
-  max-width: 960px;
-  height: auto;          /* 960×590 viewBox 自适应，移动端等比缩小不裁切 */
+  height: auto;          /* 480×290 viewBox 自适应，移动端等比缩小不裁切 */
   margin: 0 auto;
 }
 
 /* 点图放大：铺满视口（Esc / 再点一次退出）
    ★ z-index 必须高于顶栏与底部页签（都是 100），否则图会被压在上面 */
-.va-atlas-box.is-zoom {
+.va-atlas-box.is-zoom,
+.wallsvg-box.is-zoom {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -1788,7 +1790,8 @@ html, body {
   cursor: zoom-out;
 }
 
-.va-atlas-box.is-zoom svg {
+.va-atlas-box.is-zoom svg,
+.wallsvg-box.is-zoom svg {
   width: 100%;
   max-width: none;
   max-height: 94vh;
