@@ -2033,6 +2033,10 @@
       kind: 'valveana', id: 'valveana', ab: 'TEE', title: '瓣膜解剖 · TEE 标准切面',
       sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1',
     });
+    out.look.push({
+      kind: 'tte-atlas', id: 'tte-atlas', ab: 'TTE', title: 'TTE 标准切面总览',
+      sub: '一张图并列四个常用切面：胸骨旁长轴 / 大动脉短轴 / 心尖四腔 / 两腔',
+    });
     BRIEF.forEach(function (sec) {
       sec.items.forEach(function (it) {
         if (!it.segOnly) return;
@@ -2544,6 +2548,43 @@
    * 每张图配一张「探头在哪、平面怎么切」的小图（ValveSvg.probeOf）。
    * 点任意色块或分区按钮 → 所有图同步高亮同一解剖结构。
    */
+  /** TTE 标准切面总览卡：一张 2×2 图 + 四个切面要点（R9 / R64） */
+  function tteAtlasCardHtml() {
+    const A = window.TteAtlasSvg;
+    if (!A) return '';
+    const src = A.tteOverviewSvg();
+    return '<div class="card" data-g="tte-atlas" hidden>' +
+      '<div class="card__t">TTE 标准切面总览</div>' +
+      '<div class="card__d">四个常用切面并列：胸骨旁左室长轴、主动脉瓣短轴、心尖四腔、心尖两腔。' +
+      '图中只标关键结构与必测项，为教学示意，不替代真实超声图像。</div>' +
+      '<div class="note note--warn">方位总则：TTE「上下不颠倒、左右同」—— 心尖在远场（屏幕下方）；' +
+      '与 TEE 的「上下颠倒、左右不变」不同。TEE 图谱见「瓣膜解剖 · TEE 标准切面」。</div>' +
+      '<div class="va-atlas-box">' + src + '</div>' +
+      '<div class="fx-fgrp">四个切面各看什么</div>' +
+      '<div class="wall-card"><div class="wall-card__t">① 胸骨旁左室长轴（PLAX）</div>' +
+      '<div class="wall-card__s">声束垂直于室间隔，是左室径线与主动脉根部测量的主切面。' +
+      '必测：LVEDD / LVESD、室间隔与后壁厚度、主动脉根部与升主动脉径、左房前后径。' +
+      '腱索水平测内径；斜切会高估室壁厚度、低估左室内径。</div></div>' +
+      '<div class="wall-card"><div class="wall-card__t">② 胸骨旁主动脉瓣短轴</div>' +
+      '<div class="wall-card__s">主动脉瓣三叶、RVOT、肺动脉瓣同屏。三叶方位：右冠叶在上（贴 RVOT）、' +
+      '左冠叶右下、无冠叶左下，恰好是 TEE 短轴的上下颠倒版；红点为冠脉开口。</div></div>' +
+      '<div class="wall-card"><div class="wall-card__t">③ 心尖四腔（A4C）</div>' +
+      '<div class="wall-card__s">左右房室同屏，心尖在扇形顶部。必测：双室容积与 EF（Simpson）、' +
+      '双房面积、TAPSE、二尖瓣 / 三尖瓣流入道频谱与组织多普勒 e′。注意心尖不能被切掉，' +
+      '否则 EF 偏高、心尖血栓漏诊。</div></div>' +
+      '<div class="wall-card"><div class="wall-card__t">④ 心尖两腔（A2C）</div>' +
+      '<div class="wall-card__s">显示左室前壁与下壁，与四腔心正交，用于双平面 Simpson 容积和' +
+      '前壁 / 下壁节段运动。结合四腔心才能覆盖 16 节段。</div></div>' +
+      '<div class="fx-fgrp">切面与测量的关系</div>' +
+      '<div class="note">背测量清单时，每个数值都要能回答「在哪个切面、什么时相测的」。' +
+      '同一个患者前后两次 EF 差 5%，很可能只是切面与时相不同，不是病情变化。</div>' +
+      '<div class="note">完整的采集顺序、五个声窗与全部必测项，见「TTE 规范切面与必测项」；' +
+      '真实切面图像与视频见「切面学习」的专辑。</div>' +
+      '<div class="note note--strong">本工具为数值计算与参考值查询工具，所有结果仅供专业参考，' +
+      '不作为诊断依据；具体诊断与治疗决策请结合临床。</div>' +
+      '</div>';
+  }
+
   function valveAnaCardHtml() {
     const VS = window.ValveSvg;
     const ORDER = ['主动脉瓣', '二尖瓣', '三尖瓣', '肺动脉瓣'];
@@ -2672,6 +2713,8 @@
     if (window.ValveSvg && window.ValveSvg.VALVE_VIEWS) {
       html += valveAnaCardHtml();
     }
+    // ── TTE 标准切面总览（与 TEE 并列的独立条目）──
+    html += tteAtlasCardHtml();
 
     $('calcGroups').innerHTML = html;
 

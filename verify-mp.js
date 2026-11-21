@@ -905,11 +905,11 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const segLook = pgS.data.lookList;
   check('切面学习页签：教学视频列表 8 条（3 专辑 + 5 外链）', segViews.length, 8, 0);
   check('切面学习页签：TEE 演示列表 3 条', segSim.length, 3, 0);
-  check('切面学习页签：切面速查与图谱 5 条（含冠状动脉超声）',
-    segLook.length, 5, 0);
+  check('切面学习页签：切面速查与图谱 6 条（含 TTE 总览 + 冠状动脉超声）',
+    segLook.length, 6, 0);
   check('切面速查条目 id 与顺序',
     segLook.map(function (i) { return i.id; }).join(',') ===
-      'valveana,tee-20,tte-std,tte-measure,ca-views' ? 1 : 0, 1, 0);
+      'valveana,tte-atlas,tee-20,tte-std,tte-measure,ca-views' ? 1 : 0, 1, 0);
   check('页内导航 4 块且顺序为 节段/速查/视频/演示',
     pgS.data.segNav.map(function (n) { return n.t; }).join('|') ===
       '节段划分|切面速查|教学视频|TEE 演示' ? 1 : 0, 1, 0);
@@ -930,8 +930,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('切面学习搜不到时给空态文案', /没有匹配/.test(pgS.data.segEmpty) ? 1 : 0, 1, 0);
   check('两边都搜不到时不给跨页签提示', pgS.data.segCrossN, 0, 0);
   pgS.applySegKw('');
-  check('清空搜索后切面学习恢复完整列表（5 / 8 / 3）',
-    pgS.data.lookList.length === 5 && pgS.data.viewsList.length === 8 &&
+  check('清空搜索后切面学习恢复完整列表（6 / 8 / 3）',
+    pgS.data.lookList.length === 6 && pgS.data.viewsList.length === 8 &&
       pgS.data.simList.length === 3 ? 1 : 0, 1, 0);
   global.__lastSwitchTab = '';
   pgS.applySegKw('TAPSE');
@@ -973,6 +973,9 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('切面速查首条为「瓣膜解剖」valveana 条目（v1.7.9 从公式集移入）',
     segLook[0] && segLook[0].id === 'valveana' &&
       segLook[0].kind === 'valveana' ? 1 : 0, 1, 0);
+  check('切面速查第二条为「TTE 标准切面总览」（与 TEE 并列独立条目）',
+    segLook[1] && segLook[1].id === 'tte-atlas' &&
+      segLook[1].kind === 'tte-atlas' ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
     segViews[0] && segViews[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进页面数据（省 setData）',

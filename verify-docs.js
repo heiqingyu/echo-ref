@@ -852,7 +852,7 @@ function check(name, ok, detail) {
     se.navTxt === '节段划分|切面速查|教学视频|TEE 演示', se.navTxt);
   check('切面学习页教学视频列表 8 条', se.views === 8, segExtras);
   check('切面学习页 TEE 演示列表 3 条', se.sim === 3, segExtras);
-  check('切面学习页切面速查与图谱 5 条（含冠状动脉超声）', se.look === 5, segExtras);
+  check('切面学习页切面速查与图谱 6 条（含 TTE 总览 + 冠状动脉超声）', se.look === 6, segExtras);
   check('教学视频含 3 个专辑入口（操作规范 / 心课堂 / 飞利浦云课堂）', se.albumInViews === 3, se.albumInViews);
   check('飞利浦专辑入口显示 150 段（组标题不计入）', /150/.test(se.philipsTxt), se.philipsTxt.replace(/\s+/g, ' ').slice(0, 80));
 
@@ -1030,7 +1030,7 @@ function check(name, ok, detail) {
   })()`);
   await new Promise((r) => setTimeout(r, 300));
   const srst = await segState();
-  check('清空搜索后切面学习恢复完整列表', srst.segpart === false && srst.look === 5 && srst.views === 8 && srst.sim === 3,
+  check('清空搜索后切面学习恢复完整列表', srst.segpart === false && srst.look === 6 && srst.views === 8 && srst.sim === 3,
     JSON.stringify(srst));
 
   // v1.6.4 回归：从切面学习点条目 → 进公式集详情 → 返回，页签必须回到「切面学习」
@@ -2532,11 +2532,30 @@ function check(name, ok, detail) {
       'return !!b && b.dataset.kind === "valveana";})()')) === true);
   await c.evalJs('document.querySelector(\'#segLookList .fx-item[data-kind="valveana"]\').click()');
   await new Promise((r) => setTimeout(r, 700));
+  check('切面速查第二条为「TTE 标准切面总览」',
+    (await c.evalJs('(function(){var b=document.querySelectorAll("#segLookList .fx-item")[1];' +
+      'return !!b && b.dataset.kind === "tte-atlas";})()')) === true);
   check('点条目后进入详情并显示解剖卡',
     (await c.evalJs('!document.querySelector(\'#calcGroups .card[data-g="valveana"]\').hidden')) === true);
   check('顶栏标题切到瓣膜解剖',
     (await c.evalJs('document.getElementById("appbarTitle").textContent')).indexOf('瓣膜解剖') !== -1);
-  check('ValveSvg 视图数 = 13（只留 TEE）',
+    // TTE 总览：打开第二条，断言四联图渲染 + 四个切面标题
+  await c.evalJs('document.querySelector(\'.tab[data-tab="segments"]\').click()');
+  await new Promise((r) => setTimeout(r, 300));
+  await c.evalJs('document.querySelector(\'#segLookList .fx-item[data-kind="tte-atlas"]\').click()');
+  await new Promise((r) => setTimeout(r, 600));
+  const tteSvg = await c.evalJs(
+    '(function(){var e=document.querySelector(\'#calcGroups .card[data-g="tte-atlas"] .va-atlas-box svg\');' +
+    'return e ? {vb:e.getAttribute("viewBox"),txt:e.textContent} : null;})()');
+  check('TTE 总览卡渲染出 960×400 四联图',
+    tteSvg && tteSvg.vb === '0 0 960 400' &&
+      ['PLAX', '主动脉瓣短轴', 'A4C', 'A2C'].every(function (t) { return tteSvg.txt.indexOf(t) !== -1; }));
+  // 回到 TEE 卡继续原有断言
+  await c.evalJs('document.querySelector(\'.tab[data-tab="segments"]\').click()');
+  await new Promise((r) => setTimeout(r, 300));
+  await c.evalJs('document.querySelector(\'#segLookList .fx-item[data-kind="valveana"]\').click()');
+  await new Promise((r) => setTimeout(r, 600));
+check('ValveSvg 视图数 = 13（只留 TEE）',
     (await c.evalJs('window.ValveSvg.VALVE_VIEWS.length')) === 13);
   check('全部是 TEE 切面（无 TTE 短轴 / 四腔心视图）',
     (await c.evalJs('window.ValveSvg.VALVE_VIEWS.every(function(v){return /TEE|经胃底|3D/.test(v.title);})')) === true);

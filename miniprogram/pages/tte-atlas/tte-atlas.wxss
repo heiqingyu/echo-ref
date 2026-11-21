@@ -1,0 +1,29 @@
+/* TTE 标准切面总览页 */
+
+.atlas-img {
+  width: 100%;
+  height: auto;          /* mode=widthFix：按 960×400 viewBox 自适应，不拉伸 */
+  margin-top: 16rpx;
+  border-radius: 12rpx;
+}
+
+.wall-card {
+  margin-top: 24rpx;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 14rpx;
+  padding: 18rpx;
+  background: #fff;
+}
+
+.wall-card__t {
+  font-size: 27rpx;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.wall-card__s {
+  font-size: 23rpx;
+  color: #6b7280;
+  margin-top: 6rpx;
+  line-height: 1.6;
+}

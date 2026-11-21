@@ -1759,6 +1759,19 @@ html, body {
   margin: 0 auto;
 }
 
+/* TTE 标准切面总览：2×2 四联图（与瓣膜解剖同配色风格） */
+.va-atlas-box {
+  margin: 10px 0 4px;
+}
+
+.va-atlas-box svg {
+  display: block;
+  width: 100%;
+  max-width: 960px;
+  height: auto;          /* 960×400 viewBox 自适应，移动端等比缩小不裁切 */
+  margin: 0 auto;
+}
+
 .wallsvg-box g[data-seg],
 .bull-wrap g[data-seg] {
   cursor: pointer;

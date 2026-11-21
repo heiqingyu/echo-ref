@@ -108,6 +108,9 @@ Page({
     const look = [{
       kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
       sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1', url: '',
+    }, {
+      kind: 'tte-atlas', id: 'tte-atlas', title: 'TTE 标准切面总览',
+      sub: '一张图并列四个常用切面：胸骨旁长轴 / 大动脉短轴 / 心尖四腔 / 两腔', url: '',
     }];
     (EX.BRIEF_SECTIONS || []).forEach(function (s) {
       (s.items || []).forEach(function (it) {
@@ -206,6 +209,10 @@ Page({
     }
     if (d.kind === 'valveana') {
       wx.navigateTo({ url: '/pages/valveana/valveana' });
+      return;
+    }
+    if (d.kind === 'tte-atlas') {
+      wx.navigateTo({ url: '/pages/tte-atlas/tte-atlas' });
       return;
     }
     if (d.kind === 'brief') {

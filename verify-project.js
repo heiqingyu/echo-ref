@@ -82,6 +82,7 @@ console.log('\n=== 4c. 瓣膜页（v1.5.0 起并入公式集） ===');
 if (appJson.pages.includes('pages/valves/valves')) bad('valves 页应已删除，仍注册在 app.json');
 else ok('valves 独立页已删除（并入公式集）');
 if (appJson.pages.includes('pages/valveana/valveana')) ok('valveana 页已注册（公式集内条目）');
+if (appJson.pages.includes('pages/tte-atlas/tte-atlas')) ok('tte-atlas 页已注册（TTE 总览独立条目）');
 else bad('valveana 页缺失');
 ['valve-data.js', 'valve-calc.js'].forEach(f => {
   if (fs.existsSync(path.join(MP, 'utils', f))) ok(f + ' 存在');
@@ -185,6 +186,9 @@ else bad('目录条目未绑定 onOpen');
   else if (fs.readFileSync(cgPath, 'utf8').indexOf(t) !== -1) ok('瓣膜条目在 calc-groups 中：「' + t + '」');
   else bad('目录缺少瓣膜条目：' + t);
 });
+const tteAtlasJs = fs.readFileSync(path.join(MP, 'utils/tte-atlas-svg.js'), 'utf8');
+if (tteAtlasJs.indexOf('viewBox="0 0 960 400"') !== -1 && tteAtlasJs.indexOf('PLAX') !== -1 &&
+    tteAtlasJs.indexOf('A4C') !== -1 && tteAtlasJs.indexOf('NaN') === -1) ok('TTE 四联图生成器齐全（960×400 / PLAX / A4C）');
 const anaJs = fs.readFileSync(path.join(MP, 'pages/valveana/valveana.js'), 'utf8');
 if (/VS\.probeOf/.test(anaJs)) ok('瓣膜解剖页渲染探头位置小图');
 else bad('瓣膜页未支持 ?tab= 预选参数');
