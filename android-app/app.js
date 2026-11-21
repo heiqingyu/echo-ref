@@ -101,6 +101,13 @@
    */
   let viewStack = [];     // 已进入的子视图栈
   let lastHash = null;    // 已处理过的 hash（用于去重 + 抑制自己写的变更）
+  /**
+   * ★ 2026-11-21：程序化 history.back() 会退到「上一条详情 hash」，
+   *   若那一条也是详情（例如刚看完 TTE 总览又开了别的条目），导航事件会把界面
+   *   顶回旧详情 —— 用户看到的就是「点返回却跳到另一个页面」。
+   *   popView 里置 1，下一次导航事件只更新 lastHash、不还原视图。
+   */
+  let navGuard = 0;
 
   /** 视图状态 → hash */
   function viewHash(v) {
@@ -145,7 +152,7 @@
    */
   function popView() {
     leaveView();
-    if (viewStack.length) history.back();
+    if (viewStack.length) { navGuard = 1; history.back(); }
   }
 
   /**
@@ -185,6 +192,12 @@
    */
   function onNavEvent() {
     const h = location.hash || '';
+    // popView 自己触发的那一次回退：只记账，不还原界面（否则退到旧详情 hash 会乱跳）
+    if (navGuard) {
+      navGuard = 0;
+      lastHash = h;
+      return;
+    }
     // ★ v1.13.10：非视图 hash（旧版分节锚点 #sec-1-asd、外部 #g-xxx 等）一律忽略。
     //   否则一次页内锚点写入就会把界面打回目录 —— 用户反馈「点分节回到公式集」。
     if (h && h.indexOf('#/') !== 0) return;
@@ -259,6 +272,22 @@
       viewOriginY = 0;
       switchTab(el.dataset.go);
     });
+  });
+
+  /**
+   * 切面总览图放大（v1.16.9）
+   * 网页正文栏窄（约 470px），960 宽的四联图按比例缩到一半，字只有 5–6px。
+   * 点图铺满视口再看，不另开页面、不改图片资源。
+   */
+  document.addEventListener('click', function (ev) {
+    const box = ev.target.closest ? ev.target.closest('.va-atlas-box') : null;
+    if (!box) return;
+    box.classList.toggle('is-zoom');
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Escape') return;
+    const z = document.querySelector('.va-atlas-box.is-zoom');
+    if (z) z.classList.remove('is-zoom');
   });
 
   /* ══════════════════════════════════════════════════════════
@@ -1257,7 +1286,7 @@
     if (kind === 'album') arrow = (count || 0) + ' ›';
     else if (isVid) arrow = '▶';
     // 星标只给「点开有内容」的条目（外链 / 专辑不收藏）；v1.7.7
-    const star = (kind === 'calc' || kind === 'brief' || kind === 'valveana')
+    const star = (kind === 'calc' || kind === 'brief' || kind === 'valveana' || kind === 'tte-atlas')
       ? '<span class="fx-fav' + (fav ? ' fx-fav--on' : '') + '" data-fav="' + esc(id) + '">' +
         (fav ? '★' : '☆') + '</span>'
       : '';
@@ -2110,8 +2139,11 @@
     const paint = function (boxId, arr) {
       const box = $(boxId);
       if (!box) return;
+      const favs = readFavs();
       box.innerHTML = arr.map(function (it) {
-        return fxItemHtml(it.kind, it.id, it.title, it.sub, it.url, it.count, it.sec);
+        // ★ 收藏星标在切面学习页也要显示真实状态（原来恒为空心，点了还当没点）
+        return fxItemHtml(it.kind, it.id, it.title, it.sub, it.url, it.count, it.sec,
+          favs.indexOf(it.id) !== -1);
       }).join('');
     };
     paint('segLookList', look);
@@ -2188,6 +2220,14 @@
     const segPage = $('page-segments');
     if (segPage) {
       segPage.addEventListener('click', function (ev) {
+        // ★ 星标先判：它在条目按钮内部，先取 .fx-item 会被当成「打开条目」→ 一点就跳页
+        const fv = ev.target.closest ? ev.target.closest('[data-fav]') : null;
+        if (fv) {
+          ev.preventDefault();
+          toggleFav(fv.dataset.fav);
+          renderSegLists($('segSearch') ? $('segSearch').value : '');
+          return;
+        }
         const el = ev.target.closest ? ev.target.closest('.fx-item') : null;
         if (!el) return;
         const kind = el.dataset.kind;
@@ -2557,9 +2597,13 @@
       '<div class="card__t">TTE 标准切面总览</div>' +
       '<div class="card__d">四个常用切面并列：胸骨旁左室长轴、主动脉瓣短轴、心尖四腔、心尖两腔。' +
       '图中只标关键结构与必测项，为教学示意，不替代真实超声图像。</div>' +
-      '<div class="note note--warn">方位总则：TTE「上下不颠倒、左右同」—— 心尖在远场（屏幕下方）；' +
-      '与 TEE 的「上下颠倒、左右不变」不同。TEE 图谱见「瓣膜解剖 · TEE 标准切面」。</div>' +
+      '<div class="note note--warn">方位：扇形顶点在上＝近场（探头侧），下方是远场。' +
+      '心尖四腔 / 两腔：<b>心尖在上、心房在下</b>，屏幕左＝患者右；' +
+      '胸骨旁长轴：右室在前（上）、左室在后（下），主动脉根部与左房在右侧、心尖朝左。' +
+      'TEE 的近场是心房侧，所以 TEE 与 TTE 的<b>上下相反、左右相同</b>。' +
+      'TEE 图谱见「瓣膜解剖 · TEE 标准切面」。</div>' +
       '<div class="va-atlas-box">' + src + '</div>' +
+      '<div class="va-atlas-hint">图在窄屏上会缩小：<b>点图片可放大</b>，再点一次或按 Esc 退出</div>' +
       '<div class="fx-fgrp">四个切面各看什么</div>' +
       '<div class="wall-card"><div class="wall-card__t">① 胸骨旁左室长轴（PLAX）</div>' +
       '<div class="wall-card__s">声束垂直于室间隔，是左室径线与主动脉根部测量的主切面。' +
@@ -2824,11 +2868,23 @@
    * 打开某条目（计算公式或评估内容）
    * fromHistory=true 表示由 popstate 触发，不再重复 push
    */
+  /**
+   * 静态卡片（不挂在 CALC_GROUPS / BRIEF 里，卡片 HTML 单独拼）
+   * ★ 2026-11-21：原来只特判 valveana，`tte-atlas` 点进来时 g/b 都为 null，
+   *   函数直接 return —— 但调用方已经 switchTab('calc')，于是页面停在公式集目录。
+   *   凡是这种「卡片在 #calcGroups 里、数据不在两张表里」的条目都要登记在这里。
+   */
+  const STATIC_CARDS = {
+    valveana: '瓣膜解剖 · TEE 标准切面',
+    'tte-atlas': 'TTE 标准切面总览',
+  };
+
   function openCalcGroup(id, fromHistory) {
     const g = calcGroupOf(id);
     const b = briefOf(id);
     const isAna = id === 'valveana';
-    if (!g && !b && !isAna) return;
+    const staticTitle = STATIC_CARDS[id];
+    if (!g && !b && !staticTitle) return;
     curCalcGroup = id;
     if ($('calcIndex')) $('calcIndex').hidden = true;
     if ($('calcDetail')) $('calcDetail').hidden = false;
@@ -2836,7 +2892,7 @@
       c.hidden = c.dataset.g !== id;
     });
     $('appbarTitle').textContent = g ? g.title
-      : (b ? b.title : '瓣膜解剖 · TEE 标准切面');
+      : (b ? b.title : staticTitle);
     renderCalc();
     if (isAna) renderValveAna();
     syncChrome();

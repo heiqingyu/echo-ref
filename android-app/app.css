@@ -1762,15 +1762,44 @@ html, body {
 /* TTE 标准切面总览：2×2 四联图（与瓣膜解剖同配色风格） */
 .va-atlas-box {
   margin: 10px 0 4px;
+  cursor: zoom-in;
 }
 
 .va-atlas-box svg {
   display: block;
   width: 100%;
   max-width: 960px;
-  height: auto;          /* 960×400 viewBox 自适应，移动端等比缩小不裁切 */
+  height: auto;          /* 960×590 viewBox 自适应，移动端等比缩小不裁切 */
   margin: 0 auto;
 }
+
+/* 点图放大：铺满视口（Esc / 再点一次退出） */
+.va-atlas-box.is-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  margin: 0;
+  padding: 3vh 2vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.92);
+  cursor: zoom-out;
+}
+
+.va-atlas-box.is-zoom svg {
+  width: 100%;
+  max-width: none;
+  max-height: 94vh;
+}
+
+.va-atlas-hint {
+  margin: 2px 0 8px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.va-atlas-hint b { color: #64748b; }
 
 .wallsvg-box g[data-seg],
 .bull-wrap g[data-seg] {

@@ -187,8 +187,22 @@ else bad('目录条目未绑定 onOpen');
   else bad('目录缺少瓣膜条目：' + t);
 });
 const tteAtlasJs = fs.readFileSync(path.join(MP, 'utils/tte-atlas-svg.js'), 'utf8');
-if (tteAtlasJs.indexOf('viewBox="0 0 960 400"') !== -1 && tteAtlasJs.indexOf('PLAX') !== -1 &&
-    tteAtlasJs.indexOf('A4C') !== -1 && tteAtlasJs.indexOf('NaN') === -1) ok('TTE 四联图生成器齐全（960×400 / PLAX / A4C）');
+if (tteAtlasJs.indexOf('viewBox="0 0 960 590"') !== -1 && tteAtlasJs.indexOf('PLAX') !== -1 &&
+    tteAtlasJs.indexOf('A4C') !== -1 && tteAtlasJs.indexOf('NaN') === -1) ok('TTE 四联图生成器齐全（960×590 / PLAX / A4C）');
+// ★ 2026-11-21：小程序正文窄，四联图缩到 1/3 字看不见 → 单切面图（480×290）四张纵向排
+if (tteAtlasJs.indexOf('viewBox="0 0 480 290"') !== -1 &&
+    tteAtlasJs.indexOf('function ttePanelSvg') !== -1 &&
+    tteAtlasJs.indexOf('ttePanelSvg,') !== -1) ok('TTE 单切面图生成器（480×290）已导出');
+else bad('TTE 单切面图生成器缺失（小程序窄屏靠它）');
+const ttePageJs = fs.readFileSync(path.join(MP, 'pages/tte-atlas/tte-atlas.js'), 'utf8');
+const ttePageWxml = fs.readFileSync(path.join(MP, 'pages/tte-atlas/tte-atlas.wxml'), 'utf8');
+if (ttePageJs.indexOf('ttePanelSvg(i)') !== -1 && ttePageWxml.indexOf('wx:for="{{srcs}}"') !== -1)
+  ok('TTE 页用四张单切面图（循环渲染 srcs）');
+else bad('TTE 页仍在用压缩的四联图');
+// 方位口径：四腔/两腔心尖在上，与指南一致（旧版画反过）
+if (tteAtlasJs.indexOf('心尖在近场') !== -1 && tteAtlasJs.indexOf('RCC 在上') !== -1)
+  ok('TTE 图方位说明与图一致（心尖在上 / RCC 在上）');
+else bad('TTE 图方位说明与图不一致');
 const anaJs = fs.readFileSync(path.join(MP, 'pages/valveana/valveana.js'), 'utf8');
 if (/VS\.probeOf/.test(anaJs)) ok('瓣膜解剖页渲染探头位置小图');
 else bad('瓣膜页未支持 ?tab= 预选参数');

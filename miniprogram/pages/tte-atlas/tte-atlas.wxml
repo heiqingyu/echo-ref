@@ -6,9 +6,9 @@
       四个常用切面并列：胸骨旁左室长轴、主动脉瓣短轴、心尖四腔、心尖两腔。图中只标关键结构与必测项，为教学示意，不替代真实超声图像。
     </view>
     <view class="note note--warn">
-      方位总则：TTE「上下不颠倒、左右同」—— 心尖在远场（屏幕下方）；与 TEE 的「上下颠倒、左右不变」不同。TEE 图谱见上一节「瓣膜解剖 · TEE 标准切面」。
+      方位：扇形顶点在上＝近场（探头侧），下方是远场。心尖四腔 / 两腔：心尖在上、心房在下，屏幕左＝患者右；胸骨旁长轴：右室在前（上）、左室在后（下），主动脉根部与左房在右侧、心尖朝左。TEE 的近场是心房侧，所以 TEE 与 TTE 的上下相反、左右相同。TEE 图谱见上一节「瓣膜解剖 · TEE 标准切面」。
     </view>
-    <image class="atlas-img" src="{{src}}" mode="widthFix" />
+    <image wx:for="{{srcs}}" wx:key="index" class="atlas-img" src="{{item}}" mode="widthFix" />
   </view>
 
   <view class="card">
