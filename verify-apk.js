@@ -75,8 +75,9 @@ if (fs.existsSync(DOCS)) {
   check('docs 发布版含节段划分页', dh.indexOf('id="page-segments"') !== -1, true);
   // v1.5.0：瓣膜解剖不再是页签，改成公式集里的一条
   check('docs 发布版不含独立瓣膜解剖页', dh.indexOf('id="page-valveana"') === -1, true);
-  check('docs 发布版公式集里有瓣膜解剖条目', dh.indexOf('瓣膜解剖 · TEE 标准切面') !== -1, true);
-  check('docs 发布版内联 ValveSvg 引擎', dh.indexOf('window.ValveSvg = {') !== -1, true);
+  // 2026-11-21：自绘切面图两条整体移除（示意图与真实超声差距大）
+  check('docs 发布版不含自绘切面图（ValveSvg / TteAtlasSvg 均未注入）',
+    dh.indexOf('window.ValveSvg = {') === -1 && dh.indexOf('window.TteAtlasSvg = {') === -1, true);
   // 页尾「继续看其他页面」已于 2026-10-22 移除（底部页签已经够用）
   check('docs 发布版不再有页尾「继续看其他页面」', dh.indexOf('pagefoot') === -1, true);
   // v1.4.1：AS/AR/MS/MR/TR 进公式集，ValveCalc 引擎必须随包
@@ -97,7 +98,8 @@ if (fs.existsSync(ASSET) && fs.existsSync(DOCS)) {
   check('APK 内不含瓣膜单独页（用户要求）', ah.indexOf('id="page-valves"') === -1, true);
   check('APK 内含节段划分页（室壁划分）', ah.indexOf('id="page-segments"') !== -1, true);
   check('APK 内不含独立瓣膜解剖页', ah.indexOf('id="page-valveana"') === -1, true);
-  check('APK 公式集含瓣膜解剖条目', ah.indexOf('瓣膜解剖 · TEE 标准切面') !== -1, true);
+  check('APK 内不含自绘切面图引擎', ah.indexOf('window.ValveSvg = {') === -1 &&
+    ah.indexOf('window.TteAtlasSvg = {') === -1, true);
   check('APK 内 4 个页签（与小程序一致）', (ah.match(/class="tab[ "][^>]*data-tab="/g) || []).length, 4);
   // 公式集里必须仍能查到瓣膜评估这一组（否则「公式集里有就行」就不成立）
   check('APK 公式集仍含「瓣膜评估」组', ah.indexOf("title: '瓣膜评估'") !== -1 ||
@@ -395,11 +397,11 @@ check('不再有瓣膜页 IVC 选择器', /data-seg="valveivc"/.test(html), fals
   check('瓣膜定量要点「' + t + '」仍保留', html.includes(t), true);
 });
 check('瓣膜判读页带「不作为诊断依据」类提示', /不构成诊断依据|不替代/.test(html), true);
-// 瓣膜解剖：13 个 TEE 切面 + 探头小图
-check('瓣膜解剖 13 个 TEE 切面全部内联',
-  (html.match(/id: '(avTeeSax|avTeeLax|avTgDeepLax|mvTee4c|mvTee2c|mvTeeLax|mvTeeCommissural|mvTee3d|mvTgSax|tvTee4c|tvTeeRvin|tvTeeTgsax|pvTeeSax)'/g) || []).length, 13);
-check('探头位置小图渲染函数已内联', html.indexOf('function probeSvg') !== -1, true);
-check('探头小图容器样式 .va-probe 已内联', html.indexOf('.va-probe') !== -1, true);
+// 2026-11-21：自绘 TEE / TTE 切面图整体移除，APK 里不得再有对应代码与样式
+check('APK 内不含自绘 TEE 切面代码（13 张视图 / probeSvg）',
+  (html.match(/id: '(avTeeSax|avTeeLax|avTgDeepLax|mvTee4c|mvTee2c|mvTeeLax|mvTeeCommissural|mvTee3d|mvTgSax|tvTee4c|tvTeeRvin|tvTeeTgsax|pvTeeSax)'/g) || []).length, 0);
+check('APK 内不含探头小图渲染函数', html.indexOf('function probeSvg') === -1, true);
+check('APK 内不含探头小图样式 .va-probe', html.indexOf('.va-probe') === -1, true);
 
 // ── 节段划分页 ──
 check('SegSvg 引擎已内联', /wallDiagramSvg/.test(html), true);

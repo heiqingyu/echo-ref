@@ -21,7 +21,7 @@ const EXTRA = [
   {
     id: 'valve',
     title: '瓣膜疾病与定量',
-    // ★ v1.7.9：「瓣膜解剖 · TEE 标准切面」已移到「切面学习」页签（与切面速查同属图谱，
+    // ★ 2026-11-21：切面速查类条目只在「切面学习」页签（自绘图谱已移除，
     //   不是计算器也不是判读条目）。组壳保留，供 BRIEF_SECTIONS 的 mergeInto 并入用。
     // ★ v1.15.4：原「瓣膜评估」15 条拆成两组，本组只放「自己瓣膜」的判读与定量。
     note: '自己瓣膜的判读：狭窄与反流的严重度、形态评分、根部测法。瓣膜已换过或准备上器械的，见下一组',
@@ -567,11 +567,7 @@ Page({
       if (d.to) wx.navigateTo({ url: '/pages/formula/formula?id=' + d.to });
       return;
     }
-    if (d.kind === 'valveana') {
-      wx.navigateTo({ url: '/pages/valveana/valveana' });
-    } else {
-      wx.navigateTo({ url: '/pages/formula/formula?id=' + d.id });
-    }
+    wx.navigateTo({ url: '/pages/formula/formula?id=' + d.id });
   },
 
   /**

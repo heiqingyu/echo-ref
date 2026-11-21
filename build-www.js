@@ -104,14 +104,11 @@ const coreSrc = wrapEngine(path.join(MP, 'utils', 'echo-core.js'), 'Core');
 const pedsSrc = wrapEngine(path.join(MP, 'utils', 'peds-zscore.js'), 'Peds');
 const calcSrc = wrapEngine(path.join(MP, 'utils', 'echo-calc.js'), 'Calc');
 const segSrc = wrapEngine(path.join(MP, 'utils', 'segment-svg.js'), 'SegSvg');
-// 瓣膜解剖示意图（分区 / 分叶 / 分段），与小程序同源
-const valveSvgSrc = wrapEngine(path.join(MP, 'utils', 'valve-svg.js'), 'ValveSvg');
 // 室间隔缺损短轴钟点示意图（与小程序同源）
 const vsdSvgSrc = wrapEngine(path.join(MP, 'utils', 'vsd-svg.js'), 'VsdSvg');
 const coroSvgSrc = wrapEngine(path.join(MP, 'utils', 'coronary-svg.js'), 'CoronarySvg');
 const aortaSvgSrc = wrapEngine(path.join(MP, 'utils', 'aorta-svg.js'), 'AortaSvg');
 const bavSvgSrc = wrapEngine(path.join(MP, 'utils', 'bav-svg.js'), 'BavSvg');
-const tteAtlasSvgSrc = wrapEngine(path.join(MP, 'utils', 'tte-atlas-svg.js'), 'TteAtlasSvg');
 const valveSrc = wrapEngine(path.join(MP, 'utils', 'valve-calc.js'), 'ValveCalc');
 // 行内标记解析（**加粗**）—— 小程序与网页共用同一份，避免两端表现不一致
 const mdSrc = wrapEngine(path.join(MP, 'utils', 'inline-md.js'), 'InlineMd');
@@ -829,8 +826,6 @@ ${calcSrc}
 
 ${segSrc}
 
-${valveSvgSrc}
-
 ${vsdSvgSrc}
 
 ${coroSvgSrc}
@@ -838,7 +833,6 @@ ${coroSvgSrc}
 ${aortaSvgSrc}
 
 ${bavSvgSrc}
-${tteAtlasSvgSrc}
 
 ${valveSrc}
 
@@ -1056,16 +1050,13 @@ function buildPublicHtml() {
       if (out.indexOf(s) === -1) throw new Error('发布版：节段划分页依赖缺失 ' + s);
     });
 
-  // 5b2c) 瓣膜解剖已并入公式集：引擎、渲染函数、分区按钮必须齐全，
-  //       但不能再有独立的 page-valveana 页面与页签
-  ['window.ValveSvg', 'renderValveAna', 'ValveSvg.VALVE_VIEWS', 'data-vap', 'data-part',
-   '瓣膜解剖 · TEE 标准切面', 'va-probe']
+  // 5b2c) 2026-11-21：自绘切面图（瓣膜解剖 TEE / TTE 总览）整体移除，
+  //       理由是示意图与真实切面差距大、易误导。发布版不得残留任何痕迹。
+  ['window.ValveSvg', 'window.TteAtlasSvg', 'renderValveAna', 'data-vap',
+   'va-atlas-box', 'va-probe',
+   'id="page-valveana"', 'data-tab="valveana"', 'id="page-valves"', 'data-tab="valves"']
     .forEach((s) => {
-      if (out.indexOf(s) === -1) throw new Error('发布版：公式集内瓣膜解剖依赖缺失 ' + s);
-    });
-  ['id="page-valveana"', 'data-tab="valveana"', 'id="page-valves"', 'data-tab="valves"']
-    .forEach((s) => {
-      if (out.indexOf(s) !== -1) throw new Error('发布版：仍残留独立瓣膜页 ' + s);
+      if (out.indexOf(s) !== -1) throw new Error('发布版：仍残留自绘切面图 ' + s);
     });
 
   // 5b) 结构完整性自检：切块/删行容易把 HTML 骨架带掉，必须逐项确认

@@ -276,20 +276,19 @@
 
   /**
    * 切面图放大（v1.16.9）
-   * 网页正文栏窄（约 470px），TTE 的 480 宽切面图、TEE 的 480 宽解剖图在栏里都偏小。
-   * 点图铺满视口再看，不另开页面、不改图片资源。
-   * ★ TEE 图里的色块点击是「高亮同一解剖结构」，不能当放大处理。
+   * 节段划分页的示意图在窄栏里偏小，点图铺满视口再看，不另开页面。
+   * ★ 图里的色块点击是「选节段」，不能当放大处理。
    */
   document.addEventListener('click', function (ev) {
     const t = ev.target;
-    const box = t.closest ? t.closest('.va-atlas-box, .wallsvg-box') : null;
+    const box = t.closest ? t.closest('.wallsvg-box') : null;
     if (!box) return;
     if (t.closest('[data-seg]')) return;
     box.classList.toggle('is-zoom');
   });
   document.addEventListener('keydown', function (ev) {
     if (ev.key !== 'Escape') return;
-    const z = document.querySelector('.va-atlas-box.is-zoom, .wallsvg-box.is-zoom');
+    const z = document.querySelector('.wallsvg-box.is-zoom');
     if (z) z.classList.remove('is-zoom');
   });
 
@@ -1289,7 +1288,7 @@
     if (kind === 'album') arrow = (count || 0) + ' ›';
     else if (isVid) arrow = '▶';
     // 星标只给「点开有内容」的条目（外链 / 专辑不收藏）；v1.7.7
-    const star = (kind === 'calc' || kind === 'brief' || kind === 'valveana' || kind === 'tte-atlas')
+    const star = (kind === 'calc' || kind === 'brief')
       ? '<span class="fx-fav' + (fav ? ' fx-fav--on' : '') + '" data-fav="' + esc(id) + '">' +
         (fav ? '★' : '☆') + '</span>'
       : '';
@@ -1914,7 +1913,7 @@
           items.push({ kind: 'brief', id: it.id, ab: it.ab || '', title: it.title, sub: it.sub || '' });
         });
       });
-      // ★ v1.7.9：「瓣膜解剖 · TEE 标准切面」已移出公式集，只在「切面学习」页签列出
+      // ★ 2026-11-21：切面速查（含原 TEE / TTE 图谱两条）只在「切面学习」页签列出
       secs.push({ id: vs.id, title: vs.title, note: vs.note, items: items });
     });
 
@@ -2060,15 +2059,8 @@
   /** 切面学习页三块列表的数据（单一来源：extra-data.js，不在这里重复维护标题） */
   function segItems() {
     const out = { look: [], views: [], sim: [] };
-    // ★ v1.7.9：瓣膜解剖排块首（它与切面速查同属图谱，且是进入 TEE 图谱的入口）
-    out.look.push({
-      kind: 'valveana', id: 'valveana', ab: 'TEE', title: '瓣膜解剖 · TEE 标准切面',
-      sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1',
-    });
-    out.look.push({
-      kind: 'tte-atlas', id: 'tte-atlas', ab: 'TTE', title: 'TTE 标准切面总览',
-      sub: '一张图并列四个常用切面：胸骨旁长轴 / 大动脉短轴 / 心尖四腔 / 两腔',
-    });
+    // ★ 2026-11-21：两条自绘切面图条目已移除（示意图与真实切面差距大，容易误导），
+    //   切面学习只留文字条目与真实图像 / 视频入口。
     BRIEF.forEach(function (sec) {
       sec.items.forEach(function (it) {
         if (!it.segOnly) return;
@@ -2218,7 +2210,7 @@
       });
     });
 
-    // 条目点击委托：album 切到公式集的专辑视图，其余（brief / valveana）进详情视图
+    // 条目点击委托：album 切到公式集的专辑视图，其余（brief）进详情视图
     // ★ 跳转前记下来源页签与滚动位置：返回时 leaveView() 会切回本页（v1.6.4）
     const segPage = $('page-segments');
     if (segPage) {
@@ -2410,7 +2402,7 @@
       if (kind === 'album') {
         openAlbum(el.dataset.sec, el.dataset.id);
       } else {
-        // calc / brief / valveana 都进详情视图（v1.5.0 起瓣膜解剖也是其中一员）
+        // calc / brief 都进详情视图
         openCalcGroup(el.dataset.id);
       }
     });
@@ -2584,121 +2576,6 @@
     popView();
   }
 
-  /**
-   * 瓣膜解剖卡（公式集内的一页，v1.5.0）
-   *
-   * 只保留 TEE 切面：TTE 短轴 / 四腔心已在「切面学习」的视频里，重复。
-   * 每张图配一张「探头在哪、平面怎么切」的小图（ValveSvg.probeOf）。
-   * 点任意色块或分区按钮 → 所有图同步高亮同一解剖结构。
-   */
-  /**
-   * TTE 标准切面总览卡：6 张单切面图逐张铺满正文栏 + 每个切面一段要点（R9 / R64）
-   * ★ 2026-11-21：原来是一张 2×2 四联图，正文栏只有 ~470px，每格缩到 235px，
-   *   图里的字只剩 5–6px。改成一张图一个卡片块、铺满栏宽，点任意一张可放大。
-   */
-  function tteAtlasCardHtml() {
-    const A = window.TteAtlasSvg;
-    if (!A) return '';
-    let figs = '';
-    for (let i = 0; i < 6; i += 1) {
-      figs += '<div class="va-atlas-box">' + A.ttePanelSvg(i) + '</div>';
-    }
-    return '<div class="card" data-g="tte-atlas" hidden>' +
-      '<div class="card__t">TTE 标准切面总览</div>' +
-      '<div class="card__d">六个常用切面逐张排开：胸骨旁左室长轴、主动脉瓣短轴、心尖四腔、心尖两腔、' +
-      '心尖五腔、二尖瓣水平短轴。图中只标关键结构与必测项，为教学示意，不替代真实超声图像。</div>' +
-      '<div class="note note--warn">方位：扇形顶点在上＝近场（探头侧），下方是远场。' +
-      '心尖四腔 / 两腔 / 五腔：<b>心尖在上、心房在下</b>，屏幕左＝患者右；' +
-      '胸骨旁长轴：右室在前（上）、左室在后（下），主动脉根部与左房在右侧、心尖朝左。' +
-      'TEE 的近场是心房侧，所以 TEE 与 TTE 的<b>上下相反、左右相同</b>。' +
-      'TEE 图谱见「瓣膜解剖 · TEE 标准切面」。</div>' +
-      '<div class="va-atlas-hint">点任意一张图可铺满放大，再点一次或按 Esc 退出</div>' +
-      figs +
-      '<div class="fx-fgrp">六个切面各看什么</div>' +
-      '<div class="wall-card"><div class="wall-card__t">① 胸骨旁左室长轴（PLAX）</div>' +
-      '<div class="wall-card__s">声束垂直于室间隔，是左室径线与主动脉根部测量的主切面。' +
-      '必测：LVEDD / LVESD、室间隔与后壁厚度、主动脉根部与升主动脉径、左房前后径。' +
-      '腱索水平测内径；斜切会高估室壁厚度、低估左室内径。</div></div>' +
-      '<div class="wall-card"><div class="wall-card__t">② 胸骨旁主动脉瓣短轴</div>' +
-      '<div class="wall-card__s">主动脉瓣三叶、RVOT、肺动脉瓣同屏。三叶方位：右冠叶在上（贴 RVOT）、' +
-      '左冠叶右下、无冠叶左下，恰好是 TEE 短轴的上下颠倒版；红点为冠脉开口。</div></div>' +
-      '<div class="wall-card"><div class="wall-card__t">③ 心尖四腔（A4C）</div>' +
-      '<div class="wall-card__s">左右房室同屏，心尖在扇形顶部。必测：双室容积与 EF（Simpson）、' +
-      '双房面积、TAPSE、二尖瓣 / 三尖瓣流入道频谱与组织多普勒 e′。注意心尖不能被切掉，' +
-      '否则 EF 偏高、心尖血栓漏诊。</div></div>' +
-      '<div class="wall-card"><div class="wall-card__t">④ 心尖两腔（A2C）</div>' +
-      '<div class="wall-card__s">显示左室前壁与下壁，与四腔心正交，用于双平面 Simpson 容积和' +
-      '前壁 / 下壁节段运动。结合四腔心才能覆盖 16 节段。</div></div>' +
-      '<div class="wall-card"><div class="wall-card__t">⑤ 心尖五腔（A5C）</div>' +
-      '<div class="wall-card__s">在四腔心位置把声束略向前倾，把主动脉根部与 LVOT 打开，' +
-      '两心室之间出现主动脉瓣。测 LVOT 直径（收缩中期、主动脉瓣环下 0.5–1.0 cm）与 LVOT VTI，' +
-      '是每搏量与主动脉瓣狭窄血流计算取血流频谱的位置；也可用彩色多普勒看主动脉瓣反流。</div></div>' +
-      '<div class="wall-card"><div class="wall-card__t">⑥ 胸骨旁二尖瓣水平短轴</div>' +
-      '<div class="wall-card__s">短轴切在二尖瓣水平，左室呈圆形，二尖瓣像「鱼嘴」：' +
-      '前叶贴主动脉瓣侧（近场）、后叶贴后壁侧（远场），两端是前外侧与后内侧交界。' +
-      '用于看交界病变与瓣口面积（3D 平面法更准）；短轴切面只做定性，瓣口面积以压差法 / PHT 与 3D 为准。</div></div>' +
-      '<div class="fx-fgrp">切面与测量的关系</div>' +
-      '<div class="note">背测量清单时，每个数值都要能回答「在哪个切面、什么时相测的」。' +
-      '同一个患者前后两次 EF 差 5%，很可能只是切面与时相不同，不是病情变化。</div>' +
-      '<div class="note">完整的采集顺序、五个声窗与全部必测项，见「TTE 规范切面与必测项」；' +
-      '真实切面图像与视频见「切面学习」的专辑。</div>' +
-      '<div class="note note--strong">本工具为数值计算与参考值查询工具，所有结果仅供专业参考，' +
-      '不作为诊断依据；具体诊断与治疗决策请结合临床。</div>' +
-      '</div>';
-  }
-
-  function valveAnaCardHtml() {
-    const VS = window.ValveSvg;
-    const ORDER = ['主动脉瓣', '二尖瓣', '三尖瓣', '肺动脉瓣'];
-    const by = {};
-    VS.VALVE_VIEWS.forEach(function (v) {
-      if (!by[v.group]) by[v.group] = [];
-      by[v.group].push(v);
-    });
-
-    let h = '<div class="card" data-g="valveana" hidden>' +
-      '<div class="card__t">瓣膜解剖 · TEE 标准切面</div>' +
-      '<div class="card__d">只放 TEE 切面（TTE 短轴与四腔心见「切面学习」）。' +
-      '每张图下方是<b>探头位置 + 扫描平面</b>示意：右侧竖条是食管，三角是探头晶片面，' +
-      '浅蓝扇面是这次扫查的切面，红点是要看的瓣膜。点任意色块，所有图同步高亮同一结构，再点取消。</div>' +
-      '<div class="note note--warn">方位总则：TEE 与 TTE <b>上下颠倒、左右不变</b> —— ' +
-      '近场（屏幕上方）是心房侧，屏幕左＝患者右。</div>' +
-      '<div class="hi-line hi-line--sel" id="vaSelInfo" hidden></div>';
-
-    ORDER.forEach(function (g) {
-      const vs = by[g] || [];
-      if (!vs.length) return;
-      h += '<div class="fx-fgrp">' + esc(g) + ' · ' + vs.length + ' 个切面</div>';
-      vs.forEach(function (v) {
-        const chips = v.parts.map(function (id) {
-          const p = VS.PART_INDEX[id];
-          return '<button class="segchip" data-vap="' + id + '" style="--c:' +
-            (p ? p.color : '#64748b') + '" aria-label="' + esc(p ? p.name : id) + '">' +
-            esc(p ? p.abbr : id) + '</button>';
-        }).join('');
-        h += '<div class="wall-card"><div class="wall-card__t">' + esc(v.title) + '</div>' +
-          '<div class="wall-card__s">' + esc(v.sub) + '</div>' +
-          '<div class="wallsvg-box" id="va-' + v.id + '"></div>' +
-          '<div class="va-probe" id="va-' + v.id + '-probe"></div>' +
-          '<div class="wall-group"><span class="wall-group__l">解剖分区</span>' +
-          '<span class="wall-chips">' + chips + '</span></div></div>';
-      });
-    });
-
-    h += '<div class="note">主动脉瓣三叶：右冠叶 RCC、左冠叶 LCC、无冠叶 NCC，三叶闭合时铺满整个瓣口。' +
-      'TEE 短轴 30–60° 与 TTE 短轴<b>上下颠倒</b>（探头在左房后方）：NCC 在左上并紧邻房间隔、' +
-      'LCC 在右上贴肺动脉、RCC 在下方靠近 RVOT。左冠开口在 LCC、右冠开口在 RCC（红点，约 2 点 / 5 点）。</div>' +
-      '<div class="note">二尖瓣分叶（Carpentier–ASE/SCA 命名）：<b>前叶 A1–A3</b>（贴主动脉瓣侧）、' +
-      '<b>后叶 P1–P3</b>（贴左室后壁侧）。四腔心切在瓣口中部：间隔侧是 A3、侧壁侧是 P1' +
-      '（也有文献写作 A2 / P2）；两腔心（90°）下壁侧是 P3、前壁侧是前叶；' +
-      '精确分叶靠 45–60° 交界切面（左 P3 · 中 A2 · 右 P1）或 3D 全容积。</div>' +
-      '<div class="note">三尖瓣三个瓣叶：前叶、隔叶、后叶。四腔心看隔叶 + 前叶（隔叶附着点比二尖瓣前叶更靠心尖，' +
-      'Ebstein 时显著下移）；60–90° 右室流入-流出道看后叶 + 前叶；经胃底短轴（约 30°）是唯一能同屏看全三叶的 2D 切面。</div>' +
-      '<div class="note note--warn">本页为教学示意图，不替代真实超声图像；测量与判读请回看「瓣膜评估」里的 AS / AR / MS / MR / TR 条目，' +
-      '或「切面学习」里的真实切面视频。</div></div>';
-    return h;
-  }
-
   function buildCalcInputs() {
     if (!$('calcList')) return;
 
@@ -2771,13 +2648,6 @@
         html += briefRelHtml(it.rel) + briefRefsHtml(it.source) + '</div>';
       });
     });
-    // ── 瓣膜解剖（TEE 标准切面）：v1.5.0 从独立页签搬进公式集 ──
-    if (window.ValveSvg && window.ValveSvg.VALVE_VIEWS) {
-      html += valveAnaCardHtml();
-    }
-    // ── TTE 标准切面总览（与 TEE 并列的独立条目）──
-    html += tteAtlasCardHtml();
-
     $('calcGroups').innerHTML = html;
 
     // 绑定输入（同 key 的多个输入框互相同步）
@@ -2886,33 +2756,18 @@
    * 打开某条目（计算公式或评估内容）
    * fromHistory=true 表示由 popstate 触发，不再重复 push
    */
-  /**
-   * 静态卡片（不挂在 CALC_GROUPS / BRIEF 里，卡片 HTML 单独拼）
-   * ★ 2026-11-21：原来只特判 valveana，`tte-atlas` 点进来时 g/b 都为 null，
-   *   函数直接 return —— 但调用方已经 switchTab('calc')，于是页面停在公式集目录。
-   *   凡是这种「卡片在 #calcGroups 里、数据不在两张表里」的条目都要登记在这里。
-   */
-  const STATIC_CARDS = {
-    valveana: '瓣膜解剖 · TEE 标准切面',
-    'tte-atlas': 'TTE 标准切面总览',
-  };
-
   function openCalcGroup(id, fromHistory) {
     const g = calcGroupOf(id);
     const b = briefOf(id);
-    const isAna = id === 'valveana';
-    const staticTitle = STATIC_CARDS[id];
-    if (!g && !b && !staticTitle) return;
+    if (!g && !b) return;
     curCalcGroup = id;
     if ($('calcIndex')) $('calcIndex').hidden = true;
     if ($('calcDetail')) $('calcDetail').hidden = false;
     document.querySelectorAll('#calcGroups > .card').forEach(function (c) {
       c.hidden = c.dataset.g !== id;
     });
-    $('appbarTitle').textContent = g ? g.title
-      : (b ? b.title : staticTitle);
+    $('appbarTitle').textContent = g ? g.title : b.title;
     renderCalc();
-    if (isAna) renderValveAna();
     syncChrome();
     window.scrollTo(0, 0);
     if (!fromHistory) pushView({ type: 'calc', id: id });
@@ -5068,31 +4923,6 @@
 
 /*<<<END-CUT:seg>>>*/
 
-  /* 瓣膜解剖（公式集内）：解剖分区选中 ↔ 所有示意图同步高亮 */
-
-  let selValvePart = null;   // 选中的解剖分区（如 lcc / a2 / sep）
-
-  function renderValveAna() {
-    if (!window.ValveSvg) return;
-    window.ValveSvg.VALVE_VIEWS.forEach(function (v) {
-      const el = $('va-' + v.id);
-      if (el) el.innerHTML = v.fn({ sel: selValvePart });
-      // 探头位置 + 扫描平面小图（静态，不随选中重绘）
-      const pe = $('va-' + v.id + '-probe');
-      if (pe && !pe.innerHTML) pe.innerHTML = window.ValveSvg.probeOf(v.id);
-    });
-
-    document.querySelectorAll('#calcGroups [data-vap]').forEach(function (c) {
-      c.classList.toggle('segchip--on', c.dataset.vap === selValvePart);
-    });
-
-    const info = $('vaSelInfo');
-    if (info) {
-      info.hidden = !selValvePart;
-      info.textContent = selValvePart ? ValveSvg.partInfoText(selValvePart) : '';
-    }
-  }
-
   /* 启动 */
 
   function boot() {
@@ -5123,7 +4953,6 @@
     // 节段划分页：渲染示意图 + 点击联动（事件委托，SVG 每次选中后整体重绘）
     /*<<<PUBLIC-CUT:segclick>>>*/
     renderSegAll();
-    renderValveAna();
     document.addEventListener('click', function (e) {
       const segEl = e.target.closest('#page-segments g[data-seg]');
       if (segEl) {
@@ -5168,22 +4997,6 @@
       }
     });
 
-    // 瓣膜解剖（公式集内）：点击分区色块 / 按钮 → 所有示意图同步高亮
-    document.addEventListener('click', function (e) {
-      const partEl = e.target.closest('#calcGroups g[data-part]');
-      if (partEl) {
-        const id = partEl.dataset.part;
-        selValvePart = selValvePart === id ? null : id;
-        renderValveAna();
-        return;
-      }
-      const chip = e.target.closest('#calcGroups [data-vap]');
-      if (chip) {
-        const id = chip.dataset.vap;
-        selValvePart = selValvePart === id ? null : id;
-        renderValveAna();
-      }
-    });
     /*<<<END-CUT:segclick>>>*/
 
     // 页面可见性变化时重绘（WebView 恢复前台）

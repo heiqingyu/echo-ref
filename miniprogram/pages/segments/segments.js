@@ -104,14 +104,9 @@ Page({
     const sim = (links.filter(function (s) { return s.id === 'sim'; })[0] || {}).items || [];
     // ★ 切面速查 / 标准切面：标题与说明只在 extra-data.js 维护一份，
     //   这里按 segOnly 标记取（与网页 / APK 的 renderSegLists 同源）
-    // ★ v1.7.9：「瓣膜解剖 · TEE 标准切面」从公式集移到这里，排块首（图谱是入口，先看到）
-    const look = [{
-      kind: 'valveana', id: 'valveana', title: '瓣膜解剖 · TEE 标准切面',
-      sub: '13 个 TEE 切面：主动脉瓣 3 · 二尖瓣 6 · 三尖瓣 3 · 肺动脉瓣 1', url: '',
-    }, {
-      kind: 'tte-atlas', id: 'tte-atlas', title: 'TTE 标准切面总览',
-      sub: '一张图并列四个常用切面：胸骨旁长轴 / 大动脉短轴 / 心尖四腔 / 两腔', url: '',
-    }];
+    // ★ 2026-11-21：自绘的「瓣膜解剖 · TEE 标准切面」「TTE 标准切面总览」两条已移除
+    //   （示意图与真实切面差距大，容易误导），切面速查只留文字条目与真实图像/视频入口。
+    const look = [];
     (EX.BRIEF_SECTIONS || []).forEach(function (s) {
       (s.items || []).forEach(function (it) {
         if (!it.segOnly) return;
@@ -205,14 +200,6 @@ Page({
       wx.navigateTo({
         url: '/pages/album/album?sec=' + d.sec + '&item=' + d.id,
       });
-      return;
-    }
-    if (d.kind === 'valveana') {
-      wx.navigateTo({ url: '/pages/valveana/valveana' });
-      return;
-    }
-    if (d.kind === 'tte-atlas') {
-      wx.navigateTo({ url: '/pages/tte-atlas/tte-atlas' });
       return;
     }
     if (d.kind === 'brief') {

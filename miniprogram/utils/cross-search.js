@@ -26,9 +26,7 @@ function segCount(kw) {
       if (it.segOnly && hit(it, q)) n++;
     });
   });
-  // 瓣膜解剖 TEE 图谱 / TTE 总览（不在 BRIEF_SECTIONS 里，是切面学习页固定条目）
-  if (hit({ title: '瓣膜解剖 · TEE 标准切面' }, q)) n++;
-  if (hit({ title: 'TTE 标准切面总览' }, q)) n++;
+  // 2026-11-21：自绘切面图两条已移除，切面速查只剩 BRIEF_SECTIONS 的 segOnly 条目
   (EX.LINK_SECTIONS || []).forEach(function (s) {
     if (s.id !== 'views' && s.id !== 'sim') return;
     (s.items || []).forEach(function (it) {

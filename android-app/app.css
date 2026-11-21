@@ -1761,22 +1761,8 @@ html, body {
   margin: 0 auto;
 }
 
-/* TTE 标准切面：一张图一个块，逐张铺满栏宽 */
-.va-atlas-box {
-  margin: 10px 0 12px;
-  cursor: zoom-in;
-}
-
-.va-atlas-box svg {
-  display: block;
-  width: 100%;
-  height: auto;          /* 480×290 viewBox 自适应，移动端等比缩小不裁切 */
-  margin: 0 auto;
-}
-
 /* 点图放大：铺满视口（Esc / 再点一次退出）
    ★ z-index 必须高于顶栏与底部页签（都是 100），否则图会被压在上面 */
-.va-atlas-box.is-zoom,
 .wallsvg-box.is-zoom {
   position: fixed;
   inset: 0;
@@ -1790,40 +1776,18 @@ html, body {
   cursor: zoom-out;
 }
 
-.va-atlas-box.is-zoom svg,
 .wallsvg-box.is-zoom svg {
   width: 100%;
   max-width: none;
   max-height: 94vh;
 }
 
-.va-atlas-hint {
-  margin: 2px 0 8px;
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.va-atlas-hint b { color: #64748b; }
 
 .wallsvg-box g[data-seg],
 .bull-wrap g[data-seg] {
   cursor: pointer;
 }
 
-/* 探头位置 + 扫描平面小图（v1.5.0：瓣膜解剖并入公式集后新增） */
-.va-probe {
-  max-width: 380px;
-  margin: 6px auto 0;
-  padding: 4px 6px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-}
-
-.va-probe svg {
-  display: block;
-  width: 100%;
-}
 
 .wall-group {
   display: flex;

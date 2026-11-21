@@ -76,14 +76,21 @@ else bad('reference 页仍独立存在，未合并');
 if (fs.existsSync(path.join(MP, 'utils', 'echo-calc.js'))) ok('echo-calc.js 引擎存在');
 else bad('echo-calc.js 引擎缺失');
 
-console.log('\n=== 4c. 瓣膜页（v1.5.0 起并入公式集） ===');
-// ★ 用户 2026-10-24：瓣膜评估页整页删除，内容并入 aortic / mitral / tr-interv 三个判读条目；
-//   瓣膜解剖改为公式集里的一个条目（pages/valveana 仍在，但只放 TEE 切面）。
+console.log('\n=== 4c. 瓣膜页与自绘切面图（2026-11-21 起全部移除） ===');
+// ★ 用户 2026-10-24：瓣膜评估页整页删除，内容并入 aortic / mitral / tr-interv 三个判读条目。
+// ★ 用户 2026-11-21：自绘的「瓣膜解剖 · TEE 标准切面」「TTE 标准切面总览」两条整体移除
+//   ——示意图与真实超声差距大、容易误导，只保留文字条目与真实图像 / 视频入口。
 if (appJson.pages.includes('pages/valves/valves')) bad('valves 页应已删除，仍注册在 app.json');
 else ok('valves 独立页已删除（并入公式集）');
-if (appJson.pages.includes('pages/valveana/valveana')) ok('valveana 页已注册（公式集内条目）');
-if (appJson.pages.includes('pages/tte-atlas/tte-atlas')) ok('tte-atlas 页已注册（TTE 总览独立条目）');
-else bad('valveana 页缺失');
+[['pages/valveana/valveana', '瓣膜解剖 TEE'], ['pages/tte-atlas/tte-atlas', 'TTE 切面总览']]
+  .forEach(function (it) {
+    if (appJson.pages.includes(it[0])) bad(it[1] + ' 页应已移除，仍注册在 app.json');
+    else ok(it[1] + ' 页已移除（示意图易误导）');
+  });
+['valve-svg.js', 'tte-atlas-svg.js'].forEach(function (f) {
+  if (fs.existsSync(path.join(MP, 'utils', f))) bad(f + ' 应已删除，仍残留');
+  else ok(f + ' 已删除');
+});
 ['valve-data.js', 'valve-calc.js'].forEach(f => {
   if (fs.existsSync(path.join(MP, 'utils', f))) ok(f + ' 存在');
   else bad(f + ' 缺失');
@@ -186,36 +193,16 @@ else bad('目录条目未绑定 onOpen');
   else if (fs.readFileSync(cgPath, 'utf8').indexOf(t) !== -1) ok('瓣膜条目在 calc-groups 中：「' + t + '」');
   else bad('目录缺少瓣膜条目：' + t);
 });
-const tteAtlasJs = fs.readFileSync(path.join(MP, 'utils/tte-atlas-svg.js'), 'utf8');
-// ★ 2026-11-21：一张四联图在窄栏里每格只剩 235px，字看不见 → 全部拆成单切面图（480×290）
-if (tteAtlasJs.indexOf('viewBox="0 0 480 290"') !== -1 &&
-    tteAtlasJs.indexOf('function ttePanelSvg') !== -1 &&
-    tteAtlasJs.indexOf('ttePanelSvg,') !== -1 &&
-    tteAtlasJs.indexOf('tteOverviewSvg') === -1) ok('TTE 单切面图生成器（480×290）已导出，四联图已退场');
-else bad('TTE 单切面图生成器缺失，或四联图未退场');
-// 6 个切面（2026-11-21 新增 A5C 心尖五腔、MV 水平短轴两张瓣膜切面）
-if (tteAtlasJs.indexOf('function a5cBody') !== -1 && tteAtlasJs.indexOf('function mvSaxBody') !== -1 &&
-    tteAtlasJs.indexOf("'⑤ 心尖五腔 A5C'") !== -1 && tteAtlasJs.indexOf("'⑥ 胸骨旁二尖瓣水平短轴'") !== -1)
-  ok('TTE 六切面齐全（PLAX / AV 短轴 / A4C / A2C / A5C / MV 短轴）');
-else bad('TTE 缺少 A5C 或 MV 短轴切面');
-const ttePageJs = fs.readFileSync(path.join(MP, 'pages/tte-atlas/tte-atlas.js'), 'utf8');
-const ttePageWxml = fs.readFileSync(path.join(MP, 'pages/tte-atlas/tte-atlas.wxml'), 'utf8');
-if (ttePageJs.indexOf('ttePanelSvg(i)') !== -1 && ttePageWxml.indexOf('wx:for="{{srcs}}"') !== -1 &&
-    ttePageJs.indexOf('i < 6') !== -1) ok('TTE 页用 6 张单切面图（循环渲染 srcs）');
-else bad('TTE 页切面张数与生成器不一致');
-// TEE / TTE 图都允许横屏、图出血到卡片边（2026-11-21：图偏小）
-const tteJson = JSON.parse(fs.readFileSync(path.join(MP, 'pages/tte-atlas/tte-atlas.json'), 'utf8'));
-const vaJson = JSON.parse(fs.readFileSync(path.join(MP, 'pages/valveana/valveana.json'), 'utf8'));
-if (tteJson.pageOrientation === 'auto' && vaJson.pageOrientation === 'auto')
-  ok('TTE / 瓣膜解剖页允许横屏（手机横过来图大一倍）');
-else bad('切面页未开启 pageOrientation: auto');
-// 方位口径：四腔/两腔心尖在上，与指南一致（旧版画反过）
-if (tteAtlasJs.indexOf('心尖在近场') !== -1 && tteAtlasJs.indexOf('RCC 在上') !== -1)
-  ok('TTE 图方位说明与图一致（心尖在上 / RCC 在上）');
-else bad('TTE 图方位说明与图不一致');
-const anaJs = fs.readFileSync(path.join(MP, 'pages/valveana/valveana.js'), 'utf8');
-if (/VS\.probeOf/.test(anaJs)) ok('瓣膜解剖页渲染探头位置小图');
-else bad('瓣膜页未支持 ?tab= 预选参数');
+// ★ 2026-11-21：TTE 总览 / 瓣膜解剖两张自绘图已整体移除，页面与源文件都不许回潮
+const leftover = ['utils/valve-svg.js', 'utils/tte-atlas-svg.js',
+  'pages/valveana/valveana.js', 'pages/tte-atlas/tte-atlas.js']
+  .filter(function (f) { return fs.existsSync(path.join(MP, f)); });
+if (leftover.length === 0) ok('自绘切面图文件已清空（valve-svg / tte-atlas-svg / 两个页面）');
+else bad('自绘切面图仍有残留：' + leftover.join(', '));
+const segJs = fs.readFileSync(path.join(MP, 'pages/segments/segments.js'), 'utf8');
+if (segJs.indexOf("'valveana'") === -1 && segJs.indexOf("'tte-atlas'") === -1)
+  ok('切面学习页不再列出两条自绘图条目');
+else bad('切面学习页仍引用已删除条目');
 console.log('\n=== 4e. 公式集扩展：评估类内容 / 参考文献 / 版本号 ===');
 const exPath = path.join(MP, 'utils', 'extra-data.js');
 if (fs.existsSync(exPath)) ok('extra-data.js 存在');

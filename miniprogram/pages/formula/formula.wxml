@@ -232,9 +232,6 @@
       <view class="pagefoot__i" data-go="segments" bindtap="onGo">
         <text class="pagefoot__t">切面学习</text><text class="pagefoot__d">17 节段与冠脉对应</text>
       </view>
-      <view class="pagefoot__i" data-go="valveana" bindtap="onGo">
-        <text class="pagefoot__t">瓣膜解剖</text><text class="pagefoot__d">TEE 标准切面与探头方位</text>
-      </view>
       <view class="pagefoot__i" data-go="calculators" bindtap="onGo">
         <text class="pagefoot__t">公式集目录</text><text class="pagefoot__d">78 条判读 · 40 个计算器</text>
       </view>

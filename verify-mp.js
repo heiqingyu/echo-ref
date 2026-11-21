@@ -841,7 +841,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ 按 id 定位分组，不用硬编码下标：以后新增分组不会让后面的断言错位
   const dirById = function (id) { return dirs.filter(function (d) { return d.id === id; })[0]; };
   const nItems = dirs.reduce((n, s) => n + s.items.length, 0);
-  check('目录共 118 条（计算 38 + 判读 80；2026-11-20 TAVR 瓣环尺寸、RAS 心尖保留比值并入判读条目，目录不再单列）', nItems, 118, 0);
+  check('目录共 118 条（计算 38 + 判读 80；自绘图两条只在切面学习页，不占公式集目录）', nItems, 118, 0);
   check('肺超声 lung-us 已从所有分组移除（2026-11-08）',
     dirs.every(g => !g.items.some(i => i.id === 'lung-us')) ? 1 : 0, 1, 0);
   // ★ v1.6.4：segOnly 条目只在「切面学习」页签列出，不许再出现在公式集目录
@@ -905,11 +905,11 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   const segLook = pgS.data.lookList;
   check('切面学习页签：教学视频列表 8 条（3 专辑 + 5 外链）', segViews.length, 8, 0);
   check('切面学习页签：TEE 演示列表 3 条', segSim.length, 3, 0);
-  check('切面学习页签：切面速查与图谱 6 条（含 TTE 总览 + 冠状动脉超声）',
-    segLook.length, 6, 0);
+  check('切面学习页签：切面速查与图谱 4 条（自绘图两条已移除）',
+    segLook.length, 4, 0);
   check('切面速查条目 id 与顺序',
     segLook.map(function (i) { return i.id; }).join(',') ===
-      'valveana,tte-atlas,tee-20,tte-std,tte-measure,ca-views' ? 1 : 0, 1, 0);
+      'tee-20,tte-std,tte-measure,ca-views' ? 1 : 0, 1, 0);
   check('页内导航 4 块且顺序为 节段/速查/视频/演示',
     pgS.data.segNav.map(function (n) { return n.t; }).join('|') ===
       '节段划分|切面速查|教学视频|TEE 演示' ? 1 : 0, 1, 0);
@@ -917,7 +917,7 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   // ★ v1.6.5：本页签自带搜索 + 与公式集互给的跨页签提示
   pgS.applySegKw('TEE');
   check('切面学习搜「TEE」后速查只剩命中条目',
-    pgS.data.lookList.length > 0 && pgS.data.lookList.length < 5 ? 1 : 0, 1, 0);
+    pgS.data.lookList.length > 0 && pgS.data.lookList.length < 4 ? 1 : 0, 1, 0);
   check('切面学习搜索时 segSearching 打开（节段划分与页内导航让位）',
     pgS.data.segSearching === true ? 1 : 0, 1, 0);
   check('切面学习搜「TEE」时提示公式集里也有命中', pgS.data.segCrossN > 0 ? 1 : 0, 1, 0);
@@ -930,8 +930,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('切面学习搜不到时给空态文案', /没有匹配/.test(pgS.data.segEmpty) ? 1 : 0, 1, 0);
   check('两边都搜不到时不给跨页签提示', pgS.data.segCrossN, 0, 0);
   pgS.applySegKw('');
-  check('清空搜索后切面学习恢复完整列表（6 / 8 / 3）',
-    pgS.data.lookList.length === 6 && pgS.data.viewsList.length === 8 &&
+  check('清空搜索后切面学习恢复完整列表（4 / 8 / 3）',
+    pgS.data.lookList.length === 4 && pgS.data.viewsList.length === 8 &&
       pgS.data.simList.length === 3 ? 1 : 0, 1, 0);
   global.__lastSwitchTab = '';
   pgS.applySegKw('TAPSE');
@@ -970,12 +970,8 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
       .every(i => i.kind === 'link' && String(i.url).indexOf('https://') === 0) ? 1 : 0, 1, 0);
   check('切面速查含「TTE 标准切面与测量项目」brief 条目',
     segLook.some(i => i.id === 'tte-measure' && i.kind === 'brief') ? 1 : 0, 1, 0);
-  check('切面速查首条为「瓣膜解剖」valveana 条目（v1.7.9 从公式集移入）',
-    segLook[0] && segLook[0].id === 'valveana' &&
-      segLook[0].kind === 'valveana' ? 1 : 0, 1, 0);
-  check('切面速查第二条为「TTE 标准切面总览」（与 TEE 并列独立条目）',
-    segLook[1] && segLook[1].id === 'tte-atlas' &&
-      segLook[1].kind === 'tte-atlas' ? 1 : 0, 1, 0);
+  check('切面速查首条为「TEE 20 个标准切面」文字条目（自绘图已移除）',
+    segLook[0] && segLook[0].id === 'tee-20' && segLook[0].kind === 'brief' ? 1 : 0, 1, 0);
   check('书籍视频条目为 album 且标注 25 段',
     segViews[0] && segViews[0].count === 25 ? 1 : 0, 1, 0);
   check('专辑条目不把 children 塞进页面数据（省 setData）',
@@ -1353,10 +1349,6 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   pgA.onOpen({ currentTarget: { dataset: { kind: 'calc', id: 'bernoulli' } } });
   check('点击公式条目 → navigateTo formula?id=…',
     navTo === '/pages/formula/formula?id=bernoulli' ? 1 : 0, 1, 0);
-  // v1.5.0：瓣膜评估页已删，公式集里改成弹提示 / 走判读条目；这里改为验证瓣膜解剖条目
-  pgA.onOpen({ currentTarget: { dataset: { kind: 'valveana', id: 'valveana' } } });
-  check('点击瓣膜解剖条目 → navigateTo valveana',
-    navTo === '/pages/valveana/valveana' ? 1 : 0, 1, 0);
   pgA.onOpen({ currentTarget: { dataset: { kind: 'brief', id: 'crt' } } });
   check('点击评估条目 → navigateTo formula?id=crt',
     navTo === '/pages/formula/formula?id=crt' ? 1 : 0, 1, 0);
@@ -2162,105 +2154,17 @@ console.log('\n=== 23. 公式集（目录 + 公式详情页 + 评估类内容）
   check('男性 profile → Z 值页性别默认「男」', pgF.data.optsV.azsex === 'm' ? 1 : 0, 1, 0);
 }
 
-console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教学资源）===');
+console.log('\n=== 24. 自绘切面图已移除（2026-11-21）===');
 {
-  let navTo = null, clip = null;
-  global.wx = {
-    navigateTo(o) { navTo = o.url; },
-    setNavigationBarTitle() {},
-    setClipboardData(o) { clip = o.data; if (o.success) o.success(); },
-    showToast() {},
-  };
-  global.getApp = () => ({ globalData: {} });
-  let pgV = null;
-  global.Page = (c) => { pgV = c; };
-  const VS = require(pathW.join(__dirname, 'miniprogram', 'utils', 'valve-svg.js'));
-  require(pathW.join(__dirname, 'miniprogram', 'pages', 'valveana', 'valveana.js'));
-  pgV.setData = function (patch) {
-    const self = this;
-    Object.keys(patch).forEach(function (k) {
-      const m = k.match(/^(\w+)\[(\d+)\]\.?(.*)$/);
-      if (m) {
-        const arr = self.data[m[1]] || (self.data[m[1]] = []);
-        if (m[3]) arr[+m[2]][m[3]] = patch[k];
-        else arr[+m[2]] = patch[k];
-      } else self.data[k] = patch[k];
-    });
-  };
-
-  check('视图数 = 13（主动脉瓣 3 / 二尖瓣 6 / 三尖瓣 3 / 肺动脉瓣 1）', VS.VALVE_VIEWS.length, 13, 0);
-  check('视图 id 齐全（v1.5.0 只留 TEE 切面）',
-    VS.VALVE_VIEWS.map(function (v) { return v.id; }).join(',') ===
-    'avTeeSax,avTeeLax,avTgDeepLax,mvTee4c,mvTee2c,mvTeeLax,mvTeeCommissural,mvTee3d,mvTgSax,' +
-    'tvTee4c,tvTeeRvin,tvTeeTgsax,pvTeeSax' ? 1 : 0, 1, 0);
-  check('全部是 TEE 切面（标题里都有 TEE / 经胃底 / 3D）',
-    VS.VALVE_VIEWS.every(function (v) { return /TEE|经胃底|3D/.test(v.title); }) ? 1 : 0, 1, 0);
-  check('每个视图都有探头位置元数据（pos / deg / target）',
-    VS.VALVE_VIEWS.every(function (v) {
-      return v.tee && v.tee.pos && v.tee.deg && v.tee.target && v.tee.target.length === 2;
-    }) ? 1 : 0, 1, 0);
-  check('每个视图都能生成探头小图且无 NaN',
-    VS.VALVE_VIEWS.every(function (v) {
-      const p = VS.probeOf(v.id);
-      return p && p.indexOf('NaN') === -1 && p.indexOf('<svg') === 0;
-    }) ? 1 : 0, 1, 0);
-  check('探头位置覆盖 食管中段 / 经胃底 两个窗口',
-    (function () {
-      const set = {};
-      VS.VALVE_VIEWS.forEach(function (v) { set[v.tee.pos] = 1; });
-      return set.ME === 1 && set.TG === 1 ? 1 : 0;
-    })(), 1, 0);
-  check('主动脉瓣 3 分区（rcc/lcc/ncc）', VS.AV_CUSPS.length, 3, 0);
-  check('二尖瓣 6 分段（p1–p3/a1–a3）', VS.MV_SEGMENTS.length, 6, 0);
-  check('三尖瓣 3 瓣叶', VS.TV_LEAFLETS.length, 3, 0);
-  check('每个视图都绑定了渲染函数',
-    VS.VALVE_VIEWS.every(function (v) { return typeof v.fn === 'function'; }) ? 1 : 0, 1, 0);
-  check('13 张 SVG 全部无 NaN',
-    VS.VALVE_VIEWS.every(function (v) { return v.fn({ sel: null }).indexOf('NaN') === -1; }) ? 1 : 0, 1, 0);
-  check('每张 SVG 都含可点击分区标记',
-    VS.VALVE_VIEWS.every(function (v) { return v.fn({ sel: null }).indexOf('data-part=') !== -1; }) ? 1 : 0, 1, 0);
-  // ★ 2026-10-24 踩过的坑：只描边不写 fill 的 <path> 会被默认填成黑色，
-  //   一条弯曲虚线就变成一个大黑三角。这里一条都不许漏。
-  check('所有 <path> 都显式写了 fill（防默认黑色填充）',
-    VS.VALVE_VIEWS.every(function (v) {
-      const s = v.fn({ sel: null });
-      const segs = s.split('<path').slice(1);
-      return segs.every(function (p) { return p.slice(0, p.indexOf('>')).indexOf('fill=') !== -1; });
-    }) ? 1 : 0, 1, 0);
-  check('13 张图 + 13 张探头图共用统一画布（480×400 / 320×228）',
-    VS.VALVE_VIEWS.every(function (v) {
-      return v.fn({ sel: null }).indexOf('viewBox="0 0 480 400"') !== -1 &&
-        VS.probeOf(v.id).indexOf('viewBox="0 0 320 228"') !== -1;
-    }) ? 1 : 0, 1, 0);
-  check('base64 编码无 NaN',
-    VS.utf8ToBase64('<svg>').indexOf('NaN') === -1 ? 1 : 0, 1, 0);
-  check('分区说明含名称与出现视图',
-    VS.partInfoText('a2').indexOf('A2') !== -1 && VS.partInfoText('a2').indexOf('见于') !== -1 ? 1 : 0, 1, 0);
-
-  // —— 页面 ——
-  pgV.onLoad();
-  check('页面按瓣膜分组（4 组：主动脉瓣 / 二尖瓣 / 三尖瓣 / 肺动脉瓣）', pgV.data.groups.length, 4, 0);
-  check('肺动脉瓣视图已删除',
-    VS.VALVE_VIEWS.some(function (v) { return v.id === 'pv'; }) ? 0 : 1, 1, 0);
-  check('三尖瓣 3 张视图（四腔心 + TEE 流入流出道 + TEE 经胃底短轴）',
-    VS.VALVE_VIEWS.filter(function (v) { return v.group === '三尖瓣'; }).length, 3, 0);
-
-  check('瓣膜解剖页不再单列教学资源（与切面学习/在线演示重复）',
-    pgV.data.lessons === undefined ? 1 : 0, 1, 0);
-  const allImgs = pgV.data.groups.reduce(function (n, g) { return n + g.views.length; }, 0);
-  check('示意图条目 = 13', allImgs, 13, 0);
-  check('每张示意图都配了探头小图',
-    pgV.data.groups.every(function (g) {
-      return g.views.every(function (v) { return /^data:image\/svg\+xml;base64,/.test(v.probe || ''); });
-    }) ? 1 : 0, 1, 0);
-  check('示意图为 base64 data URI',
-    pgV.data.groups[0].views[0].src.indexOf('data:image/svg+xml;base64,') === 0 ? 1 : 0, 1, 0);
-  pgV.onPart({ currentTarget: { dataset: { p: 'rcc' } } });
-  check('点击分区后选中', pgV.data.sel === 'rcc' ? 1 : 0, 1, 0);
-  check('选中后有说明文字', pgV.data.selInfo.length > 0 ? 1 : 0, 1, 0);
-  pgV.onPart({ currentTarget: { dataset: { p: 'rcc' } } });
-  check('再次点击取消选中', pgV.data.sel === null ? 1 : 0, 1, 0);
-  check('页面已移除教学资源点击处理', pgV.onLesson === undefined ? 1 : 0, 1, 0);
+  const gone = ['utils/valve-svg.js', 'utils/tte-atlas-svg.js']
+    .filter(function (f) { return fsW.existsSync(pathW.join(__dirname, 'miniprogram', f)); });
+  check('自绘图源文件已删除（valve-svg / tte-atlas-svg）', gone.length, 0, 0);
+  const gonePages = ['pages/valveana/valveana.js', 'pages/tte-atlas/tte-atlas.js']
+    .filter(function (f) { return fsW.existsSync(pathW.join(__dirname, 'miniprogram', f)); });
+  check('两个自绘切面页面已删除', gonePages.length, 0, 0);
+  const segSrc = fsW.readFileSync(pathW.join(__dirname, 'miniprogram/pages/segments/segments.js'), 'utf8');
+  check('切面学习页不再引用两条自绘图条目',
+    segSrc.indexOf("'valveana'") === -1 && segSrc.indexOf("'tte-atlas'") === -1 ? 1 : 0, 1, 0);
 }
 
 /* ===== WXML 不得出现 HTML 实体 =====
@@ -2325,12 +2229,12 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
   check('搜索命中自动展开中英对照（applySearch 写 aliasOpen）',
     pgJs8.indexOf('aliasOpen: aliasHit.length > 0') !== -1 ? 1 : 0, 1, 0);
   // v1.13.1：五个页面统一免责声明（formula 是核心判读页，之前反而缺）
-  const discPages = ['formula', 'segments', 'album', 'video', 'valveana'];
+  const discPages = ['formula', 'segments', 'album', 'video'];
   const discHit = discPages.filter(function (pg) {
     const s = require('fs').readFileSync(__dirname + '/miniprogram/pages/' + pg + '/' + pg + '.wxml', 'utf8');
     return s.indexOf('不作为诊断依据') !== -1;
   });
-  check('五个页面均含统一免责声明「不作为诊断依据」', discHit.length === 5 ? 1 : 0, 1, 0);
+  check('四个页面均含统一免责声明「不作为诊断依据」', discHit.length === 4 ? 1 : 0, 1, 0);
   check('目录页中英对照数据就位（calculators.js 由 EN_ALIAS 映射行数据）',
     pgJs8.indexOf('EX.EN_ALIAS.map') !== -1 && EXA.EN_ALIAS.length === 125 ? 1 : 0, 1, 0);
   // ── v1.12.9：首屏导航条也要有「中英对照」（原先只有 navGroupsOf 里挂，首屏看不到） ──
@@ -2369,7 +2273,7 @@ console.log('\n=== 24. 瓣膜解剖页（分区 / 分叶 / 分段示意图 + 教
     pgWxmlIdx.indexOf('wx:if="{{showReward}}"') !== -1 && pgJsIdx.indexOf("'3.17.5'") !== -1 ? 1 : 0, 1, 0);
   // 同一个小程序只允许一个页面放 <reward />，多放则整页组件都不渲染
   const rewardPages = [];
-  ['index', 'calculators', 'formula', 'segments', 'valveana', 'pediatric', 'album', 'video'].forEach(function (p) {
+  ['index', 'calculators', 'formula', 'segments', 'pediatric', 'album', 'video'].forEach(function (p) {
     const f9 = __dirname + '/miniprogram/pages/' + p + '/' + p + '.wxml';
     if (fs9.existsSync(f9) && fs9.readFileSync(f9, 'utf8').indexOf('<reward') !== -1) rewardPages.push(p);
   });
