@@ -9393,7 +9393,7 @@ function cue(text) {
    ══════════════════════════════════════════════════════════ */
 
 /** 探头深度（食管内的位置）→ 小图里的 y 坐标 */
-const PROBE_Y = { UE: 30, ME: 78, TG: 170 };
+const PROBE_Y = { UE: 44, ME: 96, TG: 166 };
 
 /** 探头位置中文名 */
 const PROBE_NAME = { UE: '食管上段', ME: '食管中段', TG: '经胃底' };
@@ -9404,30 +9404,42 @@ function probeSvg(tee) {
   const tg = tee.target || [196, 108];
   const tx = tg[0];
   const ty = tg[1];
-  const px = 258;
+  const px = 236;
   let n = '';
 
-  // ── 心脏侧位示意：右＝后方＝食管侧 ──
-  n += ell(112, 72, 40, 26, '#eef2f7') + lab(98, 77, 'RV', 12, '#94a3b8');
-  n += ell(158, 138, 42, 38, '#eef2f7') + lab(146, 144, 'LV', 12, '#94a3b8');
-  n += ell(222, 80, 44, 28, '#e8eef7') + lab(210, 85, 'LA', 12, '#64748b');
-  n += ell(230, 140, 31, 25, '#eef2f7') + lab(230, 146, 'RA', 12, '#94a3b8');
-  n += stroke('M208 116 L260 120', '#cbd5e1', 1.4, '4 3');
-  n += stroke('M194 106 C188 130 170 176 156 182', '#cbd5e1', 1.4, '4 3');
+  // ── 心脏侧位轮廓：左＝前（胸骨侧），右＝后（食管侧）
+  // 竖长的蛋形 + 房室交界 / 间隔两条分隔线；不再用四个椭圆拼腔室
+  n += '<path d="M104 24 C140 16 180 30 194 60 C206 86 204 134 192 166 ' +
+    'C180 196 156 208 132 202 C104 196 84 176 78 148 C72 120 76 58 104 24 Z" ' +
+    'fill="#f1f5f9" stroke="#8fa0b5" stroke-width="1.6"/>';
+  n += stroke('M82 118 C120 110 172 108 202 114', '#cbd5e1', 1.6);
+  n += stroke('M148 26 C146 84 144 146 142 202', '#cbd5e1', 1.6);
 
-  // ── 食管 + 探头 ──
-  n += '<rect x="276" y="10" width="24" height="200" rx="10" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.4"/>';
-  n += '<text x="288" y="188" text-anchor="middle" font-size="10" fill="#64748b" ' +
-    'transform="rotate(-90 288 188)">食管</text>';
-  n += '<path d="M' + px + ' ' + (py - 8) + ' L' + px + ' ' + (py + 8) + ' L' + (px - 16) + ' ' + py +
+  n += lab(106, 82, 'RV', 12, '#64748b');
+  n += lab(178, 76, 'LA', 12, '#475569');
+  n += lab(108, 168, 'LV', 12, '#64748b');
+  n += lab(176, 162, 'RA', 12, '#64748b');
+
+  // ── 食管 + 探头晶片面（永远朝左）──
+  n += '<rect x="238" y="20" width="22" height="190" rx="11" fill="#e8eef7" ' +
+    'stroke="#94a3b8" stroke-width="1.4"/>';
+  n += '<text x="274" y="118" text-anchor="middle" font-size="10" fill="#64748b" ' +
+    'transform="rotate(-90 274 118)">食管</text>';
+  n += '<path d="M' + px + ' ' + (py - 11) + ' L' + px + ' ' + (py + 11) + ' L' + (px - 15) + ' ' + py +
     ' Z" fill="#2563eb"/>';
 
-  // ── 扇面（从晶片面指向目标瓣膜）──
+  // ── 扇面：从晶片面张开，覆盖目标瓣膜所在区域 ──
   const dx = tx - px;
   const dy = ty - py;
-  const len = Math.sqrt(dx * dx + dy * dy);
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  let len = Math.min(Math.max(dist * 1.55, 96), 168);
   const ang = Math.atan2(dy, dx);
-  const had = 26 * RAD;
+  const had = 25 * RAD;
+  // 扇面上缘若朝上，按「不越过画布顶部」反推最大半径
+  [ang - had, ang + had].forEach(function (a) {
+    const sn = Math.sin(a);
+    if (sn < -0.02) len = Math.min(len, (py - 8) / -sn);
+  });
   const p1 = [px + len * Math.cos(ang - had), py + len * Math.sin(ang - had)];
   const p2 = [px + len * Math.cos(ang + had), py + len * Math.sin(ang + had)];
   n += '<path d="M' + px + ' ' + f1(py) + ' L' + f1(p1[0]) + ' ' + f1(p1[1]) +
@@ -9435,17 +9447,23 @@ function probeSvg(tee) {
     'fill="#2563eb" fill-opacity="0.10" stroke="#a8c1ec" stroke-width="1"/>';
 
   // ── 目标瓣膜 ──
-  n += '<circle cx="' + f1(tx) + '" cy="' + f1(ty) + '" r="5.5" fill="#dc2626" stroke="#fff" stroke-width="1.8"/>';
+  n += '<circle cx="' + f1(tx) + '" cy="' + f1(ty) + '" r="5" fill="#dc2626" ' +
+    'stroke="#fff" stroke-width="1.8"/>';
 
-  // ── 多平面角度徽标 ──
-  n += '<rect x="8" y="8" width="104" height="26" rx="8" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.4"/>';
-  n += lab(60, 26, tee.deg || '', 13, '#2563eb', 700);
-  n += labL(8, 52, PROBE_NAME[pos], 12, '#64748b', 600);
+  // ── 多平面角度徽标 + 探头位置 ──
+  n += '<rect x="8" y="8" width="100" height="26" rx="8" fill="#eef2ff" ' +
+    'stroke="#c7d2fe" stroke-width="1.4"/>';
+  n += lab(58, 26, tee.deg || '', 13, '#2563eb', 700);
+  n += labL(8, 48, PROBE_NAME[pos], 11, '#64748b', 600);
 
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 228" width="100%" ' +
     'preserveAspectRatio="xMidYMid meet" role="img" aria-label="探头位置与扫描平面示意">' +
     '<rect x="0" y="0" width="320" height="228" rx="10" fill="#f8fafc"/>' + n + '</svg>';
 }
+
+
+
+
 
 /**
  * 可点击的解剖分区色块（文字颜色随高亮状态自动切换）
