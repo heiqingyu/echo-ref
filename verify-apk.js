@@ -92,9 +92,28 @@ check('android-app/assets/index.html 存在（新克隆需先跑 build-apk.bat�
 if (fs.existsSync(ASSET) && fs.existsSync(DOCS)) {
   const ah = fs.readFileSync(ASSET, 'utf8');
   const dh2 = fs.readFileSync(DOCS, 'utf8');
-  check('APK 打包源与 docs 完全一致（字节数相等 + 内容相等）',
-    Buffer.byteLength(ah, 'utf8') === Buffer.byteLength(dh2, 'utf8') && ah === dh2,
+  // 2026-11-21：文献图谱只在 APK 打包源注入；docs（网页版）与小程序源码保持不动。
+  const AB = '<!-- APK_ATLAS_BEGIN -->', AE = '<!-- APK_ATLAS_END -->';
+  const bs = ah.indexOf(AB), be = ah.indexOf(AE);
+  const stripped = (bs >= 0 && be >= 0) ? ah.slice(0, bs) + ah.slice(be + AE.length) : ah;
+  check('APK 打包源剥离图谱块后与 docs 完全一致', stripped === dh2, true);
+  check('APK 含文献图谱入口而网页版不含', bs >= 0 && be >= 0 && dh2.indexOf(AB) === -1, true);
+  // 2026-11-21 修订：入口做进「切面指南（切面学习）」的「切面速查与图谱」区块，成为正式条目
+  check('图谱入口作为条目挂在切面速查区 #lookpart',
+    ah.indexOf('apkAtlasEntry') !== -1 && ah.indexOf('getElementById("lookpart")') !== -1, true);
+  check('右下角悬浮按钮已移除（只用条目入口）',
+    ah.indexOf('apkAtlasBtn') === -1 && ah.indexOf('#apkAtlasBtn') === -1, true);
+  check('图谱面板显隐用 is-open（与 CSS 一致，修复点按钮没反应）',
+    ah.indexOf('classList.add("is-open")') !== -1 && ah.indexOf('classList.remove("is-open")') !== -1,
     true);
+  check('缩略图放大时阻止冒泡（修复点图立刻被关）',
+    ah.indexOf('ev.stopPropagation();ev.preventDefault();zimg.src=it.s') !== -1, true);
+  const atlasDir = path.join(ROOT, 'android-app', 'assets', 'atlas');
+  const atlasCount = fs.existsSync(atlasDir) ? fs.readdirSync(atlasDir).filter(function (f) {
+    return f.indexOf('.jpg') > 0 || f.indexOf('.jpeg') > 0 || f.indexOf('.png') > 0 || f.indexOf('.webp') > 0;
+  }).length : 0;
+  check('APK 图谱图片已复制到 assets/atlas（>=50 张）', atlasCount >= 50, true);
+  check('APK 图谱含 AHA 2024 三尖瓣 R127 指引', ah.indexOf('CIR.0000000000001232') !== -1, true);
   check('APK 内不含瓣膜单独页（用户要求）', ah.indexOf('id="page-valves"') === -1, true);
   check('APK 内含节段划分页（室壁划分）', ah.indexOf('id="page-segments"') !== -1, true);
   check('APK 内不含独立瓣膜解剖页', ah.indexOf('id="page-valveana"') === -1, true);

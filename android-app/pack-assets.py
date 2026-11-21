@@ -36,15 +36,24 @@ def write_entry(zf, name, data, compress_type):
 
 
 def main():
-    if len(sys.argv) != 5:
-        print('usage: pack-assets.py <apk> <assets_src> <dex_name> <dex_src>')
+    if len(sys.argv) not in (5, 6):
+        print('usage: pack-assets.py <apk> <assets_src> <dex_name> <dex_src> [atlas_dir]')
         return 2
     apk, asset_src, dex_name, dex_src = sys.argv[1:5]
+    atlas_dir = sys.argv[5] if len(sys.argv) == 6 else None
 
     with open(dex_src, 'rb') as f:
         dex_data = f.read()
     with open(asset_src, 'rb') as f:
         asset_data = f.read()
+
+    atlas = []
+    if atlas_dir and os.path.isdir(atlas_dir):
+        for name in sorted(os.listdir(atlas_dir)):
+            if not name.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                continue
+            with open(os.path.join(atlas_dir, name), 'rb') as f:
+                atlas.append(('assets/atlas/' + name, f.read()))
 
     with zipfile.ZipFile(apk, 'r') as zin:
         entries = []
@@ -72,13 +81,15 @@ def main():
             write_entry(zout, dex_name, dex_data, zipfile.ZIP_STORED)
             write_entry(zout, 'assets/index.html', asset_data,
                         zipfile.ZIP_STORED)
+            for name, data in atlas:
+                write_entry(zout, name, data, zipfile.ZIP_STORED)
 
     if os.path.exists(apk):
         os.remove(apk)
     shutil.move(tmp, apk)
 
-    print('已注入: %s (%d bytes), assets/index.html (%d bytes)'
-          % (dex_name, len(dex_data), len(asset_data)))
+    print('已注入: %s (%d bytes), assets/index.html (%d bytes), atlas %d files'
+          % (dex_name, len(dex_data), len(asset_data), len(atlas)))
 
 
 if __name__ == '__main__':

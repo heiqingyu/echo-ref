@@ -30,6 +30,9 @@ android-app/*.log
 #   曾在仓库里存了 86 个版本、共 61.5 MB（未压缩）—— 不再跟踪，只留 docs 一份。
 #   刚克隆的仓库需要先跑 android-app/build-apk.bat 才会出现该文件。
 android-app/assets/index.html
+# ★ v1.16.9：assets/atlas/ 由 inject-atlas.js 从 atlas-src/ 复制生成（55 张约 19 MB），
+#   属构建产物，不进版本库；源图只留 atlas-src/ 一份。
+android-app/assets/atlas/
 
 # ★ 仓库瘦身：www/index.html 是 build-www.js 生成的**完整版**（供本地预览 / APK 内嵌），
 #   历史里存了 80 个版本、共 62.4 MB（未压缩）。同样移出版本库，只留 docs（发布版）一份。

@@ -39,6 +39,9 @@ REM in the app: its reading items already live in the formula tab ("valve" group
 REM only the 5 valve calculators depend on that page. Segments tab MUST stay.
 copy /y "%HERE%..\docs\index.html" "%HERE%assets\index.html" >nul
 if errorlevel 1 goto :fail
+REM APK-only figure atlas (TTE/TEE/valve plates from source papers). Web & miniapp untouched.
+node "%HERE%inject-atlas.js"
+if errorlevel 1 goto :fail
 
 echo [1/7] prepare dirs...
 if exist "%BUILD%" rmdir /s /q "%BUILD%"
@@ -74,7 +77,7 @@ if errorlevel 1 goto :fail
 
 echo [6/7] pack dex + assets into apk...
 copy /y "%BUILD%\base.apk" "%BUILD%\unsigned.apk" >nul
-python "%HERE%pack-assets.py" "%BUILD%\unsigned.apk" "%HERE%assets\index.html" classes.dex "%BUILD%\apk\classes.dex"
+python "%HERE%pack-assets.py" "%BUILD%\unsigned.apk" "%HERE%assets\index.html" classes.dex "%BUILD%\apk\classes.dex" "%HERE%assets\atlas"
 if errorlevel 1 goto :fail
 
 echo [7/7] sign...
