@@ -10700,11 +10700,11 @@ function stroke(d, color, w, dash) {
 }
 /** 心腔（血池）＋薄壁 */
 function pool(d, fill) {
-  return '<path d="' + d + '" fill="' + (fill || '#e9eff8') + '" stroke="#9aa9bd" stroke-width="1.5"/>';
+  return '<path d="' + d + '" fill="' + (fill || '#ffffff') + '" stroke="#8fa0b5" stroke-width="1.6"/>';
 }
 function ell(cx, cy, rx, ry, fill) {
   return '<ellipse cx="' + f1(cx) + '" cy="' + f1(cy) + '" rx="' + f1(rx) + '" ry="' + f1(ry) +
-    '" fill="' + (fill || '#e9eff8') + '" stroke="#9aa9bd" stroke-width="1.5"/>';
+    '" fill="' + (fill || '#ffffff') + '" stroke="#8fa0b5" stroke-width="1.6"/>';
 }
 
 /** 扇面路径：顶点在上，向下张开 */
@@ -10764,44 +10764,44 @@ function plaxBody(cx, cy) {
   let c = '', o = '';
 
   // 左房（主动脉根部下方、左室后壁右后方）
-  c += ell(cx + 62, cy + 116, 28, 22, '#e9eff8');
+  c += ell(cx + 44, cy + 120, 26, 20, '#ffffff');
   // 右室：近场一条宽带，向左侧收窄
-  c += pool('M' + f1(cx - 120) + ' ' + f1(cy + 6) + ' L' + f1(cx + 104) + ' ' + f1(cy + 6) +
-    ' L' + f1(cx + 54) + ' ' + f1(cy + 40) + ' Q' + f1(cx - 4) + ' ' + f1(cy + 48) + ' ' +
-    f1(cx - 78) + ' ' + f1(cy + 72) + ' Z', '#e4ebf6');
+  c += pool('M' + f1(cx - 112) + ' ' + f1(cy + 4) + ' L' + f1(cx + 92) + ' ' + f1(cy + 4) +
+    ' L' + f1(cx + 14) + ' ' + f1(cy + 44) + ' Q' + f1(cx - 30) + ' ' + f1(cy + 64) + ' ' +
+    f1(cx - 92) + ' ' + f1(cy + 104) + ' Z', '#eef3fa');
   // 室间隔
-  c += stroke('M' + f1(cx + 50) + ' ' + f1(cy + 34) + ' Q' + f1(cx - 4) + ' ' + f1(cy + 40) + ' ' +
-    f1(cx - 80) + ' ' + f1(cy + 74), '#a9b7c9', 9);
-  // 左室：心尖朝左，中部最厚
-  c += pool('M' + f1(cx + 50) + ' ' + f1(cy + 36) +
-    ' Q' + f1(cx - 4) + ' ' + f1(cy + 56) + ' ' + f1(cx - 72) + ' ' + f1(cy + 106) +
-    ' Q' + f1(cx - 4) + ' ' + f1(cy + 150) + ' ' + f1(cx + 56) + ' ' + f1(cy + 92) + ' Z', '#f5f9fd');
+  c += stroke('M' + f1(cx + 14) + ' ' + f1(cy + 44) + ' Q' + f1(cx - 30) + ' ' + f1(cy + 64) + ' ' +
+    f1(cx - 90) + ' ' + f1(cy + 102), '#a9b7c9', 9);
+  // 左室：心尖朝左，中部最厚，基底在右侧
+  c += pool('M' + f1(cx + 14) + ' ' + f1(cy + 50) +
+    ' Q' + f1(cx - 30) + ' ' + f1(cy + 70) + ' ' + f1(cx - 86) + ' ' + f1(cy + 108) +
+    ' Q' + f1(cx - 16) + ' ' + f1(cy + 150) + ' ' + f1(cx + 14) + ' ' + f1(cy + 98) + ' Z', '#ffffff');
   // 左室后壁
-  c += stroke('M' + f1(cx - 72) + ' ' + f1(cy + 106) + ' Q' + f1(cx - 4) + ' ' + f1(cy + 150) + ' ' +
-    f1(cx + 56) + ' ' + f1(cy + 92), '#a9b7c9', 7);
-  // 主动脉根部（管状：两侧壁 + 窦部）
-  c += pool('M' + f1(cx + 20) + ' ' + f1(cy + 44) + ' L' + f1(cx + 54) + ' ' + f1(cy + 46) +
-    ' L' + f1(cx + 60) + ' ' + f1(cy + 94) + ' L' + f1(cx + 26) + ' ' + f1(cy + 96) + ' Z', '#f3f7fc');
-  c += stroke('M' + f1(cx + 20) + ' ' + f1(cy + 44) + ' L' + f1(cx + 26) + ' ' + f1(cy + 96), '#a9b7c9', 3);
-  c += stroke('M' + f1(cx + 54) + ' ' + f1(cy + 46) + ' L' + f1(cx + 60) + ' ' + f1(cy + 94), '#a9b7c9', 3);
+  c += stroke('M' + f1(cx - 86) + ' ' + f1(cy + 108) + ' Q' + f1(cx - 16) + ' ' + f1(cy + 150) + ' ' +
+    f1(cx + 14) + ' ' + f1(cy + 98), '#a9b7c9', 7);
+  // 主动脉根部（管状，位于左室基底右侧）
+  c += pool('M' + f1(cx + 20) + ' ' + f1(cy + 52) + ' L' + f1(cx + 50) + ' ' + f1(cy + 54) +
+    ' L' + f1(cx + 54) + ' ' + f1(cy + 98) + ' L' + f1(cx + 24) + ' ' + f1(cy + 100) + ' Z', '#f7fafd');
+  c += stroke('M' + f1(cx + 20) + ' ' + f1(cy + 52) + ' L' + f1(cx + 24) + ' ' + f1(cy + 100), '#a9b7c9', 3);
+  c += stroke('M' + f1(cx + 50) + ' ' + f1(cy + 54) + ' L' + f1(cx + 54) + ' ' + f1(cy + 98), '#a9b7c9', 3);
   // 主动脉瓣（蓝）
-  c += '<path d="M' + f1(cx + 23) + ' ' + f1(cy + 62) + ' L' + f1(cx + 42) + ' ' + f1(cy + 74) +
-    ' L' + f1(cx + 27) + ' ' + f1(cy + 78) + ' Z" fill="#2563eb"/>';
-  c += '<path d="M' + f1(cx + 56) + ' ' + f1(cy + 64) + ' L' + f1(cx + 42) + ' ' + f1(cy + 74) +
-    ' L' + f1(cx + 55) + ' ' + f1(cy + 80) + ' Z" fill="#2563eb" opacity="0.72"/>';
+  c += '<path d="M' + f1(cx + 23) + ' ' + f1(cy + 68) + ' L' + f1(cx + 38) + ' ' + f1(cy + 78) +
+    ' L' + f1(cx + 26) + ' ' + f1(cy + 82) + ' Z" fill="#2563eb"/>';
+  c += '<path d="M' + f1(cx + 52) + ' ' + f1(cy + 70) + ' L' + f1(cx + 38) + ' ' + f1(cy + 78) +
+    ' L' + f1(cx + 51) + ' ' + f1(cy + 84) + ' Z" fill="#2563eb" opacity="0.72"/>';
   // 二尖瓣（橙）：左房室交界
-  c += '<path d="M' + f1(cx + 48) + ' ' + f1(cy + 96) + ' L' + f1(cx + 40) + ' ' + f1(cy + 110) +
-    ' L' + f1(cx + 50) + ' ' + f1(cy + 108) + ' Z" fill="#d97706"/>';
-  c += '<path d="M' + f1(cx + 62) + ' ' + f1(cy + 98) + ' L' + f1(cx + 56) + ' ' + f1(cy + 112) +
-    ' L' + f1(cx + 65) + ' ' + f1(cy + 112) + ' Z" fill="#d97706" opacity="0.72"/>';
+  c += '<path d="M' + f1(cx + 12) + ' ' + f1(cy + 100) + ' L' + f1(cx + 22) + ' ' + f1(cy + 114) +
+    ' L' + f1(cx + 10) + ' ' + f1(cy + 112) + ' Z" fill="#d97706"/>';
+  c += '<path d="M' + f1(cx + 34) + ' ' + f1(cy + 102) + ' L' + f1(cx + 30) + ' ' + f1(cy + 116) +
+    ' L' + f1(cx + 40) + ' ' + f1(cy + 114) + ' Z" fill="#d97706" opacity="0.72"/>';
 
-  o += lab(cx - 18, cy + 28, 'RV', 12, '#475569', 700);
-  o += lab(cx - 12, cy + 100, 'LV', 13, '#334155', 700);
-  o += lab(cx + 64, cy + 124, 'LA', 12, '#475569', 700);
-  o += tag(cx - 150, cy + 130, '心尖', cx - 74, cy + 108, 11, '#64748b');
-  o += tag(cx + 150, cy + 24, '升主动脉', cx + 44, cy + 40, 11, '#64748b', 'start');
-  o += tag(cx - 150, cy + 58, 'IVS', cx - 70, cy + 66, 10, '#8494a8');
-  o += tag(cx + 150, cy + 138, 'LVPW', cx + 20, cy + 128, 10, '#8494a8', 'start');
+  o += lab(cx - 20, cy + 26, 'RV', 12, '#475569', 700);
+  o += lab(cx - 26, cy + 90, 'LV', 13, '#334155', 700);
+  o += lab(cx + 44, cy + 124, 'LA', 12, '#475569', 700);
+  o += tag(cx - 150, cy + 132, '心尖', cx - 88, cy + 104, 11, '#64748b');
+  o += tag(cx + 150, cy + 30, '升主动脉', cx + 36, cy + 46, 11, '#64748b', 'start');
+  o += tag(cx - 150, cy + 58, 'IVS', cx - 62, cy + 70, 10, '#8494a8');
+  o += tag(cx + 150, cy + 142, 'LVPW', cx - 6, cy + 132, 10, '#8494a8', 'start');
   return { c: c, o: o };
 }
 
@@ -10814,9 +10814,9 @@ function psaxBody(cx, cy) {
   let c = '', o = '';
 
   // 左房（远场）、右房（屏幕左）、肺动脉（屏幕右）
-  c += ell(cx, cy + 132, 28, 16, '#e9eff8');
-  c += ell(cx - 66, cy + 104, 22, 20, '#e9eff8');
-  c += ell(cx + 68, cy + 100, 20, 18, '#e9eff8');
+  c += ell(cx, cy + 132, 28, 16, '#ffffff');
+  c += ell(cx - 66, cy + 104, 22, 20, '#ffffff');
+  c += ell(cx + 68, cy + 100, 20, 18, '#ffffff');
   // RVOT：包在主动脉前方的月牙
   c += pool('M' + f1(cx - 76) + ' ' + f1(cy + 44) + ' Q' + f1(cx) + ' ' + f1(cy + 18) + ' ' +
     f1(cx + 76) + ' ' + f1(cy + 46) + ' L' + f1(cx + 66) + ' ' + f1(cy + 74) +
@@ -10860,7 +10860,7 @@ function a4cBody(cx, cy) {
   let c = '', o = '';
 
   // 左房 / 右房（远场）
-  c += ell(cx + 40, cy + 120, 32, 22, '#e9eff8');
+  c += ell(cx + 40, cy + 120, 32, 22, '#ffffff');
   c += ell(cx - 40, cy + 118, 30, 21, '#eef3fa');
 
   // 右室（屏幕左）
@@ -10869,14 +10869,14 @@ function a4cBody(cx, cy) {
     f1(cx - 76) + ' ' + f1(cy + 96) +
     ' L' + f1(cx - 3) + ' ' + f1(cy + 96) +
     ' C' + f1(cx - 3) + ' ' + f1(cy + 70) + ' ' + f1(cx - 2) + ' ' + f1(cy + 42) + ' ' +
-    f1(cx) + ' ' + f1(cy + 14) + ' Z', '#e4ebf6');
+    f1(cx) + ' ' + f1(cy + 14) + ' Z', '#eef3fa');
   // 左室（屏幕右）
   c += pool('M' + f1(cx) + ' ' + f1(cy + 14) +
     ' C' + f1(cx + 36) + ' ' + f1(cy + 44) + ' ' + f1(cx + 80) + ' ' + f1(cy + 74) + ' ' +
     f1(cx + 78) + ' ' + f1(cy + 98) +
     ' L' + f1(cx + 3) + ' ' + f1(cy + 98) +
     ' C' + f1(cx + 3) + ' ' + f1(cy + 70) + ' ' + f1(cx + 2) + ' ' + f1(cy + 42) + ' ' +
-    f1(cx) + ' ' + f1(cy + 14) + ' Z', '#f5f9fd');
+    f1(cx) + ' ' + f1(cy + 14) + ' Z', '#ffffff');
   // 室间隔
   c += stroke('M' + f1(cx) + ' ' + f1(cy + 16) + ' L' + f1(cx) + ' ' + f1(cy + 96), '#c3cedd', 2.4);
 
@@ -10905,14 +10905,14 @@ function a2cBody(cx, cy) {
   let c = '', o = '';
 
   // 左房（远场）
-  c += ell(cx, cy + 126, 40, 21, '#e9eff8');
+  c += ell(cx, cy + 126, 40, 21, '#ffffff');
   // 左室
   c += pool('M' + f1(cx) + ' ' + f1(cy + 14) +
     ' C' + f1(cx + 34) + ' ' + f1(cy + 34) + ' ' + f1(cx + 62) + ' ' + f1(cy + 68) + ' ' +
     f1(cx + 52) + ' ' + f1(cy + 100) +
     ' L' + f1(cx - 52) + ' ' + f1(cy + 100) +
     ' C' + f1(cx - 62) + ' ' + f1(cy + 68) + ' ' + f1(cx - 34) + ' ' + f1(cy + 34) + ' ' +
-    f1(cx) + ' ' + f1(cy + 14) + ' Z', '#f5f9fd');
+    f1(cx) + ' ' + f1(cy + 14) + ' Z', '#ffffff');
   // 二尖瓣：前叶在主动脉侧（屏幕右）、后叶在左
   c += '<path d="M' + f1(cx + 20) + ' ' + f1(cy + 100) + ' L' + f1(cx + 10) + ' ' + f1(cy + 114) +
     ' L' + f1(cx + 16) + ' ' + f1(cy + 100) + ' Z" fill="#2563eb"/>';
@@ -10952,7 +10952,7 @@ function panelDefs() {
 /** 扇面渐变（总览图与单切面图都要，重复一份 id 在各自文档里互不影响） */
 function gradDefs() {
   return '<defs><radialGradient id="tteFanGrad" cx="50%" cy="0%" r="115%">' +
-    '<stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eaf1fa"/></radialGradient></defs>';
+    '<stop offset="0" stop-color="#f8fbfe"/><stop offset="1" stop-color="#dee8f5"/></radialGradient></defs>';
 }
 
 /** 生成整张 TTE 总览 SVG（4 个切面 2×2，扇面 + 屏幕方位） */
