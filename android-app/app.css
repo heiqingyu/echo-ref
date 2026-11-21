@@ -1773,17 +1773,18 @@ html, body {
   margin: 0 auto;
 }
 
-/* 点图放大：铺满视口（Esc / 再点一次退出） */
+/* 点图放大：铺满视口（Esc / 再点一次退出）
+   ★ z-index 必须高于顶栏与底部页签（都是 100），否则图会被压在上面 */
 .va-atlas-box.is-zoom {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: 1000;
   margin: 0;
-  padding: 3vh 2vw;
+  padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.92);
+  background: rgba(15, 23, 42, 0.95);
   cursor: zoom-out;
 }
 
