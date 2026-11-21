@@ -1812,7 +1812,7 @@ html, body {
 
 /* 探头位置 + 扫描平面小图（v1.5.0：瓣膜解剖并入公式集后新增） */
 .va-probe {
-  max-width: 300px;
+  max-width: 380px;
   margin: 6px auto 0;
   padding: 4px 6px;
   background: #f8fafc;

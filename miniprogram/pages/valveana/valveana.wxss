@@ -115,7 +115,7 @@
 }
 
 .wall-img--probe {
-  width: 72%;
+  width: 84%;
   height: auto;
   margin: 10rpx auto 0;
   background: #f8fafc;

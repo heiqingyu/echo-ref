@@ -336,7 +336,7 @@ function probeSvg(tee) {
   // ── 食管 + 探头晶片面（永远朝左）──
   n += '<rect x="238" y="20" width="22" height="190" rx="11" fill="#e8eef7" ' +
     'stroke="#94a3b8" stroke-width="1.4"/>';
-  n += '<text x="274" y="118" text-anchor="middle" font-size="10" fill="#64748b" ' +
+  n += '<text x="274" y="118" text-anchor="middle" font-size="11" fill="#64748b" ' +
     'transform="rotate(-90 274 118)">食管</text>';
   n += '<path d="M' + px + ' ' + (py - 11) + ' L' + px + ' ' + (py + 11) + ' L' + (px - 15) + ' ' + py +
     ' Z" fill="#2563eb"/>';
